@@ -50,6 +50,14 @@ service cloud.firestore {
     match /grants/{id} { allow read: if member(); allow write: if isAdmin(); }
     match /org/{id}    { allow read: if member(); allow write: if isAdmin(); }
 
+    // PAD 이미지 (Storage를 안 쓸 때): 압축한 사진을 문서로 저장해요. 올린 사람과 운영자만 지울 수 있어요.
+    match /imgs/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.owner == me()
+        && request.resource.data.d is string && request.resource.data.d.size() < 1000000;
+      allow delete: if member() && (resource.data.owner == me() || isAdmin());
+    }
+
     // 공용 채널
     match /chat/{id} {
       allow read: if member();

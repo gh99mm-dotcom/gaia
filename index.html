@@ -672,7 +672,20 @@ const st=STORAGE_ON?getStorage(app):null;
 const EMU=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&new URLSearchParams(location.search).has('emu');
 if(EMU){connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});connectFirestoreEmulator(fs,'127.0.0.1',8080);if(st)connectStorageEmulator(st,'127.0.0.1',9199)}
 const BUCKET=firebaseConfig.storageBucket;
-window.__blobURL=id=>EMU?`http://127.0.0.1:9199/v0/b/${BUCKET}/o/${encodeURIComponent('pad/'+id)}?alt=media`:`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent('pad/'+id)}?alt=media`;
+const stURL=id=>EMU?`http://127.0.0.1:9199/v0/b/${BUCKET}/o/${encodeURIComponent('pad/'+id)}?alt=media`:`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent('pad/'+id)}?alt=media`;
+/* PAD images: Cloud Storage when the bucket exists (Blaze plan), otherwise compressed JPEGs kept in Firestore "imgs" (works on the free plan).
+   Old posts may hold either kind of id, so display tries Firestore first and falls back to the Storage URL. */
+const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+const IMGC={},IMGP={};let IMG_MODE=null;
+window.__blobURL=id=>IMGC[id]||BLANK;
+function fillImgs(root){(root||document).querySelectorAll('img[data-act="imgview"]').forEach(im=>{const id=im.dataset.k;if(!id)return;if(IMGC[id]){if(im.src!==IMGC[id])im.src=IMGC[id];return}loadImg(id)})}
+function loadImg(id){if(IMGP[id]||!ME)return;IMGP[id]=getDoc(doc(fs,'imgs',id)).then(s=>{IMGC[id]=s.exists()&&s.data().d?s.data().d:stURL(id)}).catch(()=>{IMGC[id]=stURL(id)}).then(()=>{document.querySelectorAll(`img[data-k="${id}"]`).forEach(im=>im.src=IMGC[id]);const big=$('#imgBig');if(big&&big.dataset.k===id)big.src=IMGC[id]})}
+let fillQ=false;new MutationObserver(()=>{if(fillQ)return;fillQ=true;requestAnimationFrame(()=>{fillQ=false;fillImgs()})}).observe(document.documentElement,{childList:true,subtree:true});
+async function storageReady(){if(!STORAGE_ON||!st)return false;if(EMU)return !new URLSearchParams(location.search).has('nostorage');try{const r=await fetch(`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o?maxResults=1`);return r.status!==404}catch(e){return true}}
+async function toJpeg(blob,maxSide,q){let bmp;try{bmp=await createImageBitmap(blob)}catch(e){throw{code:'storage/invalid-format'}}const sc=Math.min(1,maxSide/Math.max(bmp.width,bmp.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*sc));c.height=Math.max(1,Math.round(bmp.height*sc));const x=c.getContext('2d');x.fillStyle='#0b0d16';x.fillRect(0,0,c.width,c.height);x.drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
+const blobToDataURL=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)});
+async function compactImg(blob){if(blob.type==='image/gif'&&blob.size<560e3)return blobToDataURL(blob);
+  for(const [side,q] of [[1280,.82],[1024,.78],[800,.72],[640,.66]]){const d=await toJpeg(blob,side,q);if(d.length<760e3)return d}throw{code:'storage/too-large-for-free'}}
 
 /* ---- error codes in the shape the game expects ---- */
 const CODE={'permission-denied':'permission_denied','resource-exhausted':'quota_exceeded','invalid-argument':'invalid_argument','unavailable':'unavailable','unauthorized':'not_granted','unauthenticated':'not_granted','quota-exceeded':'quota_or_state','retry-limit-exceeded':'rate_limited'};
@@ -718,10 +731,14 @@ addEventListener('pagehide',()=>ROOMS.forEach(r=>r.leave()));
 /* ---- assets: PAD images in Cloud Storage ---- */
 const ID_CH='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const newId=()=>Array.from(crypto.getRandomValues(new Uint8Array(20)),b=>ID_CH[b%62]).join('');
-const assets=st?{
-  upload:async(blob,o)=>{const id=newId(),type=(o&&o.type)||blob.type||'image/jpeg';await W(uploadBytes(sref(st,'pad/'+id),blob,{contentType:type,customMetadata:{owner:ME.uid}}));return{id,url:window.__blobURL(id),sizeBytes:blob.size,contentType:type}},
-  delete:async id=>{try{await deleteObject(sref(st,'pad/'+id));return{deleted:true}}catch(e){if(e&&e.code==='storage/object-not-found')return{deleted:false};throw wrapErr(e)}},
-  list:async()=>({assets:[],usage:{}})}:null;
+const IMG_ERR={'storage/unauthorized':'Storage 규칙이 게시되지 않았거나 막혀 있어요.','storage/quota-exceeded':'이미지 저장 공간이 가득 찼어요.','storage/too-large-for-free':'이미지가 너무 커서 줄여도 저장할 수 없어요.','storage/invalid-format':'이미지를 읽을 수 없어요. PNG·JPG·GIF·WEBP만 돼요.','permission-denied':'파이어베이스 콘솔에 최신 firestore.rules를 다시 게시해 주세요.'};
+const imgErr=e=>{const raw=String(e&&e.code||'').replace(/^firestore\//,''),x=wrapErr(e);x.code=raw==='storage/too-large-for-free'?'too_large':x.code;x.message=(IMG_ERR[raw]||'이미지를 올리지 못했어요.')+(raw?` (${raw})`:'');return x};
+const assets={
+  upload:async(blob,o)=>{const id=newId();
+    if(IMG_MODE==='storage'){const type=(o&&o.type)||blob.type||'image/jpeg';try{await uploadBytes(sref(st,'pad/'+id),blob,{contentType:type,customMetadata:{owner:ME.uid}})}catch(e){throw imgErr(e)}IMGC[id]=stURL(id);return{id,url:IMGC[id],sizeBytes:blob.size,contentType:type}}
+    let d;try{d=await compactImg(blob);await setDoc(doc(fs,'imgs',id),{d,owner:ME.uid,at:Date.now()})}catch(e){throw imgErr(e)}IMGC[id]=d;return{id,url:d,sizeBytes:d.length,contentType:'image/jpeg'}},
+  delete:async id=>{try{if(IMG_MODE==='storage')await deleteObject(sref(st,'pad/'+id));else await deleteDoc(doc(fs,'imgs',id));return{deleted:true}}catch(e){return{deleted:false}}},
+  list:async()=>({assets:[],usage:{}})};
 
 /* ---- auth gate: ID login, invite-only sign-up ---- */
 const $=s=>document.querySelector(s);let modeA='login',started=false,signupP=null;
@@ -761,7 +778,8 @@ onAuthStateChanged(auth,async u=>{
   const lobby=Object.assign(makeRoom('lobby'),{join:async n=>makeRoom(String(n).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,80))});
   const user={id:async()=>u.uid,me:async()=>({id:u.uid,name:u.displayName||''}),isOwner:async()=>admin,canEdit:async()=>admin,can:async()=>true,profiles:async()=>({})};
   window.__fbInvite={mk:()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>A[x%32]).join('')}};
-  window.__fbResolve({db,user,room:lobby,assets});
+  IMG_MODE=(await storageReady())?'storage':'firestore';
+  window.__fbResolve({db,user,room:lobby,assets});setTimeout(fillImgs,0);
 });
 </script>
 
@@ -2604,7 +2622,7 @@ async function addImgs(ctx,files){const L=imgList(ctx);let added=0;for(const f o
   try{const b=await prepImg(f);L.push({blob:b,url:URL.createObjectURL(b)});added++}catch(e){toast(e.code==='too_large'?'GIF는 8MB까지만 올릴 수 있어요.':'PNG, JPG, GIF, WEBP 이미지만 올릴 수 있어요.')}}
   if(added){const ae=document.activeElement;if(isField(ae))ae.blur();renderPanel()}}
 function clearImgs(ctx){imgList(ctx).forEach(m=>{try{URL.revokeObjectURL(m.url)}catch(e){}});if(ctx==='reply')replyImgs=[];else padImgs=[]}
-function imgErr(e){const c=e&&e.code;toast(c==='too_large'?'이미지가 너무 커요 (최대 20MB).':c==='unsupported_type'?'이 형식의 이미지는 올릴 수 없어요.':c==='quota_or_state'?'이미지 저장 공간이 가득 찼어요. 운영자에게 알려 주세요.':c==='rate_limited'?'너무 빨리 올리고 있어요. 잠시 뒤 다시 시도해 주세요.':'이미지를 올리지 못했어요. 잠시 뒤 다시 시도해 주세요.')}
+function imgErr(e){if(e&&e.message&&/\(/.test(e.message)){toast(e.message);return}const c=e&&e.code;toast(c==='too_large'?'이미지가 너무 커요 (최대 20MB).':c==='unsupported_type'?'이 형식의 이미지는 올릴 수 없어요.':c==='quota_or_state'?'이미지 저장 공간이 가득 찼어요. 운영자에게 알려 주세요.':c==='rate_limited'?'너무 빨리 올리고 있어요. 잠시 뒤 다시 시도해 주세요.':'이미지를 올리지 못했어요. 잠시 뒤 다시 시도해 주세요.')}
 function imgPicker(ctx){if(!ASSETS)return'';const n=imgList(ctx).length;return`<label class="qchip imgbtn ${n>=IMG_MAX?'off':''}" title="이미지 붙이기 (최대 ${IMG_MAX}장)">▣ 이미지 ${n?n+'/'+IMG_MAX:''}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden data-imgctx="${ctx}" ${n>=IMG_MAX?'disabled':''}></label>`}
 function imgPrev(ctx){const L=imgList(ctx);return L.length?`<div class="padprev">${L.map((m,i)=>`<span class="pvimg"><img src="${m.url}" alt="첨부할 이미지 ${i+1}"><button class="pvx" data-act="padimgx" data-k="${ctx}" data-i="${i}" aria-label="이미지 빼기">×</button></span>`).join('')}</div>`:''}
 function imgsHTML(ids){const v=(ids||[]).filter(id=>ASSET_ID.test(String(id))).slice(0,IMG_MAX);if(!v.length)return'';return`<div class="twimgs n${v.length}">${v.map(id=>`<img src="${window.__blobURL(id)}" loading="lazy" alt="이미지를 불러올 수 없어요" data-act="imgview" data-k="${id}">`).join('')}</div>`}
@@ -2719,7 +2737,7 @@ const SA={
  profbio(){profBio=!profBio;renderPanel();if(profBio)setTimeout(()=>{const i=$('#profBioIn');if(i)i.focus()},30)},
  profbiosave(){const i=$('#profBioIn');if(i)i.blur();P.bio=(i?i.value:'').trim().slice(0,40);profBio=false;log(P.bio?'한 줄 소개를 바꿨다.':'한 줄 소개를 지웠다.');save();renderPanel()},
  padimgx(d){const L=imgList(d.k),m=L[+d.i];if(!m)return;try{URL.revokeObjectURL(m.url)}catch(e){}L.splice(+d.i,1);renderPanel()},
- imgview(d){if(!ASSET_ID.test(d.k||''))return;$('#imgBig').src=window.__blobURL(d.k);$('#imgModal').hidden=false},
+ imgview(d){if(!ASSET_ID.test(d.k||''))return;$('#imgBig').dataset.k=d.k;$('#imgBig').src=window.__blobURL(d.k);$('#imgModal').hidden=false},
  async padpost(){await padWrite(padDraft,null)},
  async padreply(){const m=THRP||POSTS.find(x=>x.id===padThread);if(!m)return;await padWrite(replyDraft,m)},
  async padrt(d){if(mode!=='online')return;const mine=myRt(d.k);if(mine){try{await db.doc('posts/'+mine.id).delete();toast('재전송을 취소했어요.')}catch(e){socErr(e)}return}
