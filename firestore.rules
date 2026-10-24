@@ -1,0 +1,117 @@
+rules_version = '2';
+// 별무리 개척단 Firestore 보안 규칙
+// · 운영자(선장): 아이디 gh99mm 계정 (아래 ADMIN 값). 바꾸려면 public/index.html의 ADMIN_ID도 같이 바꾸세요.
+// · 초대장으로 가입을 마친 단원(members)만 게임 데이터에 접근할 수 있어요.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function isAdmin() { return signedIn() && request.auth.token.email == 'gh99mm@nebula-outpost.app'; }
+    function member() { return signedIn() && (isAdmin() || exists(/databases/$(database)/documents/members/$(me()))); }
+    function str(f, n) { return request.resource.data[f] is string && request.resource.data[f].size() <= n; }
+
+    // 초대장: 운영자만 발급·목록 조회·취소. 코드를 아는 사람은 가입 전에 유효한지만 확인할 수 있어요.
+    // 가입하는 사람은 "회원 등록과 동시에" 자기가 쓴 초대장 하나만 지울 수 있어요.
+    match /invites/{code} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.keys().hasOnly(['by', 'at', 'memo']);
+      allow delete: if isAdmin() || (signedIn()
+        && existsAfter(/databases/$(database)/documents/members/$(me()))
+        && getAfter(/databases/$(database)/documents/members/$(me())).data.code == code);
+    }
+
+    // 단원 명단: 초대장을 쓰면서(같은 순간에 그 초대장을 지우면서)만 등록할 수 있어요.
+    match /members/{uid} {
+      allow read: if signedIn() && (me() == uid || isAdmin());
+      allow create: if signedIn() && me() == uid && request.resource.data.keys().hasOnly(['id', 'code', 'at']) && (
+        isAdmin() || (
+          request.resource.data.code is string && request.resource.data.code.size() == 8
+          && exists(/databases/$(database)/documents/invites/$(request.resource.data.code))
+          && !existsAfter(/databases/$(database)/documents/invites/$(request.resource.data.code))));
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // 캐릭터: 모두 읽고, 자기 캐릭터만 저장. 운영자는 캐릭터 삭제 표시 가능.
+    match /players/{uid} {
+      allow read: if member();
+      allow write: if member() && (me() == uid || isAdmin());
+    }
+
+    // 건의함: 본인과 운영자만 읽고, 본인만 씀.
+    match /feedback/{uid} {
+      allow read: if member() && (me() == uid || isAdmin());
+      allow write: if member() && me() == uid;
+      allow delete, update: if isAdmin();
+    }
+
+    // 운영자 전용 데이터: 전체 선물, 조직도 임명.
+    match /grants/{id} { allow read: if member(); allow write: if isAdmin(); }
+    match /org/{id}    { allow read: if member(); allow write: if isAdmin(); }
+
+    // 공용 채널
+    match /chat/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.uid == me() && str('text', 200);
+      allow delete: if isAdmin();
+    }
+
+    // PAD: 글쓴이만 수정/삭제, 다른 사람은 ♥(likes)만 바꿀 수 있어요.
+    match /posts/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.uid == me()
+        && (!('text' in request.resource.data) || str('text', 300));
+      allow update: if member() && (resource.data.uid == me()
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
+      allow delete: if member() && (resource.data.uid == me() || isAdmin());
+    }
+
+    // 귓속말: 주고받은 두 사람만 읽을 수 있어요.
+    match /dm/{id} {
+      allow read: if member() && me() in resource.data.users;
+      allow create: if member() && request.resource.data.from == me()
+        && request.resource.data.users.size() == 2 && me() in request.resource.data.users
+        && request.resource.data.to in request.resource.data.users && str('text', 200);
+      allow delete: if member() && resource.data.from == me();
+    }
+
+    // 방명록·인사
+    match /guest/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.from == me() && str('text', 120);
+      allow delete: if member() && (resource.data.from == me() || resource.data.to == me() || isAdmin());
+    }
+
+    // 선물·농사 도움: 보낸 사람이 만들고, 받는 사람이 읽고 지움.
+    match /gifts/{id} {
+      allow read, delete: if member() && (resource.data.to == me() || resource.data.from == me());
+      allow create: if member() && (request.resource.data.from == me());
+    }
+    match /farmhelp/{id} {
+      allow read, delete: if member() && (resource.data.to == me() || resource.data.from == me());
+      allow create: if member() && request.resource.data.from == me();
+    }
+
+    // 기절 구조 신호: 누구나 보내고, 당사자만 읽고 지움.
+    match /rescues/{uid} {
+      allow read, delete: if member() && me() == uid;
+      allow create, update: if member();
+    }
+
+    // 공동 보스·낚시 대결: 접속한 단원 모두 함께 씀.
+    match /boss/{id} { allow read, write: if member(); }
+    match /duel/{id} { allow read, write: if member(); }
+
+    // 실시간 접속 정보(같은 방·파티)와 짧은 이벤트
+    match /rooms/{room}/peers/{uid} {
+      allow read: if member();
+      allow write: if member() && me() == uid;
+    }
+    match /rooms/{room}/events/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.from == me();
+      allow delete: if member() && resource.data.from == me();
+    }
+  }
+}

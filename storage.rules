@@ -1,0 +1,14 @@
+rules_version = '2';
+// PAD 이미지: 누구나 볼 수 있고, 로그인한 단원만 올릴 수 있으며, 올린 사람만 지울 수 있어요.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /pad/{id} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.size < 20 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|gif|webp)')
+        && request.resource.metadata.owner == request.auth.uid;
+      allow delete: if request.auth != null && resource.metadata.owner == request.auth.uid;
+    }
+  }
+}
