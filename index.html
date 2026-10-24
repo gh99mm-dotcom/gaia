@@ -515,13 +515,33 @@ b.no{color:var(--red)}
 .sendrow input{flex:1;min-width:0;background:var(--deep);color:var(--text);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:6px 8px;font:inherit}
 .empty{color:var(--dim);font-size:12px;text-align:center;margin:auto}
 
+/* join page: character creation */
+.joinpage{position:fixed;inset:0;z-index:55;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(28px,5vh) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%),rgba(6,7,13,.55)}
+body:has(#joinModal:not([hidden])) .wrap{display:none}
+.joinwrap{width:100%;max-width:640px;display:flex;flex-direction:column;gap:12px}
+.joinhead{display:flex;align-items:center;gap:14px}.joinhead h1{font-size:28px;line-height:1;text-shadow:2px 2px 0 var(--ink)}.joinhead .lbl{display:block;margin-top:6px}
+.joincard{padding:18px;display:flex;flex-direction:column;gap:16px}
+.joincard input#callsign{background:var(--deep);color:var(--text);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:9px 10px;font:inherit;font-size:16px}
+.jsec{display:flex;flex-direction:column;gap:7px}
+.jlook{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:12px}
+.jprev{background:radial-gradient(circle at 50% 70%,#1d2236 0 45%,transparent 46%);padding:4px}
+.jpicked{display:flex;flex-wrap:wrap;gap:5px;min-height:28px;align-items:center}
+.jpicked .ichip{gap:4px}.jpicked .ichip.hate{color:var(--red)}.jpicked .ichip.like{color:var(--pink)}
+.jgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;max-height:200px;overflow:auto;padding-right:2px}
+.jgrid .slot.like{box-shadow:inset 0 0 0 2px var(--pink)}.jgrid .slot.hate{box-shadow:inset 0 0 0 2px var(--red);opacity:.75}
+.jstats{display:flex;flex-direction:column;gap:5px}
+.jst{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--deep);border:2px solid var(--ink);padding:5px 8px}
+.jst b{font-family:var(--f-display);font-weight:400;font-size:15px}
+.jst .ctl{display:flex;align-items:center;gap:6px}.jst .ctl .abv{font-family:var(--f-pix);font-size:16px;color:var(--gold);min-width:24px;text-align:center}
+.jst .btn{padding:3px 9px;min-width:30px;justify-content:center}
+.joinfoot{justify-content:space-between;position:sticky;bottom:-18px;background:var(--panel);padding:10px 0 2px;border-top:2px dashed var(--line)}
 /* modal + toast */
 [hidden]{display:none!important}
 .modal{position:fixed;inset:0;background:rgba(4,2,15,.82);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
 .modal .px{max-width:360px;width:100%;padding:18px;display:flex;flex-direction:column;gap:11px}
 .modal h2{font-size:21px}
 .modal input{background:var(--deep);color:var(--text);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:8px;font:inherit;font-size:16px}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--gold);color:var(--ink);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:6px 12px;font-family:var(--f-display);font-size:13px;z-index:50;max-width:calc(100% - 32px)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--gold);color:var(--ink);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:6px 12px;font-family:var(--f-display);font-size:13px;z-index:70;max-width:calc(100% - 32px)}
 .note{font-size:12px;color:var(--mute);background:var(--deep);border:2px dashed var(--line);padding:8px 10px}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -587,15 +607,17 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <div class="modal" id="adminModal" hidden><div class="px infobox" id="adminBox" role="dialog" aria-label="운영자 도구"></div></div>
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <div class="modal" id="infoModal" hidden><div class="px infobox" id="infoBox" role="dialog" aria-label="내 정보"></div></div>
-<div class="modal" id="joinModal" hidden>
-  <form class="px" id="joinForm">
-    <span id="joinIc"></span>
-    <h2>개척단 합류</h2>
-    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영해요. 다른 단원들에게 보일 콜사인을 정해 주세요.</p>
-    <input id="callsign" maxlength="12" required placeholder="콜사인 (최대 12자)" aria-label="콜사인">
-    <button class="btn" type="submit">개척 시작</button>
-  </form>
-</div>
+<main class="joinpage" id="joinModal" hidden>
+  <div class="joinwrap">
+    <header class="joinhead"><span id="joinIc"></span><div><h1>개척단 합류</h1><span class="lbl">Crew registration · 단원 등록</span></div></header>
+    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영해요. 승선하기 전에 나를 소개해 주세요. 정한 내용은 다른 단원의 프로필 화면에 보여요.</p>
+    <form class="px joincard" id="joinForm">
+      <div class="jsec"><span class="lbl">Callsign · 콜사인</span><input id="callsign" maxlength="12" required autocomplete="off" placeholder="다른 단원에게 보일 이름 (최대 12자)" aria-label="콜사인"></div>
+      <div id="joinBody"></div>
+      <div class="row joinfoot"><span class="hint" id="joinLeft"></span><button class="btn" type="submit">개척 시작</button></div>
+    </form>
+  </div>
+</main>
 <div class="modal imgmodal" id="imgModal" hidden onclick="this.hidden=true"><img id="imgBig" alt="첨부 이미지 크게 보기"></div>
 <div class="toast" id="toast" hidden></div>
 <main class="authpage" id="authGate" hidden>
@@ -1221,7 +1243,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보내요. 지금 접속하지 않은 단원도 다음에 들어오면 받아요.</span>
    <div class="row" style="gap:5px">${others.map(([id,p])=>`<button class="qchip" data-act="admrescue" data-k="${id}">${esc(p.nick||'단원')} 기절 해제</button>`).join('')}<button class="btn sm ghost" data-act="admboss">심연 보스 교체</button><button class="btn sm ghost" data-act="admchat">최근 채팅 지우기</button></div></div>`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1% · 도주 +2%'],['end','지구력','최대 에너지 +2'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
-const ptsTotal=()=>5+(P.lvl-1)*3;
+const ptsTotal=()=>25+(P.lvl-1)*3;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
 function renderInfo(){
@@ -1230,7 +1252,8 @@ function renderInfo(){
   const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['던전 최고',`${P.deep||0}층`],['외계생명체',`${Object.keys(P.mdex||{}).length}/100`],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
   $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div><button class="btn sm ghost" data-act="infoclose" aria-label="닫기">닫기</button></div>
    <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
-   <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">레벨이 오를 때마다 3포인트를 받아요.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
+   <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받아요.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
+   ${tasteHTML(P)}
    <div class="info-sec"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></div>
    <div class="info-sec"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${t[1]}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</div>
    <div class="info-sec"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있어요</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></div>`;
@@ -2621,6 +2644,7 @@ function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
 function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${esc(titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
   ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보여요.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
+function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:12px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:12px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m)}
 const rolesNow=()=>mode==='online'?ROLES:(P.roles||{});
@@ -2649,6 +2673,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
   return`<div class="card profcard" id="profCard"><div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보여요.':'아직 한 줄 소개가 없어요.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
+   ${tasteHTML(p)}
    ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="rvisit" data-k="${k}">방 구경</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
 function socGuest(){const to=gbOf&&(gbOf===uid||PLAYERS[gbOf])?gbOf:uid,tp=whoP(to),list=GUEST.filter(g=>g.to===to),others=Object.entries(PLAYERS).filter(([id])=>id!==uid);
   return`<div class="row" style="gap:4px"><button class="qchip" data-act="gbopen" data-k="" aria-pressed="${to===uid}">내 방명록</button>${others.map(([id,p])=>`<button class="qchip" data-act="gbopen" data-k="${esc(id)}" aria-pressed="${to===id}">${esc(p.nick||'단원')}</button>`).join('')}</div>
@@ -2825,10 +2850,40 @@ Object.assign(A,SA,AA,{
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했어요.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했어요.`)}catch(e){if(!d.quiet)toast('복사하지 못했어요. 코드를 직접 알려 주세요: '+fmtCode(d.k))}}});
 ['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','rvisit','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
 document.addEventListener('keydown',e=>{if(tab!=='adv'||e.isComposing||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const n=+e.key;if(!(n>=1&&n<=9)||!P.adv||P.adv.done)return;const b=document.querySelectorAll('#stage .advopt')[n-1];if(b&&!b.disabled){e.preventDefault();b.click()}});
-function showJoin(){$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
+/* ───────── join page: character creation ───────── */
+const J_START=2,J_FREE=15,J_MAX=3;
+let J=null;
+const JCAT=[['crop','작물'],['dish','요리'],['fish','물고기'],['mat','재료']];
+const jItems=c=>ORDER.filter(id=>{const it=ITEMS[id];if(c==='dish')return!!it.dish;if(c==='fish')return!!it.fish;if(c==='mat')return it.type==='mat';return it.type==='food'&&!it.dish&&!it.fish&&id!=='drink'&&id!=='kit'});
+const jLeft=()=>J_START*ABIL.length+J_FREE-ABIL.reduce((a,[k])=>a+(J.as[k]||0),0);
+function jChips(list,kind){return list.length?list.map(id=>`<span class="ichip ${kind}">${iicon(id,1)}${esc(ITEMS[id].n)}<button type="button" class="pvx" data-act="junpick" data-k="${id}" aria-label="${esc(ITEMS[id].n)} 빼기">×</button></span>`).join(''):`<span class="hint">아직 고르지 않았어요.</span>`}
+function renderJoin(){if(!J)return;const b=$('#joinBody');if(!b)return;const prev={look:J.look},left=jLeft();
+  b.innerHTML=`<div class="jsec"><span class="lbl">Look · 내 모습</span><div class="jlook"><div class="jprev">${meImg(6,prev)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button type="button" class="sw" style="background:${col}" data-act="jlook" data-k="${k}" data-c="${col}" aria-pressed="${J.look[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">네온 색은 게임 안 옷장에서 살 수 있어요.</span></div></div></div>
+  <div class="jsec"><span class="lbl">Taste · 좋아하는 것 · 싫어하는 것 (각 ${J_MAX}개까지)</span>
+   <div class="jpicked"><b style="color:var(--pink);font-size:12px;margin-right:4px">♥ 좋아함</b>${jChips(J.likes,'like')}</div>
+   <div class="jpicked"><b style="color:var(--red);font-size:12px;margin-right:4px">✕ 싫어함</b>${jChips(J.hates,'hate')}</div>
+   <div class="row" style="gap:5px"><button type="button" class="qchip" data-act="jmode" data-k="like" aria-pressed="${J.mode==='like'}">♥ 좋아하는 것 고르기</button><button type="button" class="qchip" data-act="jmode" data-k="hate" aria-pressed="${J.mode==='hate'}">✕ 싫어하는 것 고르기</button></div>
+   <div class="dtabs" role="tablist">${JCAT.map(([k,n])=>`<button type="button" role="tab" aria-selected="${J.cat===k}" data-act="jcat" data-k="${k}">${n}</button>`).join('')}</div>
+   <div class="jgrid">${jItems(J.cat).map(id=>{const lk=J.likes.includes(id),ht=J.hates.includes(id);return`<button type="button" class="slot ${lk?'like':ht?'hate':''}" data-act="jpick" data-k="${id}" aria-pressed="${lk||ht}" title="${esc(ITEMS[id].n)}" aria-label="${esc(ITEMS[id].n)}">${iicon(id,2)}</button>`}).join('')}</div>
+   <span class="hint">아이콘을 누르면 위에서 고른 쪽(${J.mode==='like'?'좋아함':'싫어함'})에 담겨요. 한 번 더 누르면 빠져요.</span></div>
+  <div class="jsec"><div class="stat-row"><span class="lbl">Status · 스테이터스</span><b class="${left?'ptsgo':''}">남은 포인트 ${left}</b></div><div class="jstats">${ABIL.map(([k,n,d])=>`<div class="jst"><b>${n}</b><span class="hint">${d}</span><span class="ctl"><button type="button" class="btn sm ghost" data-act="jstat" data-k="${k}" data-d="-1" ${(J.as[k]||0)<=0?'disabled':''} aria-label="${n} 내리기">−</button><span class="abv">${J.as[k]||0}</span><button type="button" class="btn sm" data-act="jstat" data-k="${k}" data-d="1" ${left<=0?'disabled':''} aria-label="${n} 올리기">+</button></span></div>`).join('')}</div>
+   <div class="row" style="justify-content:space-between"><span class="hint">모두 ${J_START}씩 가지고 시작하고, 남은 ${J_FREE}포인트를 마음대로 나눠요. 남긴 포인트는 나중에 내 정보에서 쓸 수 있어요.</span><button type="button" class="qchip" data-act="jreset">처음대로</button></div></div>`;
+  $('#joinIc').innerHTML=meImg(4,prev);$('#joinLeft').textContent=left?`남은 스테이터스 ${left}포인트`:'준비 완료!'}
+function applyJoin(){if(!J)return;P.look=Object.assign({},J.look);P.likes=[...J.likes];P.hates=[...J.hates];P.as=Object.assign({},J.as);P.hp=maxHp();P.en=maxEn();J=null}
+const JA={
+ jlook(d){if(!J||!LOOKS[d.k]||!LOOKS[d.k].opts.some(o=>o[0]===d.c))return;J.look=Object.assign({},J.look,{[d.k]:d.c});renderJoin()},
+ jmode(d){if(J){J.mode=d.k==='hate'?'hate':'like';renderJoin()}},
+ jcat(d){if(J){J.cat=d.k;renderJoin()}},
+ jpick(d){if(!J||!ITEMS[d.k])return;const id=d.k;if(J.likes.includes(id)){J.likes=J.likes.filter(x=>x!==id)}else if(J.hates.includes(id)){J.hates=J.hates.filter(x=>x!==id)}else{const L=J.mode==='hate'?J.hates:J.likes;if(L.length>=J_MAX){toast(`${J.mode==='hate'?'싫어하는':'좋아하는'} 것은 ${J_MAX}개까지 고를 수 있어요.`);return}L.push(id)}renderJoin()},
+ junpick(d){if(!J)return;J.likes=J.likes.filter(x=>x!==d.k);J.hates=J.hates.filter(x=>x!==d.k);renderJoin()},
+ jstat(d){if(!J||!ABIL.some(a=>a[0]===d.k))return;const v=(J.as[d.k]||0)+(+d.d);if(v<0||(+d.d>0&&jLeft()<=0))return;J.as=Object.assign({},J.as,{[d.k]:v});renderJoin()},
+ jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
+};
+Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
+function showJoin(){J={look:lookOf(P),likes:[...(P.likes||[])],hates:[...(P.hates||[])],as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),mode:'like',cat:'crop'};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},180e3);
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;
-  if(P.joined&&P.nick!=='새 단원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}
+  if(P.joined&&P.nick!=='새 단원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
   $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했어요. 환영해 주세요!`);save();renderAll();setPresence()});
 
