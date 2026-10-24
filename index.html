@@ -564,7 +564,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <main class="joinpage" id="joinModal" hidden>
   <div class="joinwrap">
     <header class="joinhead"><span id="joinIc"></span><div><h1>개척단 합류</h1><span class="lbl">Crew registration · 단원 등록</span></div></header>
-    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영해요. 승선하기 전에 나를 소개해 주세요. 정한 내용은 다른 단원의 프로필 화면에 보여요.</p>
+    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다. 승선하기 전에 나를 소개해 주십시오. 정한 내용은 다른 단원의 프로필 화면에 보입니다.</p>
     <form class="px joincard" id="joinForm">
       <div class="jsec"><span class="lbl">Callsign · 콜사인</span><input id="callsign" maxlength="12" required autocomplete="off" placeholder="다른 단원에게 보일 이름 (최대 12자)" aria-label="콜사인"></div>
       <div id="joinBody"></div>
@@ -577,7 +577,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <main class="authpage" id="authGate" hidden>
   <div class="authwrap">
     <header class="authhead"><span id="authIc"></span><div><h1>별무리 개척단</h1><span class="lbl">Nebula outpost · Sector K-7</span></div></header>
-    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영해요. 초대장을 받은 단원만 승선할 수 있어요.</p>
+    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다. 초대장을 받은 단원만 승선할 수 있습니다.</p>
     <form class="px authcard" id="authForm" novalidate>
     <h2 id="authTitle">승선 인증</h2>
     <div class="dtabs" role="tablist"><button type="button" role="tab" data-auth="login" aria-selected="true">로그인</button><button type="button" role="tab" data-auth="signup" aria-selected="false">회원가입</button></div>
@@ -588,7 +588,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
     <input id="authCode" maxlength="9" autocapitalize="characters" spellcheck="false" placeholder="초대코드 (예: ABCD-2345)" aria-label="초대코드" hidden>
     <p class="hint" id="authMsg" role="status" style="margin:0;min-height:16px"></p>
     <button class="btn" type="submit" id="authGo">로그인</button>
-    <p class="hint" id="authNote" style="margin:0">초대장을 받은 사람만 가입할 수 있어요. 비밀번호를 잊으면 운영자(선장)에게 문의해 주세요.</p>
+    <p class="hint" id="authNote" style="margin:0">초대장을 받은 사람만 가입할 수 있습니다. 비밀번호를 잊으면 운영자(선장)에게 문의해 주십시오.</p>
   </form>
     <p class="hint authfoot">정거장 통신 · Firebase · 문의는 선장에게</p>
   </div>
@@ -613,9 +613,9 @@ const firebaseConfig={
   appId:"1:683810329861:web:71f75b7e78dbc96afc536c",
   measurementId:"G-9Y2JG9SVWE"
 };
-/* PAD 이미지(Storage)를 쓰지 않으려면 false로 바꾸세요. */
+/* PAD 이미지(Storage)를 쓰지 않으려면 false로 바꾸십시오. */
 const STORAGE_ON=true;
-/* 로그인 아이디는 내부적으로 아이디@ID_DOMAIN 형태의 계정으로 저장돼요. 운영자 아이디와 함께 firestore.rules의 ADMIN 값도 바꿔야 해요. */
+/* 로그인 아이디는 내부적으로 아이디@ID_DOMAIN 형태의 계정으로 저장됩니다. 운영자 아이디와 함께 firestore.rules의 ADMIN 값도 바꿔야 합니다. */
 const ID_DOMAIN='nebula-outpost.app',ADMIN_ID='gh99mm';
 const ID_RE=/^[a-z0-9_]{4,16}$/,idEmail=id=>id+'@'+ID_DOMAIN,normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 
@@ -685,8 +685,8 @@ addEventListener('pagehide',()=>ROOMS.forEach(r=>r.leave()));
 /* ---- assets: PAD images in Cloud Storage ---- */
 const ID_CH='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const newId=()=>Array.from(crypto.getRandomValues(new Uint8Array(20)),b=>ID_CH[b%62]).join('');
-const IMG_ERR={'storage/unauthorized':'Storage 규칙이 게시되지 않았거나 막혀 있어요.','storage/quota-exceeded':'이미지 저장 공간이 가득 찼어요.','storage/too-large-for-free':'이미지가 너무 커서 줄여도 저장할 수 없어요.','storage/invalid-format':'이미지를 읽을 수 없어요. PNG·JPG·GIF·WEBP만 돼요.','permission-denied':'파이어베이스 콘솔에 최신 firestore.rules를 다시 게시해 주세요.'};
-const imgErr=e=>{const raw=String(e&&e.code||'').replace(/^firestore\//,''),x=wrapErr(e);x.code=raw==='storage/too-large-for-free'?'too_large':x.code;x.message=(IMG_ERR[raw]||'이미지를 올리지 못했어요.')+(raw?` (${raw})`:'');return x};
+const IMG_ERR={'storage/unauthorized':'Storage 규칙이 게시되지 않았거나 막혀 있습니다.','storage/quota-exceeded':'이미지 저장 공간이 가득 찼습니다.','storage/too-large-for-free':'이미지가 너무 커서 줄여도 저장할 수 없습니다.','storage/invalid-format':'이미지를 읽을 수 없습니다. PNG·JPG·GIF·WEBP만 됩니다.','permission-denied':'파이어베이스 콘솔에 최신 firestore.rules를 다시 게시해 주십시오.'};
+const imgErr=e=>{const raw=String(e&&e.code||'').replace(/^firestore\//,''),x=wrapErr(e);x.code=raw==='storage/too-large-for-free'?'too_large':x.code;x.message=(IMG_ERR[raw]||'이미지를 올리지 못했습니다.')+(raw?` (${raw})`:'');return x};
 const assets={
   upload:async(blob,o)=>{const id=newId();
     if(IMG_MODE==='storage'){const type=(o&&o.type)||blob.type||'image/jpeg';try{await uploadBytes(sref(st,'pad/'+id),blob,{contentType:type,customMetadata:{owner:ME.uid}})}catch(e){throw imgErr(e)}IMGC[id]=stURL(id);return{id,url:IMGC[id],sizeBytes:blob.size,contentType:type}}
@@ -696,25 +696,25 @@ const assets={
 
 /* ---- auth gate: ID login, invite-only sign-up ---- */
 const $=s=>document.querySelector(s);let modeA='login',started=false,signupP=null;
-const AUTH_MSG={'auth/email-already-in-use':'이미 쓰고 있는 아이디예요. 다른 아이디를 골라 주세요.','auth/weak-password':'비밀번호는 6자 이상이어야 해요.','auth/invalid-credential':'아이디 또는 비밀번호가 맞지 않아요.','auth/wrong-password':'아이디 또는 비밀번호가 맞지 않아요.','auth/user-not-found':'가입되지 않은 아이디예요.','auth/invalid-email':'아이디는 영문 소문자·숫자·_ 4~16자로 적어 주세요.','auth/too-many-requests':'시도가 너무 많아요. 잠시 뒤 다시 해 주세요.','auth/network-request-failed':'네트워크에 연결할 수 없어요.','auth/operation-not-allowed':'파이어베이스 콘솔에서 이메일/비밀번호 로그인을 켜 주세요.'};
+const AUTH_MSG={'auth/email-already-in-use':'이미 쓰고 있는 아이디입니다. 다른 아이디를 골라 주십시오.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/invalid-credential':'아이디 또는 비밀번호가 맞지 않습니다.','auth/wrong-password':'아이디 또는 비밀번호가 맞지 않습니다.','auth/user-not-found':'가입되지 않은 아이디입니다.','auth/invalid-email':'아이디는 영문 소문자·숫자·_ 4~16자로 적어 주십시오.','auth/too-many-requests':'시도가 너무 많습니다. 잠시 뒤 다시 해 주십시오.','auth/network-request-failed':'네트워크에 연결할 수 없습니다.','auth/operation-not-allowed':'파이어베이스 콘솔에서 이메일/비밀번호 로그인을 켜 주십시오.'};
 const say=(m,bad)=>{const e=$('#authMsg');e.textContent=m||'';e.style.color=bad?'var(--red)':'var(--green)'};
 function setMode(m){modeA=m;document.querySelectorAll('[data-auth]').forEach(b=>b.setAttribute('aria-selected',b.dataset.auth===m));const su=m==='signup';$('#authPw2').hidden=!su;$('#authNick').hidden=!su;$('#authCode').hidden=!su;$('#authGo').textContent=su?'초대장으로 가입하기':'로그인';$('#authTitle').textContent=su?'신규 단원 등록':'승선 인증';$('#authPw').autocomplete=su?'new-password':'current-password';say('')}
 document.querySelectorAll('[data-auth]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.auth)));
 $('#authCode').addEventListener('input',e=>{const c=normCode(e.target.value).slice(0,8);e.target.value=c.length>4?c.slice(0,4)+'-'+c.slice(4):c});
 async function signup(id,pw,nick,code){
   const admin=id===ADMIN_ID;
-  if(!admin){if(code.length!==8)throw{msg:'초대코드 8자리를 적어 주세요.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'초대코드가 올바르지 않거나 이미 사용됐어요.'}}
+  if(!admin){if(code.length!==8)throw{msg:'초대코드 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'초대코드가 올바르지 않거나 이미 사용됐습니다.'}}
   window.__fbNick=nick;const c=await createUserWithEmailAndPassword(auth,idEmail(id),pw);
   try{const bt=writeBatch(fs);bt.set(doc(fs,'members',c.user.uid),{id,code:admin?'':code,at:Date.now()});if(!admin)bt.delete(doc(fs,'invites',code));await bt.commit()}
-  catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'초대코드가 방금 다른 사람에게 사용됐어요. 운영자에게 새 초대장을 받아 주세요.'}}
+  catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'초대코드가 방금 다른 사람에게 사용됐습니다. 운영자에게 새 초대장을 받아 주십시오.'}}
   try{await updateProfile(c.user,{displayName:nick})}catch(e){}}
 $('#authForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('#authId').value.trim().toLowerCase(),pw=$('#authPw').value,btn=$('#authGo');
-  if(!ID_RE.test(id)){say('아이디는 영문 소문자·숫자·_ 4~16자로 적어 주세요.',1);return}if(!pw){say('비밀번호를 적어 주세요.',1);return}
+  if(!ID_RE.test(id)){say('아이디는 영문 소문자·숫자·_ 4~16자로 적어 주십시오.',1);return}if(!pw){say('비밀번호를 적어 주십시오.',1);return}
   btn.disabled=true;
   if(modeA==='signup'){const nk=$('#authNick').value.trim().slice(0,12),code=normCode($('#authCode').value);
-    if(pw.length<6)say('비밀번호는 6자 이상이어야 해요.',1);else if(pw!==$('#authPw2').value)say('비밀번호 확인이 달라요.',1);else if(!nk)say('콜사인을 적어 주세요.',1);
-    else{say('가입하는 중…');signupP=signup(id,pw,nk,code);try{await signupP}catch(x){say(x.msg||AUTH_MSG[x.code]||'가입하지 못했어요. ('+(x.code||'오류')+')',1)}signupP=null}}
-  else{say('로그인하는 중…');try{await signInWithEmailAndPassword(auth,idEmail(id),pw)}catch(x){say(AUTH_MSG[x.code]||'로그인하지 못했어요. ('+(x.code||'오류')+')',1)}}
+    if(pw.length<6)say('비밀번호는 6자 이상이어야 합니다.',1);else if(pw!==$('#authPw2').value)say('비밀번호 확인이 다릅니다.',1);else if(!nk)say('콜사인을 적어 주십시오.',1);
+    else{say('가입하는 중…');signupP=signup(id,pw,nk,code);try{await signupP}catch(x){say(x.msg||AUTH_MSG[x.code]||'가입하지 못했습니다. ('+(x.code||'오류')+')',1)}signupP=null}}
+  else{say('로그인하는 중…');try{await signInWithEmailAndPassword(auth,idEmail(id),pw)}catch(x){say(AUTH_MSG[x.code]||'로그인하지 못했습니다. ('+(x.code||'오류')+')',1)}}
   btn.disabled=false});
 window.__fbLogout=async()=>{await Promise.all([...ROOMS].map(r=>r.leave()));await signOut(auth);location.reload()};
 
@@ -726,7 +726,7 @@ onAuthStateChanged(auth,async u=>{
   const admin=u.email===idEmail(ADMIN_ID);
   let member=false;try{member=(await getDoc(doc(fs,'members',u.uid))).exists()}catch(e){}
   if(!member&&admin){try{await setDoc(doc(fs,'members',u.uid),{id:ADMIN_ID,code:'',at:Date.now()});member=true}catch(e){}}
-  if(!member){$('#authGate').hidden=false;say('초대장으로 가입이 끝나지 않았거나 운영자가 내보낸 계정이에요. 운영자에게 초대장을 받아 다시 가입해 주세요.',1);await signOut(auth);return}
+  if(!member){$('#authGate').hidden=false;say('초대장으로 가입이 끝나지 않았거나 운영자가 내보낸 계정입니다. 운영자에게 초대장을 받아 다시 가입해 주십시오.',1);await signOut(auth);return}
   $('#authGate').hidden=true;started=true;ME=u;if(!window.__fbNick)window.__fbNick=u.displayName||'';
   const lb=$('#logoutBtn');if(lb){lb.hidden=false;lb.title=(u.email||'').split('@')[0]}
   const lobby=Object.assign(makeRoom('lobby'),{join:async n=>makeRoom(String(n).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,80))});
@@ -807,7 +807,7 @@ function img(grid,tint,scale,cls='',po){const s=spr(grid,tint,po);return`<img cl
 TPL.cropCarrot=PL.carrot;TPL.cropCorn=PL.corn;TPL.cropMelon=PL.melon;
 const ITEMS={
  seed_pot:{n:'별감자 씨앗',ic:'seed',t:'#c88a2a',type:'seed',grow:90e3,crop:'pot',d:'90초면 자라는 튼튼한 덩이줄기 씨앗.'},
- seed_berry:{n:'네온베리 씨앗',ic:'seed',t:'#ff5fb8',type:'seed',grow:180e3,crop:'berry',d:'어둠 속에서 빛나는 열매가 열려요. 3분.'},
+ seed_berry:{n:'네온베리 씨앗',ic:'seed',t:'#ff5fb8',type:'seed',grow:180e3,crop:'berry',d:'어둠 속에서 빛나는 열매가 열립니다. 3분.'},
  seed_pump:{n:'월광호박 씨앗',ic:'seed',t:'#9b6bff',type:'seed',grow:360e3,crop:'pump',d:'달빛을 머금고 크는 호박. 6분.'},
  seed_carrot:{n:'별빛 당근 씨앗',ic:'seed',t:'#e0904a',type:'seed',grow:240e3,crop:'carrot',d:'별빛을 받아 주황빛으로 자라는 당근. 4분.'},
  seed_corn:{n:'유성 옥수수 씨앗',ic:'seed',t:'#e2d39a',type:'seed',grow:300e3,crop:'corn',d:'유성처럼 반짝이는 알갱이가 박힌 옥수수. 5분.'},
@@ -820,7 +820,7 @@ const ITEMS={
  melon:{n:'은하 수박',ic:'cropMelon',t:'#5fc8a8',type:'food',hp:60,en:34},
  moss:{n:'성운 이끼',ic:'goo',t:'#7dff9b',type:'food',hp:8,en:2},
  ore:{n:'운석 파편',ic:'rock',t:'#a9a4c8',type:'mat',d:'무기 강화의 기본 재료.'},
- crystal:{n:'은하 결정',ic:'gem',t:'#5fd8ff',type:'mat',d:'에너지를 품은 결정. 무기 강화에 써요.'},
+ crystal:{n:'은하 결정',ic:'gem',t:'#5fd8ff',type:'mat',d:'에너지를 품은 결정. 무기 강화에 씁니다.'},
  dark:{n:'암흑물질 조각',ic:'gem',t:'#7a4ff0',type:'mat',d:'무게가 느껴지지 않는 검은 조각. 상급 강화 재료.'},
  drink:{n:'성운 에너지 음료',ic:'bottle',t:'#8aa9bd',type:'food',hp:0,en:20},
  kit:{n:'응급 수리 키트',ic:'kit',t:'#a8626b',type:'food',hp:40,en:0},
@@ -843,8 +843,8 @@ const GX={
 };
 const SITE_NAME={crater:'크레이터 평원',cave:'결정 동굴',marsh:'이끼 습지',wreck:'잔해 지대',geyser:'얼음 간헐천',canyon:'붉은 협곡'};
 for(const [site,g] of Object.entries(GX)){
-  g.mats.forEach(([id,n,ic,t,sv,d])=>ITEMS[id]={n,ic,t,type:'mat',sv,d:`${d}. ${SITE_NAME[site]}에서만 나와요.`});
-  g.crops.forEach(([id,n,pl,t,grow,hp,en,sv])=>{ITEMS[id]={n,ic:pl==='berry'?'berry':'veg',t,type:'food',hp,en,sv,pl};ITEMS['seed_'+id]={n:n+' 씨앗',ic:'seed',t,type:'seed',grow,crop:id,sv:Math.round(sv/3),d:`${Math.round(grow/60e3*10)/10}분이면 자라요. ${SITE_NAME[site]} 채집에서만 얻을 수 있어요.`}});
+  g.mats.forEach(([id,n,ic,t,sv,d])=>ITEMS[id]={n,ic,t,type:'mat',sv,d:`${d}. ${SITE_NAME[site]}에서만 나옵니다.`});
+  g.crops.forEach(([id,n,pl,t,grow,hp,en,sv])=>{ITEMS[id]={n,ic:pl==='berry'?'berry':'veg',t,type:'food',hp,en,sv,pl};ITEMS['seed_'+id]={n:n+' 씨앗',ic:'seed',t,type:'seed',grow,crop:id,sv:Math.round(sv/3),d:`${Math.round(grow/60e3*10)/10}분이면 자랍니다. ${SITE_NAME[site]} 채집에서만 얻을 수 있습니다.`}});
 }
 const FT={c:{n:'일반',hp:[6,14],en:[2,5],xp:4},r:{n:'레어',hp:[18,28],en:[6,10],xp:10},u:{n:'유니크',hp:[35,55],en:[12,20],xp:20},l:{n:'레전더리',hp:[100,140],en:[35,45],xp:45}};
 const FTINT=['#8aa9bd','#a99a74','#93707f','#7f9c85','#9a8fc0','#b0906f','#c4c7d4','#6c8fa8','#a8626b','#bfae80','#7a6fa0','#5f8f8a'];
@@ -922,7 +922,7 @@ function genFish(seed,fam,tier){let r=7;for(const c of seed)r=(r*31+c.charCodeAt
 Object.assign(TPL,{"dSlice": ["................", "................", ".......kk.......", "......kppk......", "......kppk......", ".....kphppk.....", "....kpphpppk....", "...kpppkppppk...", "..kppppppppppk..", "..kppppppkpppk..", ".kppppkpppkpppk.", "kpppppppkppppppk", ".kggggggggggggk.", ".kGGGGGGGGGGGGk.", "..kkkkkkkkkkkk..", "................"], "dSalad": ["................", "................", "................", ".......k.k......", "....kkkhkakk....", "..kkgaggggggkk..", ".kGGGGGGaGGaGGk.", ".kggggaggghgggk.", "kggggggggggggggk", "kwuuuuuuuuuuuuwk", ".kwwwwwwwwwwwwk.", "..kwwwwwwwwwwk..", "...kksssssskk...", ".....kssssk.....", "......kkkk......", "................"], "dPie": ["................", "................", "......k..k......", ".....kukkuk.....", "......kukkuk....", "..kkkkkkkkkkkk..", ".kyYyyYyyYyyYyk.", ".kyyyYyyYyyYyyk.", "kyaaaaaaaaaaaayk", "kyabaabaabaabayk", "kyyyyyyyyyyyyyyk", "kssssssssssssssk", "kSSSSSSSSSSSSSSk", ".kkkkkkkkkkkkkk.", "................", "................"], "dCup": [".........krrk...", ".........krk....", "...kkkkkkkrkk...", "..khhhhhhhrrhk..", "..khhhhhhhrhhk..", "..kaahaaaaaaak..", "..kaaaaaaaaaak..", "..kaahaaaaaaak..", "...kahaaaaaak...", "...kaaaaaaaak...", "...kahaaaaaak...", "....khaaaaak....", "....kaaaaaak....", "....kaaaaaak....", ".....kkkkkk.....", "................"], "dSkewer": ["..............ky", ".............kyk", "..........kkkyk.", ".........khaak..", ".........kaaak..", ".......kkkaabk..", "......khaakkk...", "......kaaak.....", "....kkkaabk.....", "...khaakkk......", "...kaaak........", "...kaabk........", "..kykkk.........", ".kyk............", "kyk.............", "yk.............."]});
 const COOK=[
  {id:'d_potRoast',n:'별감자 구이',ic:'dPlate',t:'#c9a06a',need:[['pot',2]],sec:20,hp:55,en:8,xp:6,d:'노릇하게 구운 별감자. 가장 쉬운 요리.'},
- {id:'d_jam',n:'네온베리 잼',ic:'dJar',t:'#ff5fb8',need:[['berry',3],['moss',1]],sec:30,hp:10,en:45,xp:8,d:'달콤해서 기운이 확 나요.'},
+ {id:'d_jam',n:'네온베리 잼',ic:'dJar',t:'#ff5fb8',need:[['berry',3],['moss',1]],sec:30,hp:10,en:45,xp:8,d:'달콤해서 기운이 확 납니다.'},
  {id:'d_melonSlice',n:'은하 수박 조각',ic:'dSlice',t:'#5fc8a8',need:[['melon',1]],sec:20,hp:40,en:50,xp:6,d:'시원하게 썬 수박 한 조각.'},
  {id:'d_carrotJuice',n:'별빛 당근 주스',ic:'dCup',t:'#e0904a',need:[['carrot',2],['berry',1]],sec:25,hp:15,en:40,xp:7,d:'당근과 네온베리를 같이 간 주스.'},
  {id:'d_lotusTea',n:'안개 연꽃차',ic:'dCup',t:'#c48aa4',need:[['mistLotus',1],['moss',1]],sec:30,hp:10,en:55,xp:8,d:'안개 냄새가 은은하게 나는 차.'},
@@ -938,9 +938,9 @@ const COOK=[
  {id:'d_sorbet',n:'은하 수박 셔벗',ic:'dIce',t:'#5fc8a8',need:[['melon',1],['frostCrystal',1]],sec:60,hp:20,en:70,xp:16,buff:{def:4},bmin:10,d:'서리 결정으로 얼린 수박 셔벗.'},
  {id:'d_ice',n:'서리딸기 빙수',ic:'dIce',t:'#c9cbd8',need:[['frostBerry',2],['frostCrystal',1]],sec:60,hp:20,en:60,xp:16,buff:{def:5},bmin:10,d:'녹지 않는 서리로 간 빙수.'},
  {id:'d_cactusPie',n:'붉은 선인장 파이',ic:'dPie',t:'#a8626b',need:[['redCactus',1],['corn',1],['berry',2]],sec:90,hp:130,en:40,xp:20,buff:{atk:4},bmin:8,d:'새콤달콤한 선인장 열매 파이.'},
- {id:'d_stew',n:'협곡 고추 스튜',ic:'dBowl',t:'#b0603a',need:[['canyonPepper',2],['dustPot',1],['fish:r',1]],sec:90,hp:140,en:36,xp:20,buff:{atk:6},bmin:10,d:'먹으면 속이 뜨거워져요.'},
- {id:'d_curry',n:'수정콩 카레',ic:'dBowl',t:'#c9a06a',need:[['crystalBean',2],['dustPot',1],['carrot',1],['canyonPepper',1]],sec:120,hp:150,en:45,xp:26,buff:{atk:5,def:3},bmin:10,d:'매콤한 향이 조리실 가득 퍼져요.'},
- {id:'d_feast',n:'성운 정식',ic:'dTray',t:'#bfae80',need:[['fish:u',1],['pump',1],['mistLotus',1],['crystalBean',1]],sec:180,hp:999,en:999,xp:40,buff:{atk:10,def:6},bmin:15,d:'개척단 최고의 한 상. 체력과 에너지가 가득 차요.'},
+ {id:'d_stew',n:'협곡 고추 스튜',ic:'dBowl',t:'#b0603a',need:[['canyonPepper',2],['dustPot',1],['fish:r',1]],sec:90,hp:140,en:36,xp:20,buff:{atk:6},bmin:10,d:'먹으면 속이 뜨거워집니다.'},
+ {id:'d_curry',n:'수정콩 카레',ic:'dBowl',t:'#c9a06a',need:[['crystalBean',2],['dustPot',1],['carrot',1],['canyonPepper',1]],sec:120,hp:150,en:45,xp:26,buff:{atk:5,def:3},bmin:10,d:'매콤한 향이 조리실 가득 퍼집니다.'},
+ {id:'d_feast',n:'성운 정식',ic:'dTray',t:'#bfae80',need:[['fish:u',1],['pump',1],['mistLotus',1],['crystalBean',1]],sec:180,hp:999,en:999,xp:40,buff:{atk:10,def:6},bmin:15,d:'개척단 최고의 한 상. 체력과 에너지가 가득 찹니다.'},
 ];
 COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}});
 COOK.forEach(c=>{const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf}});
@@ -1024,11 +1024,11 @@ Object.assign(TPL,{wArmor:["................", "...kkk....kkk...", "..khhak..kah
 const GF=k=>{let v=0;const g=P.gear||{};for(const s2 in g){const f=craftById(g[s2]);if(f&&f.fx[k])v+=f.fx[k]}const w=P.wpn&&wpnById(P.wpn);if(w&&w.fx[k])v+=w.fx[k];return v};
 const maxHp=()=>60+P.lvl*12+(P.job==='guard'?20:0)+AS('vit')*8+GF('hp'), maxEn=()=>30+P.lvl*2+AS('end')*2+GF('en'), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='fighter'?1.15:1)), def=()=>Math.floor(P.lvl*1.5)+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='guard'?5:0)+GF('def')+BUFF('def'), need=l=>60*l+12*l*l;
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
-function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났어요. 음식을 먹거나 잠시 쉬세요.');return false}if(P.en<n){toast(`에너지가 부족해요 (필요 ${n})`);return false}P.en-=n;return true}
+function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났습니다. 음식을 먹거나 잠시 쉬십시오.');return false}if(P.en<n){toast(`에너지가 부족합니다 (필요 ${n})`);return false}P.en-=n;return true}
 function add(id,n=1){P.inv[id]=(P.inv[id]||0)+n}
 function take(id,n=1){if((P.inv[id]||0)<n)return false;P.inv[id]-=n;if(!P.inv[id])delete P.inv[id];return true}
 const MAX_LV=100;
-function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했어요.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
+function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
 function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.min(maxEn(),Math.max(0,P.en+(en||0)))}
 
 /* cooking logic */
@@ -1048,27 +1048,27 @@ function renderCook(){const el=$('#cook');if(!el)return;const c=COOK.find(x=>x.i
   const dishes=COOK.filter(x=>P.inv[x.id]);const bf=P.buff&&now<P.buff.until?P.buff:null;
   el.innerHTML=`<div class="cook-h"><span class="cookpot ${busy&&!done?'on':''}">${img(TPL.dPot,null,2)}</span><div style="min-width:0"><b class="cook-t">요리</b><span class="lbl">Galley · 조리실</span></div></div>
   ${bf?`<div class="cbuff">${iicon(bf.id,1)}<span>${Object.entries(bf.fx).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' · ')}</span><b id="buffT">${fmtClock(bf.until-now)}</b></div>`:''}
-  ${busy?`<div class="card cooking"><div class="crow">${iicon(cur.id,2)}<div style="min-width:0;flex:1"><b>${esc(cur.n)}</b><span class="hint" id="cookT">${done?'완성됐어요!':'조리 중 · '+fmtClock(left)}</span></div></div><div class="bar"><i id="cookB" style="--c:var(--gold);width:${done?100:Math.round((1-left/(cur.sec*1e3))*100)}%"></i></div>${done?`<button class="btn gold sm" data-act="cookdone">꺼내기</button>`:''}</div>`:
+  ${busy?`<div class="card cooking"><div class="crow">${iicon(cur.id,2)}<div style="min-width:0;flex:1"><b>${esc(cur.n)}</b><span class="hint" id="cookT">${done?'완성됐습니다!':'조리 중 · '+fmtClock(left)}</span></div></div><div class="bar"><i id="cookB" style="--c:var(--gold);width:${done?100:Math.round((1-left/(cur.sec*1e3))*100)}%"></i></div>${done?`<button class="btn gold sm" data-act="cookdone">꺼내기</button>`:''}</div>`:
   `<div class="rtiles" role="group" aria-label="레시피">${COOK.map(x=>`<button type="button" class="rtile ${canCook(x)?'ok':'no'}" data-act="cooksel" data-k="${x.id}" aria-pressed="${x.id===c.id}" title="${esc(x.n)}" aria-label="${esc(x.n)}">${iicon(x.id,1.5)}</button>`).join('')}</div>
   <div class="card csel"><b>${esc(c.n)}</b><span class="hint">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')} ${c.bmin}분`:''}</span>
    <div class="cneed">${c.need.map(([id,n])=>ingChip(id,n)).join('')}</div>
    <button class="btn sm" data-act="cook" ${canCook(c)?'':'disabled'}>요리하기 · ${c.sec<60?c.sec+'초':Math.round(c.sec/60)+'분'}</button></div>`}
   ${dishes.length?`<div class="dlist">${dishes.map(x=>`<div class="drow">${iicon(x.id,1)}<span>${esc(x.n)} ×${P.inv[x.id]}</span><button class="btn ghost sm" data-act="use" data-id="${x.id}">먹기</button></div>`).join('')}</div>`:''}`}
 function tickCook(){const ck=P.cook;if(P.buff&&Date.now()>=P.buff.until){P.buff=null;log('요리 효과가 사라졌다.','');save();renderPilot();return}const bt=$('#buffT');if(bt&&P.buff)bt.textContent=fmtClock(P.buff.until-Date.now());if(!ck)return;const cur=COOK.find(x=>x.id===ck.id);if(!cur)return;const left=ck.end-Date.now();
-  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${cur.n} 완성! 조리실에서 꺼내 주세요.`,'good');save();renderCook();return}
+  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${cur.n} 완성! 조리실에서 꺼내 주십시오.`,'good');save();renderCook();return}
   if(left>0){const t1=$('#cookT'),b=$('#cookB');if(t1)t1.textContent='조리 중 · '+fmtClock(left);if(b)b.style.width=Math.round((1-left/(cur.sec*1e3))*100)+'%'}}
 
 /* ───────── admin: crew management ───────── */
 let admDel=null;
 function agoText(t){if(!t)return'기록 없음';const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금 전';if(m<60)return m+'분 전';const h=Math.floor(m/60);if(h<24)return h+'시간 전';const d=Math.floor(h/24);return d+'일 '+(h%24)+'시간 전'}
-function charDeleted(){clearTimeout(saveT);dirty=false;const nick=P.nick;P=newPlayer(nick||'단원');P._fresh=1;toast('운영자가 내 캐릭터를 삭제했어요. 새로 시작해요.');log('운영자에 의해 캐릭터가 삭제되어 처음부터 다시 시작한다.','bad');renderAll();showJoin()}
-function crewAdminHTML(){if(mode!=='online')return`<div class="info-sec"><span class="lbl">Crew · 단원 관리</span><span class="hint">공유된 페이지에서 열면 다른 단원의 접속 기록과 삭제 기능이 여기에 보여요.</span></div>`;
+function charDeleted(){clearTimeout(saveT);dirty=false;const nick=P.nick;P=newPlayer(nick||'단원');P._fresh=1;toast('운영자가 내 캐릭터를 삭제했습니다. 새로 시작합니다.');log('운영자에 의해 캐릭터가 삭제되어 처음부터 다시 시작한다.','bad');renderAll();showJoin()}
+function crewAdminHTML(){if(mode!=='online')return`<div class="info-sec"><span class="lbl">Crew · 단원 관리</span><span class="hint">공유된 페이지에서 열면 다른 단원의 접속 기록과 삭제 기능이 여기에 보입니다.</span></div>`;
   const on=new Set(PEERS.map(p=>p.presence&&p.presence.uid).filter(Boolean));
   const rows=Object.entries(PLAYERS).filter(([id])=>id!==uid).map(([id,p])=>({id,p,on:on.has(id),seen:p.seen||0})).sort((a,b)=>(b.on-a.on)||(b.seen-a.seen));
-  return`<div class="info-sec"><span class="lbl">Crew · 단원 관리 ${rows.length}명</span>${rows.length?`<div class="fblist">${rows.map(({id,p,on:o,seen})=>`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')} <span class="lv">LV.${p.lvl||1}</span></b><span class="hint" style="color:${o?'var(--green)':'var(--mute)'}">${o?'● 접속 중':'오프라인 · '+agoText(seen)}</span></div><span class="hint">${seen?'마지막 활동 '+fbTime(seen):'마지막 활동 기록 없음 (이번 업데이트 뒤 접속하면 기록돼요)'} · ${(p.cr||0).toLocaleString()} CR</span><div class="row" style="justify-content:flex-end;gap:5px">${admDel===id?`<span class="hint" style="color:var(--red)">정말 삭제할까요? 되돌릴 수 없어요.</span><button class="btn sm ghost" data-act="admdelno">취소</button><button class="btn sm" data-act="admdelyes" data-k="${esc(id)}">삭제</button>`:`<button class="btn sm ghost" data-act="admdel" data-k="${esc(id)}">캐릭터 삭제</button>`}</div></div>`).join('')}</div>`:'<span class="hint">아직 다른 단원이 없어요.</span>'}</div>`}
+  return`<div class="info-sec"><span class="lbl">Crew · 단원 관리 ${rows.length}명</span>${rows.length?`<div class="fblist">${rows.map(({id,p,on:o,seen})=>`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')} <span class="lv">LV.${p.lvl||1}</span></b><span class="hint" style="color:${o?'var(--green)':'var(--mute)'}">${o?'● 접속 중':'오프라인 · '+agoText(seen)}</span></div><span class="hint">${seen?'마지막 활동 '+fbTime(seen):'마지막 활동 기록 없음 (이번 업데이트 뒤 접속하면 기록됩니다)'} · ${(p.cr||0).toLocaleString()} CR</span><div class="row" style="justify-content:flex-end;gap:5px">${admDel===id?`<span class="hint" style="color:var(--red)">정말 삭제하시겠습니까? 되돌릴 수 없습니다.</span><button class="btn sm ghost" data-act="admdelno">취소</button><button class="btn sm" data-act="admdelyes" data-k="${esc(id)}">삭제</button>`:`<button class="btn sm ghost" data-act="admdel" data-k="${esc(id)}">캐릭터 삭제</button>`}</div></div>`).join('')}</div>`:'<span class="hint">아직 다른 단원이 없습니다.</span>'}</div>`}
 /* ───────── admin credit grants ───────── */
 function claimGrant(id,g){if(!g||!(+g.cr>0))return;const got=P.gr||[];if(got.includes(id))return;P.gr=[...got,id].slice(-80);if((+g.at||0)<(P.joined||0)){save();return}
-  const cr=Math.min(100000,Math.floor(+g.cr));P.cr=(P.cr||0)+cr;log(`운영자 선물 · ${String(g.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');toast(`운영자 선물: ${cr.toLocaleString()} CR을 받았어요!`);sfxCoin();commit()}
+  const cr=Math.min(100000,Math.floor(+g.cr));P.cr=(P.cr||0)+cr;log(`운영자 선물 · ${String(g.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');toast(`운영자 선물: ${cr.toLocaleString()} CR을 받았습니다!`);sfxCoin();commit()}
 /* ───────── suggestion box ───────── */
 const ENV=["kkkkkkkkkk","kuuuuuuuuk","kkuuuuuukk","kukkuukkuk","kuuukkuuuk","kuuuuuuuuk","kkkkkkkkkk"];
 let FB=[];
@@ -1078,19 +1078,19 @@ function updFbBadge(){const b=$('#adminBtn');if(!b)return;const n=fbItems().filt
 function fbTime(t){const d=new Date(t);return`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
 let mySugg=[];
 async function loadMySugg(){if(mode==='online'&&db&&uid){try{const sn=await db.doc('feedback/'+uid).get();mySugg=sn.exists?[...(sn.data().list||[])]:[]}catch(e){mySugg=[]}}else mySugg=[...(P.sugg||[])];renderSugg()}
-function renderSugg(){const box=$('#suggBox');if(!box)return;box.innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">SUGGESTION · 건의함</span><h2>운영자에게 건의하기</h2><span class="hint">불편한 점, 바라는 기능, 버그를 적어 주세요. 운영자만 읽을 수 있어요.</span></div><button class="btn sm ghost" data-act="suggclose">닫기</button></div>
-  <textarea id="suggIn" class="suggta" maxlength="300" placeholder="예) 낚시 대결에 시간 제한이 있으면 좋겠어요" aria-label="건의 내용"></textarea>
+function renderSugg(){const box=$('#suggBox');if(!box)return;box.innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">SUGGESTION · 건의함</span><h2>운영자에게 건의하기</h2><span class="hint">불편한 점, 바라는 기능, 버그를 적어 주십시오. 운영자만 읽을 수 있습니다.</span></div><button class="btn sm ghost" data-act="suggclose">닫기</button></div>
+  <textarea id="suggIn" class="suggta" maxlength="300" placeholder="예) 낚시 대결에 시간 제한이 있으면 좋겠습니다" aria-label="건의 내용"></textarea>
   <div class="row" style="justify-content:space-between"><span class="hint">최대 300자</span><button class="btn sm" data-act="suggsend">보내기</button></div>
   ${mySugg.length?`<span class="lbl">Sent · 내가 보낸 건의</span><div class="fblist">${mySugg.slice().reverse().map(it=>`<div class="fbitem"><span class="hint">${fbTime(it.at)}</span><p>${esc(it.text)}</p></div>`).join('')}</div>`:''}`}
-function fbAdminHTML(){const items=fbItems();return`<div class="info-sec"><span class="lbl">Suggestions · 건의함 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>fbSeen()?' · 새 건의':''}</span></div><p>${esc(it.text)}</p><div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div></div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없어요.</span>'}</div>`}
+function fbAdminHTML(){const items=fbItems();return`<div class="info-sec"><span class="lbl">Suggestions · 건의함 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>fbSeen()?' · 새 건의':''}</span></div><p>${esc(it.text)}</p><div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div></div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없습니다.</span>'}</div>`}
 let INV=[];const fmtCode=c=>String(c).slice(0,4)+'-'+String(c).slice(4);
-function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div class="info-sec"><span class="lbl">Invites · 초대장 · 남은 ${INV.length}장</span><span class="hint">초대장 한 장으로 한 명만 가입할 수 있고, 가입에 쓰이면 자동으로 사라져요.</span>
+function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div class="info-sec"><span class="lbl">Invites · 초대장 · 남은 ${INV.length}장</span><span class="hint">초대장 한 장으로 한 명만 가입할 수 있고, 가입에 쓰이면 자동으로 사라집니다.</span>
   <div class="row" style="gap:6px"><input id="invMemo" class="sel" maxlength="20" placeholder="누구에게 줄지 메모 (선택)" style="flex:1;min-width:140px"><button class="btn sm gold" data-act="invnew">초대장 발급</button></div>
-  ${INV.length?`<div class="fblist">${INV.map(v=>`<div class="fbitem"><div class="row"><b class="invcode">${fmtCode(v.id)}</b><span class="hint">${fbTime(v.at||0)}</span></div>${v.memo?`<span class="hint">${esc(v.memo)}</span>`:''}<div class="row" style="justify-content:flex-end;gap:5px"><button class="btn sm alt" data-act="invcopy" data-k="${esc(v.id)}">안내문 복사</button><button class="btn sm ghost" data-act="invdel" data-k="${esc(v.id)}">취소</button></div></div>`).join('')}</div>`:'<span class="hint">아직 쓰지 않은 초대장이 없어요.</span>'}</div>`}
+  ${INV.length?`<div class="fblist">${INV.map(v=>`<div class="fbitem"><div class="row"><b class="invcode">${fmtCode(v.id)}</b><span class="hint">${fbTime(v.at||0)}</span></div>${v.memo?`<span class="hint">${esc(v.memo)}</span>`:''}<div class="row" style="justify-content:flex-end;gap:5px"><button class="btn sm alt" data-act="invcopy" data-k="${esc(v.id)}">안내문 복사</button><button class="btn sm ghost" data-act="invdel" data-k="${esc(v.id)}">취소</button></div></div>`).join('')}</div>`:'<span class="hint">아직 쓰지 않은 초대장이 없습니다.</span>'}</div>`}
 function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',invHTML()+crewAdminHTML()+fbAdminHTML())}
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
-const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 원정에서 재료가 더 자주 나와요'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 정수기 충전 30분'}};
+const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 원정에서 재료가 더 자주 나옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 정수기 충전 30분'}};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan]];
 const lifeLv=xp=>1+Math.floor(Math.sqrt((xp||0)/25));
 const lifeNext=l=>25*l*l;
@@ -1134,13 +1134,13 @@ const TITLES=[
 const st=k=>(P.st&&P.st[k])||0;
 let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
 function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==uid);const opts=ORDER.map(id=>`<option value="${id}">${esc(ITEMS[id].n)}</option>`).join('');
-  $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구예요.</span></div><button class="btn sm ghost" data-act="adminclose">닫기</button></div>
+  $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구입니다.</span></div><button class="btn sm ghost" data-act="adminclose">닫기</button></div>
   <div class="info-sec"><span class="lbl">Me · 나에게</span><div class="row" style="gap:5px">
    <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 신호 가득</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 원정 즉시 완료</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
    <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button></div></div>
-  <div class="info-sec"><span class="lbl">Give · 아이템 지급</span><div class="row" style="gap:6px"><select id="admItem" class="sel">${opts}</select><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'단원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div><span class="hint">다른 단원에게 주면 '운영자' 이름의 선물로 도착해요.</span></div>
+  <div class="info-sec"><span class="lbl">Give · 아이템 지급</span><div class="row" style="gap:6px"><select id="admItem" class="sel">${opts}</select><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'단원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div><span class="hint">다른 단원에게 주면 '운영자' 이름의 선물로 도착합니다.</span></div>
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
-   <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보내요. 지금 접속하지 않은 단원도 다음에 들어오면 받아요.</span>
+   <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보냅니다. 지금 접속하지 않은 단원도 다음에 들어오면 받습니다.</span>
    <div class="row" style="gap:5px">${others.map(([id,p])=>`<button class="qchip" data-act="admrescue" data-k="${id}">${esc(p.nick||'단원')} 기절 해제</button>`).join('')}<button class="btn sm ghost" data-act="admchat">최근 채팅 지우기</button></div></div>`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*3;
@@ -1152,15 +1152,15 @@ function renderInfo(){
   const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
   $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div><button class="btn sm ghost" data-act="infoclose" aria-label="닫기">닫기</button></div>
    <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
-   <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받아요.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
+   <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받습니다.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
    ${tasteHTML(P)}
    <div class="info-sec"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></div>
    <div class="info-sec"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${t[1]}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</div>
-   <div class="info-sec"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있어요</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></div>`;
+   <div class="info-sec"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></div>`;
 }
 const LOG=[];
 function log(text,kind=''){LOG.unshift({t:Date.now(),text,kind});LOG.length=Math.min(LOG.length,40);renderLog()}
-function renderLog(){$('#log').innerHTML=LOG.length?LOG.map(l=>`<li><time>${hhmm(l.t)}</time><span class="${l.kind}">${esc(l.text)}</span></li>`).join(''):'<li><span class="hint">아직 기록이 없어요. 위의 아이콘을 눌러 활동을 시작해 보세요.</span></li>'}
+function renderLog(){$('#log').innerHTML=LOG.length?LOG.map(l=>`<li><time>${hhmm(l.t)}</time><span class="${l.kind}">${esc(l.text)}</span></li>`).join(''):'<li><span class="hint">아직 기록이 없습니다. 위의 아이콘을 눌러 활동을 시작해 보십시오.</span></li>'}
 
 /* ───────── network ───────── */
 let mode='boot',db=null,room=null,uid=null,myRef=null;
@@ -1170,25 +1170,25 @@ function save(){
   if(mode==='solo'){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}return}
   if(mode!=='online')return;dirty=true;clearTimeout(saveT);saveT=setTimeout(flush,350);
 }
-async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했어요.','저장을 시도했지만 권한이 없다고 거절됐어요.')}else toast('저장이 잠시 늦어지고 있어요. 다음 행동 때 다시 저장해요.')}saving=false;if(dirty)flush()}
+async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
 function sys(text){if(mode!=='online')return;db.collection('chat').add({uid,nick:P.nick,text,at:Date.now(),sys:true}).catch(()=>{})}
 function setPresence(){if(room&&mode==='online'){const fv=tab==='farm'&&farmVisit&&PLAYERS[farmVisit];room.presence({uid,nick:P.nick,act:fv?`${PLAYERS[farmVisit].nick}의 농장`:TABS.find(t=>t.id===tab).n,farmOf:tab==='farm'?(farmVisit||null):null}).catch(()=>{})}}
-function goSolo(msg,why){mode='solo';isAdmin=true;$('#adminBtn').hidden=false;FB=P&&P.sugg?[{id:'me',nick:P.nick,list:P.sugg}]:[];setTimeout(updFbBadge,0);if(why){const b=$('#soloBanner');b.innerHTML=`<b>⚠ 진행 상황이 공용 서버에 저장되지 않아요</b><span>${esc(why)}</span><span>지금은 이 브라우저에만 임시로 저장돼서, 다른 기기로 들어오거나 브라우저 기록이 지워지면 사라질 수 있어요. 새로고침해도 계속되면 운영자(선장)에게 알려 주세요.</span>`;b.hidden=false}try{const s=localStorage.getItem(LS);if(s){const o=JSON.parse(s);P=Object.assign(newPlayer('단원'),o);P.fv=o.fv||0}}catch(e){}if(msg)toast(msg);renderNet();renderAll();if(!P.joined||P.nick==='새 단원')showJoin()}
+function goSolo(msg,why){mode='solo';isAdmin=true;$('#adminBtn').hidden=false;FB=P&&P.sugg?[{id:'me',nick:P.nick,list:P.sugg}]:[];setTimeout(updFbBadge,0);if(why){const b=$('#soloBanner');b.innerHTML=`<b>⚠ 진행 상황이 공용 서버에 저장되지 않습니다</b><span>${esc(why)}</span><span>지금은 이 브라우저에만 임시로 저장돼서, 다른 기기로 들어오거나 브라우저 기록이 지워지면 사라질 수 있습니다. 새로고침해도 계속되면 운영자(선장)에게 알려 주십시오.</span>`;b.hidden=false}try{const s=localStorage.getItem(LS);if(s){const o=JSON.parse(s);P=Object.assign(newPlayer('단원'),o);P.fv=o.fv||0}}catch(e){}if(msg)toast(msg);renderNet();renderAll();if(!P.joined||P.nick==='새 단원')showJoin()}
 
 async function connect(){
   const C=window.claude;
-  if(!C||!C.use){goSolo(null,'게임 서버 연결 모듈을 불러오지 못했어요. 새로고침해 주세요.');return}
+  if(!C||!C.use){goSolo(null,'게임 서버 연결 모듈을 불러오지 못했습니다. 새로고침해 주십시오.');return}
   let user;
   try{[db,user,room]=await Promise.all([C.use('db'),C.use('user'),C.use('room')])}catch(e){}
-  if(!db||!user){goSolo('공용 서버에 연결할 수 없어 혼자 모드로 시작해요.','공용 서버에 연결하지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.');return}
+  if(!db||!user){goSolo('공용 서버에 연결할 수 없어 혼자 모드로 시작합니다.','공용 서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주십시오.');return}
   C.use('assets').then(a=>{ASSETS=a||null;if(tab==='social')renderPanel()}).catch(()=>{});
   uid=await user.id();try{isAdmin=await user.isOwner()}catch(e){isAdmin=false}$('#adminBtn').hidden=!isAdmin;
-  if(isAdmin)db.collection('feedback').onSnapshot(sn=>{const prev=fbItems().length;FB=sn.docs.map(d=>Object.assign({id:d.id},d.data()));updFbBadge();const n=fbItems().length;if(prev&&n>prev)toast('새 건의가 도착했어요.');if(!$('#adminModal').hidden)renderAdminAll()},()=>{});
+  if(isAdmin)db.collection('feedback').onSnapshot(sn=>{const prev=fbItems().length;FB=sn.docs.map(d=>Object.assign({id:d.id},d.data()));updFbBadge();const n=fbItems().length;if(prev&&n>prev)toast('새 건의가 도착했습니다.');if(!$('#adminModal').hidden)renderAdminAll()},()=>{});
   if(isAdmin&&window.__fbInvite)db.collection('invites').orderBy('at','desc').onSnapshot(sn=>{INV=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(!$('#adminModal').hidden)renderAdminAll()},()=>{});
   const canW=await user.can('data.write');
-  if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작해요.',!uid?'로그인되어 있지 않아요.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없어요.');return}
+  if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
   mode='online';myRef=db.doc('players/'+uid);
-  try{const s=await myRef.get();if(s.exists&&!s.data().deleted){P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작해요.');return}
+  try{const s=await myRef.get();if(s.exists&&!s.data().deleted){P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
   renderNet();renderAll();
   db.collection('players').onSnapshot(sn=>{const m={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if((tab==='fish'&&duelOn())||(tab==='farm'&&farmVisit))renderPanel()},()=>{});
@@ -1221,14 +1221,14 @@ function renderPilot(){
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
   <div class="specs"><div class="spec"><span class="lbl">ATK 공격</span><b>${atk()}</b></div><div class="spec"><span class="lbl">DEF 방어</span><b>${def()}</b></div><div class="spec" style="grid-column:1/-1;display:flex;align-items:center;gap:6px">${img(IC.coin,null,2)}<b>${(P.cr||0).toLocaleString()}</b><span class="lbl" style="margin-left:auto">CR 크레딧</span></div></div>
   <div class="weapon">장착 무기 <strong>${P.wpn&&wpnById(P.wpn)?wpnById(P.wpn).n:WEAPONS[P.wlv]}</strong> +${P.wlv}<br>우주복 <strong>${SUITS[P.suit||0].n}</strong></div>
-  <div class="hint">20초마다 에너지 +1, 체력 +3 이 자동으로 회복돼요.</div>${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어나요</span><span class="hint">${mode==='online'?'다른 단원이 구조해 주면 바로 일어나요.':'혼자 모드에서는 시간이 지나야 깨어나요.'}</span></div></div>`:''}`;
+  <div class="hint">20초마다 에너지 +1, 체력 +3 이 자동으로 회복됩니다.</div>${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어납니다</span><span class="hint">${mode==='online'?'다른 단원이 구조해 주면 바로 일어납니다.':'혼자 모드에서는 시간이 지나야 깨어납니다.'}</span></div></div>`:''}`;
 }
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 function renderNav(){
   migrate();const ready=P.field.filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=sigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
   $('#nav').innerHTML=TABS.map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${img(t.ic,null,2)}<span class="nm">${t.n}</span><span class="cost">${t.cost}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
 }
-function head(){const t=TABS.find(x=>x.id===tab);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없어요 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
+function head(){const t=TABS.find(x=>x.id===tab);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
 
 /* ───────── panels ───────── */
@@ -1286,14 +1286,14 @@ let farmSig='';
 let selPod=0;
 function podHTML(i,seeds){const pl=P.field[i];let pic='',title,body='',cls='',badge='';
   if(!pl||!pl.til){cls='empty';title=`포드 ${i+1} · 비어 있음`;
-    body=`<span class="sub">배양토를 채워야 심을 수 있어요.</span><div class="acts"><button class="btn sm ghost" data-act="soil" data-i="${i}">배양토 채우기 <small>EN 1</small></button></div>`}
+    body=`<span class="sub">배양토를 채워야 심을 수 있습니다.</span><div class="acts"><button class="btn sm ghost" data-act="soil" data-i="${i}">배양토 채우기 <small>EN 1</small></button></div>`}
   else if(!pl.seed){const wet=isWet(pl);cls=wet?'wet':'dirt';title=`포드 ${i+1} · ${wet?'젖은 흙':'마른 흙'}`;
-    body=seeds.length?`<span class="sub">심을 씨앗을 고르세요.</span><div class="seeds">${seeds.map(id=>`<button class="seedbtn" data-act="plant" data-i="${i}" data-id="${id}">${iicon(id,2)}${ITEMS[id].n}<em>×${P.inv[id]}</em></button>`).join('')}</div>`:`<span class="sub">씨앗이 없어요. 채집·조사·몬스터에게서 얻어요.</span>`}
+    body=seeds.length?`<span class="sub">심을 씨앗을 고르십시오.</span><div class="seeds">${seeds.map(id=>`<button class="seedbtn" data-act="plant" data-i="${i}" data-id="${id}">${iicon(id,2)}${ITEMS[id].n}<em>×${P.inv[id]}</em></button>`).join('')}</div>`:`<span class="sub">씨앗이 없습니다. 채집·조사·몬스터에게서 얻습니다.</span>`}
   else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl),pc=Math.min(100,effG(pl)/it.grow*100);cls=wet?'wet':'dirt';
     pic=img([PL.seed0,PL.sprout,PL.young,PL[ITEMS[it.crop].pl||it.crop]][s],s===0?it.t:crop.t,2,'plant');
     if(s===3){cls='ready';title=`포드 ${i+1} · ${crop.n} 수확 가능`;badge=`<span class="tb">${img(IC.star,null,1)}</span>`;body=`<div class="acts"><button class="btn sm gold" data-act="harvest" data-i="${i}">수확하기</button></div>`}
     else{if(!wet)badge=`<span class="tb">${img(DROP,null,2)}</span>`;title=`포드 ${i+1} · ${crop.n} · ${['씨앗','새싹','성장'][s]} 단계`;
-      body=`<div class="bar"><i data-prog="${i}" style="--c:var(--green);width:${pc}%"></i></div><span class="sub">${wet?'촉촉해요. 자라는 중':'목말라요. 물을 줘야 자라요'}${pl.fert?' · 비료':''}</span>
+      body=`<div class="bar"><i data-prog="${i}" style="--c:var(--green);width:${pc}%"></i></div><span class="sub">${wet?'촉촉합니다. 자라는 중':'목마릅니다. 물을 줘야 자랍니다'}${pl.fert?' · 비료':''}</span>
       <div class="acts"><button class="btn sm alt" data-act="water" data-i="${i}" ${P.water>0?'':'disabled'}>물 주기</button>${pl.fert?'':`<button class="btn sm ghost" data-act="fert" data-i="${i}" ${(P.inv.moss||0)>=2?'':'disabled'}>비료 <small>이끼 2</small></button>`}</div>`}}
   return{tile:`<button class="ptile" style="background-image:url(${miniDome(cls)})" data-act="selpod" data-i="${i}" aria-pressed="${selPod===i}" aria-label="${title}" title="${title}">${pic}${badge}<span class="pn">${String(i+1).padStart(2,'0')}</span></button>`,title,body}}
 function renderMyFarm(){
@@ -1301,54 +1301,54 @@ function renderMyFarm(){
   const ex=2*P.fu,ore=P.inv.ore||0;
   if(selPod!=='add'&&!(selPod<P.fu))selPod=0;
   const pods=P.field.slice(0,P.fu).map((_,i)=>podHTML(i,seeds));
-  const info=selPod==='add'?`<h3>포드 ${P.fu+1} 증설</h3><span class="sub">운석 파편 ${ore}/${ex}개가 필요해요.</span><div class="acts"><button class="btn sm ghost" data-act="expand" ${ore>=ex?'':'disabled'}>재배 포드 추가</button></div>`:`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
-  return head()+`<p class="lead">포드를 눌러 고른 뒤 배양토 채우기, 씨앗 심기, 물 주기를 해요. 물을 한 번 주면 성장 단계 하나만큼 자라고, 물방울이 뜨면 다시 목마른 거예요.</p>
+  const info=selPod==='add'?`<h3>포드 ${P.fu+1} 증설</h3><span class="sub">운석 파편 ${ore}/${ex}개가 필요합니다.</span><div class="acts"><button class="btn sm ghost" data-act="expand" ${ore>=ex?'':'disabled'}>재배 포드 추가</button></div>`:`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
+  return head()+`<p class="lead">포드를 눌러 고른 뒤 배양토 채우기, 씨앗 심기, 물 주기를 합니다. 물을 한 번 주면 성장 단계 하나만큼 자라고, 물방울이 뜨면 다시 목마른 것입니다.</p>
   <div class="farm-top"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${P.fu<FIELD_N?`<button class="ptile add" data-act="selpod" data-i="add" aria-pressed="${selPod==='add'}" aria-label="포드 증설" title="포드 증설"><span class="plus">+</span></button>`:''}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-P.fu-1))}</div><span class="dome-label">DOME BAY-07 · ${P.fu}/${FIELD_N}</span></div>
   <div class="farm-foot"><div class="card podinfo">${info}</div>
-  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${P.ref?`<button class="btn sm alt" disabled>정수기 충전 중</button><span class="hint" id="refT">남은 시간 ${fmtClock(P.ref-Date.now())}</span>`:Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>정수기 휴식 중</button><span class="hint" id="refT">다시 충전까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>정수기에서 채우기 <small>${P.job==='engineer'?'30분':'1시간'}</small></button><span class="hint">충전이 끝나면 1시간 동안 정수기가 쉬어요</span>`}</div></div></div>`;
+  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${P.ref?`<button class="btn sm alt" disabled>정수기 충전 중</button><span class="hint" id="refT">남은 시간 ${fmtClock(P.ref-Date.now())}</span>`:Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>정수기 휴식 중</button><span class="hint" id="refT">다시 충전까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>정수기에서 채우기 <small>${P.job==='engineer'?'30분':'1시간'}</small></button><span class="hint">충전이 끝나면 1시간 동안 정수기가 쉽니다</span>`}</div></div></div>`;
 }
 /* ---- co-op farming ---- */
 let farmVisit=null,fSel=0;
 function farmBar(){if(mode!=='online')return'';const fr=Object.entries(PLAYERS).filter(([id])=>id!==uid);const here=PEERS.filter(p=>p.presence&&p.presence.farmOf===uid&&p.presence.uid!==uid).map(p=>p.presence.nick);
-  return`<div class="farmbar"><div class="row" style="gap:5px"><button class="qchip" data-act="fvisit" data-k="" aria-pressed="${!farmVisit}">내 농장</button>${fr.map(([id,p])=>`<button class="qchip" data-act="fvisit" data-k="${id}" aria-pressed="${farmVisit===id}">${esc(p.nick||'단원')}의 농장</button>`).join('')}</div>${here.length?`<span class="visitors">${here.map(n=>esc(n)).join(', ')} 님이 지금 내 농장에 와 있어요</span>`:''}</div>`}
+  return`<div class="farmbar"><div class="row" style="gap:5px"><button class="qchip" data-act="fvisit" data-k="" aria-pressed="${!farmVisit}">내 농장</button>${fr.map(([id,p])=>`<button class="qchip" data-act="fvisit" data-k="${id}" aria-pressed="${farmVisit===id}">${esc(p.nick||'단원')}의 농장</button>`).join('')}</div>${here.length?`<span class="visitors">${here.map(n=>esc(n)).join(', ')} 님이 지금 내 농장에 와 있습니다</span>`:''}</div>`}
 function friendFarm(fid){const f=PLAYERS[fid],fu=f.fu||2,field=(f.field||[]).slice(0,fu);while(field.length<fu)field.push(null);if(!(fSel<fu))fSel=0;
   const tiles=field.map((pl,i)=>{let cls='empty',pic='',badge='',title=`포드 ${i+1} · 비어 있음`;
     if(pl&&pl.til){cls=isWet(pl)?'wet':'dirt';title=`포드 ${i+1} · 빈 흙`}
     if(pl&&pl.seed){const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop];pic=img([PL.seed0,PL.sprout,PL.young,PL[ITEMS[it.crop].pl||it.crop]][s],s===0?it.t:crop.t,2,'plant');if(s===3){cls='ready';title=`포드 ${i+1} · ${crop.n} 수확 가능`;badge=`<span class="tb">${img(IC.star,null,1)}</span>`}else{title=`포드 ${i+1} · ${crop.n} · ${['씨앗','새싹','성장'][s]} 단계`;if(!isWet(pl))badge=`<span class="tb">${img(DROP,null,2)}</span>`}}
     return`<button class="ptile" style="background-image:url(${miniDome(cls)})" data-act="fsel" data-i="${i}" aria-pressed="${fSel===i}" title="${title}">${pic}${badge}<span class="pn">${String(i+1).padStart(2,'0')}</span></button>`});
   const pl=field[fSel];let info=`<h3>포드 ${fSel+1}</h3>`;
-  if(!pl||!pl.seed)info+='<span class="sub">아무것도 심겨 있지 않아요.</span>';
+  if(!pl||!pl.seed)info+='<span class="sub">아무것도 심겨 있지 않습니다.</span>';
   else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl);
-    if(s===3)info+=`<span class="sub">${crop.n}이(가) 다 자랐어요. 수확은 주인만 할 수 있어요.</span>`;
-    else info+=`<div class="bar"><i style="--c:var(--green);width:${Math.min(100,effG(pl)/it.grow*100)}%"></i></div><span class="sub">${crop.n} · ${wet?'촉촉해요':'목말라요'}${pl.fert?' · 비료':''}</span><div class="acts"><button class="btn sm alt" data-act="fhelp" data-k="water" ${P.water>0?'':'disabled'}>대신 물 주기 <small>내 물 1</small></button></div>`}
-  return`<p class="lead">${esc(f.nick||'단원')} 님의 돔 농장이에요. 구경하면서 목마른 작물에 대신 물만 줄 수 있어요. 도와주면 경험치와 농사 생활 경험치를 조금 받아요.</p>
+    if(s===3)info+=`<span class="sub">${crop.n}이(가) 다 자랐습니다. 수확은 주인만 할 수 있습니다.</span>`;
+    else info+=`<div class="bar"><i style="--c:var(--green);width:${Math.min(100,effG(pl)/it.grow*100)}%"></i></div><span class="sub">${crop.n} · ${wet?'촉촉합니다':'목마릅니다'}${pl.fert?' · 비료':''}</span><div class="acts"><button class="btn sm alt" data-act="fhelp" data-k="water" ${P.water>0?'':'disabled'}>대신 물 주기 <small>내 물 1</small></button></div>`}
+  return`<p class="lead">${esc(f.nick||'단원')} 님의 돔 농장입니다. 구경하면서 목마른 작물에 대신 물만 줄 수 있습니다. 도와주면 경험치와 농사 생활 경험치를 조금 받습니다.</p>
   <div class="farm-top"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${tiles.join('')}</div><span class="dome-label">${esc(String(f.nick||'').slice(0,8)).toUpperCase()} · ${fu}/${FIELD_N}</span></div>
   <div class="farm-foot"><div class="card podinfo">${info}</div><div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}내 물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div></div></div></div>`}
 function renderFarm(){const bar=farmBar();if(farmVisit&&PLAYERS[farmVisit])return head()+bar+friendFarm(farmVisit);farmVisit=null;return renderMyFarm().replace(head(),head()+bar)}
 function receiveHelp(sn){sn.docs.forEach(d=>{P.gotH=P.gotH||[];if(P.gotH.includes(d.id)){db.collection('farmhelp').doc(d.id).delete().catch(()=>{});return}P.gotH=[...P.gotH.slice(-60),d.id];const h=d.data(),i=+h.i;migrate();const pl=P.field[i];
   if(pl&&pl.seed&&stage(pl)<3){P.field[i]=Object.assign({},pl);const q=P.field[i];if(h.kind!=='water'){commit();db.collection('farmhelp').doc(d.id).delete().catch(()=>{});return}q.got=effG(q);q.wet=Date.now();
-    log(`${h.nick||'친구'} 님이 포드 ${i+1}에 ${h.kind==='fert'?'비료를 뿌려':'물을 줘'} 줬다.`,'good');toast(`${h.nick||'친구'} 님이 농사를 도와줬어요!`)}
+    log(`${h.nick||'친구'} 님이 포드 ${i+1}에 ${h.kind==='fert'?'비료를 뿌려':'물을 줘'} 줬다.`,'good');toast(`${h.nick||'친구'} 님이 농사를 도와줬습니다!`)}
   commit();db.collection('farmhelp').doc(d.id).delete().catch(()=>{})})}
 function harvestAt(i){sfxHarvest();const pl=P.field[i],it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0);add(it.crop,n);stat('harvest');lxp('farm',10);const back=Math.random()<.45;if(back)add(pl.seed,1);P.field[i]={til:1,wet:pl.wet&&isWet(pl)?pl.wet:0};gainXp(5);
   log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거뒀다.${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
-const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌어요.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있어요.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
-const TANKS=[{cap:12,price:0},{cap:20,price:1200,mat:[['ore',12],['crystal',4]],n:'증설 물탱크',d:'물탱크 용량이 20으로 늘어요.'},{cap:30,price:6000,mat:[['ore',25],['crystal',10],['dark',2]],n:'대형 물탱크',d:'물탱크 용량이 30으로 늘어요.'}];
+const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌습니다.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있습니다.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
+const TANKS=[{cap:12,price:0},{cap:20,price:1200,mat:[['ore',12],['crystal',4]],n:'증설 물탱크',d:'물탱크 용량이 20으로 늘어납니다.'},{cap:30,price:6000,mat:[['ore',25],['crystal',10],['dark',2]],n:'대형 물탱크',d:'물탱크 용량이 30으로 늘어납니다.'}];
 const hasMat=m=>(m||[]).every(([id,n])=>(P.inv[id]||0)>=n);
 const matHTML=m=>`<span class="matrow">${(m||[]).map(([id,n])=>`<span class="ichip ${(P.inv[id]||0)>=n?'':'minus'}">${iicon(id,1)}${ITEMS[id].n} ${P.inv[id]||0}/${n}</span>`).join('')}</span>`;
 const tankCap=()=>TANKS[P.tk||0].cap;
 const RODS=[
- {n:'녹슨 기본 낚싯대',t:'#7e8193',price:0,d:'일반 · 레어 어종까지 낚을 수 있어요.'},
- {n:'심해 탄소 낚싯대',t:'#8aa9bd',price:3000,d:'유니크 어종까지 낚을 수 있어요.'},
- {n:'중력파 낚싯대',t:'#bfae80',price:25000,d:'레전더리 어종까지 낚을 수 있어요.'},
+ {n:'녹슨 기본 낚싯대',t:'#7e8193',price:0,d:'일반 · 레어 어종까지 낚을 수 있습니다.'},
+ {n:'심해 탄소 낚싯대',t:'#8aa9bd',price:3000,d:'유니크 어종까지 낚을 수 있습니다.'},
+ {n:'중력파 낚싯대',t:'#bfae80',price:25000,d:'레전더리 어종까지 낚을 수 있습니다.'},
 ];
 const SLOT=30*60e3;
 const SITES=[
- {id:'crater',n:'크레이터 평원',d:'얼어붙은 표토. 광석이 흔하고 가끔 씨앗이 섞여 나와요.',temp:'-64℃',t:[['ore',40],['moss',20],['crystal',15],['seed_pot',10],['seed_berry',8],['seed_pump',3],['dark',4]]},
- {id:'cave',n:'결정 동굴',d:'빛이 들지 않는 동굴. 결정과 암흑물질이 잘 나와요.',temp:'-112℃',t:[['crystal',42],['ore',35],['dark',12],['moss',11]]},
- {id:'marsh',n:'이끼 습지',d:'메탄 안개가 낀 습지. 이끼와 씨앗이 많아요.',temp:'-31℃',t:[['moss',45],['seed_pot',18],['seed_berry',16],['seed_pump',8],['crystal',13]]},
- {id:'wreck',n:'잔해 지대',d:'추락한 수송선의 무덤. 고대 기록과 보급품이 묻혀 있어요.',temp:'-48℃',t:[['ore',40],['relic',8],['crystal',14],['kit',5],['seed_pump',6],['moss',27]]},
- {id:'geyser',n:'얼음 간헐천',d:'얼음이 뿜어져 나오는 들판. 결정과 이끼가 고르게 나와요.',temp:'-140℃',t:[['crystal',32],['moss',30],['seed_berry',14],['ore',18],['dark',6]]},
- {id:'canyon',n:'붉은 협곡',d:'철분이 녹슨 깊은 협곡. 광석과 암흑물질이 많아요.',temp:'-22℃',t:[['ore',48],['dark',14],['crystal',20],['seed_pot',18]]},
+ {id:'crater',n:'크레이터 평원',d:'얼어붙은 표토. 광석이 흔하고 가끔 씨앗이 섞여 나옵니다.',temp:'-64℃',t:[['ore',40],['moss',20],['crystal',15],['seed_pot',10],['seed_berry',8],['seed_pump',3],['dark',4]]},
+ {id:'cave',n:'결정 동굴',d:'빛이 들지 않는 동굴. 결정과 암흑물질이 잘 나옵니다.',temp:'-112℃',t:[['crystal',42],['ore',35],['dark',12],['moss',11]]},
+ {id:'marsh',n:'이끼 습지',d:'메탄 안개가 낀 습지. 이끼와 씨앗이 많습니다.',temp:'-31℃',t:[['moss',45],['seed_pot',18],['seed_berry',16],['seed_pump',8],['crystal',13]]},
+ {id:'wreck',n:'잔해 지대',d:'추락한 수송선의 무덤. 고대 기록과 보급품이 묻혀 있습니다.',temp:'-48℃',t:[['ore',40],['relic',8],['crystal',14],['kit',5],['seed_pump',6],['moss',27]]},
+ {id:'geyser',n:'얼음 간헐천',d:'얼음이 뿜어져 나오는 들판. 결정과 이끼가 고르게 나옵니다.',temp:'-140℃',t:[['crystal',32],['moss',30],['seed_berry',14],['ore',18],['dark',6]]},
+ {id:'canyon',n:'붉은 협곡',d:'철분이 녹슨 깊은 협곡. 광석과 암흑물질이 많습니다.',temp:'-22℃',t:[['ore',48],['dark',14],['crystal',20],['seed_pot',18]]},
 ];
 SITES.forEach(st=>{const g=GX[st.id];if(!g)return;g.mats.forEach(([id],k)=>st.t.push([id,[14,10,5][k]]));g.crops.forEach(([id])=>st.t.push(['seed_'+id,4]));st.ex=g.crops.map(([id])=>'seed_'+id)});
 let gSite='crater',gDur=4;
@@ -1364,9 +1364,9 @@ function renderGather(){
      <div class="stat"><div class="stat-row"><span>채집 ${x.gd}/${x.G}회</span><b id="gLeft">${fin?'완료':'남은 시간 '+fmtClock(x.left)}</b></div><div class="bar"><i id="gBar" style="--c:var(--green);width:${x.done/x.total*100}%"></i></div></div>
      ${fin?'':`<span class="hint" id="gNext">다음 채집까지 ${fmtClock(x.next)}</span>`}
      <div class="row"><button class="btn ${x.pending?'gold':''}" data-act="gclaim" ${x.pending?'':'disabled'}>획득물 받기${x.pending?` <small>${x.pending}회분</small>`:''}</button>${fin?'':`<button class="btn ghost sm" data-act="grecall">철수하기</button>`}</div>
-     <span class="hint">시간이 지나는 만큼 조금씩 채집해요. 다른 활동을 하거나 창을 닫아도 원정은 계속돼요. 철수하면 그때까지 모은 것만 받아요.</span></div>
+     <span class="hint">시간이 지나는 만큼 조금씩 채집합니다. 다른 활동을 하거나 창을 닫아도 원정은 계속됩니다. 철수하면 그때까지 모은 것만 받습니다.</span></div>
     ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`}
-  return head()+`<p class="lead">채집 원정을 보내면 자동으로 채집해요. 30분 2회 · 1시간 3회 · 2시간 7회 · 4시간 12회 · 8시간 20회 · 12시간 28회. 아주 가끔(3%) 희귀 무기가 묻혀 있기도 해요.</p>
+  return head()+`<p class="lead">채집 원정을 보내면 자동으로 채집합니다. 30분 2회 · 1시간 3회 · 2시간 7회 · 4시간 12회 · 8시간 20회 · 12시간 28회. 아주 가끔(3%) 희귀 무기가 묻혀 있기도 합니다.</p>
   <div><span class="lbl">Site · 채집 장소</span><div class="sites" role="radiogroup" aria-label="채집 장소" style="margin-top:6px">${SITES.map(st=>`<button class="site" role="radio" aria-checked="${st.id===gSite}" data-act="gsite" data-id="${st.id}"><b>${st.n} <span class="lv">${st.temp}</span></b><span class="hint">${st.d}</span><span class="chips">${st.t.filter(([id])=>!/^seed_/.test(id)).slice(0,6).map(([id])=>`<span class="ichip">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</span><span class="chips">${(st.ex||[]).map(id=>`<span class="ichip exc">${iicon(id,1)}전용 · ${ITEMS[id].n.replace(' 씨앗','')}</span>`).join('')}</span></button>`).join('')}</div></div>
   <div style="display:flex;flex-direction:column;gap:6px"><span class="lbl">Duration · 원정 시간</span>
    <div class="row" style="gap:5px">${Object.keys(GDUR).map(Number).map(k=>`<button class="qchip" data-act="gdur" data-k="${k}" aria-pressed="${k===gDur}">${fmtDur(k*30)} · ${GDUR[k]}회</button>`).join('')}</div></div>
@@ -1375,16 +1375,16 @@ function renderGather(){
 }
 function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='scout'&&Math.random()<.5?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}}
   Object.entries(got).forEach(([id,n])=>add(id,n));gainXp(3*x.pending);stat('gather',x.pending);lxp('gather',4*x.pending);P.exp=Object.assign({},x.e,{tg:x.tg+x.pending});
-  if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 중 땅속에서 무기를 발견했다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했어요!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
+  if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 중 땅속에서 무기를 발견했다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
   lastGather={t:`${x.site.n}에서 ${x.pending}회분 채집물을 받았다.${wf?` 희귀 무기 「${wf.n}」도 발견했다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
   if(x.done>=x.total&&P.exp.tg>=x.G){P.exp=null;log(`${x.site.n} 원정이 끝났다.`)}return true}
 function renderFish(){
   const ph=fish.ph,aim=ph==='aim',inWater=ph==='wait'||ph==='bite';
-  const txt={idle:'레버를 돌려 낚싯줄을 던져 보세요',aim:'레버가 돌아가요. 초록 칸에서 던지세요!',wait:'찌가 메탄 위에 떠 있다…',bite:'입질! 지금 당겨요!',early:'너무 일찍 당겼다…',miss:'놓쳤다. 다시 던져 보세요'}[ph]||'';
+  const txt={idle:'레버를 돌려 낚싯줄을 던져 보십시오',aim:'레버가 돌아갑니다. 초록 칸에서 던지십시오!',wait:'찌가 메탄 위에 떠 있다…',bite:'입질! 지금 당기십시오!',early:'너무 일찍 당겼다…',miss:'놓쳤다. 다시 던져 보십시오'}[ph]||'';
   const bonusTxt=fish.bonus===true?'<span class="castres good">완벽한 캐스팅 · 레어 +3% 유니크 +2% 레전더리 +0.5%</span>':fish.bonus===false?'<span class="castres">빗나간 캐스팅 · 보너스 없음</span>':'';
-  return head()+`<p class="lead">캐스팅하면 릴 레버가 좌우로 돌아요. 바늘이 초록 칸에 왔을 때 던지면 희귀한 물고기 확률이 올라가요. 찌가 요동치면 바로 끌어올리세요. 0.45초 안에 당기면 레전더리 확률이 0.5% 더 올라가요.</p>
+  return head()+`<p class="lead">캐스팅하면 릴 레버가 좌우로 돕니다. 바늘이 초록 칸에 왔을 때 던지면 희귀한 물고기 확률이 올라갑니다. 찌가 요동치면 바로 끌어올리십시오. 0.45초 안에 당기면 레전더리 확률이 0.5% 더 올라갑니다.</p>
   ${duelHTML()}
-  <div class="card rodcard">${img(IC.rod,RODS[P.rod||0].t,2)}<div class="sinfo"><b>${RODS[P.rod||0].n}</b><span class="hint">${RODS[P.rod||0].d}${(P.rod||0)<2?' 더 좋은 낚싯대는 상점에서 팔아요.':''}</span></div></div>
+  <div class="card rodcard">${img(IC.rod,RODS[P.rod||0].t,2)}<div class="sinfo"><b>${RODS[P.rod||0].n}</b><span class="hint">${RODS[P.rod||0].d}${(P.rod||0)<2?' 더 좋은 낚싯대는 상점에서 팝니다.':''}</span></div></div>
   <div class="fishrig">
    <div class="dial-wrap"><div class="dial ${aim?'live':''}"><div class="dial-face" style="--z:${fish.zone||9}deg"></div><div class="needle" id="needle" style="transform:translateX(-50%) rotate(${fish.a||0}deg)"></div><div class="hub"></div></div><span class="lbl">Reel lever · 릴 레버</span></div>
    <div class="lake"><canvas id="lakeCv" aria-hidden="true"></canvas>
@@ -1479,7 +1479,7 @@ const shade=(c,f)=>f<0?mix(c,'#05060b',-f):mix(c,'#e8e9f0',f);
 /* views through the window: (s,t) in 0..1 */
 
 let wardTab='look';
-function lookSwatches(){const lk=lookOf(P);return`<div class="looks" style="margin-top:4px">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button class="sw" style="background:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div><div class="swatches neon">${NEON.map(([col,nm])=>{const own=ownsNeon(col);return`<button class="sw neonsw ${own?'':'locked'}" style="background:${col};--g:${col}" data-act="${own?'setlook':'neonpick'}" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col||(!own&&neonPick===col)}" title="${nm}${own?'':' · '+NEON_PRICE+' CR'}" aria-label="${g.n} ${nm}${own?'':' 잠김'}"></button>`}).join('')}</div></div>`).join('')}${neonPick&&!ownsNeon(neonPick)?(()=>{const nm=NEON.find(n=>n[0]===neonPick)[1];return`<div class="neonbuy"><span class="sw neonsw" style="background:${neonPick};--g:${neonPick}"></span><b>${nm}</b><span class="price">${img(IC.coin,null,2)}${NEON_PRICE}</span><span class="hint">한 번 사면 헬멧·우주복·바이저 어디에나 쓸 수 있어요</span><button class="btn sm gold" data-act="neonbuy" ${(P.cr||0)>=NEON_PRICE?'':'disabled'}>구매</button><button class="qchip" data-act="neonpick" data-c="">취소</button></div>`})():''}<span class="hint">아래 줄은 네온 색이에요. 색마다 ${NEON_PRICE} CR에 사면 쓸 수 있고, 고르면 캐릭터가 그 색으로 은은하게 빛나요. 기본 색은 언제든 무료예요.</span></div>`}
+function lookSwatches(){const lk=lookOf(P);return`<div class="looks" style="margin-top:4px">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button class="sw" style="background:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div><div class="swatches neon">${NEON.map(([col,nm])=>{const own=ownsNeon(col);return`<button class="sw neonsw ${own?'':'locked'}" style="background:${col};--g:${col}" data-act="${own?'setlook':'neonpick'}" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col||(!own&&neonPick===col)}" title="${nm}${own?'':' · '+NEON_PRICE+' CR'}" aria-label="${g.n} ${nm}${own?'':' 잠김'}"></button>`}).join('')}</div></div>`).join('')}${neonPick&&!ownsNeon(neonPick)?(()=>{const nm=NEON.find(n=>n[0]===neonPick)[1];return`<div class="neonbuy"><span class="sw neonsw" style="background:${neonPick};--g:${neonPick}"></span><b>${nm}</b><span class="price">${img(IC.coin,null,2)}${NEON_PRICE}</span><span class="hint">한 번 사면 헬멧·우주복·바이저 어디에나 쓸 수 있습니다</span><button class="btn sm gold" data-act="neonbuy" ${(P.cr||0)>=NEON_PRICE?'':'disabled'}>구매</button><button class="qchip" data-act="neonpick" data-c="">취소</button></div>`})():''}<span class="hint">아래 줄은 네온 색입니다. 색마다 ${NEON_PRICE} CR에 사면 쓸 수 있고, 고르면 캐릭터가 그 색으로 은은하게 빛납니다. 기본 색은 언제든 무료입니다.</span></div>`}
 function wardHTML(){const of=outfitOf(P);
   return`<div class="lookbox" style="align-items:flex-start"><div class="lookprev">${meImg(6)}</div><div class="looks"><div class="dtabs" role="tablist"><button role="tab" aria-selected="${wardTab==='look'}" data-act="wtab" data-k="look">모습</button>${Object.entries(WARD).map(([k,g])=>{const cur=wardById(of[k]);return`<button role="tab" aria-selected="${wardTab===k}" data-act="wtab" data-k="${k}">${g.n}<em class="wcur">${cur&&cur.price?esc(cur.n):''}</em></button>`}).join('')}</div>${wardTab==='look'?lookSwatches():''}${(wardTab==='look'?[]:[[wardTab,WARD[wardTab]]]).map(([k,g])=>`<div><div class="wgrid">${g.list.map(it=>{const own=ownsW(it.id),on=of[k]===it.id,can=(P.cr||0)>=it.price&&hasMat(it.mat);return`<div class="witem ${on?'on':''}">${meImg(2,P,{[k]:it.id})}<b>${it.n}</b>${own?'':`<span class="price">${img(IC.coin,null,1)}${it.price.toLocaleString()}</span>${it.mat?matHTML(it.mat):''}`}${on?'<span class="hint">착용 중</span>':own?`<button class="btn sm" data-act="wwear" data-k="${k}" data-id="${it.id}">착용</button>`:`<button class="btn sm gold" data-act="wbuy" data-k="${k}" data-id="${it.id}" ${can?'':'disabled'}>구매</button>`}</div>`}).join('')}</div></div>`).join('')}</div></div>`}
 const headImg=(sc,p)=>{let g=avatarGrid(p).slice(0,25);while(g.length>16&&![...g[0]].some(c=>c!=='.'))g=g.slice(1);const h=img(g,null,sc/2,'',lookPal(p)),gl=lookGlow(p);return gl?h.replace('<img ',`<img style="filter:drop-shadow(0 0 ${Math.max(2,sc)}px ${gl})" `):h};
@@ -1513,10 +1513,10 @@ const SIG_MS=30*60e3,SIG_MAX=3;
 function sigState(){if(!P.sig)P.sig={n:1,t:Date.now()};const el=Date.now()-P.sig.t,gain=Math.floor(el/SIG_MS),n=Math.min(SIG_MAX,P.sig.n+gain);return{n,next:n>=SIG_MAX?0:SIG_MS-(el%SIG_MS)}}
 function useSig(){const st=sigState();if(st.n<=0)return false;const el=Date.now()-P.sig.t,gain=Math.floor(el/SIG_MS);P.sig={n:st.n-1,t:st.n>=SIG_MAX?Date.now():P.sig.t+gain*SIG_MS};return true}
 function renderScan(){const sg=sigState();
-  return head()+`<div class="row" style="align-items:flex-start;gap:16px"><div style="flex:1;min-width:220px"><p class="lead">30분마다 레이더에 새로운 이상 신호가 잡혀요. 신호를 따라가 조사하면 보급품, 고대 기록, 위험 지대, 숨어 있던 몬스터까지 무엇이 나올지 몰라요. 신호는 최대 ${SIG_MAX}개까지 쌓여요.</p></div>
+  return head()+`<div class="row" style="align-items:flex-start;gap:16px"><div style="flex:1;min-width:220px"><p class="lead">30분마다 레이더에 새로운 이상 신호가 잡힙니다. 신호를 따라가 조사하면 보급품, 고대 기록, 위험 지대, 숨어 있던 몬스터까지 무엇이 나올지 모릅니다. 신호는 최대 ${SIG_MAX}개까지 쌓입니다.</p></div>
   <button class="btn" data-act="scan" ${sg.n?'':'disabled'}>신호 조사 <small>EN 4</small></button></div>
-  <div class="card sigbox"><div class="radar">${Array.from({length:SIG_MAX},(_,k)=>`<span class="blip ${k<sg.n?'on':''}"></span>`).join('')}</div><div class="sinfo"><b>잡힌 신호 ${sg.n}/${SIG_MAX}</b><span class="hint" id="sigT">${sg.n>=SIG_MAX?'신호가 가득 찼어요. 조사하러 가세요.':'다음 신호까지 '+fmtClock(sg.next)}</span></div></div>
-  ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:`<div class="note">조사할 때마다 경험치 +6. 기록 장치를 찾으면 가방에서 해독할 수 있어요.</div>`}`;
+  <div class="card sigbox"><div class="radar">${Array.from({length:SIG_MAX},(_,k)=>`<span class="blip ${k<sg.n?'on':''}"></span>`).join('')}</div><div class="sinfo"><b>잡힌 신호 ${sg.n}/${SIG_MAX}</b><span class="hint" id="sigT">${sg.n>=SIG_MAX?'신호가 가득 찼습니다. 조사하러 가십시오.':'다음 신호까지 '+fmtClock(sg.next)}</span></div></div>
+  ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:`<div class="note">조사할 때마다 경험치 +6. 기록 장치를 찾으면 가방에서 해독할 수 있습니다.</div>`}`;
 }
 const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['moss',10],['ore',12],['crystal',40],['drink',45],['kit',50]];
 const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,relic:25,drink:15,kit:18};
@@ -1533,12 +1533,12 @@ function renderShop(){
   let rows;
   if(shopTab==='sup')rows=BUY.filter(([id])=>ITEMS[id].type!=='seed').map(buyRow).join('');
   else if(shopTab==='seed')rows=BUY.filter(([id])=>ITEMS[id].type==='seed').map(([id,pr])=>buyRow([id,pr]).replace(itemDesc(id),ITEMS[id].d)).join('');
-  else if(shopTab==='wpn')rows=`<p class="hint" style="margin:0 0 4px">무기를 사서 장착하면 공격력이 바로 올라가요. 렌치 강화(+${P.wlv})는 그대로 함께 적용돼요. 맨 아래 무기들은 채집 원정에서 아주 드물게(3%) 발견돼요.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
+  else if(shopTab==='wpn')rows=`<p class="hint" style="margin:0 0 4px">무기를 사서 장착하면 공격력이 바로 올라갑니다. 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 무기들은 채집 원정에서 아주 드물게(3%) 발견됩니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
   else if(shopTab==='rod')rows=RODS.slice(1).map((r,k)=>{const lv=k+1;return`<div class="srow">${img(IC.rod,r.t,2)}<div class="sinfo"><b>${r.n}</b><span class="hint">${r.d}</span></div>${price(r.price)}${ownBtn((P.rod||0)>=lv,'buyrod',lv,r.price,(P.rod||0)===lv)}</div>`}).join('');
-  else if(shopTab==='craft')rows='<p class="hint" style="margin:0 0 4px">채집에서 모은 재료로 장비를 만들어요. 부위마다 하나씩 착용할 수 있어요.</p>'+Object.entries(CRAFT).map(([slot,c])=>`<span class="lbl" style="margin-top:6px">${c.n} 장비</span>`+c.list.map(f=>{const own=(P.own||[]).includes(f.id),on=(P.gear||{})[slot]===f.id,can=cr>=f.price&&hasMat(f.mat);return`<div class="srow">${img(TPL[c.ic],f.t,3)}<div class="sinfo"><b>${f.n}</b><span class="hint">${f.d}</span>${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${on?`<button class="btn sm ghost" data-act="cunequip" data-k="${slot}">벗기</button>`:own?`<button class="btn sm" data-act="cequip" data-k="${slot}" data-id="${f.id}">착용</button>`:`<button class="btn sm gold" data-act="craft" data-k="${slot}" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`}</div></div>`}).join('')).join('');
+  else if(shopTab==='craft')rows='<p class="hint" style="margin:0 0 4px">채집에서 모은 재료로 장비를 만듭니다. 부위마다 하나씩 착용할 수 있습니다.</p>'+Object.entries(CRAFT).map(([slot,c])=>`<span class="lbl" style="margin-top:6px">${c.n} 장비</span>`+c.list.map(f=>{const own=(P.own||[]).includes(f.id),on=(P.gear||{})[slot]===f.id,can=cr>=f.price&&hasMat(f.mat);return`<div class="srow">${img(TPL[c.ic],f.t,3)}<div class="sinfo"><b>${f.n}</b><span class="hint">${f.d}</span>${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${on?`<button class="btn sm ghost" data-act="cunequip" data-k="${slot}">벗기</button>`:own?`<button class="btn sm" data-act="cequip" data-k="${slot}" data-id="${f.id}">착용</button>`:`<button class="btn sm gold" data-act="craft" data-k="${slot}" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`}</div></div>`}).join('')).join('');
   else if(shopTab==='gear')rows='<span class="lbl">Suits · 우주복</span>'+SUITS.slice(1).map((u,k)=>{const lv=k+1;return`<div class="srow">${img(IC.suit,u.t,2)}<div class="sinfo"><b>${u.n}</b><span class="hint">${u.d}</span>${(P.suit||0)>=lv?'':matHTML(u.mat)}</div>${price(u.price)}${ownBtn((P.suit||0)>=lv,'buysuit',lv,u.price,(P.suit||0)===lv,u.mat)}</div>`}).join('')
      +'<span class="lbl" style="margin-top:6px">Farm gear · 농장 장비</span>'+TANKS.slice(1).map((t,k)=>{const lv=k+1;return`<div class="srow">${img(IC.can,null,2)}<div class="sinfo"><b>${t.n}</b><span class="hint">${t.d}</span>${(P.tk||0)>=lv?'':matHTML(t.mat)}</div>${price(t.price)}${ownBtn((P.tk||0)>=lv,'buytank',lv,t.price,(P.tk||0)===lv,t.mat)}</div>`}).join('');
-  else rows=(()=>{const bb=Object.entries(soldBack).filter(([,b])=>b.n>0);const back=bb.length?`<span class="lbl">Buyback · 되사기 (상점을 나가면 사라져요)</span>`+bb.map(([id,b])=>`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">방금 판 물건 ${b.n}개 · 판 값 그대로 되살 수 있어요</span></div>${price(b.pr)}<div class="sbtns"><button class="btn sm" data-act="rebuy" data-id="${id}" data-n="1" ${cr>=b.pr?'':'disabled'}>×1</button><button class="btn sm ghost" data-act="rebuy" data-id="${id}" data-n="all" ${cr>=b.pr*b.n?'':'disabled'}>전부</button></div></div>`).join('')+`<span class="lbl" style="margin-top:6px">Sell · 판매</span>`:'';const ids=ORDER.filter(id=>P.inv[id]);return back+(ids.length?ids.map(id=>{const pr=sellPrice(id);return`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">보유 ${P.inv[id]} · 전부 팔면 ${(pr*P.inv[id]).toLocaleString()} CR</span></div>${price(pr)}<div class="sbtns"><button class="btn sm alt" data-act="sell" data-id="${id}" data-n="1">×1</button><button class="btn sm ghost" data-act="sell" data-id="${id}" data-n="all">전부</button></div></div>`}).join(''):'<p class="hint" style="padding:10px">팔 물건이 없어요.</p>')})();
+  else rows=(()=>{const bb=Object.entries(soldBack).filter(([,b])=>b.n>0);const back=bb.length?`<span class="lbl">Buyback · 되사기 (상점을 나가면 사라집니다)</span>`+bb.map(([id,b])=>`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">방금 판 물건 ${b.n}개 · 판 값 그대로 되살 수 있습니다</span></div>${price(b.pr)}<div class="sbtns"><button class="btn sm" data-act="rebuy" data-id="${id}" data-n="1" ${cr>=b.pr?'':'disabled'}>×1</button><button class="btn sm ghost" data-act="rebuy" data-id="${id}" data-n="all" ${cr>=b.pr*b.n?'':'disabled'}>전부</button></div></div>`).join('')+`<span class="lbl" style="margin-top:6px">Sell · 판매</span>`:'';const ids=ORDER.filter(id=>P.inv[id]);return back+(ids.length?ids.map(id=>{const pr=sellPrice(id);return`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">보유 ${P.inv[id]} · 전부 팔면 ${(pr*P.inv[id]).toLocaleString()} CR</span></div>${price(pr)}<div class="sbtns"><button class="btn sm alt" data-act="sell" data-id="${id}" data-n="1">×1</button><button class="btn sm ghost" data-act="sell" data-id="${id}" data-n="all">전부</button></div></div>`}).join(''):'<p class="hint" style="padding:10px">팔 물건이 없습니다.</p>')})();
   if(shopTab==='ward')rows=wardHTML();
   const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
   return head()+`<div class="shop">
@@ -1553,13 +1553,13 @@ function renderBag(){
   const it=selItem&&ITEMS[selItem];
   const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c);
   return head()+`<div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-   ${ids.length?`<div class="bag">${ids.map(id=>`<button class="slot" data-act="sel" data-id="${id}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있어요.</p>'}
+   ${ids.length?`<div class="bag">${ids.map(id=>`<button class="slot" data-act="sel" data-id="${id}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
    <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>
-     ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나와요.</span>'}</div>
+     ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
    <div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화</div></div>
-   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했어요.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
+   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
   </div></div>`;
 }
 function renderPanel(){
@@ -1578,7 +1578,7 @@ function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog
 function colorOf(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return['#b38a9b','#8aa9bd','#bfae80','#8ba790','#9a92bf','#b0906f'][h%6]}
 function renderCrew(){
   const ul=$('#crew');
-  if(mode!=='online'){ul.innerHTML=`<li><span class="dot on"></span><span class="nm">${esc(P.nick)} (나)</span><span class="lvt">LV.${P.lvl}</span></li><li class="hint" style="border-style:dashed">${mode==='solo'?'공유된 페이지에서 열면 다른 단원이 여기에 보여요.':'연결 중…'}</li>`;return}
+  if(mode!=='online'){ul.innerHTML=`<li><span class="dot on"></span><span class="nm">${esc(P.nick)} (나)</span><span class="lvt">LV.${P.lvl}</span></li><li class="hint" style="border-style:dashed">${mode==='solo'?'공유된 페이지에서 열면 다른 단원이 여기에 보입니다.':'연결 중…'}</li>`;return}
   const online={};PEERS.forEach(p=>{if(p.presence&&p.presence.uid)online[p.presence.uid]=p.presence.act||''});
   const list=Object.entries(PLAYERS).map(([id,p])=>({id,faint:id===uid?isFaint():(p.faint&&Date.now()<p.faint),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
    .sort((a,b)=>(b.on-a.on)||(b.lvl-a.lvl));
@@ -1587,50 +1587,50 @@ function renderCrew(){
 }
 function renderChat(){
   const f=$('#feed');const atBottom=f.scrollHeight-f.scrollTop-f.clientHeight<40;
-  if(mode!=='online'){f.innerHTML=`<p class="empty">${mode==='solo'?'혼자 모드에서는 채팅을 쓸 수 없어요.<br>이 페이지를 친구에게 공유하면 같은 채널에서 대화할 수 있어요.':'공용 채널에 연결하는 중…'}</p>`;$('#chatIn').disabled=mode==='solo';return}
+  if(mode!=='online'){f.innerHTML=`<p class="empty">${mode==='solo'?'혼자 모드에서는 채팅을 쓸 수 없습니다.<br>이 페이지를 친구에게 공유하면 같은 채널에서 대화할 수 있습니다.':'공용 채널에 연결하는 중…'}</p>`;$('#chatIn').disabled=mode==='solo';return}
   $('#chatIn').disabled=false;
-  f.innerHTML=CHAT.length?CHAT.map(m=>m.sys?`<div class="msg sys"><time>${hhmm(m.at)}</time>★ ${esc(m.text)}</div>`:`<div class="msg"><time>${hhmm(m.at)}</time><span class="who" style="color:${colorOf(m.uid)}">${esc(m.nick)}</span>${esc(m.text)}</div>`).join(''):'<p class="empty">아직 조용해요. 첫 인사를 건네 보세요.</p>';
+  f.innerHTML=CHAT.length?CHAT.map(m=>m.sys?`<div class="msg sys"><time>${hhmm(m.at)}</time>★ ${esc(m.text)}</div>`:`<div class="msg"><time>${hhmm(m.at)}</time><span class="who" style="color:${colorOf(m.uid)}">${esc(m.nick)}</span>${esc(m.text)}</div>`).join(''):'<p class="empty">아직 조용합니다. 첫 인사를 건네 보십시오.</p>';
   if(atBottom||CHAT.length<12)f.scrollTop=f.scrollHeight;
 }
 
 /* ───────── actions ───────── */
 const FAINT_MS=10*60e3;
 const isFaint=()=>P.faint&&Date.now()<P.faint;
-function checkFaint(){if(isFaint())return;if(P.hp<=0||P.en<=0){const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했어요! 개척단원 목록에서 구조할 수 있어요.`)}}
+function checkFaint(){if(isFaint())return;if(P.hp<=0||P.en<=0){const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했습니다! 개척단원 목록에서 구조할 수 있습니다.`)}}
 function wake(by){P.faint=0;P.faintAt=0;const k=by?.4:.25;P.hp=Math.max(P.hp,Math.round(maxHp()*k));P.en=Math.max(P.en,Math.round(maxEn()*k));P.t=Date.now();log(by?`${by} 님이 구조해 줬다. 정신이 돌아왔다.`:'겨우 정신을 차렸다.','good');commit()}
 function commit(){checkFaint();save();renderPilot();renderNav();renderPanel();renderCrew()}
 let soldBack={};
 const A={
- async admgrant(){if(!isAdmin)return;const msg=($('#admNotice').value||'').trim().slice(0,80),cr=Math.floor(+$('#admGrantCr').value||0);if(!msg){toast('공지 내용을 먼저 적어 주세요.');return}if(cr<1||cr>100000){toast('크레딧은 1~100,000 사이로 적어 주세요.');return}
+ async admgrant(){if(!isAdmin)return;const msg=($('#admNotice').value||'').trim().slice(0,80),cr=Math.floor(+$('#admGrantCr').value||0);if(!msg){toast('공지 내용을 먼저 적어 주십시오.');return}if(cr<1||cr>100000){toast('크레딧은 1~100,000 사이로 적어 주십시오.');return}
   const g={cr,msg,at:Date.now(),by:P.nick},id='g'+g.at.toString(36);
   if(mode!=='online'){claimGrant(id,g);return}
-  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 단원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true});$('#admNotice').value='';toast(`모든 단원에게 ${cr.toLocaleString()} CR을 보냈어요.`)}catch(e){toast('선물을 보내지 못했어요.')}},
+  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 단원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true});$('#admNotice').value='';toast(`모든 단원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
  admdelno(){admDel=null;renderAdminAll()},
- async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).set({deleted:true,at:Date.now(),nick:p.nick||''});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'단원'} 캐릭터를 삭제했어요.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했어요.')}renderAdminAll()},
+ async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).set({deleted:true,at:Date.now(),nick:p.nick||''});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'단원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
  suggopen(){$('#suggModal').hidden=false;renderSugg();loadMySugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
  suggclose(){$('#suggModal').hidden=true},
- async suggsend(){const t=$('#suggIn'),v=(t&&t.value||'').trim().slice(0,300);if(!v){toast('건의 내용을 적어 주세요.');return}const it={text:v,at:Date.now(),nick:P.nick};
-  if(mode==='online'&&db&&uid){try{const ref=db.doc('feedback/'+uid),sn=await ref.get(),list=sn.exists?[...(sn.data().list||[])]:[];list.push(it);await ref.set({nick:P.nick,at:it.at,list:list.slice(-30)});mySugg=list.slice(-30)}catch(e){toast('건의를 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.');return}}
+ async suggsend(){const t=$('#suggIn'),v=(t&&t.value||'').trim().slice(0,300);if(!v){toast('건의 내용을 적어 주십시오.');return}const it={text:v,at:Date.now(),nick:P.nick};
+  if(mode==='online'&&db&&uid){try{const ref=db.doc('feedback/'+uid),sn=await ref.get(),list=sn.exists?[...(sn.data().list||[])]:[];list.push(it);await ref.set({nick:P.nick,at:it.at,list:list.slice(-30)});mySugg=list.slice(-30)}catch(e){toast('건의를 보내지 못했습니다. 잠시 뒤 다시 시도해 주십시오.');return}}
   else{P.sugg=[...(P.sugg||[]),it].slice(-30);mySugg=P.sugg;save();FB=[{id:'me',nick:P.nick,list:P.sugg}];updFbBadge()}
-  sfxCoin();toast('운영자에게 건의를 보냈어요. 고마워요!');renderSugg()},
- async fbdel(d){if(!isAdmin)return;const at=+d.at;if(mode==='online'&&db){try{const ref=db.doc('feedback/'+d.k),sn=await ref.get();if(sn.exists){const list=(sn.data().list||[]).filter(x=>+x.at!==at);await ref.set(Object.assign({},sn.data(),{list}))}}catch(e){toast('삭제하지 못했어요.')}}else{P.sugg=(P.sugg||[]).filter(x=>+x.at!==at);FB=[{id:'me',nick:P.nick,list:P.sugg}];save();renderAdminAll();updFbBadge()}},
- buywpn(d){const w=wpnById(d.k);if(!w||w.drop||(P.own||[]).includes(w.id))return;if((P.cr||0)<w.price){toast('크레딧이 부족해요.');return}if(!hasMat(w.mat)){toast('재료가 부족해요.');return}(w.mat||[]).forEach(([id,n])=>take(id,n));P.cr-=w.price;sfxCoin();P.own=[...(P.own||[]),w.id];P.wpn=w.id;log(`${w.n}을(를) 사서 장착했다.`,'rare');commit()},
+  sfxCoin();toast('운영자에게 건의를 보냈습니다. 고맙습니다!');renderSugg()},
+ async fbdel(d){if(!isAdmin)return;const at=+d.at;if(mode==='online'&&db){try{const ref=db.doc('feedback/'+d.k),sn=await ref.get();if(sn.exists){const list=(sn.data().list||[]).filter(x=>+x.at!==at);await ref.set(Object.assign({},sn.data(),{list}))}}catch(e){toast('삭제하지 못했습니다.')}}else{P.sugg=(P.sugg||[]).filter(x=>+x.at!==at);FB=[{id:'me',nick:P.nick,list:P.sugg}];save();renderAdminAll();updFbBadge()}},
+ buywpn(d){const w=wpnById(d.k);if(!w||w.drop||(P.own||[]).includes(w.id))return;if((P.cr||0)<w.price){toast('크레딧이 부족합니다.');return}if(!hasMat(w.mat)){toast('재료가 부족합니다.');return}(w.mat||[]).forEach(([id,n])=>take(id,n));P.cr-=w.price;sfxCoin();P.own=[...(P.own||[]),w.id];P.wpn=w.id;log(`${w.n}을(를) 사서 장착했다.`,'rare');commit()},
  wpnon(d){if(!(P.own||[]).includes(d.k))return;P.wpn=d.k;log(`${wpnById(d.k).n}을(를) 장착했다.`);commit()},
  wpnoff(){P.wpn=null;commit()},
- rebuy(d){const b=soldBack[d.id];if(!b||!b.n)return;const n=d.n==='all'?b.n:1,cost=b.pr*n;if((P.cr||0)<cost){toast('크레딧이 부족해요.');return}P.cr-=cost;add(d.id,n);b.n-=n;if(!b.n)delete soldBack[d.id];sfxCoin();log(`방금 판 ${ITEMS[d.id].n} ${n}개를 되샀다. (-${cost} CR)`);commit()},
+ rebuy(d){const b=soldBack[d.id];if(!b||!b.n)return;const n=d.n==='all'?b.n:1,cost=b.pr*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;add(d.id,n);b.n-=n;if(!b.n)delete soldBack[d.id];sfxCoin();log(`방금 판 ${ITEMS[d.id].n} ${n}개를 되샀다. (-${cost} CR)`);commit()},
  cooksel(d){cookSel=d.k;renderCook()},
- cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);if(!c||!canCook(c)){toast('재료가 부족해요.');return}for(const [id,n] of c.need)ingTake(id,n);P.cook={id:c.id,end:Date.now()+c.sec*1e3};sfxSizzle();log(`${c.n}을(를) 불에 올렸다.`,'');commit()},
+ cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);if(!c||!canCook(c)){toast('재료가 부족합니다.');return}for(const [id,n] of c.need)ingTake(id,n);P.cook={id:c.id,end:Date.now()+c.sec*1e3};sfxSizzle();log(`${c.n}을(를) 불에 올렸다.`,'');commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;add(ck.id);P.cook=null;sfxCoin();log(`${ITEMS[ck.id].n}을(를) 가방에 넣었다.`,'good');commit()},
  selpod(d){selPod=d.i==='add'?'add':+d.i;renderPanel()},
  soil(d){const i=+d.i;if(i>=P.fu||(P.field[i]&&P.field[i].til))return;if(!spend(1))return;P.field[i]={til:1,wet:0};log(`포드 ${i+1}에 배양토를 채웠다.`);commit()},
  plant(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til||pl.seed)return;if(!take(d.id))return;sfxPlant();const wet=isWet(pl);pl.seed=d.id;pl.got=0;pl.wet=wet?Date.now():0;log(`포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`);commit()},
- water(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었어요. 정수기에서 채워 주세요.');return}P.water--;sfxWater();if(pl.seed)pl.got=effG(pl);pl.wet=Date.now();commit()},
- fert(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요해요.');return}const it=ITEMS[pl.seed];pl.got=Math.min(it.grow,(pl.got||0)+it.grow*.3);pl.fert=1;log(`포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
+ water(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 정수기에서 채워 주십시오.');return}P.water--;sfxWater();if(pl.seed)pl.got=effG(pl);pl.wet=Date.now();commit()},
+ fert(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}const it=ITEMS[pl.seed];pl.got=Math.min(it.grow,(pl.got||0)+it.grow*.3);pl.fert=1;log(`포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
  harvest(d){const i=+d.i,pl=P.field[i];if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
- refill(){if(P.ref||P.water>=tankCap())return;if(Date.now()<(P.refCd||0)){toast(`정수기가 쉬는 중이에요. ${fmtClock(P.refCd-Date.now())} 뒤에 다시 충전할 수 있어요.`);return}const eng=P.job==='engineer';P.ref=Date.now()+(eng?1800e3:3600e3);log(`정수기에 물탱크를 연결했다. ${eng?'30분':'1시간'} 뒤 가득 찬다.`);commit()},
+ refill(){if(P.ref||P.water>=tankCap())return;if(Date.now()<(P.refCd||0)){toast(`정수기가 쉬는 중입니다. ${fmtClock(P.refCd-Date.now())} 뒤에 다시 충전할 수 있습니다.`);return}const eng=P.job==='engineer';P.ref=Date.now()+(eng?1800e3:3600e3);log(`정수기에 물탱크를 연결했다. ${eng?'30분':'1시간'} 뒤 가득 찬다.`);commit()},
  expand(){if(P.fu>=FIELD_N)return;const ex=2*P.fu;if(!take('ore',ex))return;P.fu++;selPod=P.fu-1;log(`재배 포드를 하나 더 설치했다. (${P.fu}/${FIELD_N})`,'good');commit()},
- gather(){if(P.exp){toast('이미 원정 중이에요.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}로 ${fmtDur(gDur*30)} 채집 원정을 떠났다.`);commit()},
+ gather(){if(P.exp){toast('이미 원정 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}로 ${fmtDur(gDur*30)} 채집 원정을 떠났다.`);commit()},
  gsite(d){gSite=d.id;renderPanel()},
  gdur(d){gDur=+d.k;renderPanel()},
  gclaim(){if(claimGather())commit()},
@@ -1646,22 +1646,22 @@ const A={
   if(fish.ph!=='bite')return;clearTimeout(fish.t2);const ms=Date.now()-fish.at;sfxSplash();
   const bo=!!fish.bonus,fast=ms<450,rod=P.rod||0,wr=30+(bo?3:0)+(P.job==='angler'?3:0)+AS('luk')*.3+GF('luck'),wu=rod>=1?8+(bo?2:0):0,wl=rod>=2?.5+(bo?.5:0)+(fast?.5:0):0;const tr=pick([['c',100-wr-wu-wl],['r',wr],['u',wu],['l',wl]]);
   const id=FISHES[tr][ri(0,FISHES[tr].length-1)],xp=FT[tr].xp,first=!P.dex[id];add(id);P.dex[id]=(P.dex[id]||0)+1;gainXp(xp);stat('fish');if(tr==='l')stat('legend');lxp('fish',{c:8,r:15,u:30,l:60}[tr]);duelCatch(tr,id);lastFish={id,ms,xp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
-  log(`${ITEMS[id].n}을(를) 낚았다! (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」을 낚았어요!`);commit()},
+  log(`${ITEMS[id].n}을(를) 낚았다! (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」을 낚았습니다!`);commit()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
  addpt(d){if(ptsLeft()<=0||!ABIL.find(a=>a[0]===d.k))return;P.as=Object.assign({},P.as);P.as[d.k]=(P.as[d.k]||0)+1;save();renderInfo();renderPilot()},
  resetpt(){P.as={};P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
  wwear(d){if(!ownsW(d.id))return;P.outfit=Object.assign({},outfitOf(P),{[d.k]:d.id});save();renderPanel();renderPilot()},
- wbuy(d){const it=wardById(d.id);if(!it||ownsW(it.id))return;if((P.cr||0)<it.price){toast('크레딧이 부족해요.');return}if(!hasMat(it.mat)){toast('재료가 부족해요.');return}(it.mat||[]).forEach(([id,n])=>take(id,n));P.cr-=it.price;sfxCoin();P.own=[...(P.own||[]),it.id];P.outfit=Object.assign({},outfitOf(P),{[d.k]:it.id});log(`옷장에 ${it.n}을(를) 들였다.`,'good');commit()},
+ wbuy(d){const it=wardById(d.id);if(!it||ownsW(it.id))return;if((P.cr||0)<it.price){toast('크레딧이 부족합니다.');return}if(!hasMat(it.mat)){toast('재료가 부족합니다.');return}(it.mat||[]).forEach(([id,n])=>take(id,n));P.cr-=it.price;sfxCoin();P.own=[...(P.own||[]),it.id];P.outfit=Object.assign({},outfitOf(P),{[d.k]:it.id});log(`옷장에 ${it.n}을(를) 들였다.`,'good');commit()},
  neonpick(d){neonPick=d.c||null;renderPanel()},
- neonbuy(){const c=neonPick;if(!c||!NEONSET.has(c)||ownsNeon(c))return;if((P.cr||0)<NEON_PRICE){toast('크레딧이 부족해요.');return}P.cr-=NEON_PRICE;sfxCoin();P.own=[...(P.own||[]),'neon'+c];neonPick=null;log(`${NEON.find(n=>n[0]===c)[1]} 색을 샀다.`,'good');commit()},
+ neonbuy(){const c=neonPick;if(!c||!NEONSET.has(c)||ownsNeon(c))return;if((P.cr||0)<NEON_PRICE){toast('크레딧이 부족합니다.');return}P.cr-=NEON_PRICE;sfxCoin();P.own=[...(P.own||[]),'neon'+c];neonPick=null;log(`${NEON.find(n=>n[0]===c)[1]} 색을 샀다.`,'good');commit()},
  setlook(d){if(!LOOKS[d.k]||!(LOOKS[d.k].opts.some(o=>o[0]===d.c)||(NEONSET.has(d.c)&&ownsNeon(d.c))))return;P.look=Object.assign({},lookOf(P),{[d.k]:d.c});save();renderPanel();renderPilot()},
- rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했어요.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했어요. 다시 시도해 주세요.'))},
+ rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
  fvisit(d){farmVisit=d.k||null;fSel=0;setPresence();renderPanel()},
  fsel(d){fSel=+d.i;renderPanel()},
  fhelp(d){const f=PLAYERS[farmVisit];if(!f||mode!=='online')return;const pl=(f.field||[])[fSel];if(!pl||!pl.seed||stage(pl)===3)return;
-  if(d.k!=='water')return;if(P.water<=0){toast('내 물탱크가 비었어요.');return}P.water--;sfxWater();
-  db.collection('farmhelp').add({to:farmVisit,from:uid,nick:P.nick,i:fSel,kind:d.k,at:Date.now()}).then(()=>{gainXp(3);lxp('farm',3);stat('helpfarm');log(`${f.nick} 님의 포드 ${fSel+1}에 ${d.k==='fert'?'비료를 뿌려':'물을 줘'} 줬다.`,'good');commit()}).catch(()=>{if(d.k==='water')P.water++;else add('moss',2);toast('도움 신호를 보내지 못했어요.');commit()})},
+  if(d.k!=='water')return;if(P.water<=0){toast('내 물탱크가 비었습니다.');return}P.water--;sfxWater();
+  db.collection('farmhelp').add({to:farmVisit,from:uid,nick:P.nick,i:fSel,kind:d.k,at:Date.now()}).then(()=>{gainXp(3);lxp('farm',3);stat('helpfarm');log(`${f.nick} 님의 포드 ${fSel+1}에 ${d.k==='fert'?'비료를 뿌려':'물을 줘'} 줬다.`,'good');commit()}).catch(()=>{if(d.k==='water')P.water++;else add('moss',2);toast('도움 신호를 보내지 못했습니다.');commit()})},
  gift(d){openGift(d.k)},
  giftclose(){$('#giftModal').hidden=true},
  giftadd(d){const have=P.inv[d.id]||0;giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
@@ -1669,9 +1669,9 @@ const A={
  giftcr(d){giftCr=+d.k;renderGift()},
  giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&(P.inv[i]||0)>=n);const cr=Math.min(giftCr,P.cr||0);if(!items.length&&!cr)return;
   items.forEach(([i,n])=>take(i,n));P.cr-=cr;const msg=giftMsg.trim().slice(0,40);save();
-  db.collection('gifts').add({to:giftTo,from:uid,nick:P.nick,items,cr,msg,at:Date.now()}).then(()=>{sfxCoin();log(`${t.nick} 님에게 선물을 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈어요.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했어요. 다시 시도해 주세요.');commit()})},
- duelstart(){if(mode!=='online'||duelOn())return;const now=Date.now();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었어요! 낚시 탭으로 모이세요.`)).catch(()=>toast('대결을 열지 못했어요.'))},
- duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+300;sfxCoin();log('낚시 대결 우승! 상금 300 CR','rare');sys(`${P.nick} 님이 낚시 대결에서 우승했어요!`);commit()},
+  db.collection('gifts').add({to:giftTo,from:uid,nick:P.nick,items,cr,msg,at:Date.now()}).then(()=>{sfxCoin();log(`${t.nick} 님에게 선물을 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
+ duelstart(){if(mode!=='online'||duelOn())return;const now=Date.now();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)).catch(()=>toast('대결을 열지 못했습니다.'))},
+ duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+300;sfxCoin();log('낚시 대결 우승! 상금 300 CR','rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
  renamecancel(){renaming=false;renderInfo()},
  adminopen(){if(!isAdmin)return;renderAdminAll();$('#adminModal').hidden=false;const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()},
@@ -1682,13 +1682,13 @@ const A={
   else if(k==='exp'){if(P.exp)P.exp=Object.assign({},P.exp,{start:Date.now()-P.exp.slots*SLOT})}
   else if(k==='farm'){P.field=P.field.map(pl=>pl&&pl.seed?Object.assign({},pl,{got:ITEMS[pl.seed].grow}):pl)}
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
-  log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했어요.')},
+  log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했습니다.')},
  admgive(){if(!isAdmin)return;const id=$('#admItem').value,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
-  if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했어요.');return}
-  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[[id,n]],cr:0,msg:'운영자 지급',at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈어요.`)).catch(()=>toast('보내지 못했어요.'))},
- admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈어요.')}).catch(()=>toast('보내지 못했어요.'))},
- admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈어요.')).catch(()=>toast('보내지 못했어요.'))},
- admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 채팅을 지웠어요.')}).catch(()=>toast('지우지 못했어요.'))},
+  if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
+  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[[id,n]],cr:0,msg:'운영자 지급',at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
+ admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
+ admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
+ admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 채팅을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
  profile(){renderInfo();$('#infoModal').hidden=false},
  infoclose(){$('#infoModal').hidden=true},
  settitle(d){const t=TITLES.find(x=>x[0]===d.k);if(!t||!t[3]())return;P.title=d.k;save();renderInfo();renderPilot()},
@@ -1697,15 +1697,15 @@ const A={
  dextoggle(){dexOpen=!dexOpen;renderPanel()},
  dextab(d){dexTab=d.k;renderPanel()},
  shoptab(d){shopTab=d.k;keeperLine=ri(0,KEEPER.length-1);renderPanel()},
- craft(d){const f=craftById(d.id);if(!f||(P.own||[]).includes(f.id))return;if((P.cr||0)<f.price){toast('크레딧이 부족해요.');return}if(!hasMat(f.mat)){toast('재료가 부족해요.');return}f.mat.forEach(([id,n])=>take(id,n));P.cr-=f.price;sfxCoin();P.own=[...(P.own||[]),f.id];P.gear=Object.assign({},P.gear,{[d.k]:f.id});log(`${f.n}을(를) 만들어 착용했다. (${f.d})`,'rare');commit()},
+ craft(d){const f=craftById(d.id);if(!f||(P.own||[]).includes(f.id))return;if((P.cr||0)<f.price){toast('크레딧이 부족합니다.');return}if(!hasMat(f.mat)){toast('재료가 부족합니다.');return}f.mat.forEach(([id,n])=>take(id,n));P.cr-=f.price;sfxCoin();P.own=[...(P.own||[]),f.id];P.gear=Object.assign({},P.gear,{[d.k]:f.id});log(`${f.n}을(를) 만들어 착용했다. (${f.d})`,'rare');commit()},
  cequip(d){if(!(P.own||[]).includes(d.id))return;P.gear=Object.assign({},P.gear,{[d.k]:d.id});commit()},
  cunequip(d){P.gear=Object.assign({},P.gear);delete P.gear[d.k];P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());commit()},
- buysuit(d){const lv=+d.k,u=SUITS[lv];if(!u||(P.suit||0)>=lv)return;if((P.cr||0)<u.price){toast('크레딧이 부족해요.');return}if(!hasMat(u.mat)){toast('재료가 부족해요.');return}u.mat.forEach(([id,n])=>take(id,n));P.cr-=u.price;sfxCoin();P.suit=lv;log(`${u.n}을 입었다. 방어력 +${u.def}`,'rare');commit()},
- buytank(d){const lv=+d.k,t=TANKS[lv];if(!t||(P.tk||0)>=lv)return;if((P.cr||0)<t.price){toast('크레딧이 부족해요.');return}if(!hasMat(t.mat)){toast('재료가 부족해요.');return}t.mat.forEach(([id,n])=>take(id,n));P.cr-=t.price;sfxCoin();P.tk=lv;P.water=t.cap;log(`${t.n}을 설치했다. 물탱크 ${t.cap}칸.`,'good');commit()},
- buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||(P.rod||0)>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족해요.');return}P.cr-=r.price;sfxCoin();P.rod=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
- buy(d){const row=BUY.find(r=>r[0]===d.id);if(!row)return;const n=+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족해요.');return}P.cr-=cost;sfxCoin();add(d.id,n);log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
+ buysuit(d){const lv=+d.k,u=SUITS[lv];if(!u||(P.suit||0)>=lv)return;if((P.cr||0)<u.price){toast('크레딧이 부족합니다.');return}if(!hasMat(u.mat)){toast('재료가 부족합니다.');return}u.mat.forEach(([id,n])=>take(id,n));P.cr-=u.price;sfxCoin();P.suit=lv;log(`${u.n}을 입었다. 방어력 +${u.def}`,'rare');commit()},
+ buytank(d){const lv=+d.k,t=TANKS[lv];if(!t||(P.tk||0)>=lv)return;if((P.cr||0)<t.price){toast('크레딧이 부족합니다.');return}if(!hasMat(t.mat)){toast('재료가 부족합니다.');return}t.mat.forEach(([id,n])=>take(id,n));P.cr-=t.price;sfxCoin();P.tk=lv;P.water=t.cap;log(`${t.n}을 설치했다. 물탱크 ${t.cap}칸.`,'good');commit()},
+ buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||(P.rod||0)>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
+ buy(d){const row=BUY.find(r=>r[0]===d.id);if(!row)return;const n=+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
  sell(d){const have=P.inv[d.id]||0;if(!have)return;const n=d.n==='all'?have:1,gain=sellPrice(d.id)*n;take(d.id,n);{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
- scan(){if(sigState().n<=0){toast('아직 잡힌 신호가 없어요.');return}if(!spend(4))return;useSig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);const got=r.add||[];got.forEach(([id,n])=>add(id,n));let extra='';
+ scan(){if(sigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useSig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);const got=r.add||[];got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
@@ -1713,7 +1713,7 @@ const A={
   commit()},
  sel(d){selItem=d.id;renderPanel()},
  use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){heal(it.hp,it.en);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${it.hp}, 에너지 +${it.en}`,'good')}else if(it.type==='relic'){gainXp(30);log('고대 신호를 해독했다. 경험치 +30','rare')}commit()},
- upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했어요.`);commit()},
+ upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했습니다.`);commit()},
 };
 
 /* ═════════ realtime: gifts · fishing duel ═════════ */
@@ -1722,36 +1722,36 @@ let giftTo=null,giftSel={},giftCr=0,giftMsg='';
 function openGift(id){if(!PLAYERS[id])return;giftTo=id;giftSel={};giftCr=0;giftMsg='';renderGift();$('#giftModal').hidden=false}
 function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]);const sel=Object.entries(giftSel);
   $('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
-  <div class="info-sec"><span class="lbl">Items · 누를 때마다 1개씩 담겨요</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,3)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">보낼 아이템이 없어요.</p>'}</div></div>
+  <div class="info-sec"><span class="lbl">Items · 누를 때마다 1개씩 담깁니다</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,3)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">보낼 아이템이 없습니다.</p>'}</div></div>
   <div class="info-sec"><span class="lbl">Credits · 크레딧</span><div class="row" style="gap:5px">${[0,50,100,500,1000,5000].map(v=>`<button class="qchip" data-act="giftcr" data-k="${v}" aria-pressed="${giftCr===v}" ${v>(P.cr||0)?'disabled':''}>${v?v.toLocaleString()+' CR':'없음'}</button>`).join('')}</div></div>
   <div class="info-sec"><span class="lbl">Message · 한마디 (선택)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
   <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}<button class="btn sm gold" data-act="giftsend" ${sel.length||giftCr?'':'disabled'}>선물 보내기</button></div>`}
 function receiveGifts(sn){sn.docs.forEach(d=>{P.gotG=P.gotG||[];if(P.gotG.includes(d.id)){db.collection('gifts').doc(d.id).delete().catch(()=>{});return}const g=d.data();P.gotG=[...P.gotG.slice(-40),d.id];
   const parts=[];(g.items||[]).forEach(([i,n])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
-  log(`${g.nick||'누군가'} 님의 선물: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`,'rare');toast(`${g.nick||'누군가'} 님이 선물을 보냈어요!`);sfxCoin();commit();db.collection('gifts').doc(d.id).delete().catch(()=>{})})}
+  log(`${g.nick||'누군가'} 님의 선물: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`,'rare');toast(`${g.nick||'누군가'} 님이 선물을 보냈습니다!`);sfxCoin();commit();db.collection('gifts').doc(d.id).delete().catch(()=>{})})}
 /* ---- fishing duel ---- */
 let DUEL=null;const DUEL_MS=3*60e3,DPTS={c:1,r:3,u:8,l:25};
 const duelOn=()=>DUEL&&Date.now()>=DUEL.start&&Date.now()<DUEL.end;
 function duelBoard(){if(!DUEL)return[];const rows=[];for(const [id,p] of Object.entries(PLAYERS)){const d=id===uid?P.duel:p.duel;if(d&&d.id===DUEL.id)rows.push({id,nick:id===uid?P.nick:p.nick,score:d.score||0,best:d.best||''})}if(mode!=='online'&&P.duel&&P.duel.id===DUEL.id)rows.push({id:'me',nick:P.nick,score:P.duel.score,best:P.duel.best});return rows.sort((a,b)=>b.score-a.score)}
 function duelHTML(){if(mode!=='online')return'';const now=Date.now();
-  if(duelOn()){const rk=duelBoard();return`<div class="card duel"><div class="row" style="justify-content:space-between"><b class="dfloor">낚시 대결 진행 중</b><span class="hint" id="duelT">남은 시간 ${fmtClock(DUEL.end-now)}</span></div><span class="hint">일반 1점 · 레어 3점 · 유니크 8점 · 레전더리 25점. 지금 낚으면 바로 점수가 올라가요.</span><div class="ranks">${rk.length?rk.map((r,i)=>`<div style="${r.id===uid||r.id==='me'?'border-color:var(--pink)':''}"><span>${i+1}. ${esc(r.nick)}${r.best?' · '+esc(ITEMS[r.best]?.n||''):''}</span><b>${r.score}점</b></div>`).join(''):'<div><span class="hint">아직 아무도 낚지 못했어요.</span></div>'}</div></div>`}
-  if(DUEL&&now<DUEL.start)return`<div class="card duel"><b class="dfloor">낚시 대결이 곧 시작돼요 · ${fmtClock(DUEL.start-now)}</b></div>`;
+  if(duelOn()){const rk=duelBoard();return`<div class="card duel"><div class="row" style="justify-content:space-between"><b class="dfloor">낚시 대결 진행 중</b><span class="hint" id="duelT">남은 시간 ${fmtClock(DUEL.end-now)}</span></div><span class="hint">일반 1점 · 레어 3점 · 유니크 8점 · 레전더리 25점. 지금 낚으면 바로 점수가 올라갑니다.</span><div class="ranks">${rk.length?rk.map((r,i)=>`<div style="${r.id===uid||r.id==='me'?'border-color:var(--pink)':''}"><span>${i+1}. ${esc(r.nick)}${r.best?' · '+esc(ITEMS[r.best]?.n||''):''}</span><b>${r.score}점</b></div>`).join(''):'<div><span class="hint">아직 아무도 낚지 못했습니다.</span></div>'}</div></div>`}
+  if(DUEL&&now<DUEL.start)return`<div class="card duel"><b class="dfloor">낚시 대결이 곧 시작됩니다 · ${fmtClock(DUEL.start-now)}</b></div>`;
   if(DUEL&&now-DUEL.end<15*60e3){const rk=duelBoard(),top=rk[0];const win=top&&rk.filter(r=>r.score===top.score&&top.score>0).map(r=>r.id);const iWon=win&&win.includes(uid);const claimed=P.duel&&P.duel.claimed===DUEL.id;
-    return`<div class="card duel"><div class="row" style="justify-content:space-between"><b class="dfloor">지난 낚시 대결 결과</b><button class="btn sm" data-act="duelstart">새 대결 열기 <small>3분</small></button></div><div class="ranks">${rk.length?rk.slice(0,5).map((r,i)=>`<div><span>${i+1}. ${esc(r.nick)}</span><b>${r.score}점</b></div>`).join(''):'<div><span class="hint">참가한 사람이 없었어요.</span></div>'}</div>${iWon&&!claimed?'<button class="btn sm gold" data-act="duelclaim">우승 상금 받기 · 300 CR</button>':''}</div>`}
-  return`<div class="card duel row" style="justify-content:space-between"><span class="hint">친구와 3분 동안 누가 더 귀한 물고기를 낚는지 겨뤄 보세요.</span><button class="btn sm" data-act="duelstart">낚시 대결 열기 <small>3분</small></button></div>`}
+    return`<div class="card duel"><div class="row" style="justify-content:space-between"><b class="dfloor">지난 낚시 대결 결과</b><button class="btn sm" data-act="duelstart">새 대결 열기 <small>3분</small></button></div><div class="ranks">${rk.length?rk.slice(0,5).map((r,i)=>`<div><span>${i+1}. ${esc(r.nick)}</span><b>${r.score}점</b></div>`).join(''):'<div><span class="hint">참가한 사람이 없었습니다.</span></div>'}</div>${iWon&&!claimed?'<button class="btn sm gold" data-act="duelclaim">우승 상금 받기 · 300 CR</button>':''}</div>`}
+  return`<div class="card duel row" style="justify-content:space-between"><span class="hint">친구와 3분 동안 누가 더 귀한 물고기를 낚는지 겨뤄 보십시오.</span><button class="btn sm" data-act="duelstart">낚시 대결 열기 <small>3분</small></button></div>`}
 function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.duel={id:DUEL.id,score:0,best:''};const pts=DPTS[tr];P.duel=Object.assign({},P.duel,{score:P.duel.score+pts});const ord='crul';if(!P.duel.best||ord.indexOf(ITEMS[id].fish)>=ord.indexOf(ITEMS[P.duel.best]?.fish||'c'))P.duel.best=id;log(`낚시 대결 +${pts}점 (총 ${P.duel.score}점)`,'good')}
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
 const SAFE_ACT=new Set(['admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg')giftMsg=e.target.value});
-document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주세요.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨어요.`);save();setPresence();renderAll();renderInfo()});
+document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
   const t=e.target.closest('[data-tab]');if(t){const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}renderNav();renderPanel();renderCrew();setPresence();return}
-  const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중이에요. 잠시만요.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태예요. ${fmtClock(P.faint-Date.now())} 뒤에 깨어나요.`);return}A[a.dataset.act](a.dataset)}
+  const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 $('#chatForm').addEventListener('submit',e=>{e.preventDefault();const i=$('#chatIn'),v=i.value.trim();if(!v||mode!=='online')return;i.value='';
-  db.collection('chat').add({uid,nick:P.nick,text:v.slice(0,140),at:Date.now(),sys:false}).catch(err=>{i.value=v;toast(err&&err.code==='quota_exceeded'?'채팅 저장 공간이 가득 찼어요.':'전송하지 못했어요. 다시 시도해 주세요.')})});
+  db.collection('chat').add({uid,nick:P.nick,text:v.slice(0,140),at:Date.now(),sys:false}).catch(err=>{i.value=v;toast(err&&err.code==='quota_exceeded'?'채팅 저장 공간이 가득 찼습니다.':'전송하지 못했습니다. 다시 시도해 주십시오.')})});
 /* ───────── social: PAD feed · whisper · crew directory · guestbook ───────── */
 let socTab='pad',padView='all',padTag='',padThread=null,THR=[],THRP=null,thrUnsub=[],POSTS=[],GUEST=[],DMS=[],dmPeer=null,gbOf=null,editBio=false,padDraft='',replyDraft='',gbDraft='',bioDraft='',dmDraft='',socPend=false,lastPost=0,pdelArm=null;
 const socBoot=Date.now(),socNoted=new Set(),SOC_LS='nebula-soc-seen',DM_LS='nebula-dm-read',PAD_MAX=200;let socSeen=0,dmRead={};try{socSeen=+localStorage.getItem(SOC_LS)||0;dmRead=JSON.parse(localStorage.getItem(DM_LS)||'{}')||{}}catch(e){}
@@ -1759,7 +1759,7 @@ const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)
 const whoP=id=>id===uid?P:(PLAYERS[id]||{});
 const ttlOf=p=>(TITLES.find(t=>t[0]===p.title)||TITLES[0])[1];
 const isOn=id=>id===uid||PEERS.some(x=>x.presence&&x.presence.uid===id);
-const socErr=e=>toast(e&&e.code==='quota_exceeded'?'저장 공간이 가득 찼어요. 운영자에게 알려 주세요.':'보내지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+const socErr=e=>toast(e&&e.code==='quota_exceeded'?'저장 공간이 가득 찼습니다. 운영자에게 알려 주십시오.':'보내지 못했습니다. 잠시 뒤 다시 시도해 주십시오.');
 const shortAgo=t=>{const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금';if(m<60)return m+'분';const h=Math.floor(m/60);if(h<24)return h+'시간';return Math.floor(h/24)+'일'};
 function dmUnread(peer){return DMS.filter(d=>d.to===uid&&d.from===peer&&d.at>(dmRead[peer]||0)).length}
 function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>(dmRead[d.from]||0)).length}
@@ -1776,14 +1776,14 @@ async function prepImg(f){if(!IMG_TYPES.test(f.type))throw{code:'unsupported_typ
   const sc=Math.min(1,1600/Math.max(bmp.width,bmp.height));if(sc===1&&f.size<1.5e6)return f;
   const c=document.createElement('canvas');c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);const x=c.getContext('2d');x.fillStyle='#0b0d16';x.fillRect(0,0,c.width,c.height);x.drawImage(bmp,0,0,c.width,c.height);
   const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.86));if(!b)throw{code:'unsupported_type'};return b}
-async function addImgs(ctx,files){const L=imgList(ctx);let added=0;for(const f of files){if(L.length>=IMG_MAX){toast(`이미지는 한 글에 ${IMG_MAX}장까지 붙일 수 있어요.`);break}
-  try{const b=await prepImg(f);L.push({blob:b,url:URL.createObjectURL(b)});added++}catch(e){toast(e.code==='too_large'?'GIF는 8MB까지만 올릴 수 있어요.':'PNG, JPG, GIF, WEBP 이미지만 올릴 수 있어요.')}}
+async function addImgs(ctx,files){const L=imgList(ctx);let added=0;for(const f of files){if(L.length>=IMG_MAX){toast(`이미지는 한 글에 ${IMG_MAX}장까지 붙일 수 있습니다.`);break}
+  try{const b=await prepImg(f);L.push({blob:b,url:URL.createObjectURL(b)});added++}catch(e){toast(e.code==='too_large'?'GIF는 8MB까지만 올릴 수 있습니다.':'PNG, JPG, GIF, WEBP 이미지만 올릴 수 있습니다.')}}
   if(added){const ae=document.activeElement;if(isField(ae))ae.blur();renderPanel()}}
 function clearImgs(ctx){imgList(ctx).forEach(m=>{try{URL.revokeObjectURL(m.url)}catch(e){}});if(ctx==='reply')replyImgs=[];else padImgs=[]}
-function imgErr(e){if(e&&e.message&&/\(/.test(e.message)){toast(e.message);return}const c=e&&e.code;toast(c==='too_large'?'이미지가 너무 커요 (최대 20MB).':c==='unsupported_type'?'이 형식의 이미지는 올릴 수 없어요.':c==='quota_or_state'?'이미지 저장 공간이 가득 찼어요. 운영자에게 알려 주세요.':c==='rate_limited'?'너무 빨리 올리고 있어요. 잠시 뒤 다시 시도해 주세요.':'이미지를 올리지 못했어요. 잠시 뒤 다시 시도해 주세요.')}
+function imgErr(e){if(e&&e.message&&/\(/.test(e.message)){toast(e.message);return}const c=e&&e.code;toast(c==='too_large'?'이미지가 너무 큽니다 (최대 20MB).':c==='unsupported_type'?'이 형식의 이미지는 올릴 수 없습니다.':c==='quota_or_state'?'이미지 저장 공간이 가득 찼습니다. 운영자에게 알려 주십시오.':c==='rate_limited'?'너무 빨리 올리고 있습니다. 잠시 뒤 다시 시도해 주십시오.':'이미지를 올리지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}
 function imgPicker(ctx){if(!ASSETS)return'';const n=imgList(ctx).length;return`<label class="qchip imgbtn ${n>=IMG_MAX?'off':''}" title="이미지 붙이기 (최대 ${IMG_MAX}장)">▣ 이미지 ${n?n+'/'+IMG_MAX:''}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden data-imgctx="${ctx}" ${n>=IMG_MAX?'disabled':''}></label>`}
 function imgPrev(ctx){const L=imgList(ctx);return L.length?`<div class="padprev">${L.map((m,i)=>`<span class="pvimg"><img src="${m.url}" alt="첨부할 이미지 ${i+1}"><button class="pvx" data-act="padimgx" data-k="${ctx}" data-i="${i}" aria-label="이미지 빼기">×</button></span>`).join('')}</div>`:''}
-function imgsHTML(ids){const v=(ids||[]).filter(id=>ASSET_ID.test(String(id))).slice(0,IMG_MAX);if(!v.length)return'';return`<div class="twimgs n${v.length}">${v.map(id=>`<img src="${window.__blobURL(id)}" loading="lazy" alt="이미지를 불러올 수 없어요" data-act="imgview" data-k="${id}">`).join('')}</div>`}
+function imgsHTML(ids){const v=(ids||[]).filter(id=>ASSET_ID.test(String(id))).slice(0,IMG_MAX);if(!v.length)return'';return`<div class="twimgs n${v.length}">${v.map(id=>`<img src="${window.__blobURL(id)}" loading="lazy" alt="이미지를 불러올 수 없습니다" data-act="imgview" data-k="${id}">`).join('')}</div>`}
 /* ---- PAD ---- */
 const TAG_RE=/#([0-9A-Za-z가-힣_]{1,20})/g;
 function richText(s){return esc(s).replace(/(^|[\s(])#([0-9A-Za-z가-힣_]{1,20})/g,(m,a,t)=>`${a}<button class="tag" data-act="padtag" data-k="${t}">#${t}</button>`).replace(/(^|[\s(])@([^\s@#<&]{1,12})/g,(m,a,n)=>`${a}<span class="men">@${n}</span>`)}
@@ -1791,23 +1791,23 @@ const replies=id=>{const m={};[...POSTS,...THR].forEach(p=>{if(p.re===id)m[p.id]
 const myRt=id=>POSTS.find(x=>x.rt===id&&x.uid===uid);
 function twHTML(p,big){const isRt=!!p.rt,s=isRt?Object.assign({},p.rto||{},{id:p.rt}):p,orig=isRt?(POSTS.find(x=>x.id===p.rt)||(THRP&&THRP.id===p.rt?THRP:null)):p;
   const lk=orig?Object.values(orig.likes||{}).filter(Boolean).length:0,liked=!!(orig&&orig.likes&&orig.likes[uid]),rc=replies(s.id).length,rtc=POSTS.filter(x=>x.rt===s.id).length,rted=!!myRt(s.id),k=esc(s.id),canDel=!isRt&&(p.uid===uid||isAdmin);
-  return`<article class="tw ${big?'big':''}" ${big?'':`data-act="padopen" data-k="${k}"`}>${isRt?`<div class="twrt">⇄ ${esc(p.nick||'단원')} 님이 재전송했어요</div>`:''}<div class="twrow"><div class="twav">${headImg(2,whoP(s.uid))}</div><div class="twbody">
+  return`<article class="tw ${big?'big':''}" ${big?'':`data-act="padopen" data-k="${k}"`}>${isRt?`<div class="twrt">⇄ ${esc(p.nick||'단원')} 님이 재전송했습니다</div>`:''}<div class="twrow"><div class="twav">${headImg(2,whoP(s.uid))}</div><div class="twbody">
    <div class="twh"><b style="color:${colorOf(s.uid)}">${esc(s.nick||'단원')}</b><span class="hint">@${esc(s.nick||'단원')} · ${shortAgo(s.at||Date.now())}</span>${canDel?`<button class="twbtn" style="margin-left:auto" data-act="pdel" data-k="${esc(p.id)}">${pdelArm===p.id?'정말 삭제':'삭제'}</button>`:''}</div>
    ${s.re?`<div class="hint">↳ <button class="tag" data-act="padopen" data-k="${esc(s.re)}">@${esc(s.reNick||'단원')}</button> 님에게 답글</div>`:''}
    ${s.text?`<p class="twtext">${richText(s.text)}</p>`:''}${imgsHTML(s.img)}
    <div class="twact"><button class="twbtn" data-act="padopen" data-k="${k}" aria-label="답글">답글 ${rc}</button>${s.re?'':`<button class="twbtn rt ${rted?'on':''}" data-act="padrt" data-k="${k}" aria-pressed="${rted}">⇄ ${rtc}</button>`}<button class="twbtn like ${liked?'on':''}" data-act="plike" data-k="${k}" aria-pressed="${liked}">♥ ${lk}</button></div></div></div></article>`}
-function padCompose(){return`<div class="padc">${headImg(3,P)}<div class="padcb"><textarea id="padIn" class="suggta socta" maxlength="${PAD_MAX}" placeholder="지금 정거장에서 무슨 일이 있나요? #해시태그 @콜사인 도 쓸 수 있어요" aria-label="PAD 글 쓰기">${esc(padDraft)}</textarea>${imgPrev('pad')}<div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${imgPicker('pad')}<span class="hint">Ctrl+Enter로 게시${ASSETS?' · 이미지는 붙여넣기도 돼요':''}</span></span><span class="row" style="gap:8px"><span class="twcnt" id="padCnt">${padDraft.length}/${PAD_MAX}</span><button class="btn sm" data-act="padpost" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'게시'}</button></span></div></div></div>`}
+function padCompose(){return`<div class="padc">${headImg(3,P)}<div class="padcb"><textarea id="padIn" class="suggta socta" maxlength="${PAD_MAX}" placeholder="지금 정거장에서 무슨 일이 있습니까? #해시태그 @콜사인 도 쓸 수 있습니다" aria-label="PAD 글 쓰기">${esc(padDraft)}</textarea>${imgPrev('pad')}<div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${imgPicker('pad')}<span class="hint">Ctrl+Enter로 게시${ASSETS?' · 이미지는 붙여넣기도 됩니다':''}</span></span><span class="row" style="gap:8px"><span class="twcnt" id="padCnt">${padDraft.length}/${PAD_MAX}</span><button class="btn sm" data-act="padpost" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'게시'}</button></span></div></div></div>`}
 function socPad(){
   if(padThread){const main=THRP||POSTS.find(x=>x.id===padThread),rs=replies(padThread).sort((a,b)=>a.at-b.at);
-    return`<div class="row"><button class="btn sm ghost" data-act="padback">← 타임라인</button><span class="hint">스레드</span></div><div class="twfeed">${main?twHTML(main,true):'<p class="empty" style="padding:14px">지워졌거나 불러오는 중인 글이에요.</p>'}
+    return`<div class="row"><button class="btn sm ghost" data-act="padback">← 타임라인</button><span class="hint">스레드</span></div><div class="twfeed">${main?twHTML(main,true):'<p class="empty" style="padding:14px">지워졌거나 불러오는 중인 글입니다.</p>'}
      ${main?`<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="padReply" class="suggta socta" maxlength="${PAD_MAX}" placeholder="@${esc(main.nick||'단원')} 님에게 답글 달기" aria-label="답글">${esc(replyDraft)}</textarea>${imgPrev('reply')}<div class="row" style="justify-content:space-between;gap:8px">${imgPicker('reply')||'<span></span>'}<span class="row" style="gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" data-act="padreply" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'답글'}</button></span></div></div></div>`:''}
-     ${rs.map(r=>twHTML(r)).join('')||(main?'<p class="hint" style="padding:10px 14px">아직 답글이 없어요.</p>':'')}</div>`}
+     ${rs.map(r=>twHTML(r)).join('')||(main?'<p class="hint" style="padding:10px 14px">아직 답글이 없습니다.</p>':'')}</div>`}
   const tags={};POSTS.forEach(p=>{if(p.rt||p.re)return;(String(p.text||'').match(TAG_RE)||[]).forEach(t=>tags[t.slice(1)]=(tags[t.slice(1)]||0)+1)});const trend=Object.entries(tags).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const me=new RegExp('@'+P.nick.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![^\\s@#])');
   const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&me.test(s.text||'');return true});
   return padCompose()+`<div class="dtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
   ${trend.length?`<div class="row" style="gap:4px"><span class="lbl">Trend · 지금 뜨는 태그</span>${trend.map(([t,n])=>`<button class="qchip" data-act="padtag" data-k="${esc(t)}">#${esc(t)} <span class="hint">${n}</span></button>`).join('')}</div>`:''}
-  <div class="twfeed">${list.length?list.map(p=>twHTML(p)).join(''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없어요.':padView==='ment'?'아직 나를 언급한 글이 없어요.':padView==='mine'?'아직 내가 쓴 글이 없어요.':'PAD가 조용해요. 첫 글을 남겨 보세요.'}</p>`}</div>`}
+  <div class="twfeed">${list.length?list.map(p=>twHTML(p)).join(''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
 function openThread(id){thrUnsub.forEach(f=>{try{f()}catch(e){}});thrUnsub=[];THR=[];THRP=null;padThread=id;replyDraft='';clearImgs('reply');pdelArm=null;
   if(id&&mode==='online'){thrUnsub.push(db.collection('posts').where('re','==',id).onSnapshot(sn=>{THR=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='social')renderPanel()},()=>{}));
     thrUnsub.push(db.doc('posts/'+id).onSnapshot(s=>{THRP=s.exists?Object.assign({id},s.data()):null;if(tab==='social')renderPanel()},()=>{}))}}
@@ -1816,15 +1816,15 @@ function dmConvs(){const m={};DMS.forEach(d=>{const peer=d.from===uid?d.to:d.fro
 function dmListHTML(){const cv=dmConvs(),have=new Set(cv.map(c=>c[0])),fresh=Object.entries(PLAYERS).filter(([id])=>id!==uid&&!have.has(id));
   return cv.map(([peer,d])=>{const p=whoP(peer),n=dmUnread(peer);return`<button class="dmi" data-act="dmopen" data-k="${esc(peer)}" aria-pressed="${dmPeer===peer}">${headImg(2,p)}<span class="sinfo"><b>${esc(p.nick||d.nick||'단원')}</b><span class="hint">${d.from===uid?'나: ':''}${esc(String(d.text||'').slice(0,24))}</span></span>${n?`<span class="dmdot" title="안 읽은 귓속말 ${n}개"></span>`:''}</button>`}).join('')
    +(fresh.length?`<span class="lbl" style="margin-top:6px">New · 새 귓속말</span>`+fresh.map(([id,p])=>`<button class="dmi" data-act="dmopen" data-k="${esc(id)}" aria-pressed="${dmPeer===id}">${headImg(2,p)}<span class="sinfo"><b>${esc(p.nick||'단원')}</b><span class="hint">${isOn(id)?'접속 중':'오프라인'}</span></span></button>`).join(''):'')
-   ||'<p class="hint">귓속말을 나눌 단원이 아직 없어요.</p>'}
+   ||'<p class="hint">귓속말을 나눌 단원이 아직 없습니다.</p>'}
 function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.from===dmPeer&&d.to===uid)).sort((a,b)=>a.at-b.at);
-  return ms.length?ms.map(d=>`<div class="dmb ${d.from===uid?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div>`).join(''):'<p class="empty">아직 나눈 귓속말이 없어요. 먼저 말을 걸어 보세요.</p>'}
+  return ms.length?ms.map(d=>`<div class="dmb ${d.from===uid?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div>`).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
-  return`<p class="lead">단원과 1:1로 귓속말을 나눠요. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보여요.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
-  <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,2)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'단원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 단원을 고르세요.</p>'}</div></div>`}
+  return`<p class="lead">단원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
+  <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,2)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'단원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 단원을 고르십시오.</p>'}</div></div>`}
 /* ---- crew & guestbook ---- */
 function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${esc(titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
-  ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보여요.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
+  ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:12px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:12px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
@@ -1839,41 +1839,41 @@ function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row">
   const crew=all.filter(([id,p])=>!isHead(id,p)&&!taken.has(id)).sort((a,b)=>(b[1].lvl||1)-(a[1].lvl||1));
   const cand=[...valid.entries()].sort((a,b)=>String(a[1].nick||'').localeCompare(String(b[1].nick||'')));
   const sel=(k,cur)=>isAdmin?`<select class="sel orgsel" data-role="${k}" aria-label="${esc(POSTS3.find(x=>x[0]===k)[1])} 임명"><option value="">— 공석 —</option>${cand.map(([id,p])=>`<option value="${esc(id)}" ${cur===id?'selected':''}>${esc(p.nick||'단원')}</option>`).join('')}</select>`:'';
-  return`<p class="lead">별무리호 승무원 조직도예요. 의무장 · 기관장 · 항해장은 선장이 임명해요. 얼굴을 누르면 프로필을 볼 수 있어요.</p>
+  return`<p class="lead">별무리호 승무원 조직도입니다. 의무장 · 기관장 · 항해장은 선장이 임명합니다. 얼굴을 누르면 프로필을 볼 수 있습니다.</p>
   <div class="org"><div class="orgroot"><span class="lbl">Captain · 선장</span><div class="orgrow">${heads.length?heads.map(([id,p])=>orgNode(id,p)).join(''):'<span class="orgempty">공석</span>'}</div></div>
   <div class="orgstem"></div><div class="orgdepts">${officers.map(([k,n,id])=>`<div class="orgdept officer"><div class="orgdh">${n}</div><div class="orgrow">${id?orgNode(id,valid.get(id)):'<span class="orgempty">공석</span>'}</div>${sel(k,id)}</div>`).join('')}</div>
-  <div class="orgstem"></div><div class="orgdept crewbox"><div class="orgdh">선원 <span class="hint">${crew.length}</span></div><div class="orgrow">${crew.length?crew.map(([id,p])=>orgNode(id,p)).join(''):'<span class="hint">아직 선원이 없어요.</span>'}</div></div></div>
-  ${isAdmin?'<p class="hint">선장(운영자)에게만 임명 메뉴가 보여요. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 돼요.</p>':''}${all.length<2?'<p class="hint">아직 다른 단원이 없어요. 게임 링크를 친구에게 공유해 보세요.</p>':''}`}
+  <div class="orgstem"></div><div class="orgdept crewbox"><div class="orgdh">선원 <span class="hint">${crew.length}</span></div><div class="orgrow">${crew.length?crew.map(([id,p])=>orgNode(id,p)).join(''):'<span class="hint">아직 선원이 없습니다.</span>'}</div></div></div>
+  ${isAdmin?'<p class="hint">선장(운영자)에게만 임명 메뉴가 보입니다. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 됩니다.</p>':''}${all.length<2?'<p class="hint">아직 다른 단원이 없습니다. 게임 링크를 친구에게 공유해 보십시오.</p>':''}`}
 async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const r=Object.assign({},rolesNow());for(const [kk] of POSTS3)if(id&&r[kk]===id)r[kk]='';r[k]=id||'';
-  if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했어요. 다시 시도해 주세요.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'단원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했어요.`)}else{P.roles=r;save();renderPanel()}
-  toast(id?`${whoP(id).nick||'단원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했어요.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠어요.`)}
+  if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'단원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`)}else{P.roles=r;save();renderPanel()}
+  toast(id?`${whoP(id).nick||'단원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠습니다.`)}
 document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classList.contains('orgsel'))setRole(t.dataset.role,t.value)});
 let profId=null,profBio=false;
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id),ends=Object.keys(p.advEnds||{}).length;
   const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['탐사 엔딩',`${ends}종`]];
   return`<div class="card profcard" id="profCard"><div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
-   ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보여요.':'아직 한 줄 소개가 없어요.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
+   ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
    ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
 function socGuest(){const to=gbOf&&(gbOf===uid||PLAYERS[gbOf])?gbOf:uid,tp=whoP(to),list=GUEST.filter(g=>g.to===to),others=Object.entries(PLAYERS).filter(([id])=>id!==uid);
   return`<div class="row" style="gap:4px"><button class="qchip" data-act="gbopen" data-k="" aria-pressed="${to===uid}">내 방명록</button>${others.map(([id,p])=>`<button class="qchip" data-act="gbopen" data-k="${esc(id)}" aria-pressed="${to===id}">${esc(p.nick||'단원')}</button>`).join('')}</div>
   <div class="card socbox"><div class="row" style="justify-content:space-between">${socWho(to,tp.nick,3)}<span class="hint">방명록 ${list.length}개</span></div>${tp.bio?`<p class="bio">“${esc(tp.bio)}”</p>`:''}
-  ${to===uid?'<span class="hint">단원들이 남긴 글과 인사가 여기에 모여요. 다른 단원의 방명록에도 한마디 남겨 보세요.</span>':`<textarea id="gbIn" class="suggta socta" maxlength="120" placeholder="${esc(tp.nick||'단원')} 님에게 한마디 남기기" aria-label="방명록 내용">${esc(gbDraft)}</textarea><div class="row" style="justify-content:space-between"><span class="hint">최대 120자 · Ctrl+Enter로 남기기</span><button class="btn sm" data-act="gbsend">남기기</button></div>`}</div>
-  <div class="plist">${list.length?list.map(g=>{const del=g.from===uid||g.to===uid||isAdmin,x=del?` <button class="pvx" data-act="gbdel" data-k="${esc(g.id)}" aria-label="방명록 지우기">×</button>`:'';return g.kind==='hi'?`<div class="gbe hi"><b style="color:${colorOf(g.from)}">${esc(g.nick||'단원')}</b> 님이 인사를 건넸어요 <span class="hint">${agoText(g.at)}</span>${x}</div>`:`<div class="card gbe">${socWho(g.from,g.nick)}<p class="ptext">${esc(g.text)}</p><span class="hint">${agoText(g.at)}${x}</span></div>`}).join(''):'<p class="empty" style="padding:14px 0">아직 남겨진 글이 없어요.</p>'}</div>`}
+  ${to===uid?'<span class="hint">단원들이 남긴 글과 인사가 여기에 모입니다. 다른 단원의 방명록에도 한마디 남겨 보십시오.</span>':`<textarea id="gbIn" class="suggta socta" maxlength="120" placeholder="${esc(tp.nick||'단원')} 님에게 한마디 남기기" aria-label="방명록 내용">${esc(gbDraft)}</textarea><div class="row" style="justify-content:space-between"><span class="hint">최대 120자 · Ctrl+Enter로 남기기</span><button class="btn sm" data-act="gbsend">남기기</button></div>`}</div>
+  <div class="plist">${list.length?list.map(g=>{const del=g.from===uid||g.to===uid||isAdmin,x=del?` <button class="pvx" data-act="gbdel" data-k="${esc(g.id)}" aria-label="방명록 지우기">×</button>`:'';return g.kind==='hi'?`<div class="gbe hi"><b style="color:${colorOf(g.from)}">${esc(g.nick||'단원')}</b> 님이 인사를 건넸습니다 <span class="hint">${agoText(g.at)}</span>${x}</div>`:`<div class="card gbe">${socWho(g.from,g.nick)}<p class="ptext">${esc(g.text)}</p><span class="hint">${agoText(g.at)}${x}</span></div>`}).join(''):'<p class="empty" style="padding:14px 0">아직 남겨진 글이 없습니다.</p>'}</div>`}
 function renderSocial(){
-  if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열려요. 지금은 한 줄 소개만 미리 적어 둘 수 있어요.</div>${bioCard()}`;
+  if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
   const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['guest','방명록']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head()+sub+(socTab==='crew'?socCrew():socTab==='guest'?socGuest():socTab==='dm'?socDm():socPad())}
 function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
-    if(g.at>socBoot&&!socNoted.has(g.id)){socNoted.add(g.id);if(g.kind!=='hi')toast(`${g.nick||'단원'} 님이 방명록을 남겼어요.`)}
-    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];gainXp(2);log(`${g.nick||'단원'} 님이 인사를 건넸다. 경험치 +2`,'good');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸어요!`);ch=true}});
+    if(g.at>socBoot&&!socNoted.has(g.id)){socNoted.add(g.id);if(g.kind!=='hi')toast(`${g.nick||'단원'} 님이 방명록을 남겼습니다.`)}
+    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];gainXp(2);log(`${g.nick||'단원'} 님이 인사를 건넸다. 경험치 +2`,'good');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit()}
-function notePosts(){const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'단원'} 님이 내 PAD 글에 답글을 달았어요.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'단원'} 님이 내 글을 재전송했어요.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'단원'} 님이 PAD에서 나를 언급했어요.`)})}
+function notePosts(){const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'단원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'단원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'단원'} 님이 PAD에서 나를 언급했습니다.`)})}
 function socSubscribe(){
   db.collection('posts').orderBy('at','desc').limit(150).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));notePosts();renderNav();if(tab==='social')renderPanel()},()=>{});
   db.collection('guest').orderBy('at','desc').limit(150).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(tab==='social')renderPanel()},()=>{});
@@ -1898,11 +1898,11 @@ const SA={
  imgview(d){if(!ASSET_ID.test(d.k||''))return;$('#imgBig').dataset.k=d.k;$('#imgBig').src=window.__blobURL(d.k);$('#imgModal').hidden=false},
  async padpost(){await padWrite(padDraft,null)},
  async padreply(){const m=THRP||POSTS.find(x=>x.id===padThread);if(!m)return;await padWrite(replyDraft,m)},
- async padrt(d){if(mode!=='online')return;const mine=myRt(d.k);if(mine){try{await db.doc('posts/'+mine.id).delete();toast('재전송을 취소했어요.')}catch(e){socErr(e)}return}
+ async padrt(d){if(mode!=='online')return;const mine=myRt(d.k);if(mine){try{await db.doc('posts/'+mine.id).delete();toast('재전송을 취소했습니다.')}catch(e){socErr(e)}return}
   const o=POSTS.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null)||THR.find(x=>x.id===d.k);if(!o||o.rt||o.re)return;
-  try{await db.collection('posts').add({uid,nick:P.nick,at:Date.now(),rt:o.id,rto:{uid:o.uid,nick:o.nick,text:o.text||'',img:o.img||null,at:o.at,re:o.re||null,reNick:o.reNick||null}})}catch(e){socErr(e);return}sfxCoin();toast('PAD에 재전송했어요.')},
+  try{await db.collection('posts').add({uid,nick:P.nick,at:Date.now(),rt:o.id,rto:{uid:o.uid,nick:o.nick,text:o.text||'',img:o.img||null,at:o.at,re:o.re||null,reNick:o.reNick||null}})}catch(e){socErr(e);return}sfxCoin();toast('PAD에 재전송했습니다.')},
  async plike(d){if(mode!=='online')return;const p=POSTS.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null)||THR.find(x=>x.id===d.k);const on=!!(p&&p.likes&&p.likes[uid]);try{await db.doc('posts/'+d.k).update({likes:{[uid]:on?0:1}})}catch(e){socErr(e)}},
- async pdel(d){const p=POSTS.find(x=>x.id===d.k)||THR.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null);if(!p||!(p.uid===uid||isAdmin))return;if(pdelArm!==d.k){pdelArm=d.k;renderPanel();return}pdelArm=null;try{await db.doc('posts/'+d.k).delete();toast('글을 지웠어요.');if(ASSETS&&p.uid===uid)(p.img||[]).forEach(id=>ASSETS.delete(id).catch(()=>{}));if(padThread===d.k){openThread(null);renderPanel()}}catch(e){socErr(e)}},
+ async pdel(d){const p=POSTS.find(x=>x.id===d.k)||THR.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null);if(!p||!(p.uid===uid||isAdmin))return;if(pdelArm!==d.k){pdelArm=d.k;renderPanel();return}pdelArm=null;try{await db.doc('posts/'+d.k).delete();toast('글을 지웠습니다.');if(ASSETS&&p.uid===uid)(p.img||[]).forEach(id=>ASSETS.delete(id).catch(()=>{}));if(padThread===d.k){openThread(null);renderPanel()}}catch(e){socErr(e)}},
  dmopen(d){if(!d.k||!PLAYERS[d.k])return;if(dmPeer!==d.k)dmDraft='';dmPeer=d.k;socTab='dm';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
  async dmsend(){const to=dmPeer,v=dmDraft.trim().slice(0,200);if(!v||!to||!PLAYERS[to]||mode!=='online')return;const i=$('#dmIn');dmDraft='';if(i)i.value='';
   try{await db.collection('dm').add({users:[uid,to],from:uid,to,nick:P.nick,text:v,at:Date.now()})}catch(e){dmDraft=v;if(i)i.value=v;socErr(e);return}stat('dm');save()},
@@ -1910,7 +1910,7 @@ const SA={
   try{await db.collection('guest').add({to:d.k,from:uid,nick:P.nick,kind:'hi',text:'',at:Date.now()})}catch(e){socErr(e);return}
   P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});gainXp(5);stat('hi');sfxCoin();log(`${t.nick||'단원'} 님에게 인사를 건넸다. 경험치 +5`,'good');commit()},
  gbopen(d){gbOf=d.k||null;socTab='guest';gbDraft='';renderPanel()},
- async gbsend(){const to=gbOf,t=PLAYERS[to],v=gbDraft.trim().slice(0,120);if(!t||to===uid||mode!=='online')return;if(!v){toast('남길 말을 적어 주세요.');return}
+ async gbsend(){const to=gbOf,t=PLAYERS[to],v=gbDraft.trim().slice(0,120);if(!t||to===uid||mode!=='online')return;if(!v){toast('남길 말을 적어 주십시오.');return}
   try{await db.collection('guest').add({to,from:uid,nick:P.nick,kind:'msg',text:v,at:Date.now()})}catch(e){socErr(e);return}
   gbDraft='';stat('gb');log(`${t.nick||'단원'} 님의 방명록에 글을 남겼다.`,'good');commit()},
  async gbdel(d){const g=GUEST.find(x=>x.id===d.k);if(!g||!(g.from===uid||g.to===uid||isAdmin))return;try{await db.collection('guest').doc(d.k).delete()}catch(e){socErr(e)}},
@@ -1918,8 +1918,8 @@ const SA={
  biosave(){P.bio=bioDraft.trim().slice(0,40);editBio=false;log(P.bio?'한 줄 소개를 바꿨다.':'한 줄 소개를 지웠다.');save();renderPanel()},
  biocancel(){editBio=false;renderPanel()},
 };
-async function padWrite(raw,parent){const ctx=parent?'reply':'pad',L=imgList(ctx),v=String(raw||'').trim().slice(0,PAD_MAX);if(!v&&!L.length){toast('글 내용을 적거나 이미지를 붙여 주세요.');return}if(mode!=='online'||padBusy)return;if(Date.now()-lastPost<5e3){toast('조금 뒤에 다시 올려 주세요.');return}
-  const ids=[];if(L.length){if(!ASSETS){toast('이 화면에서는 이미지를 올릴 수 없어요.');return}padBusy=true;renderPanel();try{for(const m of L){const r=await ASSETS.upload(m.blob,{type:m.blob.type||'image/jpeg'});ids.push(r.id)}}catch(e){padBusy=false;ids.forEach(id=>ASSETS.delete(id).catch(()=>{}));imgErr(e);renderPanel();return}padBusy=false}
+async function padWrite(raw,parent){const ctx=parent?'reply':'pad',L=imgList(ctx),v=String(raw||'').trim().slice(0,PAD_MAX);if(!v&&!L.length){toast('글 내용을 적거나 이미지를 붙여 주십시오.');return}if(mode!=='online'||padBusy)return;if(Date.now()-lastPost<5e3){toast('조금 뒤에 다시 올려 주십시오.');return}
+  const ids=[];if(L.length){if(!ASSETS){toast('이 화면에서는 이미지를 올릴 수 없습니다.');return}padBusy=true;renderPanel();try{for(const m of L){const r=await ASSETS.upload(m.blob,{type:m.blob.type||'image/jpeg'});ids.push(r.id)}}catch(e){padBusy=false;ids.forEach(id=>ASSETS.delete(id).catch(()=>{}));imgErr(e);renderPanel();return}padBusy=false}
   const doc={uid,nick:P.nick,text:v,at:Date.now(),likes:{}};if(ids.length)doc.img=ids;if(parent)Object.assign(doc,{re:parent.id,reNick:parent.nick||'단원',reUid:parent.uid||''});
   try{await db.collection('posts').add(doc)}catch(e){ids.forEach(id=>ASSETS&&ASSETS.delete(id).catch(()=>{}));socErr(e);renderPanel();return}
   lastPost=Date.now();clearImgs(ctx);if(parent)replyDraft='';else{padDraft='';padTag='';padView='all'}stat('post');
@@ -1957,7 +1957,7 @@ const STORIES=[
   shore:{t:'기슭을 따라 걷다 보니 신호가 점점 또렷해진다. 바위 사이에 누군가 떨어뜨린 보급 가방이 있다.',fx:{add:[['kit',1]]},o:[{l:'가방을 챙겨 계속 간다',go:'wreck'}]},
   wreck:{t:'뒤집힌 소형 탐사정. 해치 너머에서 두드리는 소리가 들린다. 안에는 다른 정거장 소속 탐사원이 갇혀 있다. 산소 게이지는 바닥을 가리키고 있다.',o:[{l:'해치를 억지로 연다',ck:'str',p:.5,ok:'e_hand',no:'stuck'},{l:'응급 수리 키트로 산소 라인을 잇는다',req:['kit',1],go:'e_kit'},{l:'좌표만 기록하고 구조대를 부르러 간다',go:'e_coord'}]},
   stuck:{t:'해치가 꿈쩍도 하지 않는다. 손목이 꺾였다. 안에서 두드리는 소리가 점점 약해진다.',fx:{hp:-10},o:[{l:'한 번 더 힘껏 당긴다',ck:'str',p:.6,ok:'e_hand',no:'e_late'},{l:'구조대를 부르러 달려간다',go:'e_late'}]},
-  e_hand:{end:'메탄 위의 손',t:'해치가 열리고, 탐사원이 기침하며 기어 나왔다. 「…고마워요. 이건 우리 정거장 표식이에요. 언젠가 꼭 갚을게요.」 그는 낡은 배지를 손에 쥐여 주었다.',fx:{cr:120,xp:40,add:[['relic',1]]}},
+  e_hand:{end:'메탄 위의 손',t:'해치가 열리고, 탐사원이 기침하며 기어 나왔다. 「…고맙습니다. 이건 우리 정거장 표식입니다. 언젠가 꼭 갚겠습니다.」 그는 낡은 배지를 손에 쥐여 주었다.',fx:{cr:120,xp:40,add:[['relic',1]]}},
   e_kit:{end:'이어 붙인 숨',t:'키트의 호스로 산소 라인을 이었다. 잠시 후 해치 너머에서 고른 숨소리가 들린다. 구조대가 올 때까지 함께 기다렸다. 그는 자기 몫의 보급품을 나눠 주었다.',fx:{cr:90,xp:50,add:[['drink',2]]}},
   e_coord:{end:'기록된 좌표',t:'정거장에 좌표를 보냈다. 한 시간 뒤 구조대가 탐사원을 데려왔다는 소식이 들렸다. 이름은 끝내 듣지 못했다.',fx:{cr:60,xp:25}},
   e_late:{end:'늦은 구조',t:'구조대가 도착했을 때 탐사원은 의식이 없었지만 숨은 붙어 있었다. 마음 한구석이 무겁다.',fx:{cr:40,xp:20}}}},
@@ -2003,32 +2003,32 @@ function advGo(id){const a=P.adv,S=storyById(a.sid),nd=S.N[id];if(!nd)return;a.n
     if(first){gainXp(10);a.log.push({k:'fx',t:'새 엔딩 발견 · 경험치 +10'})}a.log.push({k:'end',t:`엔딩 「${nd.end}」`});log(`탐사 「${S.n}」 — 엔딩 「${nd.end}」에 도달했다.`,'rare')}
   else if(P.hp<=0){a.done=1;a.end=null;a.log.push({k:'no',t:'시야가 흐려진다… 구조 드론이 거점으로 데려왔다. 탐사는 여기까지다.'});log(`탐사 「${S.n}」 도중 쓰러졌다.`,'bad')}}
 function advHTML(){const a=P.adv,S=a&&storyById(a.sid);
-  if(!S){const E=P.advEnds||{};return head()+`<p class="lead">글로 떠나는 탐사예요. 이야기를 읽고 선택지를 골라 앞으로 나아가요. 능력치에 따라 성공 확률이 달라지는 선택도 있고, 고른 길에 따라 엔딩과 보상이 달라져요. 한 번 출발할 때 에너지 ${ADV_EN}가 들어요.</p>
+  if(!S){const E=P.advEnds||{};return head()+`<p class="lead">글로 떠나는 탐사입니다. 이야기를 읽고 선택지를 골라 앞으로 나아갑니다. 능력치에 따라 성공 확률이 달라지는 선택도 있고, 고른 길에 따라 엔딩과 보상이 달라집니다. 한 번 출발할 때 에너지 ${ADV_EN}가 듭니다.</p>
     <div class="advlist">${STORIES.map(s=>{const ends=storyEnds(s),got=ends.filter(([k])=>E[s.id+':'+k]).length;return`<div class="card advcard"><span class="lbl">${esc(s.place)}</span><b class="cook-t">${esc(s.n)}</b><p class="hint" style="margin:0">${esc(s.d)}</p><div class="row" style="justify-content:space-between"><span class="hint">엔딩 ${got}/${ends.length}${got?' · '+ends.filter(([k])=>E[s.id+':'+k]).map(([,n])=>'「'+esc(n.end)+'」').join(' '):''}</span><button class="btn sm" data-act="advstart" data-k="${s.id}">출발 <small>EN ${ADV_EN}</small></button></div></div>`}).join('')}</div>`}
   const nd=S.N[a.node],last=a.log.length-1;
   const logH=a.log.map((l,i)=>`<p class="${l.k} ${i>=a.fresh?'new':''}">${esc(l.t)}</p>`).join('');
   let opts='';if(a.done){opts=`<div class="row">${mode==='online'&&a.end?`<button class="btn alt" data-act="advshare">PAD에 탐사 기록 공유</button>`:''}<button class="btn ghost" data-act="advback">탐사 목록으로</button></div>`}
-  else opts=`<div class="advopts">${nd.o.filter(o=>!o.need||(a.f||{})[o.need]).map((o,k)=>{const i=nd.o.indexOf(o),lack=o.req&&(P.inv[o.req[0]]||0)<o.req[1];return`<button class="btn ${o.ck?'alt':o.req?'gold':'ghost'} advopt" data-act="advopt" data-k="${i}" ${lack?'disabled':''}>${k+1}. ${esc(o.l)}${o.ck?` <small>${ABN[o.ck]} · 성공 ${Math.round(ckP(o)*100)}%</small>`:''}${o.req?` <small>${ITEMS[o.req[0]].n} ${P.inv[o.req[0]]||0}/${o.req[1]}</small>`:''}</button>`}).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">숫자 키 1~${nd.o.length}로도 고를 수 있어요.</span><button class="qchip" data-act="advquit">탐사 포기</button></div>`;
+  else opts=`<div class="advopts">${nd.o.filter(o=>!o.need||(a.f||{})[o.need]).map((o,k)=>{const i=nd.o.indexOf(o),lack=o.req&&(P.inv[o.req[0]]||0)<o.req[1];return`<button class="btn ${o.ck?'alt':o.req?'gold':'ghost'} advopt" data-act="advopt" data-k="${i}" ${lack?'disabled':''}>${k+1}. ${esc(o.l)}${o.ck?` <small>${ABN[o.ck]} · 성공 ${Math.round(ckP(o)*100)}%</small>`:''}${o.req?` <small>${ITEMS[o.req[0]].n} ${P.inv[o.req[0]]||0}/${o.req[1]}</small>`:''}</button>`}).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">숫자 키 1~${nd.o.length}로도 고를 수 있습니다.</span><button class="qchip" data-act="advquit">탐사 포기</button></div>`;
   return head()+`<div class="row" style="justify-content:space-between"><b class="dfloor">${esc(S.n)}</b><span class="hint">${esc(S.place)}</span></div><div class="advlog" id="advLog">${logH}</div>${opts}`}
 const AA={
  advstart(d){const S=storyById(d.k);if(!S||(P.adv&&!P.adv.done))return;if(!spend(ADV_EN))return;P.adv={sid:S.id,node:null,log:[],f:{},at:Date.now(),fresh:0};advGo(S.s);log(`탐사 「${S.n}」을(를) 떠났다.`);commit()},
  advopt(d){const a=P.adv;if(!a||a.done)return;const S=storyById(a.sid),nd=S.N[a.node],o=nd&&nd.o[+d.k];if(!o||(o.need&&!(a.f||{})[o.need]))return;
-  if(o.req){if(!take(o.req[0],o.req[1])){toast(`${ITEMS[o.req[0]].n}이(가) 부족해요.`);return}}
+  if(o.req){if(!take(o.req[0],o.req[1])){toast(`${ITEMS[o.req[0]].n}이(가) 부족합니다.`);return}}
   a.fresh=a.log.length;a.log=[...a.log,{k:'c',t:o.l}];
   let go=o.go;if(o.ck){const p=ckP(o),ok=Math.random()<p;a.log.push({k:ok?'ok':'no',t:`${ABN[o.ck]} 판정 ${ok?'성공':'실패'} (${Math.round(p*100)}%)`});go=ok?o.ok:o.no}
   if(o.req)a.log.push({k:'fx',t:`${ITEMS[o.req[0]].n} ${o.req[1]}개 사용`});
   advGo(go);commit()},
  advquit(){if(!P.adv)return;const S=storyById(P.adv.sid);log(`탐사 「${S?S.n:''}」을(를) 포기하고 돌아왔다.`);P.adv=null;commit()},
  advback(){P.adv=null;commit()},
- async advshare(){const a=P.adv,S=a&&storyById(a.sid);if(!S||!a.end||mode!=='online')return;const txt=`[탐사 기록] 「${S.n}」에서 엔딩 「${a.end}」에 도달했어요. 다들 어떤 엔딩 봤어요? #탐사 #${S.n.replace(/\s/g,'_')}`;
-  try{await db.collection('posts').add({uid,nick:P.nick,text:txt.slice(0,200),at:Date.now(),likes:{}})}catch(e){socErr(e);return}stat('post');toast('PAD에 탐사 기록을 올렸어요.');P.adv=null;commit()},
+ async advshare(){const a=P.adv,S=a&&storyById(a.sid);if(!S||!a.end||mode!=='online')return;const txt=`[탐사 기록] 「${S.n}」에서 엔딩 「${a.end}」에 도달했습니다. 다들 어떤 엔딩을 보셨습니까? #탐사 #${S.n.replace(/\s/g,'_')}`;
+  try{await db.collection('posts').add({uid,nick:P.nick,text:txt.slice(0,200),at:Date.now(),likes:{}})}catch(e){socErr(e);return}stat('post');toast('PAD에 탐사 기록을 올렸습니다.');P.adv=null;commit()},
 };
 Object.assign(A,SA,AA,{
  async invnew(){if(!isAdmin||mode!=='online'||!window.__fbInvite)return;const code=window.__fbInvite.mk(),m=$('#invMemo'),memo=(m&&m.value||'').trim().slice(0,20);
-  try{await db.doc('invites/'+code).set({by:uid,at:Date.now(),memo})}catch(e){toast('초대장을 만들지 못했어요.');return}sfxCoin();toast(`초대장 ${fmtCode(code)} 발급!`);A.invcopy({k:code,quiet:1})},
- async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했어요.')}catch(e){toast('취소하지 못했어요.')}},
- async invcopy(d){const t=`[별무리 개척단 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주세요. (1명만 쓸 수 있어요)`;
-  try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했어요.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했어요.`)}catch(e){if(!d.quiet)toast('복사하지 못했어요. 코드를 직접 알려 주세요: '+fmtCode(d.k))}}});
+  try{await db.doc('invites/'+code).set({by:uid,at:Date.now(),memo})}catch(e){toast('초대장을 만들지 못했습니다.');return}sfxCoin();toast(`초대장 ${fmtCode(code)} 발급!`);A.invcopy({k:code,quiet:1})},
+ async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
+ async invcopy(d){const t=`[별무리 개척단 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주십시오. (1명만 쓸 수 있습니다)`;
+  try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
 ['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
 document.addEventListener('keydown',e=>{if(tab!=='adv'||e.isComposing||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const n=+e.key;if(!(n>=1&&n<=9)||!P.adv||P.adv.done)return;const b=document.querySelectorAll('#stage .advopt')[n-1];if(b&&!b.disabled){e.preventDefault();b.click()}});
 /* ───────── join page: character creation ───────── */
@@ -2037,25 +2037,25 @@ let J=null;
 const JCAT=[['crop','작물'],['dish','요리'],['fish','물고기'],['mat','재료']];
 const jItems=c=>ORDER.filter(id=>{const it=ITEMS[id];if(c==='dish')return!!it.dish;if(c==='fish')return!!it.fish;if(c==='mat')return it.type==='mat';return it.type==='food'&&!it.dish&&!it.fish&&id!=='drink'&&id!=='kit'});
 const jLeft=()=>J_START*ABIL.length+J_FREE-ABIL.reduce((a,[k])=>a+(J.as[k]||0),0);
-function jChips(list,kind){return list.length?list.map(id=>`<span class="ichip ${kind}">${iicon(id,1)}${esc(ITEMS[id].n)}<button type="button" class="pvx" data-act="junpick" data-k="${id}" aria-label="${esc(ITEMS[id].n)} 빼기">×</button></span>`).join(''):`<span class="hint">아직 고르지 않았어요.</span>`}
+function jChips(list,kind){return list.length?list.map(id=>`<span class="ichip ${kind}">${iicon(id,1)}${esc(ITEMS[id].n)}<button type="button" class="pvx" data-act="junpick" data-k="${id}" aria-label="${esc(ITEMS[id].n)} 빼기">×</button></span>`).join(''):`<span class="hint">아직 고르지 않았습니다.</span>`}
 function renderJoin(){if(!J)return;const b=$('#joinBody');if(!b)return;const prev={look:J.look},left=jLeft();
-  b.innerHTML=`<div class="jsec"><span class="lbl">Look · 내 모습</span><div class="jlook"><div class="jprev">${meImg(6,prev)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button type="button" class="sw" style="background:${col}" data-act="jlook" data-k="${k}" data-c="${col}" aria-pressed="${J.look[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">네온 색은 게임 안 옷장에서 살 수 있어요.</span></div></div></div>
+  b.innerHTML=`<div class="jsec"><span class="lbl">Look · 내 모습</span><div class="jlook"><div class="jprev">${meImg(6,prev)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button type="button" class="sw" style="background:${col}" data-act="jlook" data-k="${k}" data-c="${col}" aria-pressed="${J.look[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">네온 색은 게임 안 옷장에서 살 수 있습니다.</span></div></div></div>
   <div class="jsec"><span class="lbl">Taste · 좋아하는 것 · 싫어하는 것 (각 ${J_MAX}개까지)</span>
    <div class="jpicked"><b style="color:var(--pink);font-size:12px;margin-right:4px">♥ 좋아함</b>${jChips(J.likes,'like')}</div>
    <div class="jpicked"><b style="color:var(--red);font-size:12px;margin-right:4px">✕ 싫어함</b>${jChips(J.hates,'hate')}</div>
    <div class="row" style="gap:5px"><button type="button" class="qchip" data-act="jmode" data-k="like" aria-pressed="${J.mode==='like'}">♥ 좋아하는 것 고르기</button><button type="button" class="qchip" data-act="jmode" data-k="hate" aria-pressed="${J.mode==='hate'}">✕ 싫어하는 것 고르기</button></div>
    <div class="dtabs" role="tablist">${JCAT.map(([k,n])=>`<button type="button" role="tab" aria-selected="${J.cat===k}" data-act="jcat" data-k="${k}">${n}</button>`).join('')}</div>
    <div class="jgrid">${jItems(J.cat).map(id=>{const lk=J.likes.includes(id),ht=J.hates.includes(id);return`<button type="button" class="slot ${lk?'like':ht?'hate':''}" data-act="jpick" data-k="${id}" aria-pressed="${lk||ht}" title="${esc(ITEMS[id].n)}" aria-label="${esc(ITEMS[id].n)}">${iicon(id,2)}</button>`}).join('')}</div>
-   <span class="hint">아이콘을 누르면 위에서 고른 쪽(${J.mode==='like'?'좋아함':'싫어함'})에 담겨요. 한 번 더 누르면 빠져요.</span></div>
+   <span class="hint">아이콘을 누르면 위에서 고른 쪽(${J.mode==='like'?'좋아함':'싫어함'})에 담깁니다. 한 번 더 누르면 빠집니다.</span></div>
   <div class="jsec"><div class="stat-row"><span class="lbl">Status · 스테이터스</span><b class="${left?'ptsgo':''}">남은 포인트 ${left}</b></div><div class="jstats">${ABIL.map(([k,n,d])=>`<div class="jst"><b>${n}</b><span class="hint">${d}</span><span class="ctl"><button type="button" class="btn sm ghost" data-act="jstat" data-k="${k}" data-d="-1" ${(J.as[k]||0)<=0?'disabled':''} aria-label="${n} 내리기">−</button><span class="abv">${J.as[k]||0}</span><button type="button" class="btn sm" data-act="jstat" data-k="${k}" data-d="1" ${left<=0?'disabled':''} aria-label="${n} 올리기">+</button></span></div>`).join('')}</div>
-   <div class="row" style="justify-content:space-between"><span class="hint">모두 ${J_START}씩 가지고 시작하고, 남은 ${J_FREE}포인트를 마음대로 나눠요. 남긴 포인트는 나중에 내 정보에서 쓸 수 있어요.</span><button type="button" class="qchip" data-act="jreset">처음대로</button></div></div>`;
+   <div class="row" style="justify-content:space-between"><span class="hint">모두 ${J_START}씩 가지고 시작하고, 남은 ${J_FREE}포인트를 마음대로 나눕니다. 남긴 포인트는 나중에 내 정보에서 쓸 수 있습니다.</span><button type="button" class="qchip" data-act="jreset">처음대로</button></div></div>`;
   $('#joinIc').innerHTML=meImg(4,prev);$('#joinLeft').textContent=left?`남은 스테이터스 ${left}포인트`:'준비 완료!'}
 function applyJoin(){if(!J)return;P.look=Object.assign({},J.look);P.likes=[...J.likes];P.hates=[...J.hates];P.as=Object.assign({},J.as);P.hp=maxHp();P.en=maxEn();J=null}
 const JA={
  jlook(d){if(!J||!LOOKS[d.k]||!LOOKS[d.k].opts.some(o=>o[0]===d.c))return;J.look=Object.assign({},J.look,{[d.k]:d.c});renderJoin()},
  jmode(d){if(J){J.mode=d.k==='hate'?'hate':'like';renderJoin()}},
  jcat(d){if(J){J.cat=d.k;renderJoin()}},
- jpick(d){if(!J||!ITEMS[d.k])return;const id=d.k;if(J.likes.includes(id)){J.likes=J.likes.filter(x=>x!==id)}else if(J.hates.includes(id)){J.hates=J.hates.filter(x=>x!==id)}else{const L=J.mode==='hate'?J.hates:J.likes;if(L.length>=J_MAX){toast(`${J.mode==='hate'?'싫어하는':'좋아하는'} 것은 ${J_MAX}개까지 고를 수 있어요.`);return}L.push(id)}renderJoin()},
+ jpick(d){if(!J||!ITEMS[d.k])return;const id=d.k;if(J.likes.includes(id)){J.likes=J.likes.filter(x=>x!==id)}else if(J.hates.includes(id)){J.hates=J.hates.filter(x=>x!==id)}else{const L=J.mode==='hate'?J.hates:J.likes;if(L.length>=J_MAX){toast(`${J.mode==='hate'?'싫어하는':'좋아하는'} 것은 ${J_MAX}개까지 고를 수 있습니다.`);return}L.push(id)}renderJoin()},
  junpick(d){if(!J)return;J.likes=J.likes.filter(x=>x!==d.k);J.hates=J.hates.filter(x=>x!==d.k);renderJoin()},
  jstat(d){if(!J||!ABIL.some(a=>a[0]===d.k))return;const v=(J.as[d.k]||0)+(+d.d);if(v<0||(+d.d>0&&jLeft()<=0))return;J.as=Object.assign({},J.as,{[d.k]:v});renderJoin()},
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
@@ -2066,7 +2066,7 @@ setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;
   if(P.joined&&P.nick!=='새 단원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
-  $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했어요. 환영해 주세요!`);save();renderAll();setPresence()});
+  $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence()});
 
 /* ───────── bgm ───────── */
 const bgm=new Audio('bgm.mp3');bgm.loop=true;bgm.volume=.35;bgm.preload='auto';
@@ -2093,7 +2093,7 @@ if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(t
 addEventListener('resize',()=>{if(tab==='fish')drawLake()});
 setInterval(()=>{
   {const sg=sigState(),k='s'+sg.n;if(k!==window.__sk){window.__sk=k;renderNav();if(tab==='scan')renderPanel()}else if(tab==='scan'){const e=$('#sigT');if(e&&sg.n<SIG_MAX)e.textContent='다음 신호까지 '+fmtClock(sg.next)}}
-  if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어나요';if(t2)t2.textContent=v}
+  if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
   migrate();const sig=P.field.map(pl=>pl?`${pl.til}${pl.seed||''}${stage(pl)}${isWet(pl)?1:0}`:'_').join();if(sig!==farmSig){farmSig=sig;renderNav();if(tab==='farm')renderPanel()}else if(tab==='farm')P.field.forEach((pl,i)=>{const b=document.querySelector(`[data-prog="${i}"]`);if(b&&pl&&pl.seed)b.style.width=Math.min(100,effG(pl)/ITEMS[pl.seed].grow*100)+'%'});
