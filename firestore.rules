@@ -107,11 +107,10 @@ service cloud.firestore {
       allow create, update: if member();
     }
 
-    // 공동 보스·낚시 대결: 접속한 단원 모두 함께 씀.
-    match /boss/{id} { allow read, write: if member(); }
+    // 낚시 대결: 접속한 단원 모두 함께 씀.
     match /duel/{id} { allow read, write: if member(); }
 
-    // 실시간 접속 정보(같은 방·파티)와 짧은 이벤트
+    // 실시간 접속 정보(누가 어디에 있는지)와 짧은 이벤트
     match /rooms/{room}/peers/{uid} {
       allow read: if member();
       allow write: if member() && me() == uid;
