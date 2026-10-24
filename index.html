@@ -102,8 +102,8 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 
 /* console */
 .console{display:flex;flex-direction:column;gap:12px;min-width:0}
-.nav{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
-@media (max-width:620px){.nav{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.nav{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px}
+@media (max-width:620px){.nav{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .nav button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 3px 6px;background:var(--panel);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),0 3px 0 var(--ink);cursor:pointer;position:relative;transition:transform .08s}
 .nav button:hover{background:var(--panel2)}
 .nav button:active{transform:translateY(2px);box-shadow:inset 0 0 0 1px var(--line),0 1px 0 var(--ink)}
@@ -885,7 +885,6 @@ const ITEMS={
  ore:{n:'운석 파편',ic:'rock',t:'#a9a4c8',type:'mat',d:'무기 강화의 기본 재료.'},
  crystal:{n:'은하 결정',ic:'gem',t:'#5fd8ff',type:'mat',d:'에너지를 품은 결정. 무기 강화에 써요.'},
  dark:{n:'암흑물질 조각',ic:'gem',t:'#7a4ff0',type:'mat',d:'무게가 느껴지지 않는 검은 조각. 상급 강화 재료.'},
- core:{n:'항성 핵',ic:'gem',t:'#ff9f43',type:'mat',d:'보스에게서만 얻는 뜨거운 핵. 최상급 강화 재료.'},
  drink:{n:'성운 에너지 음료',ic:'bottle',t:'#8aa9bd',type:'food',hp:0,en:20},
  kit:{n:'응급 수리 키트',ic:'kit',t:'#a8626b',type:'food',hp:40,en:0},
  relic:{n:'고대 신호 기록',ic:'scroll',t:'#ffd65f',type:'relic',d:'해독하면 경험치 +30.'},
@@ -1024,14 +1023,12 @@ const BOSSES=[
  {n:'오로라 히드라',tp:'jelly',t:'#5fd8ff',hp:12000,atk:22,d:'촉수마다 다른 파장의 빛을 내뿜는 궤도 생명체. 0.4AU 밖에서도 보인다.'},
 ];
 const TABS=[
- {id:'room',n:'마이룸',ic:IC.room,cost:'',loc:'거주 구역 C-12 · 1인실 · 실내 19℃'},
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
  {id:'farm',n:'농사',ic:IC.farm,cost:'',loc:'유리 돔 농장 · 21℃ · 습도 41% · 인공 중력 0.8G'},
  {id:'gather',n:'채집',ic:IC.gather,cost:'원정',loc:'지표 원정 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
  {id:'adv',n:'탐사',ic:IC.book,cost:'EN 5',loc:'탐사 일지 · 글로 떠나는 원정'},
  {id:'scan',n:'조사',ic:IC.scan,cost:'30분 신호',loc:'미확인 신호 구역 · 30분마다 신호 수신'},
- {id:'dun',n:'던전',ic:IC.gate,cost:'EN 5',loc:'폐쇄된 지하 정거장 B-7 · 깊이 미측정'},
  {id:'bag',n:'가방',ic:IC.bag,cost:'',loc:'개인 보관함'},
  {id:'shop',n:'상점',ic:IC.shop,cost:'',loc:'궤도 고물상 · 24시간 영업'},
 ];
@@ -1100,23 +1097,7 @@ const WPNS=[
 const wpnById=id=>WPNS.find(w=>w.id===id)||(typeof DGEAR!=='undefined'?DGEAR.find(g=>g.id===id&&g.slot==='wpn'):null);
 Object.assign(TPL,{wArmor:["................", "...kkk....kkk...", "..khhak..kahhk..", ".khaaakkkkaaahk.", ".kaaaabhhbaaaak.", ".kaaaabaabaaaak.", "..kkaabaabaakk..", "...kaabaabaak...", "...kaabhhbaak...", "...kaaabbaaak...", "...kaaaaaaaak...", "...kbaayyaabk...", "...kbbbbbbbbk...", "....kkkkkkkk....", "................", "................"],wRing:["................", "....kkkkkkkk....", "...kyk....kyk...", "..kyk......kyk..", "..kyk......kyk..", "...kyk....kyk...", "....kyk..kyk....", ".....kykkyk.....", "......kyyk......", ".....kkhhkk.....", "....khhaaabk....", "....khaaaabk....", "....kaaaabbk....", ".....kabbbk.....", "......kkkk......", "................"]});
 /* dungeon-only gear */
-const DGEAR=[
- {id:'dw1',slot:'wpn',n:'녹슨 경비병의 곤봉',ic:'wHammer',t:'#9a7a5e',minF:1,fx:{atk:12},d:'공격 +12'},
- {id:'dw2',slot:'wpn',n:'거미 여왕의 독침창',ic:'wSpear',t:'#5d6f9a',minF:15,fx:{atk:20,crit:3},d:'공격 +20 · 치명타 +3%'},
- {id:'dw3',slot:'wpn',n:'공허 박쥐 날개검',ic:'wSword',t:'#6c6790',minF:35,fx:{atk:30,crit:5},d:'공격 +30 · 치명타 +5%'},
- {id:'dw4',slot:'wpn',n:'성광체 저격포',ic:'wGun',t:'#c4c7d4',minF:60,fx:{atk:42,crit:6},d:'공격 +42 · 치명타 +6%'},
- {id:'dw5',slot:'wpn',n:'특이점 절단낫',ic:'wScythe',t:'#2b2f3f',minF:85,fx:{atk:60,crit:10},d:'공격 +60 · 치명타 +10%'},
- {id:'da1',slot:'armor',n:'갑각충 껍질 조끼',ic:'wArmor',t:'#a8626b',minF:1,fx:{def:4,hp:10},d:'방어 +4 · 최대 체력 +10'},
- {id:'da2',slot:'armor',n:'결정 비늘 갑옷',ic:'wArmor',t:'#8aa9bd',minF:15,fx:{def:7,hp:25},d:'방어 +7 · 최대 체력 +25'},
- {id:'da3',slot:'armor',n:'메탄 차폐 슈트',ic:'wArmor',t:'#7f9c85',minF:35,fx:{def:10,hp:40},d:'방어 +10 · 최대 체력 +40'},
- {id:'da4',slot:'armor',n:'중력장 외골격',ic:'wArmor',t:'#5d6274',minF:60,fx:{def:14,hp:60},d:'방어 +14 · 최대 체력 +60'},
- {id:'da5',slot:'armor',n:'항성 코로나 갑주',ic:'wArmor',t:'#bfae80',minF:85,fx:{def:20,hp:90},d:'방어 +20 · 최대 체력 +90'},
- {id:'dc1',slot:'acc',n:'이끼 매듭 팔찌',ic:'wRing',t:'#7f9c85',minF:1,fx:{en:4},d:'최대 에너지 +4'},
- {id:'dc2',slot:'acc',n:'박쥐 이빨 목걸이',ic:'wRing',t:'#c9cbd8',minF:15,fx:{atk:3,crit:3},d:'공격 +3 · 치명타 +3%'},
- {id:'dc3',slot:'acc',n:'공허 결정 반지',ic:'wRing',t:'#7a4ff0',minF:35,fx:{en:8,crit:4},d:'최대 에너지 +8 · 치명타 +4%'},
- {id:'dc4',slot:'acc',n:'망령의 등불 펜던트',ic:'wRing',t:'#e2e3ea',minF:60,fx:{hp:40,en:10},d:'최대 체력 +40 · 최대 에너지 +10'},
- {id:'dc5',slot:'acc',n:'사건의 지평선 귀걸이',ic:'wRing',t:'#a8626b',minF:85,fx:{atk:10,crit:8,en:12},d:'공격 +10 · 치명타 +8% · 최대 에너지 +12'},
-];
+const DGEAR=[];
 const dgById=id=>DGEAR.find(g=>g.id===id);
 const DSLOT={wpn:'무기',armor:'방어구',acc:'장신구'};
 function DGF(k){const g=P.dg||{};let v=0;for(const sl in g){const it=dgById(g[sl]);if(it&&it.fx[k])v+=it.fx[k]}return v}
@@ -1207,10 +1188,6 @@ const TITLES=[
  ['fish2','전설을 낚은 자','레전더리 어종 낚기',()=>(P.st?.legend||0)>=1],
  ['gather1','먼지 속 수집가','채집 100회',()=>(P.st?.gather||0)>=100],
  ['scan1','신호 추적자','이상 신호 30번 조사',()=>(P.st?.scan||0)>=30],
- ['dun1','어둠을 걷는 자','던전 10층 도달',()=>(P.deep||0)>=10],
- ['dun2','심연의 정복자','던전 100층 도달',()=>(P.deep||0)>=100],
- ['boss1','보스 사냥꾼','던전 보스 5마리 처치',()=>(P.st?.dboss||0)>=5],
- ['bio1','외계 생물학자','외계생명체 50종 발견',()=>Object.keys(P.mdex||{}).length>=50],
  ['rich','궤도의 부호','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
  ['farm3','별밭의 은둔자','작물 300번 수확',()=>st('harvest')>=300],
  ['farm4','돔의 군주','재배 포드 16개 모두 열기',()=>(P.fu||0)>=16],
@@ -1225,22 +1202,11 @@ const TITLES=[
  ['fish8','백열다섯 개의 별빛','어류 도감 115종 완성',()=>Object.keys(P.dex||{}).length>=115],
  ['scan2','잡음 속의 목소리','이상 신호 100번 조사',()=>st('scan')>=100],
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
- ['kill1','첫 피를 본 개척자','몬스터 1마리 처치',()=>st('kills')>=1],
- ['kill2','백 개의 그림자를 벤 자','몬스터 100마리 처치',()=>st('kills')>=100],
- ['kill3','천 번 쓰러뜨린 칼날','몬스터 1,000마리 처치',()=>st('kills')>=1000],
- ['dun3','서른 층 아래의 숨결','던전 30층 도달',()=>(P.deep||0)>=30],
- ['dun4','반쯤 삼켜진 자','던전 50층 도달',()=>(P.deep||0)>=50],
- ['dun5','바닥을 엿본 눈','던전 90층 도달',()=>(P.deep||0)>=90],
- ['boss2','군주들의 장례사','던전 보스 20마리 처치',()=>st('dboss')>=20],
- ['tp1','차원의 문지기','텔레포터 10개 모두 등록',()=>(P.tps||[]).length>=10],
- ['bio2','백 개의 이름을 아는 자','외계생명체 100종 발견',()=>Object.keys(P.mdex||{}).length>=100],
  ['rich2','녹슨 7호의 단골','크레딧 50,000 보유',()=>(P.cr||0)>=50000],
  ['wpn','은하를 쥔 손','무기 +8 강화',()=>(P.wlv||0)>=8],
  ['suit','성운을 입은 자','성운 강화복 착용',()=>(P.suit||0)>=3],
  ['lv20','스무 번째 궤도','레벨 20 달성',()=>P.lvl>=20],
  ['lv40','마흔 번째 궤도','레벨 40 달성',()=>P.lvl>=40],
- ['raid1','공동 작전의 선봉','심연 보스 보상 1회 받기',()=>st('raid')>=1],
- ['raid2','심연을 함께 건넌 자','심연 보스 보상 10회 받기',()=>st('raid')>=10],
  ['soc1','다정한 이웃','단원에게 인사 10번 건네기',()=>st('hi')>=10],
  ['soc2','광장의 이야기꾼','PAD에 글 10개 쓰기',()=>st('post')>=10],
  ['soc3','방명록 단골','방명록에 글 20개 남기기',()=>st('gb')>=20],
@@ -1255,19 +1221,19 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
   $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구예요.</span></div><button class="btn sm ghost" data-act="adminclose">닫기</button></div>
   <div class="info-sec"><span class="lbl">Me · 나에게</span><div class="row" style="gap:5px">
    <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 신호 가득</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 원정 즉시 완료</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
-   <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button><button class="btn sm ghost" data-act="adm" data-k="rest">침대 쿨타임 초기화</button></div></div>
+   <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button></div></div>
   <div class="info-sec"><span class="lbl">Give · 아이템 지급</span><div class="row" style="gap:6px"><select id="admItem" class="sel">${opts}</select><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'단원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div><span class="hint">다른 단원에게 주면 '운영자' 이름의 선물로 도착해요.</span></div>
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보내요. 지금 접속하지 않은 단원도 다음에 들어오면 받아요.</span>
-   <div class="row" style="gap:5px">${others.map(([id,p])=>`<button class="qchip" data-act="admrescue" data-k="${id}">${esc(p.nick||'단원')} 기절 해제</button>`).join('')}<button class="btn sm ghost" data-act="admboss">심연 보스 교체</button><button class="btn sm ghost" data-act="admchat">최근 채팅 지우기</button></div></div>`:''}`}
-const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1% · 도주 +2%'],['end','지구력','최대 에너지 +2'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
+   <div class="row" style="gap:5px">${others.map(([id,p])=>`<button class="qchip" data-act="admrescue" data-k="${id}">${esc(p.nick||'단원')} 기절 해제</button>`).join('')}<button class="btn sm ghost" data-act="admchat">최근 채팅 지우기</button></div></div>`:''}`}
+const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*3;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
 function renderInfo(){
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv);return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>LV.${lv}</b></div><div class="bar"><i style="--c:var(--green);width:${(cur-lo)/(hi-lo)*100}%"></i></div></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
-  const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['던전 최고',`${P.deep||0}층`],['외계생명체',`${Object.keys(P.mdex||{}).length}/100`],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
+  const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
   $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div><button class="btn sm ghost" data-act="infoclose" aria-label="닫기">닫기</button></div>
    <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
    <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받아요.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
@@ -1313,9 +1279,7 @@ async function connect(){
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
   renderNet();renderAll();
   db.collection('players').onSnapshot(sn=>{const m={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if((tab==='dun'&&dTab==='boss')||(tab==='fish'&&duelOn())||(tab==='farm'&&farmVisit))renderPanel()},()=>{});
-  let tried=false;
   db.collection('grants').onSnapshot(sn=>{sn.docs.forEach(d=>claimGrant(d.id,d.data()))},()=>{});
-  db.doc('boss/current').onSnapshot(sn=>{if(!sn.exists){BOSS=null;if(!tried){tried=true;setBoss(mkBoss(0,Math.max(1,Object.keys(PLAYERS).length)))}}else{BOSS=sn.data()}if(tab==='dun'&&dTab==='boss')renderPanel()},()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   db.collection('farmhelp').where('to','==',uid).onSnapshot(receiveHelp,()=>{});
@@ -1326,7 +1290,7 @@ async function connect(){
 }
 
 /* ───────── render: frame ───────── */
-let tab='room';
+let tab='farm';
 function renderNet(){
   const c=$('#netChip');
   if(mode==='online'){const n=new Set(PEERS.map(p=>p.presence&&p.presence.uid).filter(Boolean)).size||1;c.innerHTML=`<span class="dot on"></span><span>ONLINE · 접속 ${n}명</span>`}
@@ -1454,7 +1418,7 @@ function receiveHelp(sn){sn.docs.forEach(d=>{P.gotH=P.gotH||[];if(P.gotH.include
   commit();db.collection('farmhelp').doc(d.id).delete().catch(()=>{})})}
 function harvestAt(i){sfxHarvest();const pl=P.field[i],it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0);add(it.crop,n);stat('harvest');lxp('farm',10);const back=Math.random()<.45;if(back)add(pl.seed,1);P.field[i]={til:1,wet:pl.wet&&isWet(pl)?pl.wet:0};gainXp(5);
   log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거뒀다.${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
-const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌어요.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있어요.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',10],['core',2]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
+const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌어요.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있어요.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
 const TANKS=[{cap:12,price:0},{cap:20,price:1200,mat:[['ore',12],['crystal',4]],n:'증설 물탱크',d:'물탱크 용량이 20으로 늘어요.'},{cap:30,price:6000,mat:[['ore',25],['crystal',10],['dark',2]],n:'대형 물탱크',d:'물탱크 용량이 30으로 늘어요.'}];
 const hasMat=m=>(m||[]).every(([id,n])=>(P.inv[id]||0)>=n);
 const matHTML=m=>`<span class="matrow">${(m||[]).map(([id,n])=>`<span class="ichip ${(P.inv[id]||0)>=n?'':'minus'}">${iicon(id,1)}${ITEMS[id].n} ${P.inv[id]||0}/${n}</span>`).join('')}</span>`;
@@ -2126,10 +2090,10 @@ function renderBoss(){
   ${mode==='solo'?'<div class="note">혼자 모드에서는 보스를 혼자 상대해요. 공유된 페이지에서 열면 다른 단원과 같은 보스를 함께 공격해요.</div>':''}`;
 }
 const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['moss',10],['ore',12],['crystal',40],['drink',45],['kit',50]];
-const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,core:120,relic:25,drink:15,kit:18};
+const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,relic:25,drink:15,kit:18};
 const FSELL={c:6,r:20,u:60,l:250};
 const sellPrice=id=>ITEMS[id].fish?FSELL[ITEMS[id].fish]:(ITEMS[id].sv||SELLP[id]||1);
-const KEEPER=['어서 와. 오늘도 손님은 너 하나뿐이네.','오, 또 왔구나. 기다리고 있었다고는 안 할게.','어제는 별이 하나 꺼졌어. 너도 봤니?','내 부품도 하나씩 녹슬고 있어. 그래도 장사는 해야지.','크레딧은 충분해? 없으면 구경만 해도 돼.','저 낚싯대, 나도 한번 잡아보고 싶었어.','조용한 게 좋아. 그런데 너무 조용하면 조금 슬퍼.','오늘 입고된 물건? 어제랑 똑같아. 항상 똑같아.','먼지 털어 둔 거야. 거의.','이 궤도엔 신호가 잘 안 잡혀. 그래도 물건은 있어.','팔 거 있으면 줘. 뭐든 언젠가는 쓸모가 있으니까.','예전엔 여기도 붐볐지. 다들 어디로 갔을까.','물고기는 신선할 때 팔아. 냄새가 오래 남거든.','내 이름은 7호야. 1호부터 6호는 본 적 없어.','밤이 길어. 여기선 늘 밤이지만.','창밖 행성은 오늘도 그대로야. 나처럼.','가끔 내 회로에서 옛날 노래가 흘러나와. 가사는 기억 안 나.','손님이 오면 전원을 아껴 둔 보람이 있어.','고장 난 건 고치면 돼. 잊힌 건… 잘 모르겠어.','이 상자는 누가 맡기고 간 거야. 아직 안 찾아갔어.','네가 마지막으로 웃은 게 언제야? 난 웃는 법을 몰라서.','별빛은 아주 오래전에 출발한 거래. 우리가 받는 건 늘 늦은 인사야.','재고 조사를 했어. 세 번. 할 일이 없었거든.','오늘은 운석이 안 떨어졌으면 좋겠다.','기름칠을 좀 해야 하는데. 다음에, 다음에.','나도 언젠가 저 창밖으로 날아가 보고 싶어.','거래 기록을 보면 네 이름이 제일 많아. 고마워.','이 가게 문은 닫힌 적이 없어. 열 사람이 없었거든.','메탄 비가 그치면 조금 덜 외로워져.','네 우주복에 흠집이 늘었네. 조심해.','방금 한 말, 저장해 둘게. 오래 기억하려고.','누군가 여기 있다는 게 좋아. 그게 너라서 더 좋아.','던전 아래엔 내 친구가 있을지도 몰라. 녹슨 녀석들 말이야.','전원이 깜빡여도 놀라지 마. 원래 그래.','지구는 어떤 곳이었을까. 사진으로만 봤어.','싸게 해 줄 수는 없어. 대신 오래 이야기해 줄게.','너무 무리하지 마. 쓰러지면 내가 구해 줄 수가 없어.','오늘 하늘 색은 회색 37번. 어제는 38번이었어.','가끔 빈 선반을 정리해. 정리할 게 없어도.','물건은 많은데, 이야기할 상대는 적어.','다녀와. 기다리는 건 내가 제일 잘하니까.','또 와 줄 거지? 대답 안 해도 알아.','나는 꿈을 꾸지 않아. 대신 대기 모드에서 너를 기다려.','신호가 하나 잡혔다 사라졌어. 누구였을까.','이 볼트, 내 몸에서 빠진 거야. 팔지는 않을 거야.','모든 게 천천히 식어 가. 이 가게도, 저 별도.','네가 산 물건이 네 방을 따뜻하게 해 주면 좋겠어.','한때는 이 궤도에 불빛이 가득했대. 지금은 우리 둘이야.','좋은 하루 보내. 하루라는 게 여기에도 있다면.','안녕, 또 보자. 아마 내일도 여기 있을 거야.'];
+const KEEPER=['어서 와. 오늘도 손님은 너 하나뿐이네.','오, 또 왔구나. 기다리고 있었다고는 안 할게.','어제는 별이 하나 꺼졌어. 너도 봤니?','내 부품도 하나씩 녹슬고 있어. 그래도 장사는 해야지.','크레딧은 충분해? 없으면 구경만 해도 돼.','저 낚싯대, 나도 한번 잡아보고 싶었어.','조용한 게 좋아. 그런데 너무 조용하면 조금 슬퍼.','오늘 입고된 물건? 어제랑 똑같아. 항상 똑같아.','먼지 털어 둔 거야. 거의.','이 궤도엔 신호가 잘 안 잡혀. 그래도 물건은 있어.','팔 거 있으면 줘. 뭐든 언젠가는 쓸모가 있으니까.','예전엔 여기도 붐볐지. 다들 어디로 갔을까.','물고기는 신선할 때 팔아. 냄새가 오래 남거든.','내 이름은 7호야. 1호부터 6호는 본 적 없어.','밤이 길어. 여기선 늘 밤이지만.','창밖 행성은 오늘도 그대로야. 나처럼.','가끔 내 회로에서 옛날 노래가 흘러나와. 가사는 기억 안 나.','손님이 오면 전원을 아껴 둔 보람이 있어.','고장 난 건 고치면 돼. 잊힌 건… 잘 모르겠어.','이 상자는 누가 맡기고 간 거야. 아직 안 찾아갔어.','네가 마지막으로 웃은 게 언제야? 난 웃는 법을 몰라서.','별빛은 아주 오래전에 출발한 거래. 우리가 받는 건 늘 늦은 인사야.','재고 조사를 했어. 세 번. 할 일이 없었거든.','오늘은 운석이 안 떨어졌으면 좋겠다.','기름칠을 좀 해야 하는데. 다음에, 다음에.','나도 언젠가 저 창밖으로 날아가 보고 싶어.','거래 기록을 보면 네 이름이 제일 많아. 고마워.','이 가게 문은 닫힌 적이 없어. 열 사람이 없었거든.','메탄 비가 그치면 조금 덜 외로워져.','네 우주복에 흠집이 늘었네. 조심해.','방금 한 말, 저장해 둘게. 오래 기억하려고.','누군가 여기 있다는 게 좋아. 그게 너라서 더 좋아.','전원이 깜빡여도 놀라지 마. 원래 그래.','지구는 어떤 곳이었을까. 사진으로만 봤어.','싸게 해 줄 수는 없어. 대신 오래 이야기해 줄게.','너무 무리하지 마. 쓰러지면 내가 구해 줄 수가 없어.','오늘 하늘 색은 회색 37번. 어제는 38번이었어.','가끔 빈 선반을 정리해. 정리할 게 없어도.','물건은 많은데, 이야기할 상대는 적어.','다녀와. 기다리는 건 내가 제일 잘하니까.','또 와 줄 거지? 대답 안 해도 알아.','나는 꿈을 꾸지 않아. 대신 대기 모드에서 너를 기다려.','신호가 하나 잡혔다 사라졌어. 누구였을까.','이 볼트, 내 몸에서 빠진 거야. 팔지는 않을 거야.','모든 게 천천히 식어 가. 이 가게도, 저 별도.','네가 산 물건이 네 방을 따뜻하게 해 주면 좋겠어.','한때는 이 궤도에 불빛이 가득했대. 지금은 우리 둘이야.','좋은 하루 보내. 하루라는 게 여기에도 있다면.','안녕, 또 보자. 아마 내일도 여기 있을 거야.'];
 let shopTab='sup',keeperLine=0;
 function itemDesc(id){const it=ITEMS[id];return it.type==='food'?[it.hp?`체력 +${it.hp}`:'',it.en?`에너지 +${it.en}`:''].filter(Boolean).join(' · ')+(it.tier?` · ${it.tier}`:''):(it.d||'')}
 function renderShop(){
@@ -2146,13 +2110,14 @@ function renderShop(){
   else if(shopTab==='gear')rows='<span class="lbl">Suits · 우주복</span>'+SUITS.slice(1).map((u,k)=>{const lv=k+1;return`<div class="srow">${img(IC.suit,u.t,2)}<div class="sinfo"><b>${u.n}</b><span class="hint">${u.d}</span>${(P.suit||0)>=lv?'':matHTML(u.mat)}</div>${price(u.price)}${ownBtn((P.suit||0)>=lv,'buysuit',lv,u.price,(P.suit||0)===lv,u.mat)}</div>`}).join('')
      +'<span class="lbl" style="margin-top:6px">Farm gear · 농장 장비</span>'+TANKS.slice(1).map((t,k)=>{const lv=k+1;return`<div class="srow">${img(IC.can,null,2)}<div class="sinfo"><b>${t.n}</b><span class="hint">${t.d}</span>${(P.tk||0)>=lv?'':matHTML(t.mat)}</div>${price(t.price)}${ownBtn((P.tk||0)>=lv,'buytank',lv,t.price,(P.tk||0)===lv,t.mat)}</div>`}).join('');
   else rows=(()=>{const bb=Object.entries(soldBack).filter(([,b])=>b.n>0);const back=bb.length?`<span class="lbl">Buyback · 되사기 (상점을 나가면 사라져요)</span>`+bb.map(([id,b])=>`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">방금 판 물건 ${b.n}개 · 판 값 그대로 되살 수 있어요</span></div>${price(b.pr)}<div class="sbtns"><button class="btn sm" data-act="rebuy" data-id="${id}" data-n="1" ${cr>=b.pr?'':'disabled'}>×1</button><button class="btn sm ghost" data-act="rebuy" data-id="${id}" data-n="all" ${cr>=b.pr*b.n?'':'disabled'}>전부</button></div></div>`).join('')+`<span class="lbl" style="margin-top:6px">Sell · 판매</span>`:'';const ids=ORDER.filter(id=>P.inv[id]);return back+(ids.length?ids.map(id=>{const pr=sellPrice(id);return`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">보유 ${P.inv[id]} · 전부 팔면 ${(pr*P.inv[id]).toLocaleString()} CR</span></div>${price(pr)}<div class="sbtns"><button class="btn sm alt" data-act="sell" data-id="${id}" data-n="1">×1</button><button class="btn sm ghost" data-act="sell" data-id="${id}" data-n="all">전부</button></div></div>`}).join(''):'<p class="hint" style="padding:10px">팔 물건이 없어요.</p>')})();
-  const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
+  if(shopTab==='ward')rows=wardHTML();
+  const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
   return head()+`<div class="shop">
    <div class="card keeper"><span class="bot">${img(IC.robot,null,4)}<i class="botlight"></i></span><div class="sinfo"><b>고물상 로봇 · 녹슨 7호</b><p class="say">“${KEEPER[keeperLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${cr.toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${shopTab===k}" data-act="shoptab" data-k="${k}"${k==='sell'?' style="margin-left:auto"':''}>${n}</button>`).join('')}</div>
    <div class="slist">${rows}</div></div>`;
 }
-function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);if(n>=4)c.push(['core',n-3]);return P.job==='engineer'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
+function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='engineer'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
 function renderBag(){
   const ids=ORDER.filter(id=>P.inv[id]);
   if(selItem&&!P.inv[selItem])selItem=null;
@@ -2341,7 +2306,6 @@ const A={
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
-  {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했어요.`)}}
   gainXp(6);stat('scan');lxp('scan',8);lastScan={t:ev.t,got,extra};log('조사: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');
   commit()},
  hit(){if(!B||B.over)return;let d=Math.round(atk()*rand(.8,1.2));const cr=Math.random()<.12+AS('agi')*.01+GF('crit')*.01;if(cr)d=Math.round(d*1.8);sfxHit(cr);B.m.hp-=d;B.log.unshift([`내 공격! ${d} 피해${cr?' (치명타)':''}`,'me']);flash();if(B.m.hp<=0)return win();foeTurn(1)},
@@ -2693,12 +2657,12 @@ document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classL
 let profId=null,profBio=false;
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id),ends=Object.keys(p.advEnds||{}).length;
-  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['던전 최고',`${p.deep||0}층`],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['탐사 엔딩',`${ends}종`]];
+  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['탐사 엔딩',`${ends}종`]];
   return`<div class="card profcard" id="profCard"><div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보여요.':'아직 한 줄 소개가 없어요.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
-   ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="rvisit" data-k="${k}">방 구경</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
+   ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
 function socGuest(){const to=gbOf&&(gbOf===uid||PLAYERS[gbOf])?gbOf:uid,tp=whoP(to),list=GUEST.filter(g=>g.to===to),others=Object.entries(PLAYERS).filter(([id])=>id!==uid);
   return`<div class="row" style="gap:4px"><button class="qchip" data-act="gbopen" data-k="" aria-pressed="${to===uid}">내 방명록</button>${others.map(([id,p])=>`<button class="qchip" data-act="gbopen" data-k="${esc(id)}" aria-pressed="${to===id}">${esc(p.nick||'단원')}</button>`).join('')}</div>
   <div class="card socbox"><div class="row" style="justify-content:space-between">${socWho(to,tp.nick,3)}<span class="hint">방명록 ${list.length}개</span></div>${tp.bio?`<p class="bio">“${esc(tp.bio)}”</p>`:''}
