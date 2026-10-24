@@ -1655,9 +1655,9 @@ const furnById=id=>{for(const k in FURN){const f=FURN[k].list.find(x=>x.id===id)
 const roomOf=p=>Object.assign({theme:'space',wallp:'wp0',floorp:'fl0',desk:'d0',bed:'bed0',wall:'w0',floor:'f0',lamp:'l0'},p&&p.room);
 const ownsF=id=>{const f=furnById(id);return !!f&&(f.price===0||(P.own||[]).includes(id))};
 const scanLocked=f=>f&&f.scan&&!(P.own||[]).includes(f.id);
-const LOOKS={helmet:{n:'헬멧',opts:[['#b9bccb','흰색'],['#8a8da0','은색'],['#41444f','검정'],['#a99a74','금색'],['#93707f','장미'],['#7c97a8','하늘'],['#8ba790','연두'],['#9a8fc0','보라'],['#b0906f','주황'],['#a8626b','붉은']]},
- suit:{n:'우주복',opts:[['#5f5a80','보라'],['#7e8193','회색'],['#5f8f8a','청록'],['#9a7a5e','녹빛'],['#93707f','장미'],['#3a5160','남색'],['#a99a74','황토'],['#2e3040','검정'],['#b9bccb','흰색'],['#8f4a52','붉은']]},
- visor:{n:'바이저',opts:[['#7c97a8','청색'],['#bfae80','금색'],['#8ba790','초록'],['#a8626b','붉은'],['#9a8fc0','보라'],['#1b1f2b','검정'],['#c4c7d4','은색'],['#c48aa4','분홍'],['#c9965e','주황'],['#7fd0d0','청록']]}};
+const LOOKS={helmet:{n:'헬멧',opts:[['#b9bccb','흰색'],['#8a8da0','은색'],['#41444f','검정'],['#a8626b','붉은'],['#b0906f','주황'],['#a99a74','금색'],['#8ba790','연두'],['#7c97a8','하늘'],['#9a8fc0','보라'],['#93707f','장미']]},
+ suit:{n:'우주복',opts:[['#b9bccb','흰색'],['#7e8193','회색'],['#2e3040','검정'],['#8f4a52','붉은'],['#9a7a5e','녹빛'],['#a99a74','황토'],['#5f8f8a','청록'],['#3a5160','남색'],['#5f5a80','보라'],['#93707f','장미']]},
+ visor:{n:'바이저',opts:[['#c4c7d4','은색'],['#1b1f2b','검정'],['#a8626b','붉은'],['#c9965e','주황'],['#bfae80','금색'],['#8ba790','초록'],['#7fd0d0','청록'],['#7c97a8','청색'],['#9a8fc0','보라'],['#c48aa4','분홍']]}};
 /* wardrobe: overlay pixels on a 20x20 canvas (astro sits at x2,y4) */
 const PX=(rows,ox,oy)=>{const out=[];rows.forEach((r,j)=>{for(let i=0;i<r.length;i++)if(r[i]!=='.')out.push([ox+i,oy+j,r[i]])});return out};
 const WARD={
@@ -1703,7 +1703,7 @@ function avatarGrid(p,ov){const o=Object.assign(outfitOf(p),ov||{});const g=Arra
   ASTRO32.forEach((r,j)=>{for(let i=0;i<r.length;i++)if(r[i]!=='.')g[j+8][i+4]=r[i]});
   items.filter(([,it])=>!it.back).forEach(([k,it])=>put(it.px,AV_DY[k]||0));
   return g.map(r=>r.join(''))}
-const NEON=[['#ff4fd8','네온 핑크'],['#3fa9ff','네온 블루'],['#39ff88','네온 그린'],['#f5ff3f','네온 옐로'],['#ff9a2f','네온 오렌지'],['#b04fff','네온 퍼플'],['#2ff5ff','네온 시안'],['#ff3f5f','네온 레드'],['#a8ff2f','네온 라임'],['#f0f6ff','네온 화이트']];
+const NEON=[['#f0f6ff','네온 화이트'],['#ff3f5f','네온 레드'],['#ff9a2f','네온 오렌지'],['#f5ff3f','네온 옐로'],['#a8ff2f','네온 라임'],['#39ff88','네온 그린'],['#2ff5ff','네온 시안'],['#3fa9ff','네온 블루'],['#b04fff','네온 퍼플'],['#ff4fd8','네온 핑크']];
 const NEONSET=new Set(NEON.map(n=>n[0]));const NEON_PRICE=800;let neonPick=null;
 const ownsNeon=c=>(P.own||[]).includes('neon'+c);
 function lookGlow(p){const l=lookOf(p);for(const k of ['suit','visor','helmet'])if(NEONSET.has(l[k]))return l[k];return null}
