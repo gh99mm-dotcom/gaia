@@ -383,6 +383,14 @@ header>.chip:not(.sugg){margin-left:0}
 @media (prefers-reduced-motion:reduce){.neonwrap>img.ng{animation:none}}
 .admtabs{margin:6px 0 2px}.admtabs em{font-style:normal;font-size:10px;color:var(--mute);margin-left:2px}
 .raidz{position:relative}.raidz>b{padding-right:42px}.zcost{display:flex;align-items:center;gap:3px;line-height:1;position:absolute;top:6px;right:7px;font-family:var(--f-pix);font-size:10px;color:var(--gold);background:var(--deep);border:1px solid var(--line);padding:1px 5px}
+.scmap{position:relative;width:100%;max-width:600px;margin:8px auto 4px;border:2px solid var(--ink);line-height:0;overflow:hidden}.scmap>img{width:100%;height:auto;display:block;image-rendering:pixelated}
+.scn{position:absolute;width:18px;height:18px;transform:translate(-50%,-50%);padding:0;border:0;background:transparent;pointer-events:none}.scn.go{pointer-events:auto;z-index:2;cursor:pointer;outline:2px solid #f0c75a;outline-offset:-3px;animation:scpulse 1.2s ease-in-out infinite}
+.sclbl{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-pix);font-size:9px;line-height:1;color:#fff;background:rgba(5,6,11,.62);padding:2px 4px;white-space:nowrap;pointer-events:none;border-left:2px solid}
+@media (max-width:480px){.sclbl{display:none}}
+@keyframes scpulse{50%{outline-color:rgba(240,199,90,.25)}}@media (prefers-reduced-motion:reduce){.scn.go{animation:none}}
+.sctrails{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}.sctr{display:flex;flex-direction:column;gap:4px;padding:8px 10px}.sctr .tn{display:flex;align-items:center;gap:6px;font-weight:700}.sctr .sw{width:10px;height:10px;border:1px solid var(--ink);flex:none}
+.scdots{display:flex;gap:3px}.scdots i{width:14px;height:6px;background:var(--line,#333);display:block}.scdots i.on{background:#f0c75a}.scdots i.here{background:#fff;outline:1px solid #f0c75a}
+.scmove{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.scmove b{font-family:var(--f-pix)}
 .raidmap{position:relative;margin:6px 0 2px;border:2px solid var(--ink);line-height:0;overflow:hidden}.raidmap>img{width:100%;height:auto;display:block;image-rendering:pixelated}
 .rmme{position:absolute;transform:translate(-50%,-50%);line-height:0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6));animation:rmbob 1.6s ease-in-out infinite}
 @keyframes rmbob{50%{margin-top:-3px}}.rmlbl{position:absolute;right:6px;bottom:4px;font-family:var(--f-pix);font-size:9px;line-height:1;color:#fff;background:rgba(5,6,11,.6);padding:2px 5px}
@@ -1312,7 +1320,7 @@ const TABS=[
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
  {id:'raid',n:'원정',ic:IC.raygun,cost:'',loc:'파티 원정 · 최대 4명 · 턴제 전투'},
  {id:'adv',n:'탐사',ic:BOSS_IC,cost:'',loc:'심연에서 온 침략자 · 모든 단원 공동 토벌'},
- {id:'scan',n:'조사',ic:IC.scan,cost:'30분 신호',loc:'미확인 신호 구역 · 30분마다 신호 수신'},
+ {id:'scan',n:'조사',ic:IC.scan,cost:'다섯 갈래 길',loc:'정착지 주변 · 다섯 갈래 길 탐색'},
  {id:'bag',n:'가방',ic:IC.bag,cost:'',loc:'개인 보관함'},
  {id:'shop',n:'상점',ic:IC.shop,cost:'',loc:'궤도 고물상 · 24시간 영업'},
 ];
@@ -1480,7 +1488,7 @@ const TITLES=[
  ['fish1','메탄 강태공','물고기 50마리 낚기',()=>(P.st?.fish||0)>=50],
  ['fish2','전설을 낚은 자','레전더리 어종 낚기',()=>(P.st?.legend||0)>=1],
  ['gather1','먼지 속 수집가','채집 100회',()=>(P.st?.gather||0)>=100],
- ['scan1','신호 추적자','이상 신호 30번 조사',()=>(P.st?.scan||0)>=30],
+ ['scan1','길 위의 개척자','주변 지점 30곳 조사',()=>(P.st?.scan||0)>=30],
  ['rich','궤도의 부호','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
  ['farm3','별밭의 은둔자','작물 300번 수확',()=>st('harvest')>=300],
  ['farm5','대지의 손길','농사 생활 레벨 10',()=>lifeLv(P.lx?.farm)>=10],
@@ -1492,7 +1500,7 @@ const TITLES=[
  ['fish6','중력파를 던지는 자','중력파 낚싯대 보유',()=>(P.rod||0)>=2],
  ['fish7','세 번 전설을 본 자','레전더리 어종 3마리 낚기',()=>st('legend')>=3],
  ['fish8','백열다섯 개의 별빛','어류 도감 115종 완성',()=>Object.keys(P.dex||{}).length>=115],
- ['scan2','잡음 속의 목소리','이상 신호 100번 조사',()=>st('scan')>=100],
+ ['scan2','지도 밖으로','주변 지점 100곳 조사',()=>st('scan')>=100],
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
  ['rich2','녹슨 7호의 단골','크레딧 50,000 보유',()=>(P.cr||0)>=50000],
  ['wpn','은하를 쥔 손','무기 +8 강화',()=>(P.wlv||0)>=8],
@@ -1517,7 +1525,7 @@ let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
 function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==uid);const opts=ORDER.map(id=>`<option value="${id}">${esc(ITEMS[id].n)}</option>`).join('');
   $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구입니다.</span></div><button class="qchip" data-act="adminclose">← 돌아가기</button></div>
   <div class="info-sec"><span class="lbl">Me · 나에게</span><div class="row" style="gap:5px">
-   <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 신호 가득</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 로봇 즉시 귀환</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
+   <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 이동 즉시 도착</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 로봇 즉시 귀환</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
    <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button></div></div>
   <div class="info-sec"><span class="lbl">Give · 아이템 지급</span><div class="row" style="gap:6px"><select id="admItem" class="sel">${opts}</select><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'단원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div><span class="hint">다른 단원에게 주면 '운영자' 이름의 선물로 도착합니다.</span></div>
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
@@ -1622,7 +1630,7 @@ function renderPilot(){
 }
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 function renderNav(){
-  migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=sigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
+  migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw?1:0;const gx=expInfo(),gp=gx?gx.pending:0;
   $('#nav').innerHTML=TABS.map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
 }
 function head(){const t=TABS.find(x=>x.id===tab);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
@@ -2408,7 +2416,6 @@ function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],g
   return`<div class="card dexbox"><button class="dex-head" data-act="dextoggle" aria-expanded="${dexOpen}"><span class="lbl">Fish log · 어류 도감</span><b>${got}/${all.length}</b><span class="caret">${dexOpen?'▾':'▸'}</span></button>
   ${dexOpen?`<div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${dexTab===k}" data-act="dextab" data-k="${k}">${n} <em>${FISHES[k].filter(id=>P.dex[id]).length}/${FISHES[k].length}</em></button>`).join('')}</div>
   <div class="dex">${FISHES[dexTab].map(id=>`<div title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span></div>`).join('')}</div>`:''}</div>`}
-const SIG_MS=30*60e3,SIG_MAX=3;
 // 탐사's old signal receiver: catches a stray signal every 30 minutes (up to 5) while no invader is loose; investigating works like 조사
 const ASIG_MS=30*60e3,ASIG_MAX=5;let lastAsig=null;
 function asigState(){if(!P.asig)P.asig={n:1,t:Date.now()};const el=Date.now()-P.asig.t,gain=Math.floor(el/ASIG_MS),n=Math.min(ASIG_MAX,P.asig.n+gain);return{n,next:n>=ASIG_MAX?0:ASIG_MS-(el%ASIG_MS)}}
@@ -2417,14 +2424,76 @@ function asigHTML(){const sg=asigState();return`<div class="card asigcard"><div 
   <div class="sigbox"><div class="radar">${Array.from({length:ASIG_MAX},(_,k)=>`<span class="blip ${k<sg.n?'on':''}"></span>`).join('')}</div><div class="sinfo"><span class="hint" id="asigT">${sg.n>=ASIG_MAX?'신호가 가득 찼습니다. 조사하러 가십시오.':'다음 신호까지 '+fmtClock(sg.next)}</span></div><button class="btn" data-act="asigscan" ${sg.n?'':'disabled'}>신호 조사 <small>EN 4</small></button></div>
   <p class="hint">침략자가 없는 동안 낡은 신호기가 심연 쪽에서 새어 나오는 신호를 잡습니다. 30분마다 하나씩, 최대 ${ASIG_MAX}개까지 쌓입니다.</p>
   ${lastAsig?`<div class="result">${img(IC.scan,null,2)}<div><p>${esc(lastAsig.t)}</p>${lastAsig.got.length||lastAsig.extra?chipsOf(lastAsig.got,lastAsig.extra):''}</div></div>`:''}</div>`}
-function sigState(){if(!P.sig)P.sig={n:1,t:Date.now()};const el=Date.now()-P.sig.t,gain=Math.floor(el/SIG_MS),n=Math.min(SIG_MAX,P.sig.n+gain);return{n,next:n>=SIG_MAX?0:SIG_MS-(el%SIG_MS)}}
-function useSig(){const st=sigState();if(st.n<=0)return false;const el=Date.now()-P.sig.t,gain=Math.floor(el/SIG_MS);P.sig={n:st.n-1,t:st.n>=SIG_MAX?Date.now():P.sig.t+gain*SIG_MS};return true}
-function renderScan(){const sg=sigState();
-  return head()+`<div class="row" style="align-items:flex-start;gap:16px"><div style="flex:1;min-width:220px"><p class="lead">30분마다 레이더에 새로운 이상 신호가 잡힙니다. 신호를 따라가 조사하면 보급품, 고대 기록, 위험 지대, 숨어 있던 몬스터까지 무엇이 나올지 모릅니다. 신호는 최대 ${SIG_MAX}개까지 쌓입니다.</p></div>
-  <button class="btn" data-act="scan" ${sg.n?'':'disabled'}>신호 조사 <small>EN 4</small></button></div>
-  <div class="card sigbox"><div class="radar">${Array.from({length:SIG_MAX},(_,k)=>`<span class="blip ${k<sg.n?'on':''}"></span>`).join('')}</div><div class="sinfo"><b>잡힌 신호 ${sg.n}/${SIG_MAX}</b><span class="hint" id="sigT">${sg.n>=SIG_MAX?'신호가 가득 찼습니다. 조사하러 가십시오.':'다음 신호까지 '+fmtClock(sg.next)}</span></div></div>
-  ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:`<div class="note">조사할 때마다 경험치 +6. 기록 장치를 찾으면 가방에서 해독할 수 있습니다.</div>`}`;
+/* ───────── 조사: five trails out of the settlement, walked one stop at a time ───────── */
+const SCOUT_EN=3;
+const TRAILS=[
+ {n:'결정 능선',dir:'북',a:-90,k:'crystal',g:['#16283a','#203a52'],c:'#4fc8f0',m:[4,6,9,13,18],it:'crystal',nodes:['갈라진 바위틈','푸른 결정 지대','공명하는 첨탑','결정 동굴 입구','별빛 정상']},
+ {n:'녹슨 잔해길',dir:'동',a:-14,k:'wreck',g:['#2e251c','#433526'],c:'#b0906f',m:[3,5,8,12,16],it:'ore',nodes:['부서진 착륙 다리','녹슨 화물 컨테이너','추락한 셔틀','고철 무덤','모선 파편 분화구']},
+ {n:'포자 습지',dir:'남동',a:58,k:'reed',g:['#18301f','#22442c'],c:'#5ab878',m:[5,7,10,14,20],it:'moss',nodes:['안개 낀 갈대밭','발광 포자 군락','가라앉은 탐사 차량','거대 버섯 숲','숨 쉬는 늪 한가운데']},
+ {n:'운석 분화구',dir:'남서',a:128,k:'lava',g:['#2a1012','#42181a'],c:'#e85a2a',m:[3,4,7,11,15],it:'dark',nodes:['그을린 평지','작은 운석공','검은 유리 들판','거대 분화구 가장자리','낙하 중심핵']},
+ {n:'얼음 협곡',dir:'서',a:194,k:'ice',g:['#222c38','#334356'],c:'#b8d4ec',m:[6,8,12,16,24],it:'crystal',nodes:['서리 내린 비탈','얼어붙은 개울','얼음 동굴','수정 빙벽','협곡 밑바닥']}];
+const SC_W=240,SC_H=160,SC_CX=120,SC_CY=82;
+const SC_PTS=(()=>{const mx=Math.max(...TRAILS.map(t=>t.m.reduce((a,b)=>a+b,0)));return TRAILS.map((t,i)=>{const tot=t.m.reduce((a,b)=>a+b,0),L=.62+.38*tot/mx,ar=t.a*Math.PI/180;let c=0;
+  return t.m.map((m,k)=>{c+=m;const r=12+(c/tot)*L*(68-12),w=Math.sin(k*1.9+i*2.3)*3.5;return[Math.round(SC_CX+Math.cos(ar)*r*1.5-Math.sin(ar)*w),Math.round(SC_CY+Math.sin(ar)*r+Math.cos(ar)*w)]})})})();
+function scoutSt(){if(!P.scout||typeof P.scout!=='object')P.scout={t:-1,at:0,far:[0,0,0,0,0],mv:null,nw:0};const s=P.scout;if(!Array.isArray(s.far))s.far=[0,0,0,0,0];return s}
+const scPt=(t,k)=>k<=0?[SC_CX,SC_CY]:SC_PTS[t][k-1];
+const SCMAP={};
+function scoutMapImg(){const sc=scoutSt(),key=sc.far.join('')+'|'+sc.t+'|'+sc.at+'|'+(isLight()?1:0);if(SCMAP[key])return SCMAP[key];
+  const W=SC_W,H=SC_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  const px=(x,y,col)=>{if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};let sd=4271;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  const A=TRAILS.map(t=>t.a*Math.PI/180),dA=(p,q)=>{let d=Math.abs(p-q)%(2*Math.PI);return d>Math.PI?2*Math.PI-d:d};
+  const sector=(x,y)=>{const an=Math.atan2(y-SC_CY,(x-SC_CX)/1.5)+Math.sin(x*.11+y*.07)*.12;let bi=0,bd=9;A.forEach((q,i)=>{const d=dA(an,q);if(d<bd){bd=d;bi=i}});return bi};
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const T=TRAILS[sector(x,y)],t=(Math.sin(x*.21+y*.13)+Math.sin(x*.07-y*.29)+2)/4,r=Math.hypot((x-SC_CX)/1.5,y-SC_CY);
+    let col=t*16>BAYER[y&3][x&3]?T.g[1]:T.g[0];if(r<11)col=(r*1.4>BAYER[y&3][x&3]+2)?col:'#3a3a48';px(x,y,col)}
+  // terrain dressing per trail, kept off the paths
+  const onPath=(x,y)=>Math.hypot((x-SC_CX)/1.5,y-SC_CY)<13||SC_PTS.some((ps,i)=>ps.some((q,k)=>{const p0=scPt(i,k),dx=q[0]-p0[0],dy=q[1]-p0[1],l=dx*dx+dy*dy||1,u=Math.max(0,Math.min(1,((x-p0[0])*dx+(y-p0[1])*dy)/l));return Math.hypot(x-p0[0]-u*dx,y-p0[1]-u*dy)<5}));
+  for(let n=0;n<95;n++){const x=Math.floor(rnd()*W),y=Math.floor(rnd()*H);if(onPath(x,y))continue;const T=TRAILS[sector(x,y)],d0=T.c,d1='#ffffff22';
+    if(T.k==='crystal'){for(let h=0;h<4;h++)px(x,y-h,h>2?'#c0f4ff':d0);px(x+1,y-1,d0);px(x-1,y,'#0e1a26')}
+    else if(T.k==='reed'){px(x,y,d0);px(x,y-1,d0);px(x,y-2,'#9df0b0');px(x+2,y,d0);px(x+2,y-1,'#9df0b0');if(rnd()<.3){px(x-2,y+1,'#2a4a5a');px(x-1,y+1,'#2a4a5a')}}
+    else if(T.k==='wreck'){px(x,y,'#7a6a5a');px(x+1,y,'#7a6a5a');px(x+2,y,'#a8988a');px(x+1,y-1,'#7a6a5a');px(x+1,y+1,'#1e1812')}
+    else if(T.k==='ice'){px(x,y,'#ecf6ff');px(x-1,y,d0);px(x+1,y,d0);px(x,y-1,d0);px(x,y+1,d0)}
+    else{px(x,y,d0);px(x+1,y,'#ffb05a');px(x-1,y,'#7a2a1a');if(rnd()<.4)px(x,y-1,'#ffb05a')}}
+  // paths: gold where you've walked, dim dirt beyond
+  TRAILS.forEach((T,i)=>{for(let k=1;k<=5;k++){const [x0,y0]=scPt(i,k-1),[x1,y1]=scPt(i,k),len=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),lit=k<=sc.far[i];
+    for(let s2=0;s2<=len;s2++){const x=Math.round(x0+(x1-x0)*s2/len),y=Math.round(y0+(y1-y0)*s2/len);px(x,y+1,'#14121a');px(x+1,y+1,'#14121a');if(!lit&&s2%4===3)continue;px(x,y,lit?'#f0d27a':'#9a8c74');px(x+1,y,lit?'#b8984c':'#6a6050')}}});
+  // fog past the next unexplored stop on each trail
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=sector(x,y),k=Math.min(5,sc.far[i]+1),[fx,fy]=scPt(i,k),rf=Math.hypot((fx-SC_CX)/1.5,fy-SC_CY)+6,r=Math.hypot((x-SC_CX)/1.5,y-SC_CY);
+    if(r>rf){const t=Math.min(1,(r-rf)/10);if(t*16>BAYER[y&3][x&3]-2){g.fillStyle='rgba(6,6,14,.5)';g.fillRect(x,y,1,1)}}}
+  // stops
+  TRAILS.forEach((T,i)=>SC_PTS[i].forEach(([x,y],k0)=>{const k=k0+1;
+    if(k<=sc.far[i]){px(x,y,'#2a2418');px(x,y-1,'#d6d0c0');px(x,y-2,'#d6d0c0');px(x,y-3,'#d6d0c0');px(x,y-4,'#d6d0c0');px(x+1,y-4,T.c);px(x+2,y-4,T.c);px(x+1,y-3,T.c);px(x+2,y-3,T.c)}
+    else{const nx=k===sc.far[i]+1,rc=nx?'#e8e4f4':'#6a6880';for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){const e=Math.max(Math.abs(a),Math.abs(b));if(e===2&&Math.abs(a)+Math.abs(b)<4)px(x+a,y+b,rc);else if(e<2)px(x+a,y+b,e?'#14121a':nx?'#f0c75a':'#3a3848')}}}));
+  // the settlement dome
+  for(let b=-4;b<=0;b++)for(let a=-6;a<=6;a++)if(a*a/36+b*b/16<=1)px(SC_CX+a,SC_CY+b,b<-2?'#c8d0dc':'#8a94a6');
+  for(let a=-7;a<=7;a++){px(SC_CX+a,SC_CY+1,'#4a5060');px(SC_CX+a,SC_CY+2,'#2a2e38')}px(SC_CX-2,SC_CY-2,'#ffe8a0');px(SC_CX+2,SC_CY-2,'#ffe8a0');px(SC_CX,SC_CY-5,'#f0c75a');px(SC_CX,SC_CY-6,'#ff6a5a');
+  return SCMAP[key]={src:c.toDataURL()}}
+function scoutPos(){const sc=scoutSt();if(sc.mv){const m=sc.mv,f=Math.max(0,Math.min(1,(Date.now()-m.s)/(m.e-m.s))),[x0,y0]=scPt(m.t,m.from),[x1,y1]=scPt(m.t,m.to);return[x0+(x1-x0)*f,y0+(y1-y0)*f]}return sc.t<0?[SC_CX,SC_CY]:scPt(sc.t,sc.at)}
+const scNext=(sc,i)=>!sc.mv&&((sc.t<0&&true)||sc.t===i)&&(sc.t<0?0:sc.at)<5;
+function scoutMapHTML(){const sc=scoutSt(),m=scoutMapImg(),[mx,my]=scoutPos();
+  const btns=TRAILS.map((T,i)=>SC_PTS[i].map(([x,y],k0)=>{const k=k0+1,go=scNext(sc,i)&&k===(sc.t<0?1:sc.at+1);return`<button type="button" class="scn ${go?'go':''}" style="left:${(x+.5)/SC_W*100}%;top:${(y+.5)/SC_H*100}%" ${go?`data-act="scgo" data-t="${i}"`:'tabindex="-1"'} title="${esc(T.n)} ${k}지점${k<=sc.far[i]?' · '+esc(T.nodes[k0]):''}${go?` · ${T.m[k0]}분`:''}"></button>`}).join('')).join('');
+  return`<div class="scmap"><img class="pix" src="${m.src}" alt="정착지 주변 다섯 갈래 길 지도">${btns}${TRAILS.map((T,i)=>{const [a,b]=SC_PTS[i][1],[c,d]=SC_PTS[i][2],ar=T.a*Math.PI/180,x=(a+c)/2-Math.sin(ar)*9,y=(b+d)/2+Math.cos(ar)*9;return`<span class="sclbl" style="left:${x/SC_W*100}%;top:${y/SC_H*100}%;border-color:${T.c}">${esc(T.n)}</span>`}).join('')}<span class="rmme" id="scMe" style="left:${(mx+.5)/SC_W*100}%;top:${(my-5)/SC_H*100}%">${headImg(2,P)}</span><span class="rmlbl">${sc.mv?'이동 중':sc.t<0?'정착지':`${TRAILS[sc.t].n} ${sc.at}지점`}</span></div>`}
+function scoutLeft(){const m=scoutSt().mv;return m?Math.max(0,m.e-Date.now()):0}
+function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(renderNav,0)}const mv=sc.mv,T=sc.t>=0?TRAILS[sc.t]:null;
+  const status=mv?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(TRAILS[mv.t].n)} ${mv.to}지점으로 이동 중</b><div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 도착하면 주변을 조사합니다.</div></div><button class="btn sm alt" data-act="scstop">이동 취소</button></div>`
+   :T?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(T.n)} · ${esc(T.nodes[sc.at-1])}</b><div class="hint">${sc.at<5?`다음 지점까지 ${T.m[sc.at]}분 걸립니다.`:'이 길의 끝입니다. 더 나아갈 곳이 없습니다.'}</div></div>${sc.at<5?`<button class="btn" data-act="scgo" data-t="${sc.t}">더 깊이 <small>${T.m[sc.at]}분 · EN ${SCOUT_EN}</small></button>`:''}<button class="btn sm alt" data-act="scback">정착지로 귀환</button></div>`
+   :`<div class="note">정착지에 있습니다. 지도에서 빛나는 지점을 누르거나 아래에서 길을 골라 출발하십시오.</div>`;
+  const cards=TRAILS.map((t,i)=>{const here=!mv&&sc.t===i,lock=mv||(sc.t>=0&&sc.t!==i),nk=sc.t===i?sc.at:0;
+    return`<div class="card sctr"><div class="tn"><span class="sw" style="background:${t.c}"></span>${esc(t.n)} <small class="hint">${t.dir}쪽</small></div><div class="scdots">${t.m.map((_,k)=>`<i class="${here&&sc.at===k+1?'here':k<sc.far[i]?'on':''}" title="${k<sc.far[i]?esc(t.nodes[k]):'미탐색'}"></i>`).join('')}</div>
+      <div class="hint">구간 ${t.m.map(x=>x+'분').join(' · ')}</div>${lock?'':nk<5?`<button class="btn sm" data-act="scgo" data-t="${i}">${nk?'더 깊이':'출발'} <small>${t.m[nk]}분 · EN ${SCOUT_EN}</small></button>`:''}</div>`}).join('');
+  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 멀리 갈수록 이동은 오래 걸리지만 더 귀한 것을 찾습니다. 한 번 이동할 때마다 에너지 ${SCOUT_EN}.</p>
+  ${scoutMapHTML()}${status}
+  ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:''}
+  <div class="sctrails">${cards}</div>`;
 }
+function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.t],k=m.to,first=k>sc.far[m.t];sc.mv=null;sc.t=m.t;sc.at=k;if(first)sc.far[m.t]=k;sc.nw=tab==='scan'?0:1;
+  const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();if(k>=2)got.push([T.it,ri(1,k-1)]);
+  const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
+  if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
+  if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
+  const xp=(r.xp||0)+4+k*2+(first?k*5:0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
+  stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,got,extra};log(`조사: ${T.nodes[k-1]} 도착. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');
+  checkFaint();save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
+function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArrive();return}if(tab==='scan'&&sc.mv){const e=$('#scT');if(e)e.textContent=fmtClock(scoutLeft());const me=$('#scMe');if(me){const[x,y]=scoutPos();me.style.left=(x+.5)/SC_W*100+'%';me.style.top=(y-5)/SC_H*100+'%'}}}
 /* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
 // repaired strictly in this order: each section opens once the one before it is finished.
 // sized for ~30 crew: life support in about 3 days, then power→comms in about 11 more (see the gather tables)
@@ -2795,7 +2864,7 @@ const A={
  adminclose(){adminView=false;renderPanel()},
  adm(d){if(!isAdmin)return;const k=d.k;
   if(k==='heal'){P.hp=maxHp();P.en=maxEn();P.t=Date.now()}else if(k==='wake'){P.faint=0;P.faintAt=0;if(P.hp<=0)P.hp=maxHp();if(P.en<=0)P.en=maxEn()}
-  else if(k==='water'){FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=0;if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:0}).catch(()=>{});else farmSave()}else if(k==='sig'){P.sig={n:SIG_MAX,t:Date.now()}}
+  else if(k==='water'){FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=0;if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:0}).catch(()=>{});else farmSave()}else if(k==='sig'){const sc=scoutSt();if(sc.mv)sc.mv.e=Date.now()}
   else if(k==='exp'){if(P.exp)P.exp=Object.assign({},P.exp,{start:Date.now()-P.exp.slots*SLOT})}
   else if(k==='farm'){FARM.pods.forEach((pl,i)=>{if(pl&&pl.seed)farmPut(i,Object.assign({},pl,{got:ITEMS[pl.seed].grow}))})}
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
@@ -2834,12 +2903,10 @@ const A={
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=r.add||[];got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
- scan(){if(sigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useSig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=r.add||[];const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
-  if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
-  if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
-  if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
-  gainXp(6);stat('scan');lxp('scan',8);lastScan={t:ev.t,got,extra};log('조사: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');
-  commit()},
+ scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=5)return;if(!spend(SCOUT_EN))return;
+  const ms=TRAILS[i].m[from]*60e3;sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${TRAILS[i].m[from]}분 뒤 도착.`);commit()},
+ scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
+ scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;log('정착지로 귀환했다.');commit()},
  sel(d){selItem=d.id;renderPanel()},
  use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){heal(it.hp,it.en);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${it.hp}, 에너지 +${it.en}`,'good')}else if(it.type==='relic'){gainXp(30);log('고대 신호를 해독했다. 경험치 +30','rare')}commit()},
  upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했습니다.`);commit()},
@@ -3217,7 +3284,7 @@ setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.tex
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
 addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm'){fitSide();fitBay()}});
 setInterval(()=>{
-  {const sg=sigState(),k='s'+sg.n;if(k!==window.__sk){window.__sk=k;renderNav();if(tab==='scan')renderPanel()}else if(tab==='scan'){const e=$('#sigT');if(e&&sg.n<SIG_MAX)e.textContent='다음 신호까지 '+fmtClock(sg.next)}}
+  scoutTick();
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
