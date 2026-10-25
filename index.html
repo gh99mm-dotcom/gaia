@@ -186,6 +186,8 @@ header>.chip:not(.sugg){margin-left:0}
 .fstore{display:flex;flex-direction:column;gap:6px}
 .flist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;max-height:210px;overflow:auto}
 .flist li{display:flex;align-items:center;gap:5px;font-size:11.5px}.flist li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fspick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--deep);border:2px solid var(--ink);padding:6px 8px}.fspick>div:nth-child(2){display:flex;flex-direction:column;flex:1;min-width:90px}.fspick b{font-size:12px}.fspick .acts{display:flex;gap:4px}
+.fstore .bag{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))}
 .flog li{font-size:11px}.flog time{font-family:var(--f-pix);font-size:9px;color:var(--dim)}.flog b{font-weight:400;color:var(--text)}
 .flist em{font-style:normal;color:var(--mute);font-size:11px}.flist .btn{padding:2px 6px;font-size:11px}
 @media (max-width:760px){.frow.r1,.frow.r2{grid-template-columns:minmax(0,1fr)}.frow .bay{max-width:340px;margin:0 auto}}
@@ -1419,10 +1421,14 @@ function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge
       body=`${who}<div class="bar"><i data-prog="${i}" style="--c:var(--green);width:${pc}%"></i></div><span class="sub">${wet?'촉촉합니다. 자라는 중':'목마릅니다. 물을 줘야 자랍니다'}${pl.fert?' · 비료':''}</span>
       <div class="acts"><button class="btn sm alt" data-act="water" data-i="${i}" ${P.water>0?'':'disabled'}>물 주기</button>${pl.fert?'':`<button class="btn sm ghost" data-act="fert" data-i="${i}" ${(P.inv.moss||0)>=2?'':'disabled'}>비료 <small>이끼 2</small></button>`}</div>`}}
   return{tile:`<button class="ptile" style="background-image:url(${miniDome(cls)})" data-act="selpod" data-i="${i}" aria-pressed="${selPod===i}" aria-label="${title}" title="${title}">${pic}${badge}<span class="pn">${String(i+1).padStart(2,'0')}</span></button>`,title,body}}
+let fsSel=null,fpSel=null;
 function storeHTML(){const S=Object.keys(FSTORE).filter(id=>FSTORE[id]>0).sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b)),mine=ORDER.filter(id=>P.inv[id]&&storable(id));
+  if(fsSel&&!FSTORE[fsSel])fsSel=null;if(fpSel&&!(P.inv[fpSel]&&storable(fpSel)))fpSel=null;
+  const pick=(id,n,src)=>`<div class="fspick">${iicon(id,2)}<div><b>${ITEMS[id].n}</b><span class="hint">${src==='store'?'창고에':'내 가방에'} ${n}개</span></div><div class="acts"><button class="btn sm ${src==='store'?'ghost':'alt'}" data-act="${src==='store'?'fstake':'fsput'}" data-id="${id}" data-n="1">${src==='store'?'1개 꺼내기':'1개 넣기'}</button><button class="btn sm ${src==='store'?'ghost':'alt'}" data-act="${src==='store'?'fstake':'fsput'}" data-id="${id}" data-n="all">모두</button></div></div>`;
   return`<div class="card fstore"><div class="stat-row"><span>공용 창고</span><b>${S.reduce((a,id)=>a+FSTORE[id],0)}개</b></div>
-   ${S.length?`<ul class="flist">${S.map(id=>`<li>${iicon(id,1)}<span>${ITEMS[id].n}</span><em>×${FSTORE[id]}</em><button class="btn sm ghost" data-act="fstake" data-id="${id}" data-n="1">1</button><button class="btn sm ghost" data-act="fstake" data-id="${id}" data-n="all">모두</button></li>`).join('')}</ul>`:'<p class="hint">창고가 비어 있습니다. 수확하면 작물이 여기에 쌓입니다.</p>'}
-   <span class="lbl">내 가방에서 넣기</span>${mine.length?`<ul class="flist">${mine.map(id=>`<li>${iicon(id,1)}<span>${ITEMS[id].n}</span><em>×${P.inv[id]}</em><button class="btn sm alt" data-act="fsput" data-id="${id}" data-n="1">1</button><button class="btn sm alt" data-act="fsput" data-id="${id}" data-n="all">모두</button></li>`).join('')}</ul>`:'<p class="hint">넣을 수 있는 씨앗·작물·이끼가 없습니다.</p>'}</div>
+   ${S.length?`<div class="bag">${S.map(id=>`<button class="slot" data-act="fssel" data-id="${id}" aria-pressed="${id===fsSel}" aria-label="${ITEMS[id].n} ${FSTORE[id]}개" title="${ITEMS[id].n}">${iicon(id,2)}<em>${FSTORE[id]}</em></button>`).join('')}</div>`:'<p class="hint">창고가 비어 있습니다. 수확하면 작물이 여기에 쌓입니다.</p>'}
+   ${fsSel?pick(fsSel,FSTORE[fsSel],'store'):S.length?'<p class="hint">아이템을 누르면 꺼낼 수 있습니다.</p>':''}
+   <span class="lbl">내 가방에서 넣기</span>${mine.length?`<div class="bag">${mine.map(id=>`<button class="slot" data-act="fpsel" data-id="${id}" aria-pressed="${id===fpSel}" aria-label="${ITEMS[id].n} ${P.inv[id]}개" title="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>${fpSel?pick(fpSel,P.inv[fpSel],'bag'):'<p class="hint">넣을 아이템을 누르십시오. 씨앗·작물·이끼만 넣을 수 있습니다.</p>'}`:'<p class="hint">넣을 수 있는 씨앗·작물·이끼가 없습니다.</p>'}</div>
   <div class="card fstore"><div class="stat-row"><span>가져간 내역</span><b>최근 ${Math.min(FLOG.length,30)}건</b></div>${FLOG.length?`<ul class="flist flog">${FLOG.slice(0,30).map(l=>`<li><time>${hhmm(l.at)}</time>${iicon(l.id,1)}<span><b>${esc(l.nick||'단원')}</b> · ${esc(ITEMS[l.id]?ITEMS[l.id].n:l.id)}</span><em>×${+l.n||0}</em></li>`).join('')}</ul>`:'<p class="hint">아직 창고에서 꺼낸 단원이 없습니다.</p>'}</div>`}
 function renderFarm(){
   farmLoad();migrate();
@@ -1896,6 +1902,8 @@ const A={
  water(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}P.water--;sfxWater();const q=Object.assign({},pl);if(q.seed)q.got=effG(q);q.wet=Date.now();farmPut(i,q);if(q.seed&&q.by&&q.by!==uid){gainXp(2);lxp('farm',2);stat('helpfarm')}commit()},
  fert(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}const it=ITEMS[pl.seed];farmPut(i,Object.assign({},pl,{got:Math.min(it.grow,(pl.got||0)+it.grow*.3),fert:1}));log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
  harvest(d){const i=+d.i,pl=fpod(i);if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
+ fssel(d){fsSel=fsSel===d.id?null:d.id;renderPanel()},
+ fpsel(d){fpSel=fpSel===d.id?null:d.id;renderPanel()},
  fstake(d){const have=FSTORE[d.id]||0,n=d.n==='all'?have:1;if(n<1||have<n)return;storeAdd(d.id,-n);add(d.id,n);const e={uid,nick:P.nick,id:d.id,n,at:Date.now()};if(mode==='online')db.collection('farmlog').add(e).catch(()=>{});else{FLOG.unshift(e);farmSave()}log(`공용 창고에서 ${ITEMS[d.id].n} ${n}개를 꺼냈다.`);commit()},
  fsput(d){const n=d.n==='all'?(P.inv[d.id]||0):1;if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
  shipsel(d){shipSel=d.k;renderPanel()},
@@ -2016,7 +2024,7 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
-const SAFE_ACT=new Set(['shipsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['shipsel','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg')giftMsg=e.target.value});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
