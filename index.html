@@ -198,7 +198,8 @@ header>.chip:not(.sugg){margin-left:0}
 .growtabs{margin-bottom:2px}.growtabs .qchip{flex:1;justify-content:center}
 .flog li{font-size:11px}.flog time{font-family:var(--f-pix);font-size:9px;color:var(--dim)}.flog b{font-weight:400;color:var(--text)}
 .flist em{font-style:normal;color:var(--mute);font-size:11px}.flist .btn{padding:2px 6px;font-size:11px}
-@media (max-width:760px){.frow.r1,.frow.r2{grid-template-columns:minmax(0,1fr)}.frow .bay{max-width:100%}}
+/* the farm keeps one fixed layout at every width; narrow screens scroll it sideways instead of reflowing */
+.farmwrap{overflow-x:auto;margin:0 -2px;padding:0 2px 6px}.farminner{min-width:820px}
 .farm-foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}
 .pod{display:flex;flex-direction:column;gap:10px;align-items:stretch}
 .pod-win{height:84px;background:linear-gradient(var(--deep),#111725);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--cyand);display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;position:relative}
@@ -208,7 +209,7 @@ header>.chip:not(.sugg){margin-left:0}
 .pod .sub{font-size:11px;color:var(--mute)}
 .seeds{display:flex;flex-direction:column;gap:6px}
 /* the side column keeps fixed card heights so the farm layout never jumps; long content scrolls inside */
-@media (min-width:761px){.farmcol.side{position:relative}.farmcol.side .card{box-sizing:border-box;overflow:hidden}
+.farmcol.side{position:relative}@media all{.farmcol.side .card{box-sizing:border-box;overflow:hidden}
  .farmcol.side .pcard{height:var(--pch,auto)}.farmcol.side .tcard{height:var(--tch,auto)}.farmcol.side .gcard{height:var(--gch,auto)}
  .pcard .seeds{max-height:var(--sdh,none);overflow-y:auto;padding-right:2px}}
 .seedbtn{display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--panel2);border:2px solid var(--ink);cursor:pointer;text-align:left;font-size:12px}
@@ -1210,9 +1211,9 @@ function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('befor
 const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 원정에서 재료가 더 자주 나옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan]];
 const LIFE_MAX=20,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
-// each life level adds 0.5% to that activity's bonus chance; maxing all four (황금손) adds a further 1% to every one
+// each life level adds 0.5% to that activity's bonus chance; wearing the 황금손 title (all four maxed) adds a further 1% to every one
 const goldHand=()=>LIFE.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
-const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(goldHand()?1:0);
+const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(P.title==='gold'&&goldHand()?1:0);
 const lifeHit=k=>Math.random()*100<lifePct(k);
 const LIFE_FX={farm:'수확 +1 확률',gather:'원정 재료 추가 확률',fish:'레어 이상 어종 확률 +',scan:'조사 보상 2배 확률'};
 const lifeNext=l=>25*l*l;
@@ -1255,7 +1256,7 @@ const TITLES=[
  ['gathermax','행성의 발굴자','채집 생활 레벨 20',()=>lifeLv(P.lx?.gather)>=20],
  ['fishmax','심연의 낚시꾼','낚시 생활 레벨 20',()=>lifeLv(P.lx?.fish)>=20],
  ['scanmax','별의 해독자','조사 생활 레벨 20',()=>lifeLv(P.lx?.scan)>=20],
- ['gold','황금손','생활 레벨 네 가지 모두 20 · 모든 확률 +1%',()=>goldHand()],
+ ['gold','황금손','생활 레벨 네 가지 모두 20 · 착용하면 모든 확률 +1%',()=>goldHand()],
 ];
 const st=k=>(P.st&&P.st[k])||0;
 let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
@@ -1468,7 +1469,7 @@ function tankInner(wait){return`<div class="stat-row"><span>${img(DROP,null,2)}�
 function growInner(t){const fu=FARM.fu,ore=P.inv.ore||0,cr=P.inv.crystal||0;return`<div class="row growtabs" style="gap:4px"><button class="qchip" data-act="growtab" data-k="pod" aria-pressed="${t==='pod'}">재배 포드 증설</button><button class="qchip" data-act="growtab" data-k="tank" aria-pressed="${t==='tank'}">물탱크 증설</button></div>${t==='tank'?(FARM.tlv>=TANK_LV?`<span class="sub">물탱크가 최대 용량 ${FARM.cap}까지 늘었습니다.</span>`:`<div class="stat-row"><span>물탱크 ${FARM.tlv+1}단계 증설 · 용량 ${FARM.cap} → ${FARM.cap+TANK_STEP}</span><b>${FARM.tprog}/${FARM.tneed}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.tprog/FARM.tneed*100}%"></i></div><span class="sub">모든 단원이 은하 결정을 하나씩 모아 공용 물탱크를 키웁니다.</span><div class="acts"><button class="btn sm ghost" data-act="tdon" ${cr?'':'disabled'}>은하 결정 1개 넣기</button><span class="hint">내 가방 ${cr}개</span></div>`)
    :(fu>=FIELD_N?`<span class="sub">포드 ${FIELD_N}개가 모두 열렸습니다.</span>`:`<div class="stat-row"><span>재배 포드 ${fu+1}번 증설</span><b>${FARM.prog}/${FARM.need}</b></div><div class="bar"><i style="--c:var(--gold);width:${FARM.prog/FARM.need*100}%"></i></div><span class="sub">모든 단원이 운석 파편을 하나씩 모아 다음 포드를 엽니다. 다 모이면 바로 열립니다.</span><div class="acts"><button class="btn sm ghost" data-act="fdon" ${ore?'':'disabled'}>운석 파편 1개 넣기</button><span class="hint">내 가방 ${ore}개</span></div>`)}`}
 // lock each side card to the height it has in its reference state at the current width, so the column never jumps
-function fitSide(){const side=document.querySelector('.farmcol.side');if(!side)return;if(innerWidth<=760){['--pch','--tch','--gch','--sdh'].forEach(k=>side.style.removeProperty(k));return}
+function fitSide(){const side=document.querySelector('.farmcol.side');if(!side)return;
   const m=(cls,html)=>{const d=document.createElement('div');d.className=cls;d.style.cssText=`position:absolute;visibility:hidden;left:0;top:0;width:${side.clientWidth}px;height:auto`;d.innerHTML=html;side.appendChild(d);const h=d.offsetHeight;d.remove();return h};
   const pod=`<h3>포드 1 · 별감자 · 새싹 단계</h3><span class="sub">심은 단원 · ${esc(P.nick)}</span><div class="bar"><i style="width:40%"></i></div><span class="sub">목마릅니다. 물을 줘야 자랍니다</span><div class="acts"><button class="btn sm alt">물 주기 <small>EN 1</small></button><button class="btn sm ghost">비료 <small>이끼 2</small></button></div>`;
   const ph=m('card podinfo',pod);side.style.setProperty('--pch',ph+'px');side.style.setProperty('--sdh',Math.max(40,ph-m('card podinfo','<h3>포드 1 · 마른 흙</h3><span class="sub">심을 씨앗을 고르십시오. 내 가방이나 공용 창고의 씨앗을 쓸 수 있습니다.</span>')-8)+'px');
@@ -1483,10 +1484,10 @@ function renderFarm(){
   const grow=`<div class="card podinfo gcard">${growInner(growTab)}</div>`;
   const here=mode==='online'?[...new Set(PEERS.filter(p=>p.presence&&p.presence.uid!==uid&&p.presence.act==='농사').map(p=>p.presence.nick))]:[];
   return head()+`<p class="lead">모든 단원이 함께 쓰는 돔 농장입니다. 누구나 배양토를 채우고 심고 물을 줄 수 있고, 거둔 작물은 공용 창고에 쌓여 누구나 꺼내 씁니다. 물탱크와 비료용 이끼는 각자 자기 것을 씁니다.${here.length?` <span class="visitors">지금 농장에 있는 단원 · ${here.map(n=>esc(n||'단원')).join(', ')}</span>`:''}</p>
-  <div class="frow r1"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
+  <div class="farmwrap"><div class="farminner"><div class="frow r1"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
   <div class="farmcol side"><div class="card podinfo pcard">${info}</div>
   <div class="card tank tcard">${tankInner(Date.now()<FARM.refCd)}</div>${grow}</div>
-  </div></div><div class="frow r2">${storeHTML()}</div>`;
+  </div></div><div class="frow r2">${storeHTML()}</div></div></div>`;
 }
 function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0)+(lb?1:0),back=Math.random()<.45;
   farmPut(i,{til:1,wet:pl.wet&&isWet(pl)?pl.wet:0});storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
