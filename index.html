@@ -398,6 +398,9 @@ header>.chip:not(.sugg){margin-left:0}
 #infoBox .ttl,#infoBox .witem{border-width:1px}
 #infoBox .mecard .dtabs{gap:0;border-bottom:1px solid var(--line)}#infoBox .mecard .dtabs button{background:none!important;border:0!important;box-shadow:none!important;padding:7px 12px;color:var(--mute);border-bottom:2px solid transparent!important;margin-bottom:-1px}
 #infoBox .mecard .dtabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--cyan)!important}
+.ophero{margin-bottom:2px}.optaste{display:grid;grid-template-columns:1fr 1fr;gap:10px}.optaste .jpicked{margin-top:3px;gap:3px;flex-wrap:wrap}.tastelock{font-size:11px}
+.ophero .mequick .btn{margin-top:0;justify-content:center}
+@media(max-width:460px){.optaste{grid-template-columns:1fr}}
 .mehero{display:grid;grid-template-columns:auto minmax(0,1fr) 170px;gap:16px;align-items:center;padding:14px;background:radial-gradient(ellipse at 12% 50%,var(--violetd),var(--deep) 65%);border:2px solid var(--ink)}
 .meport{padding:6px;background:var(--panel);border:2px solid var(--ink);line-height:0}
 .meid{display:flex;flex-direction:column;gap:6px;min-width:0}.meid h2{font-size:24px;overflow-wrap:anywhere}.meid .lv{font-family:var(--f-pix);font-size:9px;letter-spacing:.1em;color:var(--gold)}
@@ -2931,6 +2934,17 @@ let profId=null,profBio=false;
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
   const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
+  if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up at 30
+    const af=affOf(p,uid),open=af>=30,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
+    const lock='<span class="hint tastelock">🔒 호감도 30 이상이면 보입니다</span>';
+    return`<div class="card profcard" id="profCard"><div class="mehero ophero"><div class="meport">${meImg(6,p)}</div>
+     <div class="meid"><span class="lv">${esc(orgRole(id))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
+      <div class="stat"><div class="stat-row"><span>나에 대한 호감도</span><b style="color:${affColor(af)}">${af} · ${affLabel(af)}</b></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div></div>
+      <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${open?chips(p.likes,'var(--pink)'):lock}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${open?chips(p.hates,'var(--red)'):lock}</div></div></div></div>
+     <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${p.job&&JOBS[p.job]?esc(JOBS[p.job].n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div>
+      <button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
+     <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
+     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
   return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
