@@ -830,6 +830,42 @@ scroll:["..........",".kkkkkkk..",".kwhwwwk..",".kwaaawk..",".kwwwwwk..",".kwaaa
 function mix(a,b,f){const A=parseInt(a.slice(1),16),B=parseInt(b.slice(1),16);return'#'+[16,8,0].map(s=>{const x=(A>>s)&255,y=(B>>s)&255;return Math.round(x+(y-x)*f).toString(16).padStart(2,'0')}).join('')}
 const SPR={};
 function spr(grid,tint,po){const key=grid.join('|')+(tint||'')+(po?JSON.stringify(po):'');if(SPR[key])return SPR[key];const w=Math.max(...grid.map(r=>r.length)),h=grid.length;const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');const pal=Object.assign({},PAL,po||{});if(tint){tint=mix(tint,'#5d6274',.55);pal.a=tint;pal.b=mix(tint,'#07080e',.5);pal.h=mix(tint,'#c4c7d4',.35)}for(let j=0;j<h;j++)for(let i=0;i<grid[j].length;i++){const c=pal[grid[j][i]];if(!c)continue;x.fillStyle=c;x.fillRect(i,j,1,1)}return SPR[key]={src:cv.toDataURL(),w,h}}
+/* detailed, low-saturation rocket icon drawn per pixel at any size (logo 40px ×2, tab 32px) */
+const SHIPIC={};
+function shipIcon(n,scale){
+  const key=n+'x'+scale;if(!SHIPIC[key]){
+    const cv=document.createElement('canvas');cv.width=cv.height=n;const g=cv.getContext('2d'),M=[];
+    const put=(i,j,c)=>{if(i>=0&&j>=0&&i<n&&j<n)M[j*n+i]=c};
+    const HULL=['#d2d4da','#b3b6bf','#959aa5','#777c88','#5b5f6b','#45484f'],FIN=['#9a8582','#7c6764','#5e4d4b'],BAND=['#9c7672','#7d5c59','#5f4543'];
+    const halfW=y=>y<.03?-1:y<.31?.14*Math.pow((y-.03)/.28,.55):y<=.69?.14-(y-.31)*.04:-1;
+    for(let j=0;j<n;j++)for(let i=0;i<n;i++){
+      const x=(i+.5)/n,y=(j+.5)/n,dx=(x-.5)/1.3,ad=Math.abs(dx),px1=1/(n*1.3);
+      // flame
+      if(y>.77&&y<.97){const t=(y-.77)/.2,fw=.075*(1-t*t)*(1+.15*Math.sin(t*9));if(ad<fw){const r=ad/fw;put(i,j,r<.35&&t<.6?'#ece4d4':r<.7?'#cdb08e':'#8f7259');continue}}
+      // nozzle
+      if(y>=.69&&y<=.77){const w=.085+(y-.69)*.45;if(ad<w){put(i,j,ad>w-1.2*px1?'#2c2e35':y>.755?'#6a6e7a':dx<-w*.3?'#5c606b':'#3f424b');continue}}
+      // side fins (drawn before the hull so the hull overlaps their root)
+      for(const s of [-1,1]){const fx=dx*s;if(y>.47&&y<.82){const root=.11,tipX=.27,top=.47+(fx-root)*1.6,bot=.72+(fx-root)*.5;if(fx>root-.02&&fx<tipX&&y>top&&y<bot){const k=(fx-root)/(tipX-root);put(i,j,y>bot-1.3/n?FIN[2]:k<.35?FIN[0]:FIN[1])}}}
+      // hull
+      const w=halfW(y);if(w>0&&ad<w){
+        const t=(dx+w)/(2*w);let c=HULL[Math.min(HULL.length-1,Math.floor(Math.pow(t,1.25)*HULL.length))];
+        if(t<.12)c=HULL[0];if(ad>w-px1)c=HULL[5];
+        if(y>.535&&y<.59)c=BAND[t<.3?0:t<.7?1:2];
+        const pl=[.24,.45,.63];if(pl.some(p=>Math.abs(y-p)<.5/n))c=t<.3?HULL[2]:HULL[4];
+        put(i,j,c)}
+    }
+    // centre keel fin
+    for(let j=0;j<n;j++){const y=(j+.5)/n;if(y>.6&&y<.8){const i=Math.floor(n/2-.5),c=y>.78?FIN[2]:FIN[1];put(i,j,c);if(n>=32)put(i+1,j,FIN[2])}}
+    // porthole
+    {const cx=.5,cy=.34,R=.075;for(let j=0;j<n;j++)for(let i=0;i<n;i++){const x=.5+((i+.5)/n-.5)/1.3,y=(j+.5)/n,d=Math.hypot(x-cx,y-cy);if(d<R){const r=d/R;put(i,j,r>.72?'#4b4f59':x-cx<-R*.2&&y-cy<-R*.2&&r<.55?'#c5d2d4':r<.5?'#7f979b':'#5d7377')}}}
+    // rivets along the panel lines
+    if(n>=32)for(const p of [.45,.63])for(const fx of [-.075,.075]){const i=Math.floor((.5+fx*1.3)*n),j=Math.floor(p*n)-1;put(i,j,'#cfd1d6')}
+    // outline: dark pixel wherever a filled pixel touches empty space
+    const O=M.slice();for(let j=0;j<n;j++)for(let i=0;i<n;i++){if(M[j*n+i])continue;const nb=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const ii=i+a,jj=j+b;return ii>=0&&jj>=0&&ii<n&&jj<n&&M[jj*n+ii]});if(nb)O[j*n+i]='#111216'}
+    for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=O[j*n+i];if(c){g.fillStyle=c;g.fillRect(i,j,1,1)}}
+    SHIPIC[key]=cv.toDataURL()}
+  return`<img class="pix" src="${SHIPIC[key]}" width="${n*scale}" height="${n*scale}" alt="">`;
+}
 function img(grid,tint,scale,cls='',po){const s=spr(grid,tint,po);return`<img class="pix ${cls}" src="${s.src}" width="${s.w*scale}" height="${s.h*scale}" alt="">`}
 
 /* ───────── data ───────── */
@@ -1258,7 +1294,7 @@ function renderPilot(){
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 function renderNav(){
   migrate();const ready=P.field.filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=sigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
-  $('#nav').innerHTML=TABS.map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${img(t.ic,null,2)}<span class="nm">${t.n}</span><span class="cost">${t.cost}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
+  $('#nav').innerHTML=TABS.map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span><span class="cost">${t.cost}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
 }
 function head(){const t=TABS.find(x=>x.id===tab);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
@@ -2308,7 +2344,7 @@ setInterval(()=>{
   if(P.ref&&Date.now()>=P.ref){P.water=tankCap();P.refCd=P.ref+3600e3;P.ref=null;save();if(tab==='farm')renderPanel()}else if(P.refCd&&tab==='farm'){const r=$('#refT'),l=P.refCd-Date.now();if(r&&l>0)r.textContent='다시 채우기까지 '+fmtClock(l);else if(r&&l<=0){P.refCd=0;renderPanel()}}
 },1000);
 
-$('#logoIc').innerHTML=img(IC.ship,null,3);if($('#authIc'))$('#authIc').innerHTML=img(IC.ship,null,4);$('#joinIc').innerHTML=meImg(4);
+$('#logoIc').innerHTML=shipIcon(40,2);if($('#authIc'))$('#authIc').innerHTML=shipIcon(40,2);$('#joinIc').innerHTML=meImg(4);
 renderNet();renderAll();
 connect();
 })();
