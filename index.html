@@ -177,6 +177,17 @@ header>.chip:not(.sugg){margin-left:0}
 .pod-win .tb{top:6px;right:6px}
 .pod .acts{display:flex;flex-wrap:wrap;gap:5px}
 .pod.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;min-height:150px}
+.farm3{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,3fr) minmax(0,3fr);gap:10px;align-items:start}
+.farmcol{display:flex;flex-direction:column;gap:9px;min-width:0}
+.farm3 .bay{width:100%;height:auto;aspect-ratio:286/296;padding:7% 7.7% 11.5%}
+.farm3 .pods{grid-template-columns:repeat(4,minmax(0,1fr));gap:5%}
+.farm3 .ptile{width:100%;height:auto;aspect-ratio:1}
+.farm3 .ptile.add .plus{top:32%}
+.fstore{display:flex;flex-direction:column;gap:6px}
+.flist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;max-height:210px;overflow:auto}
+.flist li{display:flex;align-items:center;gap:5px;font-size:11.5px}.flist li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flist em{font-style:normal;color:var(--mute);font-size:11px}.flist .btn{padding:2px 6px;font-size:11px}
+@media (max-width:760px){.farm3{grid-template-columns:minmax(0,1fr)}.farm3 .bay{max-width:340px;margin:0 auto}}
 .farm-foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}
 .pod{display:flex;flex-direction:column;gap:10px;align-items:stretch}
 .pod-win{height:84px;background:linear-gradient(var(--deep),#111725);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--cyand);display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;position:relative}
@@ -630,7 +641,7 @@ window.claude={use:async n=>{const api=await window.__fb;return api[n]||null}};
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,updateProfile,signOut,deleteUser,connectAuthEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {initializeFirestore,doc,collection,getDoc,getDocs,setDoc,addDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,writeBatch,connectFirestoreEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {initializeFirestore,doc,collection,getDoc,getDocs,setDoc,addDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,writeBatch,increment,connectFirestoreEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {getStorage,ref as sref,uploadBytes,deleteObject,connectStorageEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig={
@@ -678,7 +689,7 @@ const W=p=>p.catch(e=>{throw wrapErr(e)});
 /* ---- db: Firestore with the doc()/collection() surface the game uses ---- */
 const ds=s=>({id:s.id,exists:s.exists(),data:()=>s.data()});
 function makeDoc(path){const r=doc(fs,path);return{id:r.id,path,
-  get:()=>W(getDoc(r)).then(ds),set:d=>W(setDoc(r,d)),update:d=>W(setDoc(r,d,{merge:true})),delete:()=>W(deleteDoc(r)),
+  get:()=>W(getDoc(r)).then(ds),set:d=>W(setDoc(r,d)),update:d=>W(setDoc(r,d,{merge:true})),inc:m=>W(setDoc(r,Object.fromEntries(Object.entries(m).map(([k,v])=>[k,increment(v)])),{merge:true})),delete:()=>W(deleteDoc(r)),
   onSnapshot:(n,e)=>onSnapshot(r,s=>n(ds(s)),x=>e&&e(wrapErr(x))),collection:p=>makeQuery(path+'/'+p)}}
 function makeQuery(path,w=[],o=null,l=0){
   const srvOrder=!!o&&w.every(x=>x[0]===o[0]);
@@ -1197,7 +1208,7 @@ const TITLES=[
  ['scan1','신호 추적자','이상 신호 30번 조사',()=>(P.st?.scan||0)>=30],
  ['rich','궤도의 부호','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
  ['farm3','별밭의 은둔자','작물 300번 수확',()=>st('harvest')>=300],
- ['farm4','돔의 군주','재배 포드 16개 모두 열기',()=>(P.fu||0)>=16],
+ ['farm4','돔의 군주','공용 농장 재배 포드 16개 모두 열기',()=>(FARM.fu||0)>=16],
  ['farm5','대지의 손길','농사 생활 레벨 10',()=>lifeLv(P.lx?.farm)>=10],
  ['gather2','크레이터를 걷는 그림자','채집 500회',()=>st('gather')>=500],
  ['gather3','행성의 해부학자','채집 생활 레벨 10',()=>lifeLv(P.lx?.gather)>=10],
@@ -1264,7 +1275,7 @@ function save(){
 }
 async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
 function sys(text){if(mode!=='online'||!TICK_RE.test(text))return;db.collection('chat').add({uid,nick:P.nick,text,at:Date.now(),sys:true}).catch(()=>{})}
-function setPresence(){if(room&&mode==='online'){const fv=tab==='farm'&&farmVisit&&PLAYERS[farmVisit];room.presence({uid,nick:P.nick,act:fv?`${PLAYERS[farmVisit].nick}의 농장`:TABS.find(t=>t.id===tab).n,farmOf:tab==='farm'?(farmVisit||null):null}).catch(()=>{})}}
+function setPresence(){if(room&&mode==='online')room.presence({uid,nick:P.nick,act:TABS.find(t=>t.id===tab).n}).catch(()=>{})}
 function goSolo(msg,why){mode='solo';isAdmin=true;$('#adminBtn').hidden=false;FB=P&&P.sugg?[{id:'me',nick:P.nick,list:P.sugg}]:[];setTimeout(updFbBadge,0);if(why){const b=$('#soloBanner');b.innerHTML=`<b>⚠ 진행 상황이 공용 서버에 저장되지 않습니다</b><span>${esc(why)}</span><span>지금은 이 브라우저에만 임시로 저장돼서, 다른 기기로 들어오거나 브라우저 기록이 지워지면 사라질 수 있습니다. 새로고침해도 계속되면 운영자(선장)에게 알려 주십시오.</span>`;b.hidden=false}try{const s=localStorage.getItem(LS);if(s){const o=JSON.parse(s);P=Object.assign(newPlayer('단원'),o);P.fv=o.fv||0}}catch(e){}if(msg)toast(msg);renderNet();renderAll();if(!P.joined||P.nick==='새 단원')showJoin()}
 
 async function connect(){
@@ -1283,11 +1294,11 @@ async function connect(){
   try{const s=await myRef.get();if(s.exists&&!s.data().deleted){P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
   renderNet();renderAll();
-  db.collection('players').onSnapshot(sn=>{const m={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if((tab==='fish'&&duelOn())||(tab==='farm'&&farmVisit))renderPanel()},()=>{});
+  db.collection('players').onSnapshot(sn=>{const m={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},()=>{});
   db.collection('grants').onSnapshot(sn=>{sn.docs.forEach(d=>claimGrant(d.id,d.data()))},()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조');wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
-  db.collection('farmhelp').where('to','==',uid).onSnapshot(receiveHelp,()=>{});
+  farmLoad();
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>d.data()).reverse();renderChat()},()=>{});
@@ -1318,7 +1329,7 @@ function renderPilot(){
 }
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 function renderNav(){
-  migrate();const ready=P.field.filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=sigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
+  migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=sigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
   $('#nav').innerHTML=TABS.map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span><span class="cost">${t.cost}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
 }
 function head(){const t=TABS.find(x=>x.id===tab);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
@@ -1369,61 +1380,63 @@ function miniDome(kind){if(MD[kind])return MD[kind];const W=20,H=20,cx=9.5,cy=14
   return MD[kind]=c.toDataURL()}
 function migrate(){if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
   if(!Array.isArray(P.field))P.field=[];if(P.water==null)P.water=tankCap();
-  if(P.pods){P.pods.forEach(p=>{if(p&&ITEMS[p.seed])P.field.push({til:1,seed:p.seed,got:Math.min(ITEMS[p.seed].grow,Date.now()-p.at),wet:0})});delete P.pods}
-  if(P.fv!==3){const keep=P.field.filter(pl=>pl&&pl.seed);P.field=keep;P.fu=Math.min(FIELD_N,Math.max(2,keep.length));P.fv=3}
-  if(P.fu==null)P.fu=2;P.field=P.field.slice(0,FIELD_N);while(P.field.length<FIELD_N)P.field.push(null)}
+  // the farm is shared now: hand back whatever was growing in the old personal pods
+  if(P.fv!==4){P.field.forEach(pl=>{if(!pl||!ITEMS[pl.seed])return;if(stage(pl)===3)add(ITEMS[pl.seed].crop,2);else add(pl.seed,1)});(P.pods||[]).forEach(p=>{if(p&&ITEMS[p.seed])add(p.seed,1)});delete P.pods;P.field=[];P.fv=4}}
 function effG(pl){const it=ITEMS[pl.seed];let g=pl.got||0;if(pl.wet)g+=Math.min(Date.now()-pl.wet,it.grow/3);return Math.min(it.grow,g)}
 function stage(pl){if(!pl||!pl.seed)return -1;const e=effG(pl),g=ITEMS[pl.seed].grow;return e>=g?3:Math.floor(e/g*3)}
 function isWet(pl){if(!pl||!pl.wet)return false;return Date.now()-pl.wet<(pl.seed?ITEMS[pl.seed].grow/3:90e3)}
 let farmSig='';
 let selPod=0;
-function podHTML(i,seeds){const pl=P.field[i];let pic='',title,body='',cls='',badge='';
+/* ---- shared farm: one dome for the whole crew (farm/pods) and a common store (farm/store); water and moss stay personal ---- */
+let FARM={fu:4,pods:[]},FSTORE={},farmOn=false;
+const fpod=i=>FARM.pods[i]||null;
+const isCropId=id=>ORDER.some(s=>ITEMS[s].type==='seed'&&ITEMS[s].crop===id);
+const storable=id=>!!ITEMS[id]&&(ITEMS[id].type==='seed'||id==='moss'||isCropId(id));
+function farmSave(){if(mode!=='online'){P.sfarm={xu:FARM.fu-4,pods:FARM.pods,store:FSTORE};save()}}
+function farmMerge(path,obj){const r=db.doc(path);return r.update(obj).catch(()=>r.get().then(s=>r.set(Object.assign({},s.exists?s.data():{},obj))))}
+// every key is written each time, because a merge write would otherwise keep stale fields (an old seed) on the server
+const POD0={til:0,seed:null,got:0,wet:0,fert:0,by:null,byN:null};
+function farmPut(i,pl){pl=pl?Object.assign({},POD0,pl):null;FARM.pods[i]=pl;if(mode==='online')farmMerge('farm/pods',{['p'+i]:pl}).catch(()=>toast('농장에 기록하지 못했습니다. 잠시 뒤 다시 시도해 주십시오.'));else farmSave()}
+// counts change by server-side increments so two crew members touching the store at once never overwrite each other
+function farmInc(path,field,n){const r=db.doc(path);return r.inc?r.inc({[field]:n}):r.get().then(s=>farmMerge(path,{[field]:((s.exists&&+s.data()[field])||0)+n}))}
+function storeAdd(id,n){FSTORE[id]=Math.max(0,(FSTORE[id]||0)+n);if(!FSTORE[id])delete FSTORE[id];if(mode==='online')farmInc('farm/store',id,n).catch(()=>{});else farmSave()}
+function farmLoad(){if(farmOn)return;
+  if(mode==='online'){farmOn=true;
+    db.doc('farm/pods').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FARM={fu:Math.max(4,Math.min(FIELD_N,4+(+d.xu||0))),pods:Array.from({length:FIELD_N},(_,i)=>d['p'+i]||null)};renderNav();if(tab==='farm')renderPanel()},()=>{});
+    db.doc('farm/store').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FSTORE={};for(const k in d)if(ITEMS[k]&&+d[k]>0)FSTORE[k]=+d[k];if(tab==='farm')renderPanel()},()=>{})}
+  else if(!FARM.local){const s=P.sfarm||{};FARM={fu:Math.max(4,Math.min(FIELD_N,4+(+s.xu||0))),pods:(s.pods||[]).slice()};FSTORE=Object.assign({},s.store);FARM.local=1}}
+function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge='';
   if(!pl||!pl.til){cls='empty';title=`포드 ${i+1} · 비어 있음`;
     body=`<span class="sub">배양토를 채워야 심을 수 있습니다.</span><div class="acts"><button class="btn sm ghost" data-act="soil" data-i="${i}">배양토 채우기 <small>EN 1</small></button></div>`}
   else if(!pl.seed){const wet=isWet(pl);cls=wet?'wet':'dirt';title=`포드 ${i+1} · ${wet?'젖은 흙':'마른 흙'}`;
-    body=seeds.length?`<span class="sub">심을 씨앗을 고르십시오.</span><div class="seeds">${seeds.map(id=>`<button class="seedbtn" data-act="plant" data-i="${i}" data-id="${id}">${iicon(id,2)}${ITEMS[id].n}<em>×${P.inv[id]}</em></button>`).join('')}</div>`:`<span class="sub">씨앗이 없습니다. 채집·조사·몬스터에게서 얻습니다.</span>`}
-  else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl),pc=Math.min(100,effG(pl)/it.grow*100);cls=wet?'wet':'dirt';
+    body=seeds.length?`<span class="sub">심을 씨앗을 고르십시오. 내 가방이나 공용 창고의 씨앗을 쓸 수 있습니다.</span><div class="seeds">${seeds.map(([id,n,src])=>`<button class="seedbtn" data-act="plant" data-i="${i}" data-id="${id}" data-k="${src}">${iicon(id,2)}${ITEMS[id].n}<em>${src==='store'?'창고 ':''}×${n}</em></button>`).join('')}</div>`:`<span class="sub">씨앗이 없습니다. 채집·조사에서 얻거나 공용 창고에 넣어 주십시오.</span>`}
+  else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl),pc=Math.min(100,effG(pl)/it.grow*100),who=pl.byN?`<span class="sub">심은 단원 · ${esc(pl.byN)}</span>`:'';cls=wet?'wet':'dirt';
     pic=img([PL.seed0,PL.sprout,PL.young,PL[ITEMS[it.crop].pl||it.crop]][s],s===0?it.t:crop.t,2,'plant');
-    if(s===3){cls='ready';title=`포드 ${i+1} · ${crop.n} 수확 가능`;badge=`<span class="tb">${img(IC.star,null,1)}</span>`;body=`<div class="acts"><button class="btn sm gold" data-act="harvest" data-i="${i}">수확하기</button></div>`}
+    if(s===3){cls='ready';title=`포드 ${i+1} · ${crop.n} 수확 가능`;badge=`<span class="tb">${img(IC.star,null,1)}</span>`;body=`${who}<span class="sub">거둔 작물은 공용 창고로 들어갑니다.</span><div class="acts"><button class="btn sm gold" data-act="harvest" data-i="${i}">수확하기</button></div>`}
     else{if(!wet)badge=`<span class="tb">${img(DROP,null,2)}</span>`;title=`포드 ${i+1} · ${crop.n} · ${['씨앗','새싹','성장'][s]} 단계`;
-      body=`<div class="bar"><i data-prog="${i}" style="--c:var(--green);width:${pc}%"></i></div><span class="sub">${wet?'촉촉합니다. 자라는 중':'목마릅니다. 물을 줘야 자랍니다'}${pl.fert?' · 비료':''}</span>
+      body=`${who}<div class="bar"><i data-prog="${i}" style="--c:var(--green);width:${pc}%"></i></div><span class="sub">${wet?'촉촉합니다. 자라는 중':'목마릅니다. 물을 줘야 자랍니다'}${pl.fert?' · 비료':''}</span>
       <div class="acts"><button class="btn sm alt" data-act="water" data-i="${i}" ${P.water>0?'':'disabled'}>물 주기</button>${pl.fert?'':`<button class="btn sm ghost" data-act="fert" data-i="${i}" ${(P.inv.moss||0)>=2?'':'disabled'}>비료 <small>이끼 2</small></button>`}</div>`}}
   return{tile:`<button class="ptile" style="background-image:url(${miniDome(cls)})" data-act="selpod" data-i="${i}" aria-pressed="${selPod===i}" aria-label="${title}" title="${title}">${pic}${badge}<span class="pn">${String(i+1).padStart(2,'0')}</span></button>`,title,body}}
-function renderMyFarm(){
-  migrate();const seeds=ORDER.filter(id=>ITEMS[id].type==='seed'&&P.inv[id]);
-  const ex=2*P.fu,ore=P.inv.ore||0;
-  if(selPod!=='add'&&!(selPod<P.fu))selPod=0;
-  const pods=P.field.slice(0,P.fu).map((_,i)=>podHTML(i,seeds));
-  const info=selPod==='add'?`<h3>포드 ${P.fu+1} 증설</h3><span class="sub">운석 파편 ${ore}/${ex}개가 필요합니다.</span><div class="acts"><button class="btn sm ghost" data-act="expand" ${ore>=ex?'':'disabled'}>재배 포드 추가</button></div>`:`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
-  return head()+`<p class="lead">포드를 눌러 고른 뒤 배양토 채우기, 씨앗 심기, 물 주기를 합니다. 물을 한 번 주면 성장 단계 하나만큼 자라고, 물방울이 뜨면 다시 목마른 것입니다.</p>
-  <div class="farm-top"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${P.fu<FIELD_N?`<button class="ptile add" data-act="selpod" data-i="add" aria-pressed="${selPod==='add'}" aria-label="포드 증설" title="포드 증설"><span class="plus">+</span></button>`:''}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-P.fu-1))}</div><span class="dome-label">DOME BAY-07 · ${P.fu}/${FIELD_N}</span></div>
-  <div class="farm-foot"><div class="card podinfo">${info}</div>
-  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>물 채우기</button><span class="hint">누르면 바로 가득 찹니다 · 다시 채우려면 ${P.job==='engineer'?'30분':'1시간'}</span>`}</div></div></div>`;
+function storeHTML(){const S=Object.keys(FSTORE).filter(id=>FSTORE[id]>0).sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b)),mine=ORDER.filter(id=>P.inv[id]&&storable(id));
+  return`<div class="card fstore"><div class="stat-row"><span>공용 창고</span><b>${S.reduce((a,id)=>a+FSTORE[id],0)}개</b></div>
+   ${S.length?`<ul class="flist">${S.map(id=>`<li>${iicon(id,1)}<span>${ITEMS[id].n}</span><em>×${FSTORE[id]}</em><button class="btn sm ghost" data-act="fstake" data-id="${id}" data-n="1">1</button><button class="btn sm ghost" data-act="fstake" data-id="${id}" data-n="all">모두</button></li>`).join('')}</ul>`:'<p class="hint">창고가 비어 있습니다. 수확하면 작물이 여기에 쌓입니다.</p>'}
+   <span class="lbl">내 가방에서 넣기</span>${mine.length?`<ul class="flist">${mine.map(id=>`<li>${iicon(id,1)}<span>${ITEMS[id].n}</span><em>×${P.inv[id]}</em><button class="btn sm alt" data-act="fsput" data-id="${id}" data-n="1">1</button><button class="btn sm alt" data-act="fsput" data-id="${id}" data-n="all">모두</button></li>`).join('')}</ul>`:'<p class="hint">넣을 수 있는 씨앗·작물·이끼가 없습니다.</p>'}</div>`}
+function renderFarm(){
+  farmLoad();migrate();
+  const fu=FARM.fu,seeds=[...ORDER.filter(id=>ITEMS[id].type==='seed'&&P.inv[id]).map(id=>[id,P.inv[id],'bag']),...ORDER.filter(id=>ITEMS[id].type==='seed'&&FSTORE[id]).map(id=>[id,FSTORE[id],'store'])];
+  const ex=2*fu,ore=P.inv.ore||0;if(selPod!=='add'&&!(selPod<fu))selPod=0;
+  const pods=Array.from({length:fu},(_,i)=>podHTML(i,seeds));
+  const info=selPod==='add'?`<h3>포드 ${fu+1} 증설</h3><span class="sub">운석 파편 ${ore}/${ex}개가 필요합니다. 늘린 포드는 모든 단원이 함께 씁니다.</span><div class="acts"><button class="btn sm ghost" data-act="expand" ${ore>=ex?'':'disabled'}>재배 포드 추가</button></div>`:`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
+  const here=mode==='online'?[...new Set(PEERS.filter(p=>p.presence&&p.presence.uid!==uid&&p.presence.act==='농사').map(p=>p.presence.nick))]:[];
+  return head()+`<p class="lead">모든 단원이 함께 쓰는 돔 농장입니다. 누구나 배양토를 채우고 심고 물을 줄 수 있고, 거둔 작물은 공용 창고에 쌓여 누구나 꺼내 씁니다. 물탱크와 비료용 이끼는 각자 자기 것을 씁니다.${here.length?` <span class="visitors">지금 농장에 있는 단원 · ${here.map(n=>esc(n||'단원')).join(', ')}</span>`:''}</p>
+  <div class="farm3"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${fu<FIELD_N?`<button class="ptile add" data-act="selpod" data-i="add" aria-pressed="${selPod==='add'}" aria-label="포드 증설" title="포드 증설"><span class="plus">+</span></button>`:''}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu-1))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
+  <div class="farmcol"><div class="card podinfo">${info}</div>
+  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}내 물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>물 채우기</button><span class="hint">누르면 바로 가득 찹니다 · 다시 채우려면 ${P.job==='engineer'?'30분':'1시간'}</span>`}</div></div>
+  <div class="farmcol">${storeHTML()}</div></div>`+'<section class="card cook farmcook" id="cook" aria-label="요리"></section>';
 }
-/* ---- co-op farming ---- */
-let farmVisit=null,fSel=0;
-function farmBar(){if(mode!=='online')return'';const fr=Object.entries(PLAYERS).filter(([id])=>id!==uid);const here=PEERS.filter(p=>p.presence&&p.presence.farmOf===uid&&p.presence.uid!==uid).map(p=>p.presence.nick);
-  return`<div class="farmbar"><div class="row" style="gap:5px"><button class="qchip" data-act="fvisit" data-k="" aria-pressed="${!farmVisit}">내 농장</button>${fr.map(([id,p])=>`<button class="qchip" data-act="fvisit" data-k="${id}" aria-pressed="${farmVisit===id}">${esc(p.nick||'단원')}의 농장</button>`).join('')}</div>${here.length?`<span class="visitors">${here.map(n=>esc(n)).join(', ')} 님이 지금 내 농장에 와 있습니다</span>`:''}</div>`}
-function friendFarm(fid){const f=PLAYERS[fid],fu=f.fu||2,field=(f.field||[]).slice(0,fu);while(field.length<fu)field.push(null);if(!(fSel<fu))fSel=0;
-  const tiles=field.map((pl,i)=>{let cls='empty',pic='',badge='',title=`포드 ${i+1} · 비어 있음`;
-    if(pl&&pl.til){cls=isWet(pl)?'wet':'dirt';title=`포드 ${i+1} · 빈 흙`}
-    if(pl&&pl.seed){const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop];pic=img([PL.seed0,PL.sprout,PL.young,PL[ITEMS[it.crop].pl||it.crop]][s],s===0?it.t:crop.t,2,'plant');if(s===3){cls='ready';title=`포드 ${i+1} · ${crop.n} 수확 가능`;badge=`<span class="tb">${img(IC.star,null,1)}</span>`}else{title=`포드 ${i+1} · ${crop.n} · ${['씨앗','새싹','성장'][s]} 단계`;if(!isWet(pl))badge=`<span class="tb">${img(DROP,null,2)}</span>`}}
-    return`<button class="ptile" style="background-image:url(${miniDome(cls)})" data-act="fsel" data-i="${i}" aria-pressed="${fSel===i}" title="${title}">${pic}${badge}<span class="pn">${String(i+1).padStart(2,'0')}</span></button>`});
-  const pl=field[fSel];let info=`<h3>포드 ${fSel+1}</h3>`;
-  if(!pl||!pl.seed)info+='<span class="sub">아무것도 심겨 있지 않습니다.</span>';
-  else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl);
-    if(s===3)info+=`<span class="sub">${crop.n}이(가) 다 자랐습니다. 수확은 주인만 할 수 있습니다.</span>`;
-    else info+=`<div class="bar"><i style="--c:var(--green);width:${Math.min(100,effG(pl)/it.grow*100)}%"></i></div><span class="sub">${crop.n} · ${wet?'촉촉합니다':'목마릅니다'}${pl.fert?' · 비료':''}</span><div class="acts"><button class="btn sm alt" data-act="fhelp" data-k="water" ${P.water>0?'':'disabled'}>대신 물 주기 <small>내 물 1</small></button></div>`}
-  return`<p class="lead">${esc(f.nick||'단원')} 님의 돔 농장입니다. 구경하면서 목마른 작물에 대신 물만 줄 수 있습니다. 도와주면 경험치와 농사 생활 경험치를 조금 받습니다.</p>
-  <div class="farm-top"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${tiles.join('')}</div><span class="dome-label">${esc(String(f.nick||'').slice(0,8)).toUpperCase()} · ${fu}/${FIELD_N}</span></div>
-  <div class="farm-foot"><div class="card podinfo">${info}</div><div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}내 물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div></div></div></div>`}
-function renderFarm(){const bar=farmBar();if(farmVisit&&PLAYERS[farmVisit])return head()+bar+friendFarm(farmVisit);farmVisit=null;return renderMyFarm().replace(head(),head()+bar)+'<section class="card cook farmcook" id="cook" aria-label="요리"></section>'}
-function receiveHelp(sn){sn.docs.forEach(d=>{P.gotH=P.gotH||[];if(P.gotH.includes(d.id)){db.collection('farmhelp').doc(d.id).delete().catch(()=>{});return}P.gotH=[...P.gotH.slice(-60),d.id];const h=d.data(),i=+h.i;migrate();const pl=P.field[i];
-  if(pl&&pl.seed&&stage(pl)<3){P.field[i]=Object.assign({},pl);const q=P.field[i];if(h.kind!=='water'){commit();db.collection('farmhelp').doc(d.id).delete().catch(()=>{});return}q.got=effG(q);q.wet=Date.now();
-    log(`${h.nick||'친구'} 님이 포드 ${i+1}에 ${h.kind==='fert'?'비료를 뿌려':'물을 줘'} 줬다.`,'good');toast(`${h.nick||'친구'} 님이 농사를 도와줬습니다!`)}
-  commit();db.collection('farmhelp').doc(d.id).delete().catch(()=>{})})}
-function harvestAt(i){sfxHarvest();const pl=P.field[i],it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0);add(it.crop,n);stat('harvest');lxp('farm',10);const back=Math.random()<.45;if(back)add(pl.seed,1);P.field[i]={til:1,wet:pl.wet&&isWet(pl)?pl.wet:0};gainXp(5);
-  log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거뒀다.${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
+function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0),back=Math.random()<.45;
+  farmPut(i,{til:1,wet:pl.wet&&isWet(pl)?pl.wet:0});storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
+  log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
 const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌습니다.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있습니다.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
 const TANKS=[{cap:12,price:0},{cap:20,price:1200,mat:[['ore',12],['crystal',4]],n:'증설 물탱크',d:'물탱크 용량이 20으로 늘어납니다.'},{cap:30,price:6000,mat:[['ore',25],['crystal',10],['dark',2]],n:'대형 물탱크',d:'물탱크 용량이 30으로 늘어납니다.'}];
 const hasMat=m=>(m||[]).every(([id,n])=>(P.inv[id]||0)>=n);
@@ -1875,15 +1888,17 @@ const A={
  cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);if(!c||!canCook(c)){toast('재료가 부족합니다.');return}for(const [id,n] of c.need)ingTake(id,n);P.cook={id:c.id,end:Date.now()+c.sec*1e3};sfxSizzle();log(`${c.n}을(를) 불에 올렸다.`,'');commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;add(ck.id);P.cook=null;sfxCoin();log(`${ITEMS[ck.id].n}을(를) 가방에 넣었다.`,'good');commit()},
  selpod(d){selPod=d.i==='add'?'add':+d.i;renderPanel()},
- soil(d){const i=+d.i;if(i>=P.fu||(P.field[i]&&P.field[i].til))return;if(!spend(1))return;P.field[i]={til:1,wet:0};log(`포드 ${i+1}에 배양토를 채웠다.`);commit()},
- plant(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til||pl.seed)return;if(!take(d.id))return;sfxPlant();const wet=isWet(pl);pl.seed=d.id;pl.got=0;pl.wet=wet?Date.now():0;log(`포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`);commit()},
- water(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}P.water--;sfxWater();if(pl.seed)pl.got=effG(pl);pl.wet=Date.now();commit()},
- fert(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}const it=ITEMS[pl.seed];pl.got=Math.min(it.grow,(pl.got||0)+it.grow*.3);pl.fert=1;log(`포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
- harvest(d){const i=+d.i,pl=P.field[i];if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
+ soil(d){const i=+d.i;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spend(1))return;farmPut(i,{til:1,wet:0});log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`);commit()},
+ plant(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til||pl.seed)return;if(d.k==='store'){if(!(FSTORE[d.id]>0))return;storeAdd(d.id,-1)}else if(!take(d.id))return;sfxPlant();const wet=isWet(pl);farmPut(i,{til:1,seed:d.id,got:0,wet:wet?Date.now():0,by:uid,byN:P.nick});log(`공용 농장 포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`);commit()},
+ water(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}P.water--;sfxWater();const q=Object.assign({},pl);if(q.seed)q.got=effG(q);q.wet=Date.now();farmPut(i,q);if(q.seed&&q.by&&q.by!==uid){gainXp(2);lxp('farm',2);stat('helpfarm')}commit()},
+ fert(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}const it=ITEMS[pl.seed];farmPut(i,Object.assign({},pl,{got:Math.min(it.grow,(pl.got||0)+it.grow*.3),fert:1}));log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
+ harvest(d){const i=+d.i,pl=fpod(i);if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
+ fstake(d){const have=FSTORE[d.id]||0,n=d.n==='all'?have:1;if(n<1||have<n)return;storeAdd(d.id,-n);add(d.id,n);log(`공용 창고에서 ${ITEMS[d.id].n} ${n}개를 꺼냈다.`);commit()},
+ fsput(d){const n=d.n==='all'?(P.inv[d.id]||0):1;if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
  shipsel(d){shipSel=d.k;renderPanel()},
  shipgive(d){shipGive(d.k,d.i)},
  refill(){if(P.water>=tankCap())return;if(Date.now()<(P.refCd||0)){toast(`아직 물을 채울 수 없습니다. ${fmtClock(P.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}const eng=P.job==='engineer';P.water=tankCap();P.ref=null;P.refCd=Date.now()+(eng?1800e3:3600e3);sfxWater();log(`물탱크를 가득 채웠다. ${eng?'30분':'1시간'} 뒤에 다시 채울 수 있다.`,'good');commit()},
- expand(){if(P.fu>=FIELD_N)return;const ex=2*P.fu;if(!take('ore',ex))return;P.fu++;selPod=P.fu-1;log(`재배 포드를 하나 더 설치했다. (${P.fu}/${FIELD_N})`,'good');commit()},
+ expand(){if(FARM.fu>=FIELD_N)return;const ex=2*FARM.fu;if(!take('ore',ex))return;FARM.fu++;if(mode==='online')farmInc('farm/pods','xu',1).catch(()=>{});else farmSave();selPod=FARM.fu-1;log(`공용 농장에 재배 포드를 하나 더 설치했다. (${FARM.fu}/${FIELD_N})`,'good');commit()},
  gather(){if(P.exp){toast('이미 원정 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}로 ${fmtDur(gDur*30)} 채집 원정을 떠났다.`);commit()},
  gsite(d){gSite=d.id;renderPanel()},
  gdur(d){gDur=+d.k;renderPanel()},
@@ -1911,11 +1926,6 @@ const A={
  neonbuy(){const c=neonPick;if(!c||!NEONSET.has(c)||ownsNeon(c))return;if((P.cr||0)<NEON_PRICE){toast('크레딧이 부족합니다.');return}P.cr-=NEON_PRICE;sfxCoin();P.own=[...(P.own||[]),'neon'+c];neonPick=null;log(`${NEON.find(n=>n[0]===c)[1]} 색을 샀다.`,'good');commit()},
  setlook(d){if(!LOOKS[d.k]||!(LOOKS[d.k].opts.some(o=>o[0]===d.c)||(NEONSET.has(d.c)&&ownsNeon(d.c))))return;P.look=Object.assign({},lookOf(P),{[d.k]:d.c});save();renderPanel();renderPilot()},
  rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
- fvisit(d){farmVisit=d.k||null;fSel=0;setPresence();renderPanel()},
- fsel(d){fSel=+d.i;renderPanel()},
- fhelp(d){const f=PLAYERS[farmVisit];if(!f||mode!=='online')return;const pl=(f.field||[])[fSel];if(!pl||!pl.seed||stage(pl)===3)return;
-  if(d.k!=='water')return;if(P.water<=0){toast('내 물탱크가 비었습니다.');return}P.water--;sfxWater();
-  db.collection('farmhelp').add({to:farmVisit,from:uid,nick:P.nick,i:fSel,kind:d.k,at:Date.now()}).then(()=>{gainXp(3);lxp('farm',3);stat('helpfarm');log(`${f.nick} 님의 포드 ${fSel+1}에 ${d.k==='fert'?'비료를 뿌려':'물을 줘'} 줬다.`,'good');commit()}).catch(()=>{if(d.k==='water')P.water++;else add('moss',2);toast('도움 신호를 보내지 못했습니다.');commit()})},
  gift(d){openGift(d.k)},
  giftclose(){$('#giftModal').hidden=true},
  giftadd(d){const have=P.inv[d.id]||0;giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
@@ -1934,7 +1944,7 @@ const A={
   if(k==='heal'){P.hp=maxHp();P.en=maxEn();P.t=Date.now()}else if(k==='wake'){P.faint=0;P.faintAt=0;if(P.hp<=0)P.hp=maxHp();if(P.en<=0)P.en=maxEn()}
   else if(k==='water'){P.water=tankCap();P.ref=null}else if(k==='sig'){P.sig={n:SIG_MAX,t:Date.now()}}
   else if(k==='exp'){if(P.exp)P.exp=Object.assign({},P.exp,{start:Date.now()-P.exp.slots*SLOT})}
-  else if(k==='farm'){P.field=P.field.map(pl=>pl&&pl.seed?Object.assign({},pl,{got:ITEMS[pl.seed].grow}):pl)}
+  else if(k==='farm'){FARM.pods.forEach((pl,i)=>{if(pl&&pl.seed)farmPut(i,Object.assign({},pl,{got:ITEMS[pl.seed].grow}))})}
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
   log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했습니다.')},
  admgive(){if(!isAdmin)return;const id=$('#admItem').value,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
@@ -2383,7 +2393,7 @@ setInterval(()=>{
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
-  migrate();const sig=P.field.map(pl=>pl?`${pl.til}${pl.seed||''}${stage(pl)}${isWet(pl)?1:0}`:'_').join();if(sig!==farmSig){farmSig=sig;renderNav();if(tab==='farm')renderPanel()}else if(tab==='farm')P.field.forEach((pl,i)=>{const b=document.querySelector(`[data-prog="${i}"]`);if(b&&pl&&pl.seed)b.style.width=Math.min(100,effG(pl)/ITEMS[pl.seed].grow*100)+'%'});
+  migrate();const sig=FARM.pods.slice(0,FARM.fu).map(pl=>pl?`${pl.til}${pl.seed||''}${stage(pl)}${isWet(pl)?1:0}`:'_').join();if(sig!==farmSig){farmSig=sig;renderNav();if(tab==='farm')renderPanel()}else if(tab==='farm')FARM.pods.forEach((pl,i)=>{const b=document.querySelector(`[data-prog="${i}"]`);if(b&&pl&&pl.seed)b.style.width=Math.min(100,effG(pl)/ITEMS[pl.seed].grow*100)+'%'});
   {const gx=expInfo(),k=gx?gx.gd+'/'+gx.tg:'';if(k!==window.__gk){window.__gk=k;renderNav();if(tab==='gather')renderPanel()}else if(gx&&tab==='gather'){const l=$('#gLeft'),n=$('#gNext');if(l&&gx.done<gx.total)l.textContent='남은 시간 '+fmtClock(gx.left);if(n)n.textContent='다음 채집까지 '+fmtClock(gx.next)}}
   if(P.ref&&Date.now()>=P.ref){P.water=tankCap();P.refCd=P.ref+3600e3;P.ref=null;save();if(tab==='farm')renderPanel()}else if(P.refCd&&tab==='farm'){const r=$('#refT'),l=P.refCd-Date.now();if(r&&l>0)r.textContent='다시 채우기까지 '+fmtClock(l);else if(r&&l<=0){P.refCd=0;renderPanel()}}
 },1000);

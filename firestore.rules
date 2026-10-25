@@ -115,6 +115,9 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // 공용 농장: 포드(farm/pods)와 공용 창고(farm/store)는 모든 단원이 함께 읽고 씀.
+    match /farm/{id} { allow read, write: if member(); }
+
     // 낚시 대결: 접속한 단원 모두 함께 씀.
     match /duel/{id} { allow read, write: if member(); }
 
