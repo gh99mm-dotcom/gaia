@@ -79,7 +79,7 @@ header>.chip:not(.sugg){margin-left:0}
 :root[data-skin="light"] .hub{background:#d3cdc3}
 /* 우주모드 OFF, faded: a washed paper backdrop with faint grain, quiet headings and pictures that look sun-bleached */
 :root[data-skin="light"] body{background:radial-gradient(ellipse 120% 80% at 50% 0%,#f3f1ec 0%,#e7e4de 55%,#ddd9d1 100%) fixed;color:var(--text)}
-:root[data-skin="light"] body::after{background:repeating-linear-gradient(180deg,rgba(80,72,62,.09) 0 1px,transparent 1px 3px),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .42 0 0 0 0 .38 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),radial-gradient(ellipse at center,transparent 60%,rgba(120,110,95,.12));opacity:1}
+:root[data-skin="light"] body::after{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .42 0 0 0 0 .38 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),radial-gradient(ellipse at center,transparent 60%,rgba(120,110,95,.12));opacity:1}
 :root[data-skin="light"] .logo h1{color:#5a5860;letter-spacing:.04em}
 :root[data-skin="light"] .logo .lbl{color:#a39e94}
 :root[data-skin="light"] h2,:root[data-skin="light"] h3{color:#55545a}
@@ -102,6 +102,7 @@ header>.chip:not(.sugg){margin-left:0}
 :root[data-skin="light"] .toast{background:#e5dcc6;border-color:#c9bd9f}
 :root[data-skin="light"] ::selection{background:#e2d8d5}
 :root[data-skin="light"] .logo .pix{filter:saturate(.45) brightness(1.22) contrast(.82)}
+:root[data-skin="light"] :is(.twimgs img,.pvimg img,.imgmodal img,.profimg img){filter:saturate(.55) sepia(.14) brightness(1.03) contrast(.94)}
 /* 우주모드 OFF: flat 2px outlines, no drop shadows or bevels; selected states keep their inner ring */
 :root[data-skin="light"] *{box-shadow:none!important}
 :root[data-skin="light"] .px,:root[data-skin="light"] .toast{border-width:2px}
