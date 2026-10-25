@@ -383,11 +383,10 @@ header>.chip:not(.sugg){margin-left:0}
 @media (prefers-reduced-motion:reduce){.neonwrap>img.ng{animation:none}}
 .admtabs{margin:6px 0 2px}.admtabs em{font-style:normal;font-size:10px;color:var(--mute);margin-left:2px}
 .raidz{position:relative}.raidz>b{padding-right:42px}.zcost{display:flex;align-items:center;gap:3px;line-height:1;position:absolute;top:6px;right:7px;font-family:var(--f-pix);font-size:10px;color:var(--gold);background:var(--deep);border:1px solid var(--line);padding:1px 5px}
-.raidmap{position:relative;margin:6px 0 2px;border:2px solid var(--ink);line-height:0;overflow:hidden}.raidmap svg{width:100%;height:auto;display:block}
+.raidmap{position:relative;margin:6px 0 2px;border:2px solid var(--ink);line-height:0;overflow:hidden}.raidmap>img{width:100%;height:auto;display:block;image-rendering:pixelated}
 .rmme{position:absolute;transform:translate(-50%,-50%);line-height:0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6));animation:rmbob 1.6s ease-in-out infinite}
-@keyframes rmbob{50%{margin-top:-3px}}.rmpulse{animation:rmpulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes rmpulse{50%{transform:scale(1.35);opacity:.1}}
-.rmlbl{position:absolute;right:6px;bottom:4px;font-family:var(--f-pix);font-size:9px;line-height:1;color:#fff;background:rgba(5,6,11,.6);padding:2px 5px}
-@media (prefers-reduced-motion:reduce){.rmme,.rmpulse{animation:none}}
+@keyframes rmbob{50%{margin-top:-3px}}.rmlbl{position:absolute;right:6px;bottom:4px;font-family:var(--f-pix);font-size:9px;line-height:1;color:#fff;background:rgba(5,6,11,.6);padding:2px 5px}
+@media (prefers-reduced-motion:reduce){.rmme{animation:none}}
 .exlbl{font-size:10.5px;color:var(--gold);border:1px dashed var(--gold);padding:1px 6px}
 .witem.ex{background:linear-gradient(160deg,var(--violetd),var(--deep))}
 .mlbody{display:flex;flex-direction:column;gap:10px;min-width:0}.mlsec{display:flex;flex-direction:column;gap:4px}
@@ -1802,7 +1801,7 @@ const RAID_ZONES=[
  {id:'r6',n:'붉은 별의 핵',min:40,max:60,t:'#ff5f6a',d:'행성 깊은 곳, 뜨거운 핵 근처. 가장 강한 존재들이 기다립니다.',mons:['용암 정령','화염 와이번','핵의 파수꾼','붉은 망령 기사','태양 벌레'],mid:'핵의 문지기 「이그니스」',boss:'붉은 별의 심장 「카를로스」'}];
 const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
 const RAID_MON_TURN=3e3;
-const RAID_STEPS=8,RAID_TURN=60e3,RAID_EN=8,RAID_MAX=4;
+const RAID_STEPS=12,RAID_TURN=60e3,RAID_EN=8,RAID_MAX=4;
 const RAID_EVENTS=[
  {k:'chest',n:'보급 상자',t:'모래 속에서 구형 보급 상자를 찾았다.',cr:[20,50],item:['kit','drink']},
  {k:'trap',n:'함정',t:'바닥이 꺼지며 날카로운 파편이 튀어 올랐다!',dmg:.12},
@@ -1959,20 +1958,42 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
   return`<div class="row" style="justify-content:space-between;align-items:center"><b class="dfloor" data-step="${r.step}">${esc(z.n)}${r.state==='lobby'?' · 대기실':''}</b>${r.state==='run'&&r.phase!=='end'?'<button class="qchip" data-act="raidleave">원정 포기</button>':''}</div>
    ${r.state==='run'?raidMapHTML(r,z):''}
    <div class="raidwrap"><div class="raidparty">${party}</div><div class="raidmain">${body}</div></div>`}
-/* the expedition route as a little map: a winding trail of stops across the zone's terrain, the boss at the end */
-const RAID_TERRAIN={r1:['#3a3550','#57506e','rock'],r2:['#1d3a4a','#2c5a6e','crystal'],r3:['#1f3a2c','#2f5a40','reed'],r4:['#3a2e24','#5a4632','wreck'],r5:['#2a3440','#4a5a6a','ice'],r6:['#3a1a1c','#6a2a24','lava']};
-function raidMapHTML(r,z){const T=RAID_TERRAIN[z.id]||RAID_TERRAIN.r1,narrow=innerWidth<560,W=narrow?380:600,H=narrow?120:96,n=RAID_STEPS,cur=Math.min(r.step,n),done=r.phase==='end';
-  const pts=Array.from({length:n},(_,i)=>{const x=(narrow?24:40)+i*(W-(narrow?48:80))/(n-1),y=H/2+Math.sin(i*1.25+.6)*(narrow?30:22);return[x,y]});
-  let rnd=z.id.charCodeAt(1)*97;const R=()=>(rnd=(rnd*16807)%2147483647)/2147483647;
-  const deco=Array.from({length:26},()=>{const x=R()*W,y=8+R()*(H-16),k=T[2];
-    return k==='crystal'?`<polygon points="${x},${y-6} ${x+3},${y} ${x},${y+4} ${x-3},${y}" fill="${z.t}" opacity=".35"/>`:k==='reed'?`<path d="M${x} ${y+4}v-8M${x+2} ${y+4}v-6" stroke="${z.t}" stroke-width="1.4" opacity=".35"/>`:k==='wreck'?`<rect x="${x}" y="${y}" width="7" height="3" fill="#8a7a6a" opacity=".3" transform="rotate(${R()*60-30} ${x} ${y})"/>`:k==='ice'?`<path d="M${x-3} ${y}h6M${x} ${y-3}v6" stroke="#d6e8f6" stroke-width="1.2" opacity=".35"/>`:k==='lava'?`<ellipse cx="${x}" cy="${y}" rx="5" ry="2" fill="#ff6a3a" opacity=".28"/>`:`<ellipse cx="${x}" cy="${y}" rx="4" ry="2.5" fill="#8a84a8" opacity=".3"/>`}).join('');
-  const seg=pts.slice(1).map(([x,y],i)=>{const [px,py]=pts[i],past=i+1<cur||(done&&i+1<=cur);return`<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="${past?'var(--gold)':'#8a87a0'}" stroke-width="${past?3:2}" stroke-dasharray="${past?'':'4 4'}" opacity="${past?.95:.55}"/>`}).join('');
-  const nodes=pts.map(([x,y],i)=>{const k=i+1,boss=k===n,past=k<cur||(done&&k<=cur),here=k===cur&&!done;
-    const fill=past?'var(--gold)':here?z.t:boss?'#5a1a24':'#1d2236',stroke=boss?'#ff5f6a':here?'#ffffff':'#05060b';
-    return`<g>${here?`<circle cx="${x}" cy="${y}" r="13" fill="${z.t}" opacity=".25" class="rmpulse"/>`:''}<circle cx="${x}" cy="${y}" r="${boss?10:here?8:6.5}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>${boss?`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" fill="#ffd6d6">☠</text>`:past?`<path d="M${x-3} ${y}l2 2.5 4-5" stroke="#1d1a10" stroke-width="2" fill="none"/>`:''}<text x="${x}" y="${y+(i%2?-15:23)}" text-anchor="middle" font-size="10" fill="${here?'#ffffff':'#9a98b0'}">${boss?'보스':k}</text></g>`}).join('');
-  const [mx,my]=pts[Math.max(0,cur-1)],left=(mx/W*100).toFixed(2),top=((my-22)/H*100).toFixed(2);
-  return`<div class="raidmap" style="--zt:${z.t}"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs><linearGradient id="rmg" x1="0" x2="1"><stop offset="0" stop-color="${T[0]}"/><stop offset="1" stop-color="${T[1]}"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#rmg)"/>${deco}${seg}${nodes}</svg>
-   ${done?'':`<span class="rmme" style="left:${left}%;top:${top}%">${headImg(2,P)}</span>`}<span class="rmlbl">${done?'원정 종료':`${cur}/${n} 지점`}${cur===n&&!done?' · 보스':''}</span></div>`}
+/* the expedition route as a pixel-art map: dithered terrain in the zone's palette, a dirt trail that turns gold where the party has been,
+   flags on cleared stops, a skull gate at the boss and fog over the ground not yet explored */
+const RAID_TERRAIN={r1:{g:['#3c3550','#4c4462'],p:['#7a6c5c','#a08c74'],d:['#6e6886','#9690ae'],k:'rock'},r2:{g:['#16283a','#203a52'],p:['#4e6c7c','#7096a8'],d:['#4fc8f0','#c0f4ff'],k:'crystal'},
+  r3:{g:['#18301f','#22442c'],p:['#5e5034','#7e6c48'],d:['#5ab878','#9df0b0'],k:'reed'},r4:{g:['#2e251c','#433526'],p:['#6e5e48','#94806a'],d:['#7a6a5a','#a8988a'],k:'wreck'},
+  r5:{g:['#222c38','#334356'],p:['#7a90a8','#a8bcd0'],d:['#b8d4ec','#ecf6ff'],k:'ice'},r6:{g:['#2a1012','#42181a'],p:['#5e3226','#84483a'],d:['#e85a2a','#ffb05a'],k:'lava'}};
+const RMAP={};
+function raidMapImg(zid,cur,done,n,narrow){const key=[zid,cur,done?1:0,n,narrow?1:0].join('|');if(RMAP[key])return RMAP[key];
+  const T=RAID_TERRAIN[zid]||RAID_TERRAIN.r1,W=narrow?132:284,H=narrow?60:48,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  const px=(x,y,col)=>{if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};let sd=zid.charCodeAt(1)*7919;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=(Math.sin(x*.21+y*.13)+Math.sin(x*.07-y*.29)+2)/4;px(x,y,t*16>BAYER[y&3][x&3]?T.g[1]:T.g[0])}
+  const pts=Array.from({length:n},(_,i)=>[Math.round((narrow?8:12)+i*(W-(narrow?16:24))/(n-1)),Math.round(H/2+Math.sin(i*1.05+.5)*H*.26)]);
+  // terrain dressing, kept off the trail
+  const near=(x,y)=>pts.some(([a,b],i)=>i&&Math.abs(x-(a+pts[i-1][0])/2)<(a-pts[i-1][0])/2+2&&Math.abs(y-(b+(pts[i-1][1]-b)*((a-x)/(a-pts[i-1][0]||1))))<5);
+  for(let k=0;k<(narrow?26:44);k++){const x=Math.floor(rnd()*W),y=Math.floor(rnd()*H);if(near(x,y))continue;const [d0,d1]=T.d;
+    if(T.k==='rock'){px(x,y,d0);px(x+1,y,d0);px(x,y-1,d1);px(x+1,y+1,'#25202e')}
+    else if(T.k==='crystal'){for(let h=0;h<4;h++)px(x,y-h,h>2?d1:d0);px(x+1,y-1,d0);px(x-1,y,'#0e1a26')}
+    else if(T.k==='reed'){px(x,y,d0);px(x,y-1,d0);px(x,y-2,d1);px(x+2,y,d0);px(x+2,y-1,d1);if(rnd()<.3){px(x-2,y+1,'#2a4a5a');px(x-1,y+1,'#2a4a5a')}}
+    else if(T.k==='wreck'){px(x,y,d0);px(x+1,y,d0);px(x+2,y,d1);px(x+1,y-1,d0);px(x+1,y+1,'#1e1812')}
+    else if(T.k==='ice'){px(x,y,d1);px(x-1,y,d0);px(x+1,y,d0);px(x,y-1,d0);px(x,y+1,d0)}
+    else{px(x,y,d0);px(x+1,y,d1);px(x-1,y,'#7a2a1a');if(rnd()<.4)px(x,y-1,d1)}}
+  // trail: lit gold up to the party, plain dirt beyond
+  const reach=done?n-1:cur-1;
+  for(let i=1;i<n;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],len=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),lit=i<=reach;
+    for(let s=0;s<=len;s++){const x=Math.round(x0+(x1-x0)*s/len),y=Math.round(y0+(y1-y0)*s/len);px(x,y-1,lit?'#8a7440':T.p[0]);px(x,y,lit?'#e6c870':T.p[1]);px(x,y+1,lit?'#a8904c':T.p[0]);if(!lit&&s%3===0)px(x,y,T.p[0])}}
+  // fog over the unexplored ground
+  const fogX=done?W:pts[Math.max(0,cur-1)][0]+(narrow?6:9);
+  for(let y=0;y<H;y++)for(let x=Math.max(0,fogX);x<W;x++){const t=Math.min(1,(x-fogX)/14);if(t*16>BAYER[y&3][x&3]-2){g.fillStyle='rgba(6,6,14,.55)';g.fillRect(x,y,1,1)}}
+  // stops
+  pts.forEach(([x,y],i)=>{const k=i+1,boss=k===n;
+    if(boss){[[-3,-4],[-2,-5],[-1,-5],[0,-5],[1,-5],[2,-5],[3,-4]].forEach(([a,b])=>px(x+a,y+b,'#5a1a24'));for(let b=-4;b<=2;b++){px(x-3,y+b,'#5a1a24');px(x+3,y+b,'#5a1a24')}
+      for(let b=-4;b<=2;b++)for(let a=-2;a<=2;a++)px(x+a,y+b,'#12060c');px(x-1,y-2,'#ff4f5f');px(x+1,y-2,'#ff4f5f');px(x,y,'#e8d8d0');px(x-1,y+1,'#e8d8d0');px(x+1,y+1,'#e8d8d0')}
+    else if(k<=reach||(done&&k<n)){px(x,y-1,'#2a2418');px(x,y-2,'#d6d0c0');px(x,y-3,'#d6d0c0');px(x,y-4,'#d6d0c0');px(x+1,y-4,'#f0c75a');px(x+2,y-4,'#f0c75a');px(x+1,y-3,'#c8a040');px(x+2,y-3,'#f0c75a')}
+    else{[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]].forEach(([a,b])=>px(x+a,y+b,k===cur&&!done?'#ffffff':'#8a88a0'));px(x,y,k===cur&&!done?'#f0c75a':'#1d1a28')}});
+  return RMAP[key]={src:c.toDataURL(),pts,W,H}}
+function raidMapHTML(r,z){const n=RAID_STEPS,cur=Math.min(r.step,n),done=r.phase==='end',narrow=innerWidth<560,m=raidMapImg(z.id,cur,done,n,narrow),[mx,my]=m.pts[Math.max(0,cur-1)];
+  return`<div class="raidmap"><img class="pix" src="${m.src}" alt="${esc(z.n)} 원정 지도">${done?'':`<span class="rmme" style="left:${(mx+.5)/m.W*100}%;top:${(my-6)/m.H*100}%">${headImg(2,P)}</span>`}<span class="rmlbl">${done?'원정 종료':`${cur}/${n} 지점${cur===n?' · 보스':''}`}</span></div>`}
 function renderRaid(){if(mode!=='online')return head()+'<div class="note">원정은 온라인에서만 떠날 수 있습니다.</div>';return head()+(MYRAID?raidRunHTML(MYRAID):raidLobbyHTML())}
 /* ───────── 탐사: the invader from the abyss ─────────
    the admin summons one of 14 invaders at a chosen level (boss/cur); every member may strike once a minute and it strikes back.
