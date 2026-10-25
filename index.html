@@ -60,10 +60,11 @@ header>.chip:not(.sugg){margin-left:0}
 .sndrow .qchip{justify-content:center;padding:2px 4px}
 /* 우주모드 OFF: a white station skin; the pixel outlines stay, everything else turns light */
 :root[data-skin="light"]{
-  --void:#e9ebf1; --deep:#f5f6f9; --panel:#ffffff; --panel2:#eef0f5; --ink:#a7adc0; --line:#e2e5ec;
-  --text:#24273a; --mute:#646a82; --dim:#a2a7b9;
-  --pink:#c98aa5; --pinkd:#9a5a76; --violet:#6a5ea8; --violetd:#e2def3; --cyan:#6fa3c4; --cyand:#4a7896;
-  --gold:#8f7322; --green:#3f7d50; --red:#b5434f;
+  /* faded daylight: bleached paper, dusty pastels, soft charcoal ink — bright but a little lonely */
+  --void:#e7e4de; --deep:#f0eee9; --panel:#f6f4f0; --panel2:#e9e6e0; --ink:#c9c3b9; --line:#dfdad2;
+  --text:#4a4a4f; --mute:#8b877f; --dim:#b8b3aa;
+  --pink:#cfadb0; --pinkd:#a88589; --violet:#9690ab; --violetd:#e7e4ec; --cyan:#8ea7ad; --cyand:#6d878d;
+  --gold:#a3905f; --green:#7d957f; --red:#b27d77;
   color-scheme:light;
 }
 :root[data-skin="light"] #stars{display:none}
@@ -74,8 +75,33 @@ header>.chip:not(.sugg){margin-left:0}
 :root[data-skin="light"] :is(.btn,.toast,.nav .badge,.mailbtn em,.fbbadge){color:var(--text)}
 :root[data-skin="light"] .bay{background-color:#d5d9e3}
 :root[data-skin="light"] .ptile.lock{border-color:#b9bfce}
-:root[data-skin="light"] .dial-face{background:repeating-conic-gradient(from -90deg at 50% 100%,rgba(120,128,150,.55) 0 1deg,transparent 1deg 15deg),conic-gradient(from -90deg at 50% 100%,#dfe3ec 0deg calc(90deg - var(--z,9deg)),var(--green) calc(90deg - var(--z,9deg)) calc(90deg + var(--z,9deg)),#dfe3ec calc(90deg + var(--z,9deg)) 180deg,transparent 180deg);box-shadow:inset 0 0 0 2px #c3c8d5}
-:root[data-skin="light"] .hub{background:#c3c8d5}
+:root[data-skin="light"] .dial-face{background:repeating-conic-gradient(from -90deg at 50% 100%,rgba(150,140,125,.45) 0 1deg,transparent 1deg 15deg),conic-gradient(from -90deg at 50% 100%,#ece8e1 0deg calc(90deg - var(--z,9deg)),var(--green) calc(90deg - var(--z,9deg)) calc(90deg + var(--z,9deg)),#ece8e1 calc(90deg + var(--z,9deg)) 180deg,transparent 180deg);box-shadow:inset 0 0 0 2px #d3cdc3}
+:root[data-skin="light"] .hub{background:#d3cdc3}
+/* 우주모드 OFF, faded: a washed paper backdrop with faint grain, quiet headings and pictures that look sun-bleached */
+:root[data-skin="light"] body{background:radial-gradient(ellipse 120% 80% at 50% 0%,#f3f1ec 0%,#e7e4de 55%,#ddd9d1 100%) fixed;color:var(--text)}
+:root[data-skin="light"] body::after{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .42 0 0 0 0 .38 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),radial-gradient(ellipse at center,transparent 60%,rgba(120,110,95,.12));opacity:1}
+:root[data-skin="light"] .logo h1{color:#5a5860;letter-spacing:.04em}
+:root[data-skin="light"] .logo .lbl{color:#a39e94}
+:root[data-skin="light"] h2,:root[data-skin="light"] h3{color:#55545a}
+:root[data-skin="light"] .px{background:rgba(246,244,240,.92)}
+:root[data-skin="light"] .stage-head{border-bottom-color:#e2ddd5}
+:root[data-skin="light"] .lbl{color:#9a958c}
+:root[data-skin="light"] .btn{background:var(--pink);border-color:#bba7a3}
+:root[data-skin="light"] .btn.alt{background:#b9cacd;border-color:#a3b3b6}
+:root[data-skin="light"] .btn.gold{background:#d9cba6;border-color:#c2b38d}
+:root[data-skin="light"] .btn.ghost{background:var(--panel2);border-color:var(--ink)}
+:root[data-skin="light"] .btn[disabled]{opacity:.5}
+:root[data-skin="light"] .nav button{background:rgba(246,244,240,.9)}
+:root[data-skin="light"] .nav button[aria-pressed="true"]{background:#ebe7ef}
+:root[data-skin="light"] .nav img,:root[data-skin="light"] .pix:not(.keepc){filter:saturate(.7)}
+:root[data-skin="light"] :is(#lakeCv,#gCv,#shipCv,.bay,.bosssprite){filter:saturate(.55) sepia(.14) brightness(1.03) contrast(.94)}
+:root[data-skin="light"] .bar{background:#e4e0d9}
+:root[data-skin="light"] .bar i{opacity:.85}
+:root[data-skin="light"] .ticker{background:rgba(246,244,240,.9)}
+:root[data-skin="light"] .chip{background:rgba(240,238,233,.9)}
+:root[data-skin="light"] .toast{background:#e5dcc6;border-color:#c9bd9f}
+:root[data-skin="light"] ::selection{background:#e2d8d5}
+:root[data-skin="light"] .logo .pix{filter:saturate(.45) brightness(1.22) contrast(.82)}
 /* 우주모드 OFF: flat 2px outlines, no drop shadows or bevels; selected states keep their inner ring */
 :root[data-skin="light"] *{box-shadow:none!important}
 :root[data-skin="light"] .px,:root[data-skin="light"] .toast{border-width:2px}
