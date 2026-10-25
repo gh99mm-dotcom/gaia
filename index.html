@@ -331,6 +331,7 @@ header>.chip:not(.sugg){margin-left:0}
 .crew li .rescue{padding:2px 6px;font-size:11px;margin-left:4px}
 .sigbox{display:flex;gap:12px;align-items:center}
 .shiptop{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.shiptop .sinfo{flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px}
+.gscene{border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:10px;line-height:0;background:#06061a}.gscene canvas{width:100%;aspect-ratio:240/84;image-rendering:pixelated;display:block}
 .shipscene{border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:10px;line-height:0;background:#06061a}
 .shipscene canvas{width:100%;aspect-ratio:2/1;image-rendering:pixelated;display:block}
 .shipgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin:10px 0}
@@ -1070,7 +1071,7 @@ const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
  {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 개척선 별무리호 · 선체 손상 심각'},
  {id:'farm',n:'농사',ic:IC.farm,cost:'',loc:'유리 돔 농장 · 21℃ · 습도 41% · 인공 중력 0.8G'},
- {id:'gather',n:'채집',ic:IC.gather,cost:'원정',loc:'지표 원정 · 길게 보낼수록 많이 채집'},
+ {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
  {id:'adv',n:'탐사',ic:IC.book,cost:'EN 5',loc:'탐사 일지 · 글로 떠나는 원정'},
  {id:'scan',n:'조사',ic:IC.scan,cost:'30분 신호',loc:'미확인 신호 구역 · 30분마다 신호 수신'},
@@ -1211,14 +1212,14 @@ function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div c
 function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',invHTML()+crewAdminHTML()+fbAdminHTML())}
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
-const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 원정에서 재료가 더 자주 나옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
+const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 로봇이 재료를 더 자주 가져옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan]];
 const LIFE_MAX=20,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
 // each life level adds 0.5% to that activity's bonus chance; wearing the 황금손 title (all four maxed) adds a further 1% to every one
 const goldHand=()=>LIFE.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
 const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(P.title==='gold'&&goldHand()?1:0);
 const lifeHit=k=>Math.random()*100<lifePct(k);
-const LIFE_FX={farm:'수확 +1 확률',gather:'원정 재료 추가 확률',fish:'레어 이상 어종 확률 +',scan:'조사 보상 2배 확률'};
+const LIFE_FX={farm:'수확 +1 확률',gather:'로봇 채집 재료 추가 확률',fish:'레어 이상 어종 확률 +',scan:'조사 보상 2배 확률'};
 const lifeNext=l=>25*l*l;
 function stat(k,n=1){P.st=P.st||{};P.st[k]=(P.st[k]||0)+n}
 function lxp(k,n){P.lx=P.lx||{};const before=lifeLv(P.lx[k]);P.lx[k]=(P.lx[k]||0)+n;const after=lifeLv(P.lx[k]);if(after>before){const nm=LIFE.find(l=>l[0]===k)[1];log(`${nm} 생활 레벨 ${after} 달성!`,'rare')}}
@@ -1265,7 +1266,7 @@ let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
 function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==uid);const opts=ORDER.map(id=>`<option value="${id}">${esc(ITEMS[id].n)}</option>`).join('');
   $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구입니다.</span></div><button class="btn sm ghost" data-act="adminclose">닫기</button></div>
   <div class="info-sec"><span class="lbl">Me · 나에게</span><div class="row" style="gap:5px">
-   <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 신호 가득</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 원정 즉시 완료</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
+   <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 신호 가득</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 로봇 즉시 귀환</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
    <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button></div></div>
   <div class="info-sec"><span class="lbl">Give · 아이템 지급</span><div class="row" style="gap:6px"><select id="admItem" class="sel">${opts}</select><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'단원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div><span class="hint">다른 단원에게 주면 '운영자' 이름의 선물로 도착합니다.</span></div>
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
@@ -1517,28 +1518,87 @@ const GDUR={1:2,2:3,4:7,8:12,16:20,24:28};const gCount=e=>e.gc||(e.slots*2);
 const fmtDur=m=>{const h=Math.floor(m/60),r=m%60;return(h?h+'시간':'')+(h&&r?' ':'')+(r?r+'분':'')};
 const fmtClock=ms=>{ms=Math.max(0,ms);const t=Math.ceil(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return(h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(s).padStart(2,'0')};
 function expInfo(){const e=P.exp;if(!e)return null;const total=e.slots,el=Date.now()-e.start,done=Math.min(total,Math.floor(el/SLOT)),G=gCount(e),gd=Math.floor(G*done/total),tg=e.tg!=null?e.tg:(e.taken||0)*2;return{e,total,done,G,gd,tg,pending:Math.max(0,gd-tg),next:done>=total?0:SLOT-(el%SLOT),left:Math.max(0,total*SLOT-el),site:SITES.find(x=>x.id===e.site)||SITES[0]}}
+/* gather scene: the collector robot trundling across the chosen site; each site has its own landscape and a little life of its own */
+const GW=240,GH=84,GBG={};let gTimer=0;
+function gatherBg(site,day){const key=site+(day?'d':'n');if(GBG[key])return GBG[key];
+  const c=document.createElement('canvas');c.width=GW;c.height=GH;const g=c.getContext('2d');
+  let seed=site.length*97+11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)},dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
+  const fillV=(y0,y1,cols)=>{for(let y=y0;y<y1;y++){const t=(y-y0)/Math.max(1,y1-y0)*(cols.length-1),i=Math.min(cols.length-2,Math.floor(t)),f=t-i;for(let x=0;x<GW;x++)px(x,y,dith(x,y,f)?cols[i+1]:cols[i])}};
+  const ridge=(base,amp,fr,col,ph,to)=>{for(let x=0;x<GW;x++){const h=base-Math.abs(Math.sin(x/fr+ph))*amp-Math.sin(x/(fr*.41)+ph*2)*amp*.3;for(let y=Math.round(h);y<to;y++)px(x,y,col)}};
+  const stars=n=>{for(let k=0;k<n;k++)px(rnd()*GW,rnd()*40,rnd()<.3?'#c8c4f0':'#6a66a0')};
+  const HZ=56,P={
+   crater:{sky:day?['#5a7aa8','#7c96bc','#a6b4ce']:['#06061a','#141236','#2a2450'],far:day?'#6a7896':'#262640',near:day?'#56627e':'#1c1c32',gr:day?['#8a8e9e','#6e7282']:['#3a3c4e','#2a2c3a']},
+   marsh:{sky:day?['#6a8a8a','#8aa8a0','#a8c0b0']:['#071412','#0f2420','#1c3a30'],far:day?'#5a7a6a':'#163028',near:day?'#4a6a58':'#0f241c',gr:day?['#5f7a52','#465c3c']:['#25331f','#1a2416']},
+   wreck:{sky:day?['#7a7a8a','#9a948e','#b8aa96']:['#100c12','#221a1e','#3a2a26'],far:day?'#6a6460':'#2a2220',near:day?'#5a524c':'#1e1816',gr:day?['#7a6a5a','#5e5044']:['#332a24','#241e1a']},
+   geyser:{sky:day?['#7aa0c8','#a0bcd8','#cad8e6']:['#060a1a','#101a36','#1e2c4e'],far:day?'#8aa2bc':'#2a3a5a',near:day?'#9ab4cc':'#344a6a',gr:day?['#d6e2ee','#b4c6d8']:['#5a6a86','#46546e']},
+   canyon:{sky:day?['#c8a07a','#d8b48e','#e6c8a6']:['#140a0a','#2a1414','#44201a'],far:day?'#a8624a':'#4a2018',near:day?'#8a4a36':'#3a1810',gr:day?['#b06a4a','#8e5038']:['#4e2418','#3a1a12']}}[site];
+  if(site==='cave'){
+    fillV(0,GH,['#07080e','#0e1020','#141830']);
+    for(let x=0;x<GW;x++){const h=8+Math.abs(Math.sin(x/9))*6+Math.sin(x/3.1)*2;for(let y=0;y<h;y++)px(x,y,y>h-2?'#2a2e44':'#14162a')}
+    for(let k=0;k<14;k++){const x=rnd()*GW|0,L=4+rnd()*10|0;for(let i=0;i<L;i++)for(let w=-Math.floor((L-i)/4);w<=Math.floor((L-i)/4);w++)px(x+w,12+i,i===L-1?'#3a4060':'#20243a')}
+    fillV(HZ,GH,['#1a1c2e','#101220']);
+    for(let k=0;k<9;k++){const x=8+rnd()*(GW-16)|0,y=HZ+2+rnd()*6|0,h=6+rnd()*9|0,col=rnd()<.5?['#7fd0d0','#3a8a94']:['#b48ae6','#6a4aa0'];for(let i=0;i<h;i++)for(let w=-Math.floor((h-i)/3);w<=Math.floor((h-i)/3);w++)px(x+w,y-i,w<0?col[0]:col[1])}
+  }else{
+    fillV(0,HZ,P.sky);if(!day)stars(40);
+    if(site==='crater'){for(let k=0;k<3;k++){const cx=rnd()*GW,r=3+rnd()*4;for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++)if(Math.hypot(x,y)<=r)px(cx+x,14+y+k*6,day?'#dfe2ee':'#b8b4d8')}}
+    ridge(HZ-4,12,19,P.far,1.7,HZ+2);ridge(HZ,7,11,P.near,4.2,HZ+3);
+    if(site==='canyon'){for(const [x0,w] of [[0,46],[GW-52,52]])for(let x=x0;x<x0+w;x++){const top=10+Math.abs(x-(x0+w/2))*.25+Math.sin(x*.7)*2;for(let y=Math.round(top);y<HZ+4;y++)px(x,y,((y/5|0)%2)?P.near:P.far)}}
+    if(site==='wreck'){for(const [x0,w,h] of [[30,44,18],[150,60,24]]){for(let x=x0;x<x0+w;x++){const top=HZ-h+Math.abs(x-x0-w*.35)*.35+Math.sin(x*.9)*1.5;for(let y=Math.round(top);y<HZ+2;y++)px(x,y,(x%9===0)?'#141012':P.near)}}
+      for(let i=0;i<12;i++)px(160+i*3,HZ-22+i*.4,'#8a7a6a')}
+    if(site==='geyser'){for(let k=0;k<6;k++){const x=rnd()*GW|0,h=8+rnd()*14|0;for(let i=0;i<h;i++)for(let w=-Math.floor((h-i)/4);w<=Math.floor((h-i)/4);w++)px(x+w,HZ+2-i,w<0?'#eef4fa':'#a8bcd4')}}
+    fillV(HZ+2,GH,P.gr);
+    for(let k=0;k<70;k++){const x=rnd()*GW|0,y=HZ+4+rnd()*(GH-HZ-4)|0;px(x,y,P.gr[1]);if(rnd()<.5)px(x+1,y,P.gr[0])}
+    if(site==='crater')for(let k=0;k<5;k++){const cx=rnd()*GW,cy=HZ+8+rnd()*16,r=4+rnd()*7;for(let y=-r/2.6;y<=r/2.6;y++)for(let x=-r;x<=r;x++){const d=Math.hypot(x/r,y/(r/2.6));if(d<=1)px(cx+x,cy+y,d>.8?(y<0?'#3a3c4e':'#a8acbc'):(y<0?'#4a4c5e':'#5a5e70'))}}
+    if(site==='marsh'){for(let k=0;k<5;k++){const cx=rnd()*GW,cy=HZ+9+rnd()*14,r=6+rnd()*9;for(let y=-r/3;y<=r/3;y++)for(let x=-r;x<=r;x++)if(Math.hypot(x/r,y/(r/3))<=1)px(cx+x,cy+y,y<-r/6?'#3a6a5a':'#1e3a32')}
+      for(let k=0;k<30;k++){const x=rnd()*GW|0,y=HZ+4+rnd()*(GH-HZ-6)|0;px(x,y,'#7dff9b');px(x,y-1,'#4a9a5a')}}
+    if(site==='wreck')for(let k=0;k<16;k++){const x=rnd()*GW|0,y=HZ+5+rnd()*20|0,w=2+rnd()*4|0;for(let i=0;i<w;i++)px(x+i,y,i?'#5a5048':'#9a8a7a')}
+  }
+  GBG[key]={c,HZ:site==='cave'?HZ:HZ,seed:site.length};return GBG[key]}
+function gatherSceneDraw(cv,t){
+  const x=expInfo(),site=x?x.site.id:gSite,day=isDay()&&site!=='cave',B=gatherBg(site,day),g=cv.getContext('2d');g.drawImage(B.c,0,0);
+  const px=(a,b,col)=>{g.fillStyle=col;g.fillRect(a|0,b|0,1,1)},HZ=56,gy=72;
+  // site life
+  if(site==='crater'&&!day)for(let i=0;i<5;i++){const v=(Math.sin(t/500+i*1.9)+1)/2;if(v>.7)px((i*53+17)%GW,(i*13+5)%34,'#ffffff')}
+  if(site==='cave')for(let i=0;i<6;i++){const v=(Math.sin(t/380+i*2.3)+1)/2;if(v>.75){const cx=(i*41+19)%GW,cy=HZ-4-(i*7)%8;px(cx,cy,'#ffffff');px(cx-1,cy,'#cfeee8');px(cx+1,cy,'#cfeee8')}}
+  if(site==='marsh'){for(let i=0;i<3;i++){const y=HZ-6+i*5,off=(t/90+i*40)%GW;g.fillStyle='rgba(170,220,190,.10)';g.fillRect(off-60,y,120,2);g.fillRect(off-60-GW,y,120,2)}
+    for(let i=0;i<4;i++){const ph=((t/1600)+i/4)%1;if(ph<.6)px((i*61+30)%GW,HZ+14-ph*8,'#a8e0c0')}}
+  if(site==='wreck'&&(t/160|0)%9===0){const sx=170+(t/37%12),sy=HZ-18;px(sx,sy,'#ffd65f');px(sx+1,sy+1,'#ff8a3a');px(sx-1,sy+2,'#ffd65f')}
+  if(site==='geyser'){const ph=(t%5200)/5200;if(ph<.45){const h=Math.sin(ph/.45*Math.PI)*30;for(let k=0;k<h;k++)for(let w=-1-Math.floor(k/10);w<=1+Math.floor(k/10);w++)if(((k+w+(t/80|0))%3))px(196+w+Math.sin(k*.6+t/120)*1.2,HZ+2-k,k>h-4?'#ffffff':'#d6e8f6')}}
+  if(site==='canyon')for(let i=0;i<8;i++){const ph=((t/4000)+i/8)%1;px(ph*GW,(i*11+20)%50+6,'#e6c8a6')}
+  // the robot: out on the site while a run is going, parked at the left edge otherwise
+  const going=!!x&&x.done<x.total,L=GW+40,rx=going?((t/70)%L)-20:14,bob=going&&((t/140|0)%2)?1:0,ry=gy-bob;
+  if(going)for(let i=1;i<=4;i++){const ph=((t/300)+i/4)%1;g.fillStyle=`rgba(190,180,170,${(1-ph)*.5})`;g.fillRect(rx-3-ph*8,gy-1-ph*4,2,2)}
+  const R=(a,b,w,h,col)=>{g.fillStyle=col;g.fillRect(Math.round(rx+a),Math.round(ry+b),w,h)};
+  R(-8,-3,16,4,'#1a1d26');for(let i=0;i<4;i++)R(-7+((i*4+(going?(t/90|0):0))%15),-2,2,2,'#454a5c');
+  R(-6,-10,12,7,'#7a8096');R(-6,-10,12,1,'#a2a8bc');R(5,-10,1,7,'#4a4f62');R(-4,-8,6,2,'#d6a84a');
+  R(-1,-15,8,5,'#8a90a6');R(-1,-15,8,1,'#c3c9d4');const blink=(t/1700|0)%5===0;R(4,-13,2,2,blink?'#2a2d38':'#7fe0f0');
+  R(0,-19,1,4,'#8a90a4');if((t/400|0)%2)R(-1,-20,3,1,'#ff5f6a');
+  if(going&&(t/2600|0)%3===1){R(7,-6,4,1,'#8a90a4');R(10,-6,1,4,'#8a90a4');if((t/200|0)%2)R(10,-2,2,1,'#ffe9a8')}
+}
+function startGatherScene(){clearInterval(gTimer);const cv=$('#gCv');if(!cv)return;const tick=()=>{if(!cv.isConnected){clearInterval(gTimer);return}gatherSceneDraw(cv,performance.now())};tick();gTimer=setInterval(tick,110)}
 function renderGather(){
   const x=expInfo();
   if(x){const fin=x.done>=x.total;
-    return head()+`<div class="card" style="display:flex;flex-direction:column;gap:9px">
-     <div class="row" style="justify-content:space-between"><b>${x.site.n} 원정 ${fin?'완료':'진행 중'}</b><span class="hint">${fmtDur(x.total*30)} 원정 · ${x.site.temp}</span></div>
+    return head()+`<div class="gscene"><canvas id="gCv" width="${GW}" height="${GH}" aria-label="채집 로봇이 지나가는 풍경"></canvas></div><div class="card" style="display:flex;flex-direction:column;gap:9px">
+     <div class="row" style="justify-content:space-between"><b>채집 로봇 · ${x.site.n} ${fin?'귀환 완료':'채집 중'}</b><span class="hint">${fmtDur(x.total*30)} 파견 · ${x.site.temp}</span></div>
      <div class="stat"><div class="stat-row"><span>채집 ${x.gd}/${x.G}회</span><b id="gLeft">${fin?'완료':'남은 시간 '+fmtClock(x.left)}</b></div><div class="bar"><i id="gBar" style="--c:var(--green);width:${x.done/x.total*100}%"></i></div></div>
      ${fin?'':`<span class="hint" id="gNext">다음 채집까지 ${fmtClock(x.next)}</span>`}
-     <div class="row"><button class="btn ${x.pending?'gold':''}" data-act="gclaim" ${x.pending?'':'disabled'}>획득물 받기${x.pending?` <small>${x.pending}회분</small>`:''}</button>${fin?'':`<button class="btn ghost sm" data-act="grecall">철수하기</button>`}</div>
-     <span class="hint">시간이 지나는 만큼 조금씩 채집합니다. 다른 활동을 하거나 창을 닫아도 원정은 계속됩니다. 철수하면 그때까지 모은 것만 받습니다.</span></div>
+     <div class="row"><button class="btn ${x.pending?'gold':''}" data-act="gclaim" ${x.pending?'':'disabled'}>획득물 받기${x.pending?` <small>${x.pending}회분</small>`:''}</button>${fin?'':`<button class="btn ghost sm" data-act="grecall">로봇 불러들이기</button>`}</div>
+     <span class="hint">로봇이 시간이 지나는 만큼 조금씩 채집해 옵니다. 다른 활동을 하거나 창을 닫아도 로봇은 계속 일합니다. 불러들이면 그때까지 모은 것만 받습니다.</span></div>
     ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`}
-  return head()+`<p class="lead">채집 원정을 보내면 자동으로 채집합니다. 30분 2회 · 1시간 3회 · 2시간 7회 · 4시간 12회 · 8시간 20회 · 12시간 28회. 아주 가끔(3%) 희귀 무기가 묻혀 있기도 합니다.</p>
+  return head()+`<div class="gscene"><canvas id="gCv" width="${GW}" height="${GH}" aria-label="채집 로봇이 지나가는 풍경"></canvas></div><p class="lead">채집 로봇을 보내면 로봇이 알아서 채집해 옵니다. 30분 2회 · 1시간 3회 · 2시간 7회 · 4시간 12회 · 8시간 20회 · 12시간 28회. 아주 가끔(3%) 희귀 무기가 묻혀 있기도 합니다.</p>
   <div><span class="lbl">Site · 채집 장소</span><div class="sites" role="radiogroup" aria-label="채집 장소" style="margin-top:6px">${SITES.map(st=>`<button class="site" role="radio" aria-checked="${st.id===gSite}" data-act="gsite" data-id="${st.id}"><b>${st.n} <span class="lv">${st.temp}</span></b><span class="hint">${st.d}</span><span class="chips">${st.t.filter(([id])=>!/^seed_/.test(id)).slice(0,6).map(([id])=>`<span class="ichip">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</span><span class="chips">${(st.ex||[]).map(id=>`<span class="ichip exc">${iicon(id,1)}전용 · ${ITEMS[id].n.replace(' 씨앗','')}</span>`).join('')}</span></button>`).join('')}</div></div>
-  <div style="display:flex;flex-direction:column;gap:6px"><span class="lbl">Duration · 원정 시간</span>
+  <div style="display:flex;flex-direction:column;gap:6px"><span class="lbl">Duration · 파견 시간</span>
    <div class="row" style="gap:5px">${Object.keys(GDUR).map(Number).map(k=>`<button class="qchip" data-act="gdur" data-k="${k}" aria-pressed="${k===gDur}">${fmtDur(k*30)} · ${GDUR[k]}회</button>`).join('')}</div></div>
-  <div class="row"><button class="btn" data-act="gather">원정 출발 <small>EN 2</small></button><span class="hint">${fmtDur(gDur*30)} 뒤 귀환 · 채집 ${GDUR[gDur]}회</span></div>
+  <div class="row"><button class="btn" data-act="gather">로봇 보내기 <small>EN 2</small></button><span class="hint">${fmtDur(gDur*30)} 뒤 귀환 · 채집 ${GDUR[gDur]}회</span></div>
   ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`;
 }
 function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='scout'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}}
   Object.entries(got).forEach(([id,n])=>add(id,n));gainXp(3*x.pending);stat('gather',x.pending);lxp('gather',4*x.pending);P.exp=Object.assign({},x.e,{tg:x.tg+x.pending});
-  if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 중 땅속에서 무기를 발견했다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
-  lastGather={t:`${x.site.n}에서 ${x.pending}회분 채집물을 받았다.${wf?` 희귀 무기 「${wf.n}」도 발견했다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
-  if(x.done>=x.total&&P.exp.tg>=x.G){P.exp=null;log(`${x.site.n} 원정이 끝났다.`)}return true}
+  if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 로봇이 땅속에서 무기를 찾아왔다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
+  lastGather={t:`채집 로봇이 ${x.site.n}에서 ${x.pending}회분 채집물을 가져왔다.${wf?` 희귀 무기 「${wf.n}」도 찾아왔다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
+  if(x.done>=x.total&&P.exp.tg>=x.G){P.exp=null;log(`${x.site.n}에서 채집 로봇이 돌아왔다.`)}return true}
 function renderFish(){
   const ph=fish.ph,aim=ph==='aim',inWater=ph==='wait'||ph==='bite';
   const txt={idle:'레버를 돌려 낚싯줄을 던져 보십시오',aim:'레버가 돌아갑니다. 초록 칸에서 던지십시오!',wait:'찌가 메탄 위에 떠 있다…',bite:'입질! 지금 당기십시오!',early:'너무 일찍 당겼다…',miss:'놓쳤다. 다시 던져 보십시오'}[ph]||'';
@@ -1844,7 +1904,7 @@ function renderShop(){
   let rows;
   if(shopTab==='sup')rows=BUY.filter(([id])=>ITEMS[id].type!=='seed').map(buyRow).join('');
   else if(shopTab==='seed')rows=BUY.filter(([id])=>ITEMS[id].type==='seed').map(([id,pr])=>buyRow([id,pr]).replace(itemDesc(id),ITEMS[id].d)).join('');
-  else if(shopTab==='wpn')rows=`<p class="hint" style="margin:0 0 4px">무기를 사서 장착하면 공격력이 바로 올라갑니다. 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 무기들은 채집 원정에서 아주 드물게(3%) 발견됩니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
+  else if(shopTab==='wpn')rows=`<p class="hint" style="margin:0 0 4px">무기를 사서 장착하면 공격력이 바로 올라갑니다. 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 무기들은 채집 로봇이 아주 드물게(3%) 찾아옵니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
   else if(shopTab==='rod')rows=RODS.slice(1).map((r,k)=>{const lv=k+1;return`<div class="srow">${img(IC.rod,r.t,2)}<div class="sinfo"><b>${r.n}</b><span class="hint">${r.d}</span></div>${price(r.price)}${ownBtn((P.rod||0)>=lv,'buyrod',lv,r.price,(P.rod||0)===lv)}</div>`}).join('');
   else if(shopTab==='craft')rows='<p class="hint" style="margin:0 0 4px">채집에서 모은 재료로 장비를 만듭니다. 부위마다 하나씩 착용할 수 있습니다.</p>'+Object.entries(CRAFT).map(([slot,c])=>`<span class="lbl" style="margin-top:6px">${c.n} 장비</span>`+c.list.map(f=>{const own=(P.own||[]).includes(f.id),on=(P.gear||{})[slot]===f.id,can=cr>=f.price&&hasMat(f.mat);return`<div class="srow">${img(TPL[c.ic],f.t,3)}<div class="sinfo"><b>${f.n}</b><span class="hint">${f.d}</span>${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${on?`<button class="btn sm ghost" data-act="cunequip" data-k="${slot}">벗기</button>`:own?`<button class="btn sm" data-act="cequip" data-k="${slot}" data-id="${f.id}">착용</button>`:`<button class="btn sm gold" data-act="craft" data-k="${slot}" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`}</div></div>`}).join('')).join('');
   else if(shopTab==='gear')rows='<span class="lbl">Suits · 우주복</span>'+SUITS.slice(1).map((u,k)=>{const lv=k+1;return`<div class="srow">${img(IC.suit,u.t,2)}<div class="sinfo"><b>${u.n}</b><span class="hint">${u.d}</span>${(P.suit||0)>=lv?'':matHTML(u.mat)}</div>${price(u.price)}${ownBtn((P.suit||0)>=lv,'buysuit',lv,u.price,(P.suit||0)===lv,u.mat)}</div>`}).join('')
@@ -1886,6 +1946,7 @@ function renderPanel(){
   {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;if(Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}
   if(tab==='fish')drawLake();
   if(tab==='ship')startShipScene();
+  if(tab==='gather')startGatherScene();
   if(tab==='bag')renderCook();
   if(tab==='farm'){fitSide();fitBay()}
   if(tab==='adv'){const l=$('#advLog');if(l)l.scrollTop=l.scrollHeight}
@@ -1969,11 +2030,11 @@ const A={
   log(FARM.tlv>before?`은하 결정을 넣어 공용 물탱크를 ${FARM.cap}까지 늘렸다!`:`물탱크 증설에 은하 결정 1개를 보탰다. (${FARM.tprog}/${FARM.tneed})`,FARM.tlv>before?'good':'');commit()},
  fdon(){if(FARM.fu>=FIELD_N)return;if(!take('ore',1)){toast('운석 파편이 없습니다.');return}const before=FARM.fu;FARM=farmShape(FARM.xu,FARM.ore+1,FARM.pods,{crys:FARM.crys,water:FARM.wset?FARM.water:null,refCd:FARM.refCd});if(mode==='online')farmInc('farm/pods','ore',1).catch(()=>{});else farmSave();gainXp(1);
   log(FARM.fu>before?`운석 파편을 넣어 공용 농장 포드 ${FARM.fu}번을 열었다!`:`포드 증설에 운석 파편 1개를 보탰다. (${FARM.prog}/${FARM.need})`,FARM.fu>before?'good':'');commit()},
- gather(){if(P.exp){toast('이미 원정 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}로 ${fmtDur(gDur*30)} 채집 원정을 떠났다.`);commit()},
+ gather(){if(P.exp){toast('채집 로봇이 이미 일하는 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}에 ${fmtDur(gDur*30)} 동안 채집 로봇을 보냈다.`);commit()},
  gsite(d){gSite=d.id;renderPanel()},
  gdur(d){gDur=+d.k;renderPanel()},
  gclaim(){if(claimGather())commit()},
- grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){log(`${x.site.n}에서 철수했다. (${x.gd}/${x.G}회 채집)`);P.exp=null}commit()},
+ grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){log(`${x.site.n}에서 채집 로봇을 불러들였다. (${x.gd}/${x.G}회 채집)`);P.exp=null}commit()},
  cast(){if(['wait','bite','aim'].includes(fish.ph))return;ac();if(!spend(3))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:pick([[4,2],[6,3],[9,4],[12,3],[15,2]])};commit();
   const step=matchMedia('(prefers-reduced-motion: reduce)').matches?3:4;
   sfxLever();fish.tk=0;
