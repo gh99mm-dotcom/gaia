@@ -821,7 +821,7 @@ onAuthStateChanged(auth,async u=>{
 /* ───────── pixel sprites ───────── */
 const PAL={q:'#e2d39a',u:'#d6d8e0',m:'#7fd0d0',z:'#7a6fa0',k:'#07080e',w:'#b9bccb',p:'#93707f',P:'#4f3442',v:'#5f5a80',V:'#34304b',c:'#7c97a8',C:'#3a5160',g:'#71877a',G:'#37473d',y:'#a99a74',Y:'#62563d',r:'#8f555c',R:'#4d2a30',s:'#7e8193',S:'#41444f',o:'#9a7a5e',h:'#d6d8e0',d:'#3b332b',e:'#4d4337',n:'#29231f',f:'#211e1f'};
 const IC={
- sword:['................','.............uu.','............uwu.','...........uwu..','..........uwu...','.........uwu....','........uwu.....','...k...uwu......','...kk.uwu.......','....kkuu........','....YkY.........','...YkkkY........','..kY..kk........','.kk....kk.......','kk..............','................'],
+ raygun:['................','................','................','....kkkkkkk.....','...kwwwwwwwkkk..','..kwsssssssksmkm','.kmwsSsSsSskmmmm','.kmwssssssskkmkm','..kwwwwwwwwk....','...kkkksskk.....','......kssk......','.....kssk.......','.....kSSk.......','....kSSk........','....kkkk........','................'],
 farm:["................",".......gg.......","......gGGg......","..gg..gGGg..gg..",".gGGg..gg..gGGg.",".gGGGg.gg.gGGGg.","..gGGGggggGGGg..","....gGGggGGg....",".......gg.......",".......gg.......","..kkkkkkkkkkkk..","..kVVVVVVVVVVk..","..kvccvvvvccvk..","...kVVVVVVVVk...","...kVvvvvvvVk...","....kkkkkkkk...."],
 gather:["................","......k.........",".....kck........","....kcwck...k...","....kccCk..kck..","...kcwcCCk.kcCk.","...kccCCCkkcwCk.","..k.kcCCk.kccCk.","..kckkcCk.kcCCk.",".kcwckkck.kcCk..",".kccCk.kk..kk...","kcwcCCk.........","kSSSSSSSSSSSSSk.",".kSsSSsSSSsSSk..","..kkkkkkkkkkkk..","................"],
 fish:["................","................","................",".....kkkkk......","...kkcccccck..kk","..kcccccccCckkck",".kcwkcccccCCkcck",".kckkcccccCCccck",".kcccccccCCCkcck","..kcCcccCCCk.kck","...kkCCCCkk...kk",".....kkkkk......","................","..c.....c....c..",".c.c...c.c..c.c.","................"],
@@ -1093,7 +1093,7 @@ const TABS=[
  {id:'farm',n:'농사',ic:IC.farm,cost:'',loc:'유리 돔 농장 · 21℃ · 습도 41% · 인공 중력 0.8G'},
  {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
- {id:'raid',n:'원정',ic:IC.sword,cost:'',loc:'파티 원정 · 최대 4명 · 턴제 전투'},
+ {id:'raid',n:'원정',ic:IC.raygun,cost:'',loc:'파티 원정 · 최대 4명 · 턴제 전투'},
  {id:'adv',n:'탐사',ic:IC.book,cost:'EN 5',loc:'탐사 일지 · 글로 떠나는 원정'},
  {id:'scan',n:'조사',ic:IC.scan,cost:'30분 신호',loc:'미확인 신호 구역 · 30분마다 신호 수신'},
  {id:'bag',n:'가방',ic:IC.bag,cost:'',loc:'개인 보관함'},
@@ -1128,7 +1128,7 @@ const LS='nebula-outpost-solo-v1';
 const TICK=20e3;
 function newPlayer(nick){return{nick,lvl:1,xp:0,hp:72,en:32,t:Date.now(),wlv:0,cr:50,rod:0,suit:0,tk:0,inv:{seed_pot:2,seed_berry:1,fc0:2,pot:1},field:[],fu:2,fv:3,water:12,dex:{},joined:Date.now()}}
 let P=newPlayer('새 단원');
-const AS=k=>(P.as&&P.as[k])||0;
+const AS=k=>Math.max(2,(P.as&&P.as[k])||0);
 const CRAFT={
  head:{n:'머리',ic:'gearH',list:[
   {id:'g_goggle',n:'충돌 유리 고글',t:'#9ab8a8',price:250,mat:[['impactGlass',6],['regolith',8]],fx:{crit:3},d:'치명타 +3%'},
@@ -1295,7 +1295,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보냅니다. 지금 접속하지 않은 단원도 다음에 들어오면 받습니다.</span>
    <div class="row" style="gap:5px">${others.map(([id,p])=>`<button class="qchip" data-act="admrescue" data-k="${id}">${esc(p.nick||'단원')} 기절 해제</button>`).join('')}<button class="btn sm ghost" data-act="admchat">최근 알림 지우기</button></div></div>`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
-const ptsTotal=()=>25+(P.lvl-1)*3;
+const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
 function renderInfo(){if(!$('#infoBox'))return;
@@ -1304,7 +1304,7 @@ function renderInfo(){if(!$('#infoBox'))return;
   const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
   $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div></div>
    <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
-   <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받습니다.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
+   <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 2포인트씩 더 받습니다. 능력치는 2 아래로 내려가지 않습니다.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
    ${tasteHTML(P)}
    <div class="info-sec"><div class="row" style="justify-content:space-between"><span class="lbl">Relations · 인물 관계도</span><button class="btn sm alt" data-act="relopen">관계도 보기</button></div></div>
    <div class="info-sec"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></div>
@@ -1433,7 +1433,7 @@ function miniDome(kind,H=20){const key=kind+H;if(MD[key])return MD[key];const W=
     if(col){x.fillStyle=col;x.fillRect(i,j,1,1)}}
   if(!dim){x.fillStyle='#bfae80';x.fillRect(9,gap-1,2,1)}
   return MD[key]=c.toDataURL()}
-function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
+function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.as&&ABIL.some(([k])=>(P.as[k]||0)<2)){P.as=Object.assign({},P.as);ABIL.forEach(([k])=>{if((P.as[k]||0)<2)P.as[k]=2})}if(ptsLeft()<0)P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
   if(!Array.isArray(P.field))P.field=[];
   // the farm is shared now: hand back whatever was growing in the old personal pods
   if(P.fv!==4){P.field.forEach(pl=>{if(!pl||!ITEMS[pl.seed])return;if(stage(pl)===3)add(ITEMS[pl.seed].crop,2);else add(pl.seed,1)});(P.pods||[]).forEach(p=>{if(p&&ITEMS[p.seed])add(p.seed,1)});delete P.pods;P.field=[];P.fv=4}}
@@ -1580,8 +1580,10 @@ const RAID_EVENTS=[
 // a full clear in your own zone is worth about half a level, so expeditions lead the XP race without breaking the 60-level curve
 const raidMonXp=(L,kind)=>Math.round(need(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1));
 function raidMon(zone,L,kind,name,n){const s={elite:[1.5,1.1,1.1],mid:[2.2,1.15,1.15],boss:[3,1.15,1.2]}[kind]||[1,1,1],pm=kind==='mid'||kind==='boss'?1+.7*(n-1):1;
-  const hp=Math.round((14+L*5+L*L*.06)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3+L*1.15+L*L*.015)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
-const RAIDS=[];let MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false;
+  const hp=Math.round((14+L*5+L*L*.06)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3.5+L*1.4+L*L*.018)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
+const RAIDS=[];let MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
+// once the party has set out, the expedition holds the screen until you return to the station
+const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 const raidRef=id=>db.doc('parties/'+id);
 const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:AS('agi')});
 const raidZone=r=>RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];
@@ -1640,7 +1642,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(!r0||raidBusy)return Promise.resol
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
   const all=raidUp(r).every(u=>r.b.flee[u]);if(all){const boss=r.b.mons.some(m=>m.kind==='boss');raidLog(r.b,'모두 동의해 전투에서 빠져나왔다.');if(boss){r.phase='end';r.result='fled';r.ev={n:'보스에게서 도망쳤다',res:'지금까지 모은 보상만 가지고 돌아갑니다.'}}else{r.phase='won';r.ev={n:'도망쳤다!',res:'이 전투의 보상은 없습니다.'}}}return r}).catch(()=>{})}
-function raidNext(){const r0=MYRAID;if(!r0||(r0.phase!=='event'&&r0.phase!=='won'))return;const st=r0.step;raidTx(r0.id,r=>{if(!r||r.step!==st||(r.phase!=='event'&&r.phase!=='won'))return null;r.seq++;r.step++;raidIn(r).forEach(u=>{const me=r.m[u];if(me.hp>0)me.hp=Math.min(me.maxHp,me.hp+Math.round(me.maxHp*.12))});return raidStep(r)}).catch(()=>{})}
+function raidNext(){const r0=MYRAID;if(!r0||(r0.phase!=='event'&&r0.phase!=='won'))return;const st=r0.step;raidTx(r0.id,r=>{if(!r||r.step!==st||(r.phase!=='event'&&r.phase!=='won'))return null;r.seq++;r.step++;return raidStep(r)}).catch(()=>{})}
 /* ---- the driver plays monsters and timeouts; everyone keeps a heartbeat ---- */
 let raidHbAt=0;
 function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();
@@ -1653,7 +1655,7 @@ function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
 function raidWatch(id){if(raidUnsub){raidUnsub();raidUnsub=null}if(!id){MYRAID=null;return}
   raidUnsub=raidRef(id).onSnapshot(s=>{if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
-    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}MYRAID=r;if(tab==='raid'&&!isField(document.activeElement))renderPanel()},()=>{})}
+    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;renderNav();renderPanel();return}if(tab==='raid'&&!isField(document.activeElement))renderPanel()},()=>{})}
 function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS.length=0;sn.docs.forEach(d=>{const v=d.data();if(raidNow()-(v.at||0)<30*60e3)RAIDS.push(Object.assign({id:d.id},v))});if(tab==='raid')renderPanel()},()=>{});
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
@@ -1684,11 +1686,12 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
   if(r.state==='lobby')body=`<div class="card"><b>${esc(z.n)} 원정 대기실</b><p class="hint">파티장이 출발하면 원정이 시작됩니다. 출발한 뒤에는 새로 합류할 수 없습니다. (${r.ids.length}/${RAID_MAX}명)</p><div class="row" style="gap:6px">${r.host===uid?`<button class="btn" data-act="raidgo">출발</button>`:'<span class="hint">파티장을 기다리는 중…</span>'}<button class="btn ghost sm" data-act="raidleave">${r.host===uid?'파티 해산':'나가기'}</button></div></div>`;
   else if(r.phase==='battle'){
     const mons=b.mons.map((m,i)=>`<button class="raidmon ${m.hp<=0?'dead':''} ${raidTgt===i&&m.hp>0?'tgt':''} ${m.kind}" data-act="raidtgt" data-k="${i}" ${m.hp<=0?'disabled':''}>${img(MON_SPR,m.t,m.kind==='boss'?5:m.kind==='mid'?4:3)}<b>${esc(m.n)}</b><span class="hint">Lv.${m.L}${m.kind==='boss'?' · 보스':m.kind==='mid'?' · 중간 보스':m.kind==='elite'?' · 정예':''}</span>${raidBar(m.hp,m.max,'var(--red)')}<span class="hint">${m.hp}/${m.max}</span></button>`).join('');
-    const foods=ORDER.filter(i=>P.inv[i]&&ITEMS[i].type==='food'&&(ITEMS[i].hp||0)>0),tgts=raidIn(r);
+    const foods=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i].type==='food'&&(ITEMS[i].hp||0)>0),tgts=raidIn(r).filter(u=>!(r.left||{})[u]);if(raidPick&&!foods.includes(raidPick))raidPick=null;const pk=raidPick&&ITEMS[raidPick];
     body=`<div class="card raidbattle"><div class="row" style="justify-content:space-between"><b>${r.step>=RAID_STEPS?'보스전':'전투'} · ${b.round}라운드</b><span class="hint">${myTurn?`<b style="color:var(--gold)">내 턴</b> · 남은 시간 <b id="raidT"></b>`:`${esc(curNick||'')}의 턴${b.cur&&b.cur.k==='p'?` · <span id="raidT"></span>`:''}`}</span></div>
      <div class="raidmons">${mons}</div>
-     <div class="raidacts"><button class="btn" data-act="raidatk" ${myTurn?'':'disabled'}>공격</button><button class="btn alt" data-act="raiddef" ${myTurn?'':'disabled'}>방어</button><button class="btn ghost" data-act="raidfleev" ${me&&me.hp>0?'':'disabled'}>${b.flee[uid]?'도망 취소':'도망 찬성'} <small>${Object.keys(b.flee).filter(u=>b.flee[u]&&raidUp(r).includes(u)).length}/${raidUp(r).length}</small></button></div>
-     <div class="raiditems"><span class="lbl">아이템 쓰기 · 대상 ${tgts.map(u=>`<button class="qchip" data-act="raidto" data-k="${u}" aria-pressed="${(raidItemTo||uid)===u}">${esc(r.m[u].nick)}</button>`).join('')}</span><div class="row" style="gap:4px">${foods.length?foods.map(i=>`<button class="qchip" data-act="raiditem" data-k="${i}" ${myTurn?'':'disabled'} title="체력 +${ITEMS[i].hp>=999?'전부':ITEMS[i].hp}">${iicon(i,1)}${ITEMS[i].n} ×${P.inv[i]}</button>`).join(''):'<span class="hint">쓸 수 있는 음식이 없습니다.</span>'}</div></div>
+     <div class="raidacts"><button class="btn" data-act="raidatk" ${myTurn?'':'disabled'}>공격</button><button class="btn alt" data-act="raiddef" ${myTurn?'':'disabled'}>방어</button><button class="btn alt" data-act="raidbag" aria-pressed="${raidBag}" ${me&&me.hp>0?'':'disabled'}>${raidBag?'아이템 닫기':'아이템 쓰기'}</button><button class="btn ghost" data-act="raidfleev" ${me&&me.hp>0?'':'disabled'}>${b.flee[uid]?'도망 취소':'도망 찬성'} <small>${Object.keys(b.flee).filter(u=>b.flee[u]&&raidUp(r).includes(u)).length}/${raidUp(r).length}</small></button></div>
+     ${raidBag?`<div class="card raiditems"><div class="stat-row"><span>쓸 수 있는 아이템</span><b>${foods.length}종</b></div>${foods.length?`<div class="bag">${foods.map(i=>`<button class="slot" data-act="raidpick" data-id="${i}" aria-pressed="${i===raidPick}" aria-label="${ITEMS[i].n} ${P.inv[i]}개" title="${ITEMS[i].n}">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">전투에서 쓸 수 있는 회복 아이템이 없습니다.</p>'}
+      ${pk?`<div class="fspick">${iicon(raidPick,2)}<div><b>${pk.n}</b><span class="hint">체력 +${pk.hp>=999?'전부':pk.hp} · ${P.inv[raidPick]}개</span></div></div><span class="lbl">누구에게 쓸까요?</span><div class="row" style="gap:4px;flex-wrap:wrap">${tgts.map(u=>`<button class="qchip" data-act="raidto" data-k="${u}" aria-pressed="${(raidItemTo||uid)===u}">${esc(r.m[u].nick)}${u===uid?' (나)':''} ${r.m[u].hp}/${r.m[u].maxHp}</button>`).join('')}</div><button class="btn" data-act="raiditem" data-k="${raidPick}" ${myTurn?'':'disabled'}>${myTurn?'쓰기':'내 턴에 쓸 수 있습니다'}</button>`:foods.length?'<p class="hint">쓸 아이템을 누르십시오.</p>':''}</div>`:''}
      <ol class="raidlog">${(b.log||[]).map(l=>`<li>${esc(l)}</li>`).join('')}</ol>
      <span class="hint">방어: 다음 내 턴까지 맞을 때 50% 확률로 피해 없음, 아니면 절반. 도망: 살아 있는 모두가 찬성해야 합니다. 몬스터를 눌러 공격 대상을 고릅니다. ${RAID_TURN/1000}초 안에 고르지 않으면 자동으로 공격합니다.</span></div>`}
   else{const ev=r.ev||{},end=r.phase==='end',L=r.loot[uid]||{xp:0,cr:0,it:{}};
@@ -2234,7 +2237,9 @@ const A={
  raiddef(){raidAct('def')},
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
- raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID)return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);commit();renderPanel()}})},
+ raidbag(){raidBag=!raidBag;renderPanel()},
+ raidpick(d){raidPick=d.id;renderPanel()},
+ raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID)return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);raidBag=false;raidPick=null;commit();renderPanel()}})},
  raidnext(){raidNext()},
  raiddone(){if(MYRAID&&MYRAID.phase==='end')raidClaim(MYRAID);raidWatch(null);renderPanel()},
  growtab(d){growTab=d.k==='tank'?'tank':'pod';renderPanel()},
@@ -2261,7 +2266,7 @@ const A={
   log(`${ITEMS[id].n}을(를) 낚았다! (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」을 낚았습니다!`);commit()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
  addpt(d){if(ptsLeft()<=0||!ABIL.find(a=>a[0]===d.k))return;P.as=Object.assign({},P.as);P.as[d.k]=(P.as[d.k]||0)+1;save();renderInfo();renderPilot()},
- resetpt(){P.as={};P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
+ resetpt(){P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
  wprev(d){if(!wardById(d.id))return;if(wPrev[d.k]===d.id)delete wPrev[d.k];else wPrev[d.k]=d.id;renderPanel()},
  wprevclr(){wPrev={};neonPick=null;neonSlot=null;renderPanel()},
@@ -2386,7 +2391,7 @@ const SAFE_ACT=new Set(['raidzone','raidtgt','raidto','shipsel','wprev','wprevcl
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){meView=false;mailView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}meView=false;mailView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
@@ -2700,7 +2705,7 @@ function renderJoin(){if(!J)return;const b=$('#joinBody');if(!b)return;const pre
    <div class="dtabs" role="tablist">${JCAT.map(([k,n])=>`<button type="button" role="tab" aria-selected="${J.cat===k}" data-act="jcat" data-k="${k}">${n}</button>`).join('')}</div>
    <div class="jgrid">${jItems(J.cat).map(id=>{const lk=J.likes.includes(id),ht=J.hates.includes(id);return`<button type="button" class="slot ${lk?'like':ht?'hate':''}" data-act="jpick" data-k="${id}" aria-pressed="${lk||ht}" title="${esc(ITEMS[id].n)}" aria-label="${esc(ITEMS[id].n)}">${iicon(id,2)}</button>`}).join('')}</div>
    <span class="hint">아이콘을 누르면 위에서 고른 쪽(${J.mode==='like'?'좋아함':'싫어함'})에 담깁니다. 한 번 더 누르면 빠집니다.</span></div>
-  <div class="jsec"><div class="stat-row"><span class="lbl">Status · 스테이터스</span><b class="${left?'ptsgo':''}">남은 포인트 ${left}</b></div><div class="jstats">${ABIL.map(([k,n,d])=>`<div class="jst"><b>${n}</b><span class="hint">${d}</span><span class="ctl"><button type="button" class="btn sm ghost" data-act="jstat" data-k="${k}" data-d="-1" ${(J.as[k]||0)<=0?'disabled':''} aria-label="${n} 내리기">−</button><span class="abv">${J.as[k]||0}</span><button type="button" class="btn sm" data-act="jstat" data-k="${k}" data-d="1" ${left<=0?'disabled':''} aria-label="${n} 올리기">+</button></span></div>`).join('')}</div>
+  <div class="jsec"><div class="stat-row"><span class="lbl">Status · 스테이터스</span><b class="${left?'ptsgo':''}">남은 포인트 ${left}</b></div><div class="jstats">${ABIL.map(([k,n,d])=>`<div class="jst"><b>${n}</b><span class="hint">${d}</span><span class="ctl"><button type="button" class="btn sm ghost" data-act="jstat" data-k="${k}" data-d="-1" ${(J.as[k]||0)<=J_START?'disabled':''} aria-label="${n} 내리기">−</button><span class="abv">${J.as[k]||0}</span><button type="button" class="btn sm" data-act="jstat" data-k="${k}" data-d="1" ${left<=0?'disabled':''} aria-label="${n} 올리기">+</button></span></div>`).join('')}</div>
    <div class="row" style="justify-content:space-between"><span class="hint">모두 ${J_START}씩 가지고 시작하고, 남은 ${J_FREE}포인트를 마음대로 나눕니다. 남긴 포인트는 나중에 내 정보에서 쓸 수 있습니다.</span><button type="button" class="qchip" data-act="jreset">처음대로</button></div></div>`;
   $('#joinIc').innerHTML=meImg(4,prev);$('#joinLeft').textContent=left?`남은 스테이터스 ${left}포인트`:'준비 완료!'}
 function applyJoin(){if(!J)return;P.look=Object.assign({},J.look);P.likes=[...J.likes];P.hates=[...J.hates];P.as=Object.assign({},J.as);P.hp=maxHp();P.en=maxEn();J=null}
@@ -2710,7 +2715,7 @@ const JA={
  jcat(d){if(J){J.cat=d.k;renderJoin()}},
  jpick(d){if(!J||!ITEMS[d.k])return;const id=d.k;if(J.likes.includes(id)){J.likes=J.likes.filter(x=>x!==id)}else if(J.hates.includes(id)){J.hates=J.hates.filter(x=>x!==id)}else{const L=J.mode==='hate'?J.hates:J.likes;if(L.length>=J_MAX){toast(`${J.mode==='hate'?'싫어하는':'좋아하는'} 것은 ${J_MAX}개까지 고를 수 있습니다.`);return}L.push(id)}renderJoin()},
  junpick(d){if(!J)return;J.likes=J.likes.filter(x=>x!==d.k);J.hates=J.hates.filter(x=>x!==d.k);renderJoin()},
- jstat(d){if(!J||!ABIL.some(a=>a[0]===d.k))return;const v=(J.as[d.k]||0)+(+d.d);if(v<0||(+d.d>0&&jLeft()<=0))return;J.as=Object.assign({},J.as,{[d.k]:v});renderJoin()},
+ jstat(d){if(!J||!ABIL.some(a=>a[0]===d.k))return;const v=(J.as[d.k]||0)+(+d.d);if(v<J_START||(+d.d>0&&jLeft()<=0))return;J.as=Object.assign({},J.as,{[d.k]:v});renderJoin()},
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
 };
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
