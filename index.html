@@ -1160,6 +1160,11 @@ for(const [site,g] of Object.entries(GX)){
   g.mats.forEach(([id,n,ic,t,sv,d])=>ITEMS[id]={n,ic,t,type:'mat',sv,d:`${d}. ${SITE_NAME[site]}에서만 나옵니다.`});
   g.crops.forEach(([id,n,pl,t,grow,hp,en,sv])=>{ITEMS[id]={n,ic:pl==='berry'?'berry':'veg',t,type:'food',hp,en,sv,pl};ITEMS['seed_'+id]={n:n+' 씨앗',ic:'seed',t,type:'seed',grow,crop:id,sv:Math.round(sv/3),d:`${Math.round(grow/60e3*10)/10}분이면 자랍니다. ${SITE_NAME[site]} 채집에서만 얻을 수 있습니다.`}});
 }
+// expedition-only ship parts: each 원정 zone yields one material, and each ship section needs the one from its zone
+const RAID_MATS=[['r1','plainSpore','평원 정화 포자','leaf','#b9c48a',30,'공기를 맑게 걸러 내는 하얀 포자','먼지 평원'],['r2','mazeCore','미궁 결정핵','gem','#5fd8ff',40,'스스로 빛을 내는 결정의 심장','결정 미궁'],
+  ['r3','bogResin','늪 수지','goo','#7dff9b',50,'굳으면 강철보다 단단해지는 끈적한 수지','안개 늪'],['r4','wreckNozzle','함선 노즐 조각','rock','#b0906f',60,'추락한 함선에서 떼어 낸 추진 노즐','녹슨 함대 묘지'],
+  ['r5','abyssPrism','심연 프리즘','gem','#d6d8e0',70,'별빛을 정확히 꺾는 얼음 프리즘','얼어붙은 심연'],['r6','starHeart','붉은 별 심장석','gem','#ff5f6a',90,'멀리까지 울리는 뜨거운 핵 파편','붉은 별의 핵']];
+RAID_MATS.forEach(([z,id,n,ic,t,sv,d,zn])=>ITEMS[id]={n,ic,t,type:'mat',sv,d:`${d}. 원정 「${zn}」에서만 나옵니다.`});
 const FT={c:{n:'일반',hp:[6,14],en:[2,5],xp:4},r:{n:'레어',hp:[18,28],en:[6,10],xp:10},u:{n:'유니크',hp:[35,55],en:[12,20],xp:20},l:{n:'레전더리',hp:[100,140],en:[35,45],xp:45}};
 const FTINT=['#8aa9bd','#a99a74','#93707f','#7f9c85','#9a8fc0','#b0906f','#c4c7d4','#6c8fa8','#a8626b','#bfae80','#7a6fa0','#5f8f8a'];
 const FSHAPE={피라미:'fishs',송사리:'fishs',멸치:'fishs',붕어:'puff',망둥이:'puff',송어:'fishs',장어:'eel',농어:'fishs',가오리:'ray',쏘가리:'puff',아귀:'angl',상어:'fishs',철갑상어:'eel',해룡:'eel'};
@@ -1744,6 +1749,7 @@ const RAID_ZONES=[
  {id:'r4',n:'녹슨 함대 묘지',min:27,max:35,t:'#b0906f',d:'추락한 함선들이 무덤처럼 쌓인 곳. 고장 난 기계들이 깨어 있습니다.',mons:['폭주 경비로봇','고철 전갈','선체 기생충','녹슨 포탑','유령 신호'],mid:'파괴된 기함의 핵',boss:'함대 제어 AI 「아르고스」'},
  {id:'r5',n:'얼어붙은 심연',min:34,max:44,t:'#d6d8e0',d:'영하 200도의 얼음 협곡. 극한에 적응한 괴물들이 삽니다.',mons:['서리 늑대','얼음 망령','빙결 거인','심연 박쥐','냉기 결정체'],mid:'얼음 동굴의 군주',boss:'심연의 서리용 「니블」'},
  {id:'r6',n:'붉은 별의 핵',min:40,max:60,t:'#ff5f6a',d:'행성 깊은 곳, 뜨거운 핵 근처. 가장 강한 존재들이 기다립니다.',mons:['용암 정령','화염 와이번','핵의 파수꾼','붉은 망령 기사','태양 벌레'],mid:'핵의 문지기 「이그니스」',boss:'붉은 별의 심장 「카를로스」'}];
+const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
 const RAID_STEPS=8,RAID_TURN=60e3,RAID_EN=8,RAID_MAX=4;
 const RAID_EVENTS=[
  {k:'chest',n:'보급 상자',t:'모래 속에서 구형 보급 상자를 찾았다.',cr:[20,50],item:['kit','drink']},
@@ -1816,7 +1822,7 @@ function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;l
 // after any action: victory, wipe, or the next turn
 function raidSettle(r){const b=r.b,z=raidZone(r);
   if(b.mons.every(m=>m.hp<=0)){let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});
-    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid'))L.it.relic=(L.it.relic||0)+1;if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;
+    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid'))L.it.relic=(L.it.relic||0)+1;if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0);if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
     const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}`};
     if(boss)raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5);L.cr+=200});return r}
@@ -1867,7 +1873,7 @@ function raidStart(id){raidTx(id||MYRAID.id,r=>{if(!r||r.state!=='lobby'||r.host
 /* ---- views ---- */
 const MON_SPR=["................","....kk....kk....","...kaak..kaak...","...kabbkkbbak...","....kaaaaaak.....","...kaawaawaak...","..kaaakaakaaak..","..kaaaaaaaaaak..","..kabaaaaaabak..","...kaabbbbaak...","....kaaaaaak....","...kak.kk.kak...","..kk..k..k..kk..","................","................","................"];
 function raidBar(v,max,col){return`<div class="bar"><i style="--c:${col};width:${Math.max(0,v/max*100)}%"></i></div>`}
-function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span><span class="hint">중간 보스 · ${z.mid}<br>보스 · ${z.boss}</span>${ok?'':`<span class="ichip minus">레벨이 맞지 않습니다</span>`}</button>`}).join('');
+function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span><span class="hint">중간 보스 · ${z.mid}<br>보스 · ${z.boss}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 맞지 않습니다</span>`}</button>`}).join('');
   const z=RAID_ZONES.find(x=>x.id===raidSel)||RAID_ZONES[0],list=RAIDS.filter(x=>x.ids.length<RAID_MAX);
   return`<p class="lead">혼자 또는 최대 ${RAID_MAX}명의 파티로 원정을 떠납니다. ${RAID_STEPS}단계를 지나며 몬스터나 사건을 만나고, 마지막에는 보스가 기다립니다. 전투는 민첩이 높은 순서로 턴이 돌아오며, 한 사람의 턴은 ${RAID_TURN/1000}초입니다. 출발한 뒤에는 새로 합류할 수 없습니다.</p>
   <div class="row" style="gap:6px;margin:8px 0"><button class="btn" data-act="raidnew" data-k="solo" ${raidFits(z)?'':'disabled'}>혼자 출발 <small>EN ${RAID_EN}</small></button><button class="btn alt" data-act="raidnew" data-k="party" ${raidFits(z)?'':'disabled'}>파티 모집 <small>EN ${RAID_EN}</small></button><span class="hint">선택 구역 · ${z.n}</span></div>
@@ -2296,12 +2302,12 @@ function renderScan(){const sg=sigState();
 // repaired strictly in this order: each section opens once the one before it is finished.
 // sized for ~30 crew: life support in about 3 days, then power→comms in about 11 more (see the gather tables)
 const SHIP=[
- {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',1120],['geyserSalt',100],['frostCrystal',140],['marshReed',100]]},
- {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',185],['echoQuartz',65],['crystal',560]]},
- {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',1060],['craterIron',75],['rustBolt',55],['sandSlate',55]]},
- {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',115],['crystal',510],['volcAsh',40],['dark',220]]},
- {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',95],['brokenLens',35],['impactGlass',65],['relic',55]]},
- {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',380],['oldBoard',60],['iceShell',20],['marshFossil',20]]},
+ {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',1120],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',40]]},
+ {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',185],['echoQuartz',65],['crystal',560],['mazeCore',60]]},
+ {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',1060],['craterIron',75],['rustBolt',55],['sandSlate',55],['bogResin',70]]},
+ {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',115],['crystal',510],['volcAsh',40],['dark',220],['wreckNozzle',80]]},
+ {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',95],['brokenLens',35],['impactGlass',65],['relic',55],['abyssPrism',90]]},
+ {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',380],['oldBoard',60],['iceShell',20],['marshFossil',20],['starHeart',100]]},
 ];
 let SHIPDON=[],shipSel=null;
 const shipGot=part=>{const m={};SHIPDON.forEach(d=>{if(d.part===part)m[d.id]=(m[d.id]||0)+(+d.n||0)});return m};
