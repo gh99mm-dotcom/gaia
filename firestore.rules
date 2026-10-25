@@ -1,5 +1,5 @@
 rules_version = '2';
-// 별무리 개척단 Firestore 보안 규칙
+// 가이아 프로젝트 Firestore 보안 규칙
 // · 운영자(선장): 아이디 gh99mm 계정 (아래 ADMIN 값). 바꾸려면 public/index.html의 ADMIN_ID도 같이 바꾸세요.
 // · 초대장으로 가입을 마친 단원(members)만 게임 데이터에 접근할 수 있어요.
 service cloud.firestore {

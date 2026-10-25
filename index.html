@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>별무리 개척단</title>
+<title>가이아 프로젝트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Nanum+Gothic+Coding:wght@400;700&family=Silkscreen:wght@400;700&display=swap">
@@ -33,12 +33,12 @@ button{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 
 /* header */
-header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:150px;box-sizing:border-box;padding:10px 0}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:100px;box-sizing:border-box;padding:8px 0}
 .logo{display:flex;align-items:center;gap:16px}
-.logo h1{font-size:34px;line-height:1;color:var(--text);text-shadow:2px 2px 0 var(--ink)}
+.logo h1{font-size:28px;line-height:1;color:var(--text);text-shadow:2px 2px 0 var(--ink)}
 .logo .lbl{margin-top:8px;display:block}
 header>.chip:not(.sugg){margin-left:0}
-@media (max-width:620px){header{min-height:110px;justify-content:flex-end;gap:8px}.logo{flex-basis:100%}.logo h1{font-size:26px}header>.sugg{margin-left:0}}
+@media (max-width:620px){header{min-height:90px;justify-content:flex-end;gap:8px}.logo{flex-basis:100%}.logo h1{font-size:24px}header>.sugg{margin-left:0}}
 .adminchip{cursor:pointer;color:var(--gold);border-color:var(--ink)}
 .adminchip+.chip{margin-left:0}
 .renamef{display:flex;gap:6px;align-items:center;margin:2px 0}
@@ -556,7 +556,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
   <header>
     <div class="logo">
       <span id="logoIc"></span>
-      <div><h1>별무리 개척단</h1><span class="lbl">Nebula outpost · Sector K-7</span></div>
+      <div><h1>가이아 프로젝트</h1><span class="lbl">Gaia project · Sector K-7</span></div>
     </div>
     <button class="chip sugg" id="suggBtn" type="button" data-act="suggopen">건의함</button>
     <button class="chip bgm" id="bgmBtn" type="button" aria-pressed="true">♪ BGM</button>
@@ -605,7 +605,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <div class="toast" id="toast" hidden></div>
 <main class="authpage" id="authGate" hidden>
   <div class="authwrap">
-    <header class="authhead"><span id="authIc"></span><div><h1>별무리 개척단</h1><span class="lbl">Nebula outpost · Sector K-7</span></div></header>
+    <header class="authhead"><span id="authIc"></span><div><h1>가이아 프로젝트</h1><span class="lbl">Gaia project · Sector K-7</span></div></header>
     <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다. 초대장을 받은 단원만 승선할 수 있습니다.</p>
     <form class="px authcard" id="authForm" novalidate>
     <h2 id="authTitle">승선 인증</h2>
@@ -2234,7 +2234,7 @@ Object.assign(A,SA,AA,{
  async invnew(){if(!isAdmin||mode!=='online'||!window.__fbInvite)return;const code=window.__fbInvite.mk(),m=$('#invMemo'),memo=(m&&m.value||'').trim().slice(0,20);
   try{await db.doc('invites/'+code).set({by:uid,at:Date.now(),memo})}catch(e){toast('초대장을 만들지 못했습니다.');return}sfxCoin();toast(`초대장 ${fmtCode(code)} 발급!`);A.invcopy({k:code,quiet:1})},
  async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
- async invcopy(d){const t=`[별무리 개척단 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주십시오. (1명만 쓸 수 있습니다)`;
+ async invcopy(d){const t=`[가이아 프로젝트 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주십시오. (1명만 쓸 수 있습니다)`;
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
 ['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relcenter','relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
 document.addEventListener('keydown',e=>{if(tab!=='adv'||e.isComposing||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const n=+e.key;if(!(n>=1&&n<=9)||!P.adv||P.adv.done)return;const b=document.querySelectorAll('#stage .advopt')[n-1];if(b&&!b.disabled){e.preventDefault();b.click()}});
@@ -2308,7 +2308,7 @@ setInterval(()=>{
   if(P.ref&&Date.now()>=P.ref){P.water=tankCap();P.refCd=P.ref+3600e3;P.ref=null;save();if(tab==='farm')renderPanel()}else if(P.refCd&&tab==='farm'){const r=$('#refT'),l=P.refCd-Date.now();if(r&&l>0)r.textContent='다시 채우기까지 '+fmtClock(l);else if(r&&l<=0){P.refCd=0;renderPanel()}}
 },1000);
 
-$('#logoIc').innerHTML=img(IC.ship,null,4);if($('#authIc'))$('#authIc').innerHTML=img(IC.ship,null,4);$('#joinIc').innerHTML=meImg(4);
+$('#logoIc').innerHTML=img(IC.ship,null,3);if($('#authIc'))$('#authIc').innerHTML=img(IC.ship,null,4);$('#joinIc').innerHTML=meImg(4);
 renderNet();renderAll();
 connect();
 })();
