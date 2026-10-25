@@ -177,12 +177,12 @@ header>.chip:not(.sugg){margin-left:0}
 .pod-win .tb{top:6px;right:6px}
 .pod .acts{display:flex;flex-wrap:wrap;gap:5px}
 .pod.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;min-height:150px}
-.frow{display:grid;gap:10px;align-items:start;margin-bottom:10px}.frow.r1{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}.frow.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.frow{display:grid;gap:10px;align-items:start;margin-bottom:10px}.frow.r1{align-items:stretch}.frow.r1>.farmcol:first-child{container-type:inline-size}.frow.r1{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}.frow.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .farmcol{display:flex;flex-direction:column;gap:9px;min-width:0}
-.frow .bay{width:100%;height:auto;aspect-ratio:10/6;padding:3.9% 4.6% 7.3%}
-.frow .bay .dome-label{bottom:3.4%}
-.frow .pods{height:100%;aspect-ratio:9/5;max-width:100%;margin:0 auto;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:2px}
-.frow .ptile{width:100%;height:100%}
+.frow .bay{width:100%;height:100%;min-height:60cqw;padding:3.9% 4.6% 7.3%}
+.frow .bay .dome-label{bottom:calc(2.9cqw - 4px)}
+.frow .pods{height:100%;width:100%;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:2px}
+.frow .ptile{width:100%;height:100%;background-size:contain;background-position:center bottom}
 .frow .ptile.add .plus{top:32%}
 .fstore{display:flex;flex-direction:column;gap:6px}
 .flist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;max-height:210px;overflow:auto}
@@ -1344,8 +1344,9 @@ function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<sp
 let lastGather=null,lastScan=null,fish={ph:'idle'},lastFish=null,selItem=null;
 
 const FIELD_N=45;
-let BAYF=null;
-function bayFrame(){if(BAYF)return BAYF;const W=240,H=144,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+const BAYF={};
+// the dome frame is redrawn for whatever height the farm column ends up, so its pixels never stretch
+function bayFrame(H=144){if(BAYF[H])return BAYF[H];const W=240,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
   const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
   // body + bevel
   R(0,0,W,H,'#05060b');R(1,1,W-2,H-2,'#1b1f2b');R(1,1,W-2,1,'#4a4f60');R(1,1,1,H-2,'#41444f');R(1,H-2,W-2,1,'#0c0e15');R(W-2,1,1,H-2,'#0c0e15');
@@ -1367,7 +1368,8 @@ function bayFrame(){if(BAYF)return BAYF;const W=240,H=144,c=document.createEleme
   R(38,H-11,W-76,8,'#05060b');R(39,H-10,W-78,6,'#0b0d14');R(39,H-10,W-78,1,'#1a1f2c');
   // indicator lights
   [[12,'#8ba790'],[17,'#bfae80'],[W-14,'#8aa9bd'],[W-19,'#a8626b']].forEach(([lx,col])=>{R(lx-1,H-10,4,4,'#05060b');R(lx,H-9,2,2,col)});
-  return BAYF=c.toDataURL()}
+  return BAYF[H]=c.toDataURL()}
+function fitBay(){const b=document.querySelector('.frow .bay');if(!b||!b.clientWidth)return;const H=Math.max(144,Math.round(240*b.clientHeight/b.clientWidth));b.style.backgroundImage=`url(${bayFrame(H)})`}
 const MD={};
 function miniDome(kind){if(MD[kind])return MD[kind];const W=20,H=20,cx=9.5,cy=14,rx=8.6,ry=12.6,soil=14,base=17;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
   const dim=kind==='lock'||kind==='add';
@@ -1846,6 +1848,7 @@ function renderPanel(){
   if(tab==='fish')drawLake();
   if(tab==='ship')startShipScene();
   if(tab==='bag')renderCook();
+  if(tab==='farm')fitBay();
   if(tab==='adv'){const l=$('#advLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
 }
@@ -2414,7 +2417,7 @@ if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{for(
 /* ───────── loop ───────── */
 setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.textContent='남은 시간 '+fmtClock(DUEL.end-Date.now());const k='d'+(duelOn()?1:0)+(Date.now()<DUEL.start?1:0);if(k!==window.__dk){window.__dk=k;renderPanel()}}},200);
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
-addEventListener('resize',()=>{if(tab==='fish')drawLake()});
+addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm')fitBay()});
 setInterval(()=>{
   {const sg=sigState(),k='s'+sg.n;if(k!==window.__sk){window.__sk=k;renderNav();if(tab==='scan')renderPanel()}else if(tab==='scan'){const e=$('#sigT');if(e&&sg.n<SIG_MAX)e.textContent='다음 신호까지 '+fmtClock(sg.next)}}
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
