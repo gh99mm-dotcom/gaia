@@ -862,6 +862,11 @@ function shipColorAt(X,y,st){
   const cut=shipCut(y);if(st.chunk?dx<=cut:dx>cut)return null;
   if(Math.abs(dx-cut)<1)return(Math.floor(y*1.3)%2)?'#b0562a':'#4a1f16';
   if(st.chunk)return c;
+  // hull ripped open amidships: bare ribs and spars, with live wiring glowing inside
+  const oe=Math.hypot((dx-1.5)/5.8,(y-20.5)/7.6)+Math.sin(X*1.7)*.07+Math.sin(y*2.3)*.07;
+  if(oe<1){if(oe>.88)return(Math.floor(X*1.5)+Math.floor(y))%2?'#2a2226':'#3a2a26';
+    if(Math.abs(y-(17+Math.sin(X*.8)*1.6))<.35)return'#c0602e';if(Math.abs(y-(23+Math.sin(X*1.1+1)*1.2))<.3)return'#4b7690';
+    if(Math.abs(((y+40)%3)-1.5)<.42||Math.abs(((dx+40)%4)-2)<.4)return y<20?'#5a5e6a':'#41444f';return'#0b0a0e'}
   // breach blown through the wing root, with scorch marks spreading over the hull
   const e=Math.abs(dx-5.5)/2.8+Math.abs(y-17.5)/2.6+Math.sin(dx*2.1+y*1.3)*.12;if(e<1)return e<.65?'#050508':'#7a2a2a';
   const sh=Math.sin(Math.floor(X/2.4)*12.9898+Math.floor(y/2.4)*78.233)*43758.5453;if(sh-Math.floor(sh)>.74&&Math.abs(dx-5)<9&&y>12)return(Math.floor(X)+Math.floor(y))%2?'#262a33':'#30343e';
@@ -1633,7 +1638,7 @@ function renderShip(){
 /* ship scene: a pixel-art crash site on an alien world; repaired parts show on the downed starfighter */
 const SW=240,SH=120,BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
 let shipBg=null,shipBgKey='',shipTimer=0;
-const SHIPV={S:3.4,Q:.5,PH:-.75,X:122,Y:84,CX:208,CY:106,LX:44,LY:106};
+const SHIPV={S:4.1,Q:.5,PH:-.72,X:116,Y:80,CX:214,CY:108,LX:30,LY:108};
 function shipSceneBuild(st){
   const c=document.createElement('canvas');c.width=SW;c.height=SH;const g=c.getContext('2d');
   let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
@@ -1661,28 +1666,35 @@ function shipSceneBuild(st){
   for(let y=HZ;y<SH;y++)for(let x=0;x<SW;x++)px(x,y,dith(x,y,(y-HZ)/(SH-HZ)*.6)?'#0e0b14':'#1a1524');
   for(let k=0;k<60;k++){const x=rnd()*SW|0,y=HZ+3+rnd()*(SH-HZ-3)|0;px(x,y,'#2a2236');if(rnd()<.4)px(x+1,y,'#221c2c')}
   // lantern glow on the ground
-  const LX=SHIPV.LX,LY=SHIPV.LY;for(let y=HZ;y<SH;y++)for(let x=0;x<160;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
+  const LX=SHIPV.LX,LY=SHIPV.LY;if(st.hull)for(let y=HZ;y<SH;y++)for(let x=0;x<160;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
   // the ship: the starfighter belly-down on the ground, nose to the upper right; key light from the planet (upper left), warm fill from the camp lantern
   const S=SHIPV.S,Q=SHIPV.Q,PH=SHIPV.PH;
   const place=(cx,cy,ph,ox,oy)=>{const sn=Math.sin(ph),cs=Math.cos(ph);return{to:(X,Y)=>{const lx=(X-ox)*S,ly=(Y-oy)*S;return[cx-lx*sn-ly*cs,cy+(lx*cs-ly*sn)*Q]},from:(x,y)=>{const vx=x-cx,vy=(y-cy)/Q;return[ox+(-vx*sn+vy*cs)/S,oy+(-vx*cs-vy*sn)/S]}}};
   const hull=place(SHIPV.X,SHIPV.Y,PH,20,22),chunk=place(SHIPV.CX,SHIPV.CY,PH+1.9,35.5,22);
   const wreck=!st.hull,mess=SHIP.some(p=>!st[p.id]);
+  const [mx,my]=hull.to(21,24),FX=Math.round(mx)-6,FY=Math.max(Math.round(my)+12,100);
+  // the fire's light pooling on the ground
+  if(wreck)for(let y=HZ-2;y<SH;y++)for(let x=0;x<SW;x++){const d=Math.hypot((x-FX)/4.2,(y-FY)/1.1);if(d<20&&dith(x,y,(1-d/20)*.95))px(x,y,d<6?'#8a4a1c':d<12?'#5a3218':'#3a2216')}
   // furrow ploughed by the landing, running back from the tail
   {const [tx,ty]=hull.to(20,34);for(let x=Math.round(tx)-70;x<tx+6;x++){const k=(x-(tx-70))/76,y=Math.round(ty+4+(x-tx)*.06+Math.sin(x*.7)*.6),w=Math.round(k*2.4);if(!dith(x,y,k*1.2))continue;for(let i=0;i<=w;i++)px(x,y+i,'#08070c');px(x,y-1,'#2a2236');if(x%4===0)px(x,y-2,'#241d30')}}
   const draw=(P,stx)=>{const M=new Map();for(let y=10;y<SH;y++)for(let x=0;x<SW;x++){const [X,Y]=P.from(x+.5,y+.5),col=shipColorAt(X,Y,stx);if(col)M.set(y*SW+x,col)}
     // cast shadow falls to the lower right, away from the planet
     M.forEach((_,k)=>{const x=k%SW+4,y=(k-k%SW)/SW+3;if(y<SH&&!M.has(y*SW+x))px(x,y,'#07060b')});
-    M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW,d=Math.hypot((x-LX)/1.6,y-LY);px(x,y,d<40?mix(col,'#e0904a',(1-d/40)*.45):col)});
+    M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW;if(wreck){col=mix(col,'#121016',.5);const d=Math.hypot((x-FX)/1.6,(y-FY)*1.5);if(d<46)col=mix(col,'#ff7a2a',Math.pow(1-d/46,1.6)*.7)}else{const d=Math.hypot((x-LX)/1.6,y-LY);if(d<40)col=mix(col,'#e0904a',(1-d/40)*.45)}px(x,y,col)});
     // rim: lit edges facing the planet, dark outline elsewhere
     M.forEach((_,k)=>{const x=k%SW,y=(k-x)/SW;[[0,-1,1],[-1,0,1],[1,0,0],[0,1,0]].forEach(([a,b,lt])=>{const n=(y+b)*SW+x+a;if(!M.has(n))px(x+a,y+b,lt?'#8d7fbf':'#0d0f16')})});return M};
-  draw(hull,st);
-  if(wreck)draw(chunk,Object.assign({},st,{chunk:1}));
+  const HM=draw(hull,st);
+  if(wreck){draw(chunk,Object.assign({},st,{chunk:1}));
+    // molten drips hanging from the underside
+    HM.forEach((_,k)=>{const x=k%SW,y=(k-x)/SW;if(HM.has(k+SW)||rnd()>.09)return;const L=2+(rnd()*4|0);for(let i=1;i<=L;i++)px(x,y+i,i===L?'#c0602e':'#1a1618')});
+    // charred slabs scattered round the fire, their tops catching the light
+    for(let k=0;k<10;k++){const x=FX-60+rnd()*120|0,y=FY-2+rnd()*16|0,w=3+(rnd()*5|0);for(let i=0;i<w;i++){px(x+i,y,'#a8603a');px(x+i,y+1,'#2a2428');if(w>4)px(x+i,y+2,'#1a1618')}}}
   // wreckage strewn over the ground
   if(mess)for(let k=0;k<34;k++){const x=40+rnd()*190|0,y=96+rnd()*22|0,w=1+(rnd()*3|0),col=['#747c8e','#535a6b','#383e4c','#4a1f16'][rnd()*4|0];for(let i=0;i<w;i++)px(x+i,y,col);if(w>2)px(x+1,y-1,'#9aa2b2')}
   // lantern post
   px(LX,LY-1,'#ffe9a8');px(LX,LY,'#e09040');px(LX,LY+1,'#5a3a24');
   const stars=[];for(let k=0;k<46;k++)stars.push({x:rnd()*SW|0,y:rnd()*72|0,p:rnd()*6.28,s:.6+rnd()*1.6,big:rnd()<.2});
-  return{c,stars,LX,LY,breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
+  return{c,stars,LX,LY,FX,FY,breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
 }
 function shipSceneDraw(cv,t){
   const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('');
@@ -1694,11 +1706,14 @@ function shipSceneDraw(cv,t){
   {const ph=(t%9000)/9000;if(ph<.09){const k=ph/.09,x=150+k*70,y=6+k*22;for(let i=0;i<6;i++)px(x-i*2.4,y-i*.75,i?'#8a86c8':'#ffffff')}}
   // smoke columns from the breach and the torn wing until every part is repaired
   const [bx,by]=B.breach,[sx,sy]=B.seam,smoke=(ox,oy,n,sp,a)=>{for(let i=0;i<n;i++){const ph=((t/sp)+i/n)%1,x=ox+Math.sin(ph*6+i)*3+ph*10,y=oy-3-ph*44;if(ph<.92){const z=ph<.25?2:ph<.55?3:ph<.8?4:5;g.fillStyle=`rgba(150,145,170,${(1-ph)*a})`;g.fillRect(x|0,y|0,z,z)}}};
-  if(SHIP.some(p=>!st[p.id]))smoke(bx,by,st.hull?3:8,2600,.75);
-  if(!st.hull){smoke(sx,sy,6,2100,.6);
-    // flames licking out of the breach
-    for(let i=0;i<7;i++){const f=Math.sin(t/90+i*1.7),h=2+((f+1)*2|0);for(let k=0;k<h;k++)px(bx-3+i,by-1-k,k>h-2?'#ffd65f':k>0?'#ff8a3a':'#b0402a')}
-    if((t/150|0)%4===0){px(sx+(t/97%8)-4,sy-2,'#ffd65f');px(sx+2+(t/61%6)-3,sy,'#ff8a3a');px(bx+(t/71%9)-4,by-6,'#ffe9a8')}}
+  if(st.hull&&SHIP.some(p=>!st[p.id]))smoke(bx,by,3,2600,.75);
+  if(!st.hull){smoke(sx,sy,5,2100,.55);
+    const FX=B.FX,FY=B.FY;
+    // a thick black column rolling up out of the fire
+    for(let i=0;i<12;i++){const ph=((t/3400)+i/12)%1,x=FX+Math.sin(ph*5+i)*5+ph*26,y=FY-26-ph*80,z=5+ph*13|0;g.fillStyle=`rgba(${i%3?16:38},${i%3?14:34},${i%3?20:42},${Math.min(.95,(1-ph)*1.1)})`;g.fillRect(x-z/2|0,y-z/2|0,z,z)}
+    // the fire itself: layered tongues that flicker, white-hot at the base
+    for(let cx=-15;cx<=15;cx++){const base=24-Math.abs(cx)*1.45,h=Math.max(0,base*(.72+.28*Math.sin(t/85+cx*1.31)+.12*Math.sin(t/37+cx*2.7)));for(let k=0;k<h;k++){const f=k/Math.max(1,h);px(FX+cx,FY-k,f<.18&&Math.abs(cx)<6?'#fff4c8':f<.42?'#ffd65f':f<.75?'#ff8a3a':'#b0402a')}}
+    for(let i=0;i<8;i++){const ph=((t/1400)+i/8)%1;if(ph<.8)px(FX+Math.sin(i*2.1+ph*7)*12,FY-22-ph*40,ph<.4?'#ffd65f':'#ff8a3a')}}
   // engine glow, pointing away from the nose
   if(st.engine){const f=(t/120|0)%3,[tx,ty]=B.tail,[mx,my]=B.mid,L=Math.hypot(tx-mx,ty-my),ux=(tx-mx)/L,uy=(ty-my)/L;for(let k=1;k<=9+f;k++)for(let w=-2;w<=2;w++){if(Math.abs(w)*2>9+f-k)continue;px(tx+ux*k-uy*w,ty+uy*k+ux*w,k<3?'#d8f6ff':k<6?'#5fd8ff':'#2a6aa8')}}
   // antenna beacon
