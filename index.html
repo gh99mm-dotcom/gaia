@@ -60,7 +60,7 @@ header>.chip:not(.sugg){margin-left:0}
 .sndrow .qchip{justify-content:center;padding:2px 4px}
 /* 우주모드 OFF: a white station skin; the pixel outlines stay, everything else turns light */
 :root[data-skin="light"]{
-  --void:#e9ebf1; --deep:#f5f6f9; --panel:#ffffff; --panel2:#eef0f5; --ink:#2b2f40; --line:#dcdfe8;
+  --void:#e9ebf1; --deep:#f5f6f9; --panel:#ffffff; --panel2:#eef0f5; --ink:#a7adc0; --line:#e2e5ec;
   --text:#24273a; --mute:#646a82; --dim:#a2a7b9;
   --pink:#c98aa5; --pinkd:#9a5a76; --violet:#6a5ea8; --violetd:#e2def3; --cyan:#6fa3c4; --cyand:#4a7896;
   --gold:#8f7322; --green:#3f7d50; --red:#b5434f;
@@ -71,6 +71,11 @@ header>.chip:not(.sugg){margin-left:0}
 :root[data-skin="light"] .logo h1{text-shadow:2px 2px 0 var(--line)}
 :root[data-skin="light"] .raidlog,:root[data-skin="light"] .dmlog{background:var(--panel2)}
 :root[data-skin="light"] .bar{background:var(--line)}
+:root[data-skin="light"] :is(.btn,.toast,.nav .badge,.mailbtn em,.fbbadge){color:var(--text)}
+:root[data-skin="light"] .bay{background-color:#d5d9e3}
+:root[data-skin="light"] .ptile.lock{border-color:#b9bfce}
+:root[data-skin="light"] .dial-face{background:repeating-conic-gradient(from -90deg at 50% 100%,rgba(120,128,150,.55) 0 1deg,transparent 1deg 15deg),conic-gradient(from -90deg at 50% 100%,#dfe3ec 0deg calc(90deg - var(--z,9deg)),var(--green) calc(90deg - var(--z,9deg)) calc(90deg + var(--z,9deg)),#dfe3ec calc(90deg + var(--z,9deg)) 180deg,transparent 180deg);box-shadow:inset 0 0 0 2px #c3c8d5}
+:root[data-skin="light"] .hub{background:#c3c8d5}
 .solobanner{display:flex;flex-direction:column;gap:4px;background:#1f1218;border:2px solid var(--red);padding:9px 12px;font-size:12px;line-height:1.6}
 .solobanner>b{color:var(--red);font-family:var(--f-display);font-weight:400;font-size:15px}
 .chip{margin-left:auto;display:flex;align-items:center;gap:8px;padding:4px 9px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);font-family:var(--f-pix);font-size:9px;letter-spacing:.08em}
@@ -1411,8 +1416,12 @@ let lastGather=null,lastScan=null,fish={ph:'idle'},lastFish=null,selItem=null;
 const FIELD_N=45;
 const BAYF={};
 // the dome frame is redrawn for whatever height the farm column ends up, so its pixels never stretch
-function bayFrame(H=144){if(BAYF[H])return BAYF[H];const W=240,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
-  const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
+/* 우주모드 OFF: lift the dark metal of the farm bay and pods to pale steel, keeping each shade's order so bevels still read */
+const isLight=()=>document.documentElement.dataset.skin==='light';
+function lift(col){if(!isLight())return col;const n=parseInt(col.slice(1),16),r=n>>16&255,g=n>>8&255,b=n&255,L=(Math.max(r,g,b)+Math.min(r,g,b))/510;if(L>=.45)return col;
+  const k=(.66+L*.8)/Math.max(L,.02),m=(r+g+b)/3,f=c=>Math.max(0,Math.min(255,Math.round(m*k+(c-m)*.7*Math.min(k,3))));return'#'+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,'0')).join('')}
+function bayFrame(H=144){H=H+(isLight()?'l':'');if(BAYF[H])return BAYF[H];H=parseInt(H);const W=240,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const R=(a,b,w,h,col)=>{x.fillStyle=lift(col);x.fillRect(a,b,w,h)};
   // body + bevel
   R(0,0,W,H,'#05060b');R(1,1,W-2,H-2,'#1b1f2b');R(1,1,W-2,1,'#4a4f60');R(1,1,1,H-2,'#41444f');R(1,H-2,W-2,1,'#0c0e15');R(W-2,1,1,H-2,'#0c0e15');
   R(3,3,W-6,1,'#262a37');
@@ -1433,13 +1442,13 @@ function bayFrame(H=144){if(BAYF[H])return BAYF[H];const W=240,c=document.create
   R(38,H-11,W-76,8,'#05060b');R(39,H-10,W-78,6,'#0b0d14');R(39,H-10,W-78,1,'#1a1f2c');
   // indicator lights
   [[12,'#8ba790'],[17,'#bfae80'],[W-14,'#8aa9bd'],[W-19,'#a8626b']].forEach(([lx,col])=>{R(lx-1,H-10,4,4,'#05060b');R(lx,H-9,2,2,col)});
-  return BAYF[H]=c.toDataURL()}
+  return BAYF[H+(isLight()?'l':'')]=c.toDataURL()}
 function fitBay(){const b=document.querySelector('.frow .bay');if(!b||!b.clientWidth)return;const H=Math.max(144,Math.round(240*b.clientHeight/b.clientWidth));b.style.backgroundImage=`url(${bayFrame(H)})`;
   const t=b.querySelector('.ptile');if(!t||!t.clientWidth)return;const pods=b.querySelector('.pods');pods.style.setProperty('--pw',t.clientWidth+'px');const dh=Math.max(20,Math.round(20*t.clientHeight/t.clientWidth));
   if(dh!==domeH){domeH=dh;b.querySelectorAll('.ptile[data-dome]').forEach(e=>e.style.backgroundImage=`url(${miniDome(e.dataset.dome,dh)})`)}}
 const MD={};let domeH=20;
 // drawn for the pod cell's own height (H rows on a 20-wide grid) so tall cells get a taller dome rather than stretched pixels
-function miniDome(kind,H=20){const key=kind+H;if(MD[key])return MD[key];const W=20,base=H-3,soil=H-6,cx=9.5,rx=8.6,gap=Math.max(1,Math.round((H-20)*.35)+1),cy=Math.min(soil,gap+rx),ry=cy-gap;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])return MD[key];const W=20,base=H-3,soil=H-6,cx=9.5,rx=8.6,gap=Math.max(1,Math.round((H-20)*.35)+1),cy=Math.min(soil,gap+rx),ry=cy-gap;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
   const dim=kind==='lock'||kind==='add';
   const inside=(i,j)=>j<base&&i>=1&&i<=W-2&&(j>=cy||((i-cx)/rx)**2+((j-cy)/ry)**2<=1);
   const soilC={dirt:['#4d4337','#3b332b'],wet:['#2c2726','#211e1f'],ready:['#4d4337','#3b332b'],empty:['#151925','#11141d'],lock:['#0c0e15','#0c0e15'],add:['#0c0e15','#0c0e15']}[kind];
@@ -1447,10 +1456,10 @@ function miniDome(kind,H=20){const key=kind+H;if(MD[key])return MD[key];const W=
   for(let j=0;j<H;j++)for(let i=0;i<W;i++){let col=null;
     if(j>=base){if(i>=0&&i<=W-1)col=j===base?(dim?'#2a2e3a':'#5d6274'):j===H-1?'#0f1118':'#1f232f';if(j===base+1&&(i===3||i===W-4))col=light}
     else if(inside(i,j)){const edge=!inside(i-1,j)||!inside(i+1,j)||!inside(i,j-1);
-      if(edge)col=dim?'#2a3342':'#8aa9bd';
+      if(edge)col=dim?'#2a3342':isLight()?'#5f86a2':'#8aa9bd';
       else if(j>=soil)col=soilC[j===soil?0:1];
       else{col=dim?'#090b11':'#0d111c';const d=Math.sqrt(((i-cx)/rx)**2+((j-cy)/ry)**2);if(!dim&&i<cx-2&&d>.68&&d<.8)col='#3d4d5e';}}
-    if(col){x.fillStyle=col;x.fillRect(i,j,1,1)}}
+    if(col){x.fillStyle=kind!=='empty'&&!dim&&soilC.includes(col)?col:lift(col);x.fillRect(i,j,1,1)}}
   if(!dim){x.fillStyle='#bfae80';x.fillRect(9,gap-1,2,1)}
   return MD[key]=c.toDataURL()}
 function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.as&&ABIL.some(([k])=>(P.as[k]||0)<2)){P.as=Object.assign({},P.as);ABIL.forEach(([k])=>{if((P.as[k]||0)<2)P.as[k]=2})}if(ptsLeft()<0)P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
@@ -1930,19 +1939,22 @@ function lakeBase(W,H,hz){let r=7;const rnd=()=>((r=(r*9301+49297)%233280)/23328
   const motes=Array.from({length:6},()=>({x:rnd()*W,y:hz+4+rnd()*(H-hz-6),s:.15+rnd()*.25}));return{W,H,hz,stars,ridge,motes}}
 function drawLake(){const cv=$('#lakeCv');if(!cv)return;const w=Math.max(80,Math.round(cv.clientWidth/3)),h=Math.round(cv.clientHeight/3)||50;
   if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;LAKE=null}if(!LAKE||LAKE.W!==w)LAKE=lakeBase(w,h,Math.round(h*.38));
+  // 우주모드 OFF paints the same lake by daylight: pale sky, misty ridge, clear blue water
+  const K=isLight()?{s0:'#b9cbe2',s1:'#e8eef6',st0:'#e8eef6',st1:'#ffffff',p0:'#f4f2fb',p1:'#b8b4d4',p2:'#d6d3ea',ridge:'#8d9ab3',w0:'#9fc0da',w1:'#c9dcec',d0:'#bcd4e6',d1:'#e1edf6',r0:'#f2f0fa',r1:'#cfd9ea',ring:'#c9b98e',refl:'#e6eff7',mote:'#5f9a86'}
+   :{s0:'#05060c',s1:'#141a2c',st0:'#3a3f52',st1:'#c4c7d4',p0:'#8a86a8',p1:'#3a3858',p2:'#2a2840',ridge:'#04050a',w0:'#0c1626',w1:'#060912',d0:'#16283a',d1:'#1d3448',r0:'#6c6888',r1:'#3e3c5c',ring:'#5f5640',refl:'#2e4458',mote:'#7fb8a4'};
   const L=LAKE,x=cv.getContext('2d'),R=(a,b,c,d,col)=>{x.fillStyle=col;x.fillRect(a,b,c,d)},hz=L.hz,ph=lakePh;
-  for(let j=0;j<hz;j++)R(0,j,w,1,mix('#05060c','#141a2c',j/hz));
-  L.stars.forEach(st=>{const tw=Math.sin(ph*.7+st.x)*.5+.5;R(st.x,st.y,1,1,mix('#3a3f52','#c4c7d4',st.b*.6+tw*.3))});
+  for(let j=0;j<hz;j++)R(0,j,w,1,mix(K.s0,K.s1,j/hz));
+  if(!isLight())L.stars.forEach(st=>{const tw=Math.sin(ph*.7+st.x)*.5+.5;R(st.x,st.y,1,1,mix(K.st0,K.st1,st.b*.6+tw*.3))});
   const px=Math.round(w*.72),py=Math.round(hz*.42),pr=Math.max(5,Math.round(hz*.3));
-  for(let j=-pr;j<=pr;j++)for(let i=-pr;i<=pr;i++){if(i*i+j*j>pr*pr)continue;const lit=(i+j*.4)>pr*.35;R(px+i,py+j,1,1,lit?'#8a86a8':(i*i+j*j>(pr-1)*(pr-1)?'#3a3858':'#2a2840'))}
+  for(let j=-pr;j<=pr;j++)for(let i=-pr;i<=pr;i++){if(i*i+j*j>pr*pr)continue;const lit=(i+j*.4)>pr*.35;R(px+i,py+j,1,1,lit?K.p0:(i*i+j*j>(pr-1)*(pr-1)?K.p1:K.p2))}
   for(let i=-pr*2;i<=pr*2;i++){const ry=Math.round(i*.18);if(Math.abs(i)<pr-1&&ry>=0)continue;R(px+i,py+ry,1,1,'#a99a74')}
-  L.ridge.forEach((ry,i)=>R(i,ry,1,hz-ry+1,'#04050a'));
-  for(let j=hz+1;j<h;j++){const d=(j-hz)/(h-hz);R(0,j,w,1,mix('#0c1626','#060912',d))}
-  for(let j=hz+2;j<h;j+=3){const off=Math.round(Math.sin(ph+j*.7)*3),dash=6+(j%5),gap=9+(j%7);for(let i=-20+((off+j*5)%(dash+gap));i<w;i+=dash+gap)R(i,j,dash,1,j%2?'#16283a':'#1d3448')}
-  for(let k=0;k<pr+3;k++){const ry=hz+1+(py-(-pr))-hz+k;const yy=hz+2+k*2;if(yy>=h)break;const wob=Math.round(Math.sin(ph*1.3+k)*2),half=Math.round(Math.sqrt(Math.max(0,pr*pr-(k-1)*(k-1)))*(1-k/(pr+4)));if(half<1)continue;for(let i=-half;i<=half;i+=2+(k%2))R(px+i+wob,yy,1+(k%2),1,k<2?'#6c6888':'#3e3c5c')}
-  for(let i=-pr*2;i<=pr*2;i+=3){const yy=hz+2+Math.round(Math.abs(py-hz)*1.1)+Math.round(Math.sin(ph+i)*1);if(yy<h)R(px+i,yy,2,1,'#5f5640')}
-  L.stars.slice(0,14).forEach(st=>{const yy=hz+(hz-st.y);if(yy<h&&Math.sin(ph*2+st.x)>-.2)R(st.x+Math.round(Math.sin(ph+st.y)),yy,1,1,'#2e4458')});
-  L.motes.forEach(m=>{const yy=Math.round(m.y-((ph*m.s*6)%(h-hz-4)));const yv=yy<hz+3?yy+(h-hz-4):yy;R(Math.round(m.x+Math.sin(ph+m.x)*2),yv,1,1,'#7fb8a4')})}
+  L.ridge.forEach((ry,i)=>R(i,ry,1,hz-ry+1,K.ridge));
+  for(let j=hz+1;j<h;j++){const d=(j-hz)/(h-hz);R(0,j,w,1,mix(K.w0,K.w1,d))}
+  for(let j=hz+2;j<h;j+=3){const off=Math.round(Math.sin(ph+j*.7)*3),dash=6+(j%5),gap=9+(j%7);for(let i=-20+((off+j*5)%(dash+gap));i<w;i+=dash+gap)R(i,j,dash,1,j%2?K.d0:K.d1)}
+  for(let k=0;k<pr+3;k++){const ry=hz+1+(py-(-pr))-hz+k;const yy=hz+2+k*2;if(yy>=h)break;const wob=Math.round(Math.sin(ph*1.3+k)*2),half=Math.round(Math.sqrt(Math.max(0,pr*pr-(k-1)*(k-1)))*(1-k/(pr+4)));if(half<1)continue;for(let i=-half;i<=half;i+=2+(k%2))R(px+i+wob,yy,1+(k%2),1,k<2?K.r0:K.r1)}
+  for(let i=-pr*2;i<=pr*2;i+=3){const yy=hz+2+Math.round(Math.abs(py-hz)*1.1)+Math.round(Math.sin(ph+i)*1);if(yy<h)R(px+i,yy,2,1,K.ring)}
+  if(!isLight())L.stars.slice(0,14).forEach(st=>{const yy=hz+(hz-st.y);if(yy<h&&Math.sin(ph*2+st.x)>-.2)R(st.x+Math.round(Math.sin(ph+st.y)),yy,1,1,K.refl)});
+  L.motes.forEach(m=>{const yy=Math.round(m.y-((ph*m.s*6)%(h-hz-4)));const yv=yy<hz+3?yy+(h-hz-4):yy;R(Math.round(m.x+Math.sin(ph+m.x)*2),yv,1,1,K.mote)})}
 let dexOpen=false,dexTab='c';
 function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],got=all.filter(id=>P.dex[id]).length;
   const tabs=[['c','일반'],['r','레어'],['u','유니크'],['l','레전더리']];
@@ -2771,7 +2783,7 @@ bgm.volume=bgmVol/100;
 /* skin: 우주모드 ON is the dark starfield station, OFF turns the whole station white */
 let spaceOn=true;try{spaceOn=localStorage.getItem('nebula-skin')!=='light'}catch(e){}
 function syncSkin(){document.documentElement.toggleAttribute('data-skin',!spaceOn);if(!spaceOn)document.documentElement.dataset.skin='light';const b=$('#skinBtn');b.setAttribute('aria-pressed',spaceOn);b.textContent=spaceOn?'✦ 우주모드 ON':'✦ 우주모드 OFF'}
-$('#skinBtn').addEventListener('click',e=>{e.stopPropagation();spaceOn=!spaceOn;lsSet('nebula-skin',spaceOn?'space':'light');syncSkin()});
+$('#skinBtn').addEventListener('click',e=>{e.stopPropagation();spaceOn=!spaceOn;lsSet('nebula-skin',spaceOn?'space':'light');syncSkin();renderPanel();if(tab==='farm')requestAnimationFrame(fitBay)});
 syncSkin();
 
 /* ───────── starfield ───────── */
