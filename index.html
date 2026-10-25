@@ -1158,7 +1158,7 @@ function renderCook(){const el=$('#cook');if(!el)return;const c=COOK.find(x=>x.i
    <button class="btn sm" data-act="cook" ${canCook(c)?'':'disabled'}>요리하기 · ${c.sec<60?c.sec+'초':Math.round(c.sec/60)+'분'}</button></div>`}
   ${dishes.length?`<div class="dlist">${dishes.map(x=>`<div class="drow">${iicon(x.id,1)}<span>${esc(x.n)} ×${P.inv[x.id]}</span><button class="btn ghost sm" data-act="use" data-id="${x.id}">먹기</button></div>`).join('')}</div>`:''}`}
 function tickCook(){const ck=P.cook;if(P.buff&&Date.now()>=P.buff.until){P.buff=null;log('요리 효과가 사라졌다.','');save();renderPilot();return}const bt=$('#buffT');if(bt&&P.buff)bt.textContent=fmtClock(P.buff.until-Date.now());if(!ck)return;const cur=COOK.find(x=>x.id===ck.id);if(!cur)return;const left=ck.end-Date.now();
-  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${cur.n} 완성! 조리실에서 꺼내 주십시오.`,'good');save();renderCook();return}
+  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${cur.n} 완성! 가방의 요리 칸에서 꺼내 주십시오.`,'good');save();renderCook();return}
   if(left>0){const t1=$('#cookT'),b=$('#cookB');if(t1)t1.textContent='조리 중 · '+fmtClock(left);if(b)b.style.width=Math.round((1-left/(cur.sec*1e3))*100)+'%'}}
 
 /* ───────── admin: crew management ───────── */
@@ -1435,7 +1435,7 @@ function renderFarm(){
   <div class="farm3"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${fu<FIELD_N?`<button class="ptile add" data-act="selpod" data-i="add" aria-pressed="${selPod==='add'}" aria-label="포드 증설" title="포드 증설"><span class="plus">+</span></button>`:''}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu-1))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
   <div class="farmcol"><div class="card podinfo">${info}</div>
   <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}내 물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>물 채우기</button><span class="hint">누르면 바로 가득 찹니다 · 다시 채우려면 ${P.job==='engineer'?'30분':'1시간'}</span>`}</div></div>
-  <div class="farmcol">${storeHTML()}</div></div>`+'<section class="card cook farmcook" id="cook" aria-label="요리"></section>';
+  <div class="farmcol">${storeHTML()}</div></div>`;
 }
 function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0),back=Math.random()<.45;
   farmPut(i,{til:1,wet:pl.wet&&isWet(pl)?pl.wet:0});storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
@@ -1819,7 +1819,7 @@ function renderBag(){
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
    <div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화</div></div>
    ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
-  </div></div>`;
+  </div></div><section class="card cook farmcook" id="cook" aria-label="요리"></section>`;
 }
 function renderPanel(){
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
@@ -1829,7 +1829,7 @@ function renderPanel(){
   {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;if(Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}
   if(tab==='fish')drawLake();
   if(tab==='ship')startShipScene();
-  if(tab==='farm')renderCook();
+  if(tab==='bag')renderCook();
   if(tab==='adv'){const l=$('#advLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
 }
