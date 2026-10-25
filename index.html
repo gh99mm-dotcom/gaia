@@ -390,6 +390,9 @@ header>.chip:not(.sugg){margin-left:0}
 @keyframes bossbob{50%{transform:translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.bosssprite{animation:none}}
 .bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.bosshp{font-family:var(--f-pix);font-size:10px;color:var(--mute);text-align:right}
+.bossclock{font-family:var(--f-pix);font-size:10px;color:var(--gold)}.bossclock.urgent{color:var(--red);animation:blink 1s steps(2) infinite}
+.bossidle{padding:28px 16px;text-align:center}
+.bosspicks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px;margin:4px 0 8px}.bosspick{justify-content:flex-start;gap:6px;text-align:left;font-size:11px;padding:3px 6px}.bosspick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bossact{gap:10px;align-items:center}.bossact .btn{min-width:120px;justify-content:center}
 .bossrank{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:3px}.bossrank li{display:grid;grid-template-columns:22px 1fr auto 52px;gap:6px;align-items:center;font-size:12px}.bossrank li.me{color:var(--gold)}.bossrank em{font-style:normal;font-family:var(--f-pix);font-size:10px;color:var(--mute)}.bossrank small{text-align:right;color:var(--mute)}
 .bosschat{display:flex;flex-direction:column;gap:6px;min-width:0;min-height:420px}
@@ -1282,7 +1285,7 @@ let INV=[];const fmtCode=c=>String(c).slice(0,4)+'-'+String(c).slice(4);
 function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div class="info-sec"><span class="lbl">Invites · 초대장 · 남은 ${INV.length}장</span><span class="hint">초대장 한 장으로 한 명만 가입할 수 있고, 가입에 쓰이면 자동으로 사라집니다.</span>
   <div class="row" style="gap:6px"><input id="invMemo" class="sel" maxlength="20" placeholder="누구에게 줄지 메모 (선택)" style="flex:1;min-width:140px"><button class="btn sm gold" data-act="invnew">초대장 발급</button></div>
   ${INV.length?`<div class="fblist">${INV.map(v=>`<div class="fbitem"><div class="row"><b class="invcode">${fmtCode(v.id)}</b><span class="hint">${fbTime(v.at||0)}</span></div>${v.memo?`<span class="hint">${esc(v.memo)}</span>`:''}<div class="row" style="justify-content:flex-end;gap:5px"><button class="btn sm alt" data-act="invcopy" data-k="${esc(v.id)}">안내문 복사</button><button class="btn sm ghost" data-act="invdel" data-k="${esc(v.id)}">취소</button></div></div>`).join('')}</div>`:'<span class="hint">아직 쓰지 않은 초대장이 없습니다.</span>'}</div>`}
-function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',invHTML()+crewAdminHTML()+fbAdminHTML())}
+function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML())}
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
 const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 로봇이 재료를 더 자주 가져옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
@@ -1757,56 +1760,92 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
    <div class="raidwrap"><div class="raidparty">${party}</div><div class="raidmain">${body}</div></div>`}
 function renderRaid(){if(mode!=='online')return head()+'<div class="note">원정은 온라인에서만 떠날 수 있습니다.</div>';return head()+(MYRAID?raidRunHTML(MYRAID):raidLobbyHTML())}
 /* ───────── 탐사: the invader from the abyss ─────────
-   one boss shared by every member (boss/cur); each member may strike once a minute.
-   when it falls, everyone who hit it can claim a reward; a stronger one rises after a short lull.
-   raid chat (boss/chat) keeps only the latest 30 lines and is open only to members on this tab. */
-const BOSS_CD=60e3,BOSS_RESPAWN=30*60e3,BOSS_CHAT_MAX=30;
-const BOSS_NAMES=['공허의 눈 「아자토스」','심연의 촉수 「크툴라」','검은 별의 사도 「니알라」','침묵의 군주 「보르그」','끝없는 굶주림 「가르간」','심해의 왕관 「레비아」'];
+   the admin summons one of 14 invaders at a chosen level (boss/cur); every member may strike once a minute and it strikes back.
+   kill it within 4 hours and everyone who hit it is rewarded; let the time run out and every character drops to 1 HP and 1 EN.
+   탐사 chat (boss/chat) keeps only the latest 30 lines and is open only to members on this tab. */
+const BOSS_CD=60e3,BOSS_LIMIT=4*3600e3,BOSS_CHAT_MAX=30;
+const BOSS_G={eye:['......kkkkkkkk......','....kkBBBBBBBBkk....','...kBBDDDDDDDDBBk...','..kBDDDDDDDDDDDDBk..','.kBDDDkkkkkkkkDDDBk.','.kBDDkEEEEEEEEkDDBk.','kBDDkEEEkkkkEEEkDDBk','kBDDkEEkXXXXkEEkDDBk','kBDDkEEkXkkXkEEkDDBk','kBDDkEEEkkkkEEEkDDBk','.kBDDkEEEEEEEEkDDBk.','.kBDDDkkkkkkkkDDDBk.','..kBDBDBDDDDBDBDBk..','..kBk.kBk..kBk.kBk..','..kk...kk..kk...kk..','....................'],tent:['.......kkkkkk.......','.....kkBBBBBBkk.....','....kBBBBBBBBBBk....','...kBBBBBBBBBBBBk...','...kBBkkBBBBkkBBk...','...kBkEEkBBkEEkBk...','...kBkEFkBBkEFkBk...','...kBBkkBBBBkkBBk...','...kDBBBBBBBBBBDk...','....kDDBBXXBBDDk....','...kDkDDkDDkDDkDk...','..kDk.kDk..kDk.kDk..','..kDk.kDk..kDk.kDk..','.kDk..kDk..kDk..kDk.','.kk....kk..kk....kk.','....................'],horn:['.kk..............kk.','.kXk............kXk.','..kXk..kkkkkk..kXk..','..kXXkkBBBBBBkkXXk..','...kXBBBBBBBBBBXk...','...kBBBBBBBBBBBBk...','..kBBkkkBBBBkkkBBk..','..kBkEEEkBBkEEEkBk..','..kBkEFEkBBkEFEkBk..','..kBBkkkBBBBkkkBBk..','...kBBBBBkkBBBBBk...','...kDBBBBBBBBBBDk...','....kDkXkXkXkXDk....','....kDDkDkDkDDk.....','.....kkkkkkkkkk.....','....................'],shard:['.........kk.........','........kXXk........','.......kXBBXk.......','......kXBBBBXk......','.....kXBBBBBBXk.....','....kXBBkkkkBBXk....','...kXBBkEEEEkBBXk...','..kXBBBkEFFEkBBBXk..','..kDBBBkEEEEkBBBDk..','...kDBBBkkkkBBBDk...','....kDBBBBBBBBDk....','.....kDBBBBBBDk.....','......kDBBBBDk......','.......kDBBDk.......','........kDDk........','.........kk.........'],maw:['....kkkkkkkkkkkk....','..kkBBBBBBBBBBBBkk..','.kBBDDDDDDDDDDDDBBk.','kBDDkkkkkkkkkkkkDDBk','kBDkXkXkXkXkXkXkkDBk','kBDkFFFFFFFFFFFFkDBk','kBDkFFFFEEEEFFFFkDBk','kBDkFFFFEEEEFFFFkDBk','kBDkFFFFFFFFFFFFkDBk','kBDkkXkXkXkXkXkXkDBk','kBDDkkkkkkkkkkkkDDBk','.kBBDDDDDDDDDDDDBBk.','..kkBBDDDDDDDDBBkk..','....kkBBDDDDBBkk....','......kkBBBBkk......','........kkkk........']};
+const BOSS_KINDS=[
+ {n:"공허의 눈 「아자토스」",g:BOSS_G.eye,po:{B:'#7a6fa0',D:'#4a4470',E:'#7fd0d0',F:'#3a8a94',X:'#a8626b'},hp:1,atk:1},
+ {n:"심연의 촉수 「크툴라」",g:BOSS_G.tent,po:{B:'#5f8a6a',D:'#37503e',E:'#ffd65f',F:'#8a6a20',X:'#a8626b'},hp:1.1,atk:0.95},
+ {n:"침묵의 군주 「보르그」",g:BOSS_G.horn,po:{B:'#8f555c',D:'#4d2a30',E:'#ffb05f',F:'#a8402a',X:'#d6d8e0'},hp:0.95,atk:1.15},
+ {n:"검은 별의 사도 「니알라」",g:BOSS_G.shard,po:{B:'#5a7ab0',D:'#2c3e64',E:'#d6f0ff',F:'#7fb4d2',X:'#b9bccb'},hp:0.85,atk:1.2},
+ {n:"끝없는 굶주림 「가르간」",g:BOSS_G.maw,po:{B:'#8a6a4e',D:'#4e3a28',E:'#ff5f6a',F:'#5a1a20',X:'#e6dcc0'},hp:1.25,atk:0.9},
+ {n:"핏빛 응시 「바알」",g:BOSS_G.eye,po:{B:'#a8626b',D:'#5a2a30',E:'#ffd65f',F:'#a8802a',X:'#2a2d38'},hp:0.95,atk:1.1},
+ {n:"심해의 왕관 「레비아」",g:BOSS_G.tent,po:{B:'#4a6a9a',D:'#24385a',E:'#7fe0f0',F:'#2a7a94',X:'#d6d8e0'},hp:1.15,atk:1},
+ {n:"뼈의 사제 「모르가스」",g:BOSS_G.horn,po:{B:'#d6d0c0',D:'#8a8270',E:'#7dff9b',F:'#2a8a4a',X:'#5a524c'},hp:1,atk:1.05},
+ {n:"분홍 결정체 「제노스」",g:BOSS_G.shard,po:{B:'#c48aa4',D:'#6a3a54',E:'#fff0f6',F:'#e0a0c0',X:'#7a6fa0'},hp:0.9,atk:1.15},
+ {n:"사막의 아가리 「스카라」",g:BOSS_G.maw,po:{B:'#c8a46a',D:'#7a5a30',E:'#ffe9a8',F:'#a87a2a',X:'#4e3a28'},hp:1.2,atk:0.95},
+ {n:"황금 군단의 눈 「옴니스」",g:BOSS_G.eye,po:{B:'#bfae80',D:'#6a5a34',E:'#ff5f6a',F:'#7a2028',X:'#3a2a12'},hp:1.05,atk:1.05},
+ {n:"밤의 사냥꾼 「아비스」",g:BOSS_G.tent,po:{B:'#3a3450',D:'#1a1628',E:'#b48ae6',F:'#5a3a8a',X:'#7a6fa0'},hp:1,atk:1.2},
+ {n:"불꽃의 화신 「이그나」",g:BOSS_G.horn,po:{B:'#e0904a',D:'#8a3a1a',E:'#ffffaa',F:'#ffb05f',X:'#4a1a10'},hp:0.9,atk:1.3},
+ {n:"세계수를 갉는 자 「니드호그」",g:BOSS_G.maw,po:{B:'#4a6a3a',D:'#243a1c',E:'#d6ff7f',F:'#6a8a2a',X:'#b0906f'},hp:1.35,atk:1}];
 let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='',bossLast=null;
 const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
-const bossLv=g=>Math.min(60,25+g*5),bossMax=g=>Math.round(30000*(1+.35*(g-1)));
-const bossAlive=b=>!!b&&b.hp>0;
+const bossKind=b=>BOSS_KINDS[(b&&b.kind)|0]||BOSS_KINDS[0];
+const bossHpFor=(lv,k)=>Math.round((400*lv+12*lv*lv)*BOSS_KINDS[k].hp);
+const bossAlive=b=>!!b&&b.hp>0&&!b.failed&&!b.gone;
+const bossKilled=b=>!!b&&b.hp<=0&&!!b.killer;
 function bossTx(ref,fn){if(ref.tx)return ref.tx(fn);return ref.get().then(sn=>{const nx=fn(sn.exists?JSON.parse(JSON.stringify(sn.data())):null);return nx?ref.set(nx).then(()=>nx):null})}
-function bossSpawn(prev){const g=prev?(prev.gen||0)+1:1,mx=bossMax(g);return{gen:g,lv:bossLv(g),name:BOSS_NAMES[(g-1)%BOSS_NAMES.length],hp:mx,max:mx,at:Date.now(),dmg:{},hits:0,prev:prev&&prev.dmg?{gen:prev.gen,name:prev.name,dmg:prev.dmg,killer:prev.killer||''}:(prev&&prev.prev)||null}}
-// first visitor creates the boss; after a kill and the lull, the next visitor raises the next one
-function bossEnsure(){if(bossBusy)return;const b=BOSS,due=!b||(!bossAlive(b)&&Date.now()-(b.killedAt||0)>=BOSS_RESPAWN);if(!due)return;bossBusy=true;
-  bossTx(bossRef(),cur=>{if(cur&&(bossAlive(cur)||Date.now()-(cur.killedAt||0)<BOSS_RESPAWN))return null;return bossSpawn(cur)}).catch(()=>{}).finally(()=>{bossBusy=false})}
+const bossSum=b=>b?{gen:b.gen,name:b.name,dmg:b.dmg||{},killer:b.killer||'',failed:!!b.failed,failedAt:b.failedAt||0}:null;
+// admin: summon a chosen invader at a chosen level (replaces nothing while one is still loose)
+function bossSummon(k,lv){return bossTx(bossRef(),cur=>{if(bossAlive(cur))return null;const K=BOSS_KINDS[k],mx=bossHpFor(lv,k),now=Date.now();
+  return{gen:((cur&&cur.gen)||0)+1,kind:k,lv,name:K.n,hp:mx,max:mx,at:now,end:now+BOSS_LIMIT,dmg:{},hits:0,by:P.nick,prev:cur&&(cur.dmg||cur.failed)?bossSum(cur):(cur&&cur.prev)||null}})}
+function bossDismiss(){return bossTx(bossRef(),cur=>{if(!bossAlive(cur))return null;cur.gone=true;cur.goneAt=Date.now();return cur})}
+// when the clock runs out the first client to notice marks the raid failed; everyone then takes the penalty once
+function bossExpire(){const b=BOSS;if(!bossAlive(b)||Date.now()<(b.end||Infinity)||bossBusy)return;bossBusy=true;
+  bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()<cur.end)return null;cur.failed=true;cur.failedAt=Date.now();return cur}).catch(()=>{}).finally(()=>{bossBusy=false})}
+function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b.prev&&b.prev.failed?b.prev:null;
+  if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;
+  P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 4시간 안에 토벌하지 못했다… 침략자의 저주로 모든 단원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
-  bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossClaim();if(tab==='adv')bossPaint()},()=>{});
+  bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossClaim();bossPenalty();bossExpire();if(tab==='adv')bossPaint()},()=>{});
   bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{})}
-// rewards: once per boss for everyone who landed a hit; a share of the damage adds to it
-function bossClaim(){const b=BOSS;if(!b)return;const src=!bossAlive(b)&&b.dmg&&b.dmg[uid]?{gen:b.gen,name:b.name,dmg:b.dmg,killer:b.killer}:b.prev&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
+// rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
+function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
   if(!src||(P.bossGot||0)>=src.gen)return;const tot=Object.values(src.dmg).reduce((a,v)=>a+(v.d||0),0)||1,mine=src.dmg[uid].d||0,share=mine/tot;
   const xp=Math.round(need(P.lvl)*(.25+.5*Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;gainXp(xp);P.cr=(P.cr||0)+cr;add('relic',1);if(src.killer===uid)add('crystal',2);stat('bosskill');
   log(`${src.name}을(를) 쓰러뜨렸다! 기여도 ${(share*100).toFixed(1)}% · 경험치 +${xp.toLocaleString()} · ${cr} CR · 고대 신호 기록×1${src.killer===uid?' · 마지막 일격 보너스 은하 결정×2':''}`,'rare');commit()}
 const bossReady=()=>Math.max(0,(P.bossAt||0)+BOSS_CD-Date.now());
-async function bossHit(){const b=BOSS;if(!bossAlive(b)||bossReady()>0||isFaint()||bossBusy)return;bossBusy=true;
+async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossReady()>0||isFaint()||bossBusy)return;bossBusy=true;
   const crit=Math.random()*100<AS('agi'),d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(crit?1.5:1)));let dealt=0,kill=false;
-  try{await bossTx(bossRef(),cur=>{if(!cur||cur.hp<=0||cur.gen!==b.gen)return null;dealt=Math.min(cur.hp,d);cur.hp-=dealt;cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
+  try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,d);cur.hp-=dealt;cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
   P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(need(P.lvl)*.006));gainXp(xp);
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
-  let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=Math.max(1,Math.round((10+b.lv*1.2)*(.85+Math.random()*.3)-def()*.6));heal(-hit,0);back=`${hit} 피해`}
+  let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=Math.max(1,Math.round((10+b.lv*1.2)*bossKind(b).atk*(.85+Math.random()*.3)-def()*.6));heal(-hit,0);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
   log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
 function bossSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t)return;const m={uid,n:P.nick,t,at:Date.now()};
   return bossTx(bchatRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-BOSS_CHAT_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
 const bossHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='탐사').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
-function bossMainHTML(){const b=BOSS;if(!b)return`<div class="card"><p class="hint">심연의 균열을 살피는 중…</p></div>`;
+const bossSpr=(b,sc)=>{const K=bossKind(b);return img(K.g,null,sc,'',K.po)};
+const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
+function bossMainHTML(){const b=BOSS;
+  if(!b)return`<div class="card bossidle"><b>심연이 조용합니다</b><p class="hint">아직 침략자가 나타나지 않았습니다. 운영자가 침략자를 소환하면 이곳에 나타납니다.</p></div>`;
   const alive=bossAlive(b),rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
-  const left=alive?0:Math.max(0,(b.killedAt||0)+BOSS_RESPAWN-Date.now());
-  const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null;
-  return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${img(BOSS_IC,null,9)}</div>
+  const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null,urgent=alive&&(b.end||0)-Date.now()<30*60e3;
+  return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,9)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
-    ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp">${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span></div></div>
-   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div><p class="hint">공격하면 침략자가 반격합니다(방어력만큼 줄고, 민첩이 높으면 피할 수 있음). 체력이 0이 되면 기절하니 음식으로 체력을 채우십시오.</p>`
-    :`<div class="card"><b>${esc(b.name)}이(가) 쓰러졌다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 더 강한 침략자가 <b id="bossT">${fmtClock(left)}</b> 뒤에 나타납니다.</p></div>`}
+    ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp">${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span>${alive?`<span class="bossclock ${urgent?'urgent':''}" id="bossClock">${bossClock(b)}</span>`:''}</div></div>
+   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div><p class="hint">공격하면 침략자가 반격합니다(방어력만큼 줄고, 민첩이 높으면 피할 수 있음). 체력이 0이 되면 기절하니 음식으로 체력을 채우십시오. <b style="color:var(--red)">4시간 안에 토벌하지 못하면 모든 단원의 체력과 에너지가 1이 됩니다.</b></p>`
+    :b.failed?`<div class="card"><b style="color:var(--red)">토벌 실패…</b><p class="hint">${esc(b.name)}이(가) 4시간을 버티고 심연으로 돌아갔습니다. 저주로 모든 단원의 체력과 에너지가 1이 되었습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`
+    :b.gone?`<div class="card"><b>침략자가 물러났습니다</b><p class="hint">운영자가 ${esc(b.name)}을(를) 심연으로 돌려보냈습니다. 다음 침략자를 기다리십시오.</p></div>`
+    :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
     <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기여도만큼 더), 크레딧, 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>`}
+// admin page: pick one of the 14 invaders and a level, then summon it
+let bossPick=0;
+function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
+  return`<div class="info-sec"><span class="lbl">Invader · 탐사 침략자 소환</span>
+   ${alive?`<div class="row" style="gap:8px;align-items:center">${bossSpr(b,2)}<span class="hint">지금 <b>${esc(b.name)}</b> Lv.${b.lv} 출현 중 · 체력 ${b.hp.toLocaleString()}/${b.max.toLocaleString()} · ${bossClock(b)}</span><button class="btn sm ghost" data-act="admbossoff">돌려보내기</button></div><span class="hint">돌려보내면 보상도 저주도 없이 사라집니다. 침략자가 있는 동안에는 새로 소환할 수 없습니다.</span>`
+   :`<div class="bosspicks">${BOSS_KINDS.map((K,i)=>`<button type="button" class="qchip bosspick" data-act="admbosspick" data-k="${i}" aria-pressed="${i===bossPick}" title="${esc(K.n)}">${img(K.g,null,2,'',K.po)}<span>${esc(K.n)}</span></button>`).join('')}</div>
+    <div class="row" style="gap:6px;align-items:center"><span class="hint">레벨</span><input id="admBossLv" class="sel" type="number" min="1" max="99" value="${lv}" style="width:70px" aria-label="침략자 레벨"><span class="hint" id="admBossHp">체력 ${bossHpFor(lv,bossPick).toLocaleString()}</span><button class="btn sm gold" data-act="admboss">소환</button></div>
+    <span class="hint">소환하면 4시간 안에 토벌해야 합니다. 실패하면 모든 단원의 체력과 에너지가 1이 됩니다.</span>`}</div>`}
 function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 단원에게 인사해 보십시오.</li>'}
-function renderBoss(){bossEnsure();const here=bossHere();
+function renderBoss(){const here=bossHere();
   return head()+`<div class="bossgrid"><div class="bossmain" id="bossMain">${bossMainHTML()}</div>
    <div class="card bosschat"><div class="stat-row"><span>탐사 대화</span><b id="bossHere">${here.length}명</b></div><span class="hint" id="bossWho">${here.map(esc).join(', ')}</span>
     <ol class="bosslog" id="bossLog">${bossChatLogHTML()}</ol>
@@ -1814,13 +1853,12 @@ function renderBoss(){bossEnsure();const here=bossHere();
     <span class="hint">탐사 탭에 있는 단원만 보고 말할 수 있습니다. 최근 ${BOSS_CHAT_MAX}개만 남습니다.</span></div></div>`}
 function bossPaint(){const m=$('#bossMain');if(!m){renderPanel();return}m.innerHTML=bossMainHTML()}
 function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=bossChatLogHTML();if(end)l.scrollTop=l.scrollHeight}
-function bossTick(){if(tab!=='adv')return;const b=BOSS,t=$('#bossT');if(!t)return;
-  if(bossAlive(b)){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}
-  else if(b){const left=(b.killedAt||0)+BOSS_RESPAWN-Date.now();if(left<=0)bossEnsure();t.textContent=fmtClock(Math.max(0,left))}
+function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT');
+  if(bossAlive(b)){const c=$('#bossClock');if(c){c.textContent=bossClock(b);c.classList.toggle('urgent',(b.end||0)-Date.now()<30*60e3)}if(t){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}}
   const h=bossHere(),hc=$('#bossHere'),hw=$('#bossWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 setInterval(bossTick,1000);
 document.addEventListener('submit',e=>{if(e.target.id!=='bossForm')return;e.preventDefault();if(tab!=='adv')return;const i=$('#bossIn');const v=i.value;if(!v.trim())return;i.value='';bossDraft='';bossSay(v)});
-document.addEventListener('input',e=>{if(e.target.id==='bossIn')bossDraft=e.target.value});
+document.addEventListener('input',e=>{if(e.target.id==='bossIn')bossDraft=e.target.value;if(e.target.id==='admBossLv'){const h=$('#admBossHp'),lv=Math.max(1,Math.min(99,+e.target.value||1));if(h)h.textContent='체력 '+bossHpFor(lv,bossPick).toLocaleString()}});
 
 /* gather scene: the collector robot trundling across the chosen site; each site has its own landscape and a little life of its own */
 const GW=240,GH=84,GBG={};let gTimer=0;
@@ -2277,7 +2315,7 @@ function renderPanel(){
   if(tab==='gather')startGatherScene();
   if(tab==='bag')renderCook();
   if(tab==='farm'){fitSide();fitBay()}
-  if(tab==='adv'){bossEnsure();const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
+  if(tab==='adv'){const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
 }
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat()}
@@ -2424,6 +2462,9 @@ const A={
   else if(k==='farm'){FARM.pods.forEach((pl,i)=>{if(pl&&pl.seed)farmPut(i,Object.assign({},pl,{got:ITEMS[pl.seed].grow}))})}
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
   log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했습니다.')},
+ admbosspick(d){if(!isAdmin)return;bossPick=Math.max(0,Math.min(BOSS_KINDS.length-1,+d.k||0));renderAdminAll()},
+ admboss(){if(!isAdmin)return;const lv=Math.max(1,Math.min(99,Math.round(+$('#admBossLv').value)||30)),K=BOSS_KINDS[bossPick];bossSummon(bossPick,lv).then(nx=>{if(!nx){toast('이미 침략자가 출현 중입니다.');return}toast(`${K.n} Lv.${lv}을(를) 소환했습니다.`);sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${lv}) · 4시간 안에 토벌하십시오. 탐사 탭으로!`);renderAdminAll()}).catch(()=>toast('소환하지 못했습니다.'))},
+ admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
  admgive(){if(!isAdmin)return;const id=$('#admItem').value,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[[id,n]],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
@@ -2514,7 +2555,7 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
-const SAFE_ACT=new Set(['raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
