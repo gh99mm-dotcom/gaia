@@ -52,6 +52,25 @@ header>.chip:not(.sugg){margin-left:0}
 .fblist{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}.fbitem{background:var(--deep);border:2px solid var(--ink);padding:6px 8px;font-size:12px;display:flex;flex-direction:column;gap:3px}.fbitem .row{justify-content:space-between}.fbitem p{margin:0;white-space:pre-wrap;word-break:break-all}
 .bgm[aria-pressed="true"]{color:var(--green)}
 .bgm+.chip{margin-left:0}
+.bgm{cursor:pointer}#skinBtn[aria-pressed="false"]{color:var(--mute)}
+.sndpop{position:fixed;z-index:60;width:230px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.sndpop[hidden]{display:none}
+.sndrow{display:grid;grid-template-columns:52px 1fr 40px;align-items:center;gap:8px}.sndrow b{font-size:12px}
+.sndrow input[type=range]{width:100%;accent-color:var(--pink)}.sndrow input[disabled]{opacity:.4}
+.sndrow .qchip{justify-content:center;padding:2px 4px}
+/* 우주모드 OFF: a white station skin; the pixel outlines stay, everything else turns light */
+:root[data-skin="light"]{
+  --void:#e9ebf1; --deep:#f5f6f9; --panel:#ffffff; --panel2:#eef0f5; --ink:#2b2f40; --line:#dcdfe8;
+  --text:#24273a; --mute:#646a82; --dim:#a2a7b9;
+  --pink:#c98aa5; --pinkd:#9a5a76; --violet:#6a5ea8; --violetd:#e2def3; --cyan:#6fa3c4; --cyand:#4a7896;
+  --gold:#8f7322; --green:#3f7d50; --red:#b5434f;
+  color-scheme:light;
+}
+:root[data-skin="light"] #stars{display:none}
+:root[data-skin="light"] body::after{background:none}
+:root[data-skin="light"] .logo h1{text-shadow:2px 2px 0 var(--line)}
+:root[data-skin="light"] .raidlog,:root[data-skin="light"] .dmlog{background:var(--panel2)}
+:root[data-skin="light"] .bar{background:var(--line)}
 .solobanner{display:flex;flex-direction:column;gap:4px;background:#1f1218;border:2px solid var(--red);padding:9px 12px;font-size:12px;line-height:1.6}
 .solobanner>b{color:var(--red);font-family:var(--f-display);font-weight:400;font-size:15px}
 .chip{margin-left:auto;display:flex;align-items:center;gap:8px;padding:4px 9px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);font-family:var(--f-pix);font-size:9px;letter-spacing:.08em}
@@ -611,7 +630,8 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
       <div><h1>가이아 프로젝트</h1><span class="lbl">Gaia project · Sector K-7</span></div>
     </div>
     <button class="chip sugg" id="suggBtn" type="button" data-act="suggopen">건의함</button>
-    <button class="chip bgm" id="bgmBtn" type="button" aria-pressed="true">♪ BGM</button>
+    <button class="chip bgm" id="bgmBtn" type="button" aria-expanded="false" aria-controls="sndPop">♪ 소리</button>
+    <button class="chip bgm" id="skinBtn" type="button" aria-pressed="true">✦ 우주모드 ON</button>
     <button class="chip adminchip" id="adminBtn" type="button" data-act="adminopen" hidden>운영자</button>
     <button class="chip" id="logoutBtn" type="button" onclick="window.__fbLogout&&window.__fbLogout()" hidden style="cursor:pointer;margin-left:0">로그아웃</button>
     <div class="chip" id="netChip"><span class="dot wait"></span><span>통신 연결 중</span></div>
@@ -1798,25 +1818,26 @@ function renderFish(){
   ${lastFish?`<div class="card result">${iicon(lastFish.id,3)}<div><p><b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier} 등급</p><p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}</p></div></div>`:''}
   ${dexHTML()}`;
 }
-let AC=null,soundOn=true;try{soundOn=localStorage.getItem('nebula-sound')!=='off'}catch(e){}
+let AC=null,soundOn=true,sfxVol=100;try{soundOn=localStorage.getItem('nebula-sound')!=='off';const v=localStorage.getItem('nebula-sfxv');if(v!=null)sfxVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
+function sfxOut(a){if(!a.master){a.master=a.createGain();a.master.connect(a.destination)}a.master.gain.value=sfxVol/100;return a.master}
 function ac(){try{if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C()}if(AC.state==='suspended')AC.resume();return AC}catch(e){return null}}
-function tone(a,type,f0,f1,t,dur,vol){const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+function tone(a,type,f0,f1,t,dur,vol){const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(sfxOut(a));o.start(t);o.stop(t+dur+.02)}
 function sfxCast(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,len=.5;
   const buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
   const src=a.createBufferSource();src.buffer=buf;const f=a.createBiquadFilter();f.type='bandpass';f.Q.value=1.4;f.frequency.setValueAtTime(350,t);f.frequency.exponentialRampToValueAtTime(2800,t+.16);f.frequency.exponentialRampToValueAtTime(600,t+len);
-  const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.45,t+.07);g.gain.exponentialRampToValueAtTime(.0001,t+len);src.connect(f).connect(g).connect(a.destination);src.start(t);src.stop(t+len);
+  const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.45,t+.07);g.gain.exponentialRampToValueAtTime(.0001,t+len);src.connect(f).connect(g).connect(sfxOut(a));src.start(t);src.stop(t+len);
   for(let k=0;k<8;k++)tone(a,'square',1900-k*60,0,t+.1+k*.04,.018,.04);
   tone(a,'sine',420,110,t+.62,.22,.25)}
 function sfxBite(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'sine',1568,0,t,1.1,.32);tone(a,'sine',3136,0,t,.5,.08);tone(a,'triangle',2349,0,t+.002,.35,.05)}
 function sfxLever(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'square',190,80,t,.09,.09);tone(a,'triangle',620,0,t+.05,.05,.05)}
 function sfxTick(ang){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,g=Math.abs(ang)<=(fish.zone||9);tone(a,'square',g?1500:700+(84-Math.abs(ang))*6,0,t,.022,g?.05:.028);if(g)tone(a,'sine',2100,0,t,.06,.03)}
 function sfxSplash(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;
-  const burst=(at,len,f0,f1,vol)=>{const buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type='lowpass';f.Q.value=.8;f.frequency.setValueAtTime(f0,at);f.frequency.exponentialRampToValueAtTime(f1,at+len);const g=a.createGain();g.gain.setValueAtTime(vol,at);s.connect(f).connect(g).connect(a.destination);s.start(at);s.stop(at+len)};
+  const burst=(at,len,f0,f1,vol)=>{const buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type='lowpass';f.Q.value=.8;f.frequency.setValueAtTime(f0,at);f.frequency.exponentialRampToValueAtTime(f1,at+len);const g=a.createGain();g.gain.setValueAtTime(vol,at);s.connect(f).connect(g).connect(sfxOut(a));s.start(at);s.stop(at+len)};
   burst(t,.55,3200,300,.55);burst(t+.12,.35,2200,400,.3);
   [[.08,900],[.17,1300],[.26,760],[.34,1100],[.45,980]].forEach(([dt,fr])=>tone(a,'sine',fr,fr*1.8,t+dt,.06,.05))}
-function noiseBurst(a,at,len,type,f0,f1,vol,shape=2){const buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,shape);const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type=type;f.Q.value=1;f.frequency.setValueAtTime(f0,at);f.frequency.exponentialRampToValueAtTime(f1,at+len);const g=a.createGain();g.gain.setValueAtTime(vol,at);s.connect(f).connect(g).connect(a.destination);s.start(at);s.stop(at+len)}
+function noiseBurst(a,at,len,type,f0,f1,vol,shape=2){const buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,shape);const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type=type;f.Q.value=1;f.frequency.setValueAtTime(f0,at);f.frequency.exponentialRampToValueAtTime(f1,at+len);const g=a.createGain();g.gain.setValueAtTime(vol,at);s.connect(f).connect(g).connect(sfxOut(a));s.start(at);s.stop(at+len)}
 function sfxPlant(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.18,'lowpass',900,200,.5,3);noiseBurst(a,t+.14,.14,'lowpass',700,150,.35,3);tone(a,'sine',260,120,t+.02,.12,.18);tone(a,'triangle',880,0,t+.3,.08,.05)}
-function sfxWater(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;const len=1.1,buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++){const p=i/d.length;d[i]=(Math.random()*2-1)*Math.min(1,p*8)*Math.min(1,(1-p)*3)}const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type='bandpass';f.Q.value=.9;f.frequency.setValueAtTime(1600,t);f.frequency.linearRampToValueAtTime(1100,t+len);const g=a.createGain();g.gain.value=.3;s.connect(f).connect(g).connect(a.destination);s.start(t);s.stop(t+len);for(let k=0;k<7;k++)tone(a,'sine',700+Math.random()*900,0,t+.1+Math.random()*.9,.05,.035)}
+function sfxWater(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;const len=1.1,buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++){const p=i/d.length;d[i]=(Math.random()*2-1)*Math.min(1,p*8)*Math.min(1,(1-p)*3)}const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type='bandpass';f.Q.value=.9;f.frequency.setValueAtTime(1600,t);f.frequency.linearRampToValueAtTime(1100,t+len);const g=a.createGain();g.gain.value=.3;s.connect(f).connect(g).connect(sfxOut(a));s.start(t);s.stop(t+len);for(let k=0;k<7;k++)tone(a,'sine',700+Math.random()*900,0,t+.1+Math.random()*.9,.05,.035)}
 function sfxHarvest(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.25,'highpass',2500,900,.22,1.5);tone(a,'sine',300,900,t+.06,.09,.22);noiseBurst(a,t+.1,.2,'lowpass',800,200,.3,3);tone(a,'triangle',1320,0,t+.22,.12,.06);tone(a,'triangle',1760,0,t+.3,.14,.05)}
 function sfxCoin(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'square',1976,0,t,.07,.05);tone(a,'sine',2637,0,t+.06,.35,.14);tone(a,'sine',3136,0,t+.06,.25,.06);tone(a,'triangle',2349,0,t+.13,.3,.08);noiseBurst(a,t,.12,'highpass',6000,4000,.08,1.5)}
 function sfxSell(many){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,k=many?5:3;for(let i=0;i<k;i++){const tt=t+i*.075,f=[2349,2637,2093,2794,2489][i%5];tone(a,'sine',f,0,tt,.22,.09);tone(a,'square',f*1.5,0,tt,.03,.03)}noiseBurst(a,t+k*.075,.1,'highpass',5000,3000,.06,1.5);tone(a,'triangle',1568,0,t+k*.075+.05,.4,.07)}
@@ -2727,13 +2748,31 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
   $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence()});
 
 /* ───────── bgm ───────── */
-const bgm=new Audio('bgm.mp3');bgm.loop=true;bgm.volume=.35;bgm.preload='auto';
-let bgmOn=true;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off'}catch(e){}
-function syncBgm(){const b=$('#bgmBtn');b.setAttribute('aria-pressed',bgmOn);b.textContent=bgmOn?'♪ BGM 켜짐':'♪ BGM 꺼짐';if(bgmOn){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
+const bgm=new Audio('bgm.mp3');bgm.loop=true;bgm.preload='auto';
+let bgmOn=true,bgmVol=35;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off';const v=localStorage.getItem('nebula-bgmv');if(v!=null)bgmVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+function syncBgm(){bgm.volume=bgmVol/100;if(bgmOn&&bgmVol>0){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
 $('#suggBtn').innerHTML=img(ENV,null,1)+'건의함';
-$('#bgmBtn').addEventListener('click',e=>{e.stopPropagation();bgmOn=!bgmOn;try{localStorage.setItem('nebula-bgm',bgmOn?'on':'off')}catch(_){}syncBgm()});
-document.addEventListener('pointerdown',function first(e){if(e.target.closest('#bgmBtn'))return;document.removeEventListener('pointerdown',first,true);if(bgmOn&&bgm.paused)syncBgm()},true);
-$('#bgmBtn').textContent=bgmOn?'♪ BGM 켜짐':'♪ BGM 꺼짐';$('#bgmBtn').setAttribute('aria-pressed',bgmOn);
+/* sound panel: BGM and effects each get an on/off switch and a volume slider */
+const sndPop=document.createElement('div');sndPop.id='sndPop';sndPop.className='sndpop px';sndPop.hidden=true;sndPop.setAttribute('role','dialog');sndPop.setAttribute('aria-label','소리 설정');document.body.appendChild(sndPop);
+function sndHTML(){const row=(k,n,on,v)=>`<div class="sndrow"><b>${n}</b><input type="range" min="0" max="100" step="5" value="${v}" data-snd="${k}" aria-label="${n} 크기" ${on?'':'disabled'}><button type="button" class="qchip" data-sndt="${k}" aria-pressed="${on}">${on?'켜짐':'꺼짐'}</button></div>`;
+  sndPop.innerHTML=`<span class="lbl">Sound · 소리</span>${row('bgm','BGM',bgmOn,bgmVol)}${row('sfx','효과음',soundOn,sfxVol)}`}
+function sndPlace(){const r=$('#bgmBtn').getBoundingClientRect();sndPop.style.top=Math.round(r.bottom+6)+'px';sndPop.style.left=Math.round(Math.max(8,Math.min(innerWidth-238,r.right-230)))+'px'}
+function sndToggle(open){sndPop.hidden=!open;$('#bgmBtn').setAttribute('aria-expanded',open);if(open){sndHTML();sndPlace()}}
+$('#bgmBtn').addEventListener('click',e=>{e.stopPropagation();sndToggle(sndPop.hidden)});
+sndPop.addEventListener('click',e=>{e.stopPropagation();const t=e.target.closest('[data-sndt]');if(!t)return;
+  if(t.dataset.sndt==='bgm'){bgmOn=!bgmOn;lsSet('nebula-bgm',bgmOn?'on':'off');syncBgm()}else{soundOn=!soundOn;lsSet('nebula-sound',soundOn?'on':'off');if(soundOn){ac();sfxBite()}if(tab==='fish')renderPanel()}sndHTML()});
+sndPop.addEventListener('input',e=>{const k=e.target.dataset.snd;if(!k)return;const v=+e.target.value;if(k==='bgm'){bgmVol=v;lsSet('nebula-bgmv',v);syncBgm()}else{sfxVol=v;lsSet('nebula-sfxv',v);if(AC&&AC.master)AC.master.gain.value=v/100}});
+sndPop.addEventListener('change',e=>{if(e.target.dataset.snd==='sfx'&&soundOn){ac();sfxCoin()}});
+document.addEventListener('click',e=>{if(!sndPop.hidden&&!e.target.closest('#sndPop,#bgmBtn'))sndToggle(false)});
+addEventListener('resize',()=>{if(!sndPop.hidden)sndPlace()});addEventListener('scroll',()=>{if(!sndPop.hidden)sndPlace()},{passive:true});
+document.addEventListener('pointerdown',function first(e){if(e.target.closest('#bgmBtn,#sndPop'))return;document.removeEventListener('pointerdown',first,true);if(bgmOn&&bgm.paused)syncBgm()},true);
+bgm.volume=bgmVol/100;
+/* skin: 우주모드 ON is the dark starfield station, OFF turns the whole station white */
+let spaceOn=true;try{spaceOn=localStorage.getItem('nebula-skin')!=='light'}catch(e){}
+function syncSkin(){document.documentElement.toggleAttribute('data-skin',!spaceOn);if(!spaceOn)document.documentElement.dataset.skin='light';const b=$('#skinBtn');b.setAttribute('aria-pressed',spaceOn);b.textContent=spaceOn?'✦ 우주모드 ON':'✦ 우주모드 OFF'}
+$('#skinBtn').addEventListener('click',e=>{e.stopPropagation();spaceOn=!spaceOn;lsSet('nebula-skin',spaceOn?'space':'light');syncSkin()});
+syncSkin();
 
 /* ───────── starfield ───────── */
 const cv=$('#stars'),cx=cv.getContext('2d');let stars=[];
