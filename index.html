@@ -329,6 +329,19 @@ header>.chip:not(.sugg){margin-left:0}
 .info-head{display:flex;gap:12px;align-items:center}
 .info-head h2{font-size:22px;word-break:break-all}
 .info-sec{display:flex;flex-direction:column;gap:6px}
+.mepage{display:flex;flex-direction:column;gap:12px}
+.mehero{display:grid;grid-template-columns:auto minmax(0,1fr) 170px;gap:16px;align-items:center;padding:14px;background:radial-gradient(ellipse at 12% 50%,var(--violetd),var(--deep) 65%);border:2px solid var(--ink)}
+.meport{padding:6px;background:var(--panel);border:2px solid var(--ink);line-height:0}
+.meid{display:flex;flex-direction:column;gap:6px;min-width:0}.meid h2{font-size:24px;overflow-wrap:anywhere}.meid .lv{font-family:var(--f-pix);font-size:9px;letter-spacing:.1em;color:var(--gold)}
+.memeters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mequick{display:grid;grid-template-columns:1fr;gap:4px;align-self:stretch;align-content:center}.mequick>div{display:flex;justify-content:space-between;align-items:baseline;background:var(--panel);border:2px solid var(--ink);padding:4px 9px}.mequick span{font-size:11px;color:var(--mute)}.mequick b{font-family:var(--f-display);font-weight:400;font-size:17px}.mequick .btn{justify-content:center;margin-top:2px}
+.megrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.mecol{display:flex;flex-direction:column;gap:12px;min-width:0}
+.mecard{display:flex;flex-direction:column;gap:8px;background:var(--deep);border:2px solid var(--ink);padding:10px 12px;min-width:0}
+.mecard .life{background:var(--panel)}.mecard .lifes{grid-template-columns:minmax(0,1fr)}
+.abrows{display:flex;flex-direction:column;gap:3px}.abrow{display:grid;grid-template-columns:54px 32px minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:4px 6px 4px 9px}.abrow b{font-weight:400}.abrow .abv{font-family:var(--f-display);font-size:18px;color:var(--gold);text-align:center}.abrow .btn{padding:4px 10px}
+.merows{margin:0;display:flex;flex-direction:column}.merows div{display:flex;justify-content:space-between;gap:10px;padding:5px 2px;border-bottom:1px dashed var(--line)}.merows div:last-child{border-bottom:0}.merows dt{color:var(--mute)}.merows dd{margin:0;text-align:right;overflow-wrap:anywhere}
+@media(max-width:760px){.mehero{grid-template-columns:auto minmax(0,1fr)}.mequick{grid-column:1/-1;grid-template-columns:repeat(3,1fr) auto}.megrid{grid-template-columns:1fr}}
+@media(max-width:460px){.mehero{grid-template-columns:1fr;justify-items:start}.mequick{grid-template-columns:repeat(3,1fr)}.mequick .btn{grid-column:1/-1}.mequick>div{flex-direction:column;align-items:center;gap:0}.memeters{grid-template-columns:1fr}}
 .istats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
 .istats div{display:flex;justify-content:space-between;gap:8px;background:var(--deep);border:2px solid var(--ink);padding:4px 8px;font-size:11.5px}
 .istats span{color:var(--mute)}
@@ -1356,15 +1369,29 @@ function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[
 function renderInfo(){if(!$('#infoBox'))return;
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${lifePct(k).toFixed(1)}%</span></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
-  const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
-  $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div></div>
-   <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
-   <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 2포인트씩 더 받습니다. 능력치는 2 아래로 내려가지 않습니다.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
-   ${tasteHTML(P)}
-   <div class="info-sec"><div class="row" style="justify-content:space-between"><span class="lbl">Relations · 인물 관계도</span><button class="btn sm alt" data-act="relopen">관계도 보기</button></div></div>
-   <div class="info-sec"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></div>
-   <div class="info-sec"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${t[1]}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</div>
-   <div class="info-sec"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></div>`;
+  const xpN=need(P.lvl),xpP=P.lvl>=MAX_LV?100:Math.min(100,(P.xp||0)/xpN*100),gearN=Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음';
+  const meter=(n,v,mx,c)=>`<div class="stat"><div class="stat-row"><span>${n}</span><b>${v}</b></div><div class="bar"><i style="--c:${c};width:${Math.max(0,Math.min(100,mx))}%"></i></div></div>`;
+  const rows=list=>`<dl class="merows">${list.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl>`;
+  // my profile as a page: who I am up top, then what I can do (left) and what I carry and have done (right)
+  $('#infoBox').innerHTML=`<div class="mehero">
+    <div class="meport">${meImg(6)}</div>
+    <div class="meid"><span class="lv">${esc(titleName())}</span>
+     ${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}
+     <span class="hint">LV.${P.lvl} · 직업 ${P.job?esc(JOBS[P.job].n):'없음'}</span>
+     ${meter('경험치',P.lvl>=MAX_LV?'MAX':`${(P.xp||0).toLocaleString()} / ${xpN.toLocaleString()}`,xpP,'var(--violet)')}
+     <div class="memeters">${meter('체력',`${P.hp}/${maxHp()}`,P.hp/maxHp()*100,'var(--pink)')}${meter('에너지',`${P.en}/${maxEn()}`,P.en/maxEn()*100,'var(--gold)')}</div></div>
+    <div class="mequick"><div><span>공격력</span><b>${atk()}</b></div><div><span>방어력</span><b>${def()}</b></div><div><span>크레딧</span><b>${(P.cr||0).toLocaleString()}</b></div><button class="btn sm alt" data-act="relopen">관계도 보기</button></div></div>
+   <div class="megrid"><div class="mecol">
+    <section class="mecard"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div>
+     <div class="abrows">${ABIL.map(([k,n,d])=>`<div class="abrow"><b>${n}</b><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div>
+     <div class="row" style="justify-content:space-between;gap:8px"><span class="hint">기본 2씩 + 15포인트로 시작하고 레벨마다 2포인트를 받습니다.</span><button class="qchip" data-act="resetpt">초기화</button></div></section>
+    <section class="mecard"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></section></div>
+   <div class="mecol">
+    <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
+    <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
+    ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
+   <section class="mecard"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></section>
+   <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${t[1]}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</section>`;
 }
 const LOG=[];
 function log(text,kind=''){LOG.unshift({t:Date.now(),text,kind});LOG.length=Math.min(LOG.length,40);renderLog()}
