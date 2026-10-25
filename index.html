@@ -830,38 +830,46 @@ scroll:["..........",".kkkkkkk..",".kwhwwwk..",".kwaaawk..",".kwwwwwk..",".kwaaa
 function mix(a,b,f){const A=parseInt(a.slice(1),16),B=parseInt(b.slice(1),16);return'#'+[16,8,0].map(s=>{const x=(A>>s)&255,y=(B>>s)&255;return Math.round(x+(y-x)*f).toString(16).padStart(2,'0')}).join('')}
 const SPR={};
 function spr(grid,tint,po){const key=grid.join('|')+(tint||'')+(po?JSON.stringify(po):'');if(SPR[key])return SPR[key];const w=Math.max(...grid.map(r=>r.length)),h=grid.length;const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');const pal=Object.assign({},PAL,po||{});if(tint){tint=mix(tint,'#5d6274',.55);pal.a=tint;pal.b=mix(tint,'#07080e',.5);pal.h=mix(tint,'#c4c7d4',.35)}for(let j=0;j<h;j++)for(let i=0;i<grid[j].length;i++){const c=pal[grid[j][i]];if(!c)continue;x.fillStyle=c;x.fillRect(i,j,1,1)}return SPR[key]={src:cv.toDataURL(),w,h}}
-/* top-down starfighter icon, grey hull with muted peach accents; authored on a 40-unit grid and sampled at any size (logo 40px ×2, tab 32px) */
+/* the colony ship as a top-down starfighter: steel hull with cool blue accents, authored on a 40-unit grid.
+   st marks repaired parts (the icon passes everything repaired); returns a colour or null for a point (X,y). */
+const SHIPC={h:'#c3c9d4',l:'#9aa2b2',m:'#747c8e',d:'#535a6b',D:'#383e4c',q:'#d4ecf7',p:'#7fb4d2',P:'#4b7690',off:'#1d2230'};
+const SHIP_ALL={hull:1,engine:1,power:1,life:1,nav:1,comm:1};
+function shipColorAt(X,y,st){
+  const C=SHIPC,dx=X-20,ax=Math.abs(dx),lit=dx<0;let c=null;
+  // wings: slope down toward the tips, blue trailing edge
+  if(ax>=4&&ax<18.5){const top=17+(ax-4)*.38,bot=22.5+(ax-4)*.32;if(y>top&&y<bot)c=y<top+1.2?C.h:y>bot-1.6&&ax>5.5?C.P:lit?C.m:C.d}
+  // wing-tip barb
+  if(ax>=17&&ax<19.5&&y>=22&&y<26.5-(ax-17)*1.2)c=C.P;
+  // three towers on each wing; their tips glow once the power core works
+  for(const tc of [7.2,11.4,15.4]){const top=17+(tc-4)*.38,bot=22.5+(tc-4)*.32,t0=top-6.5+(tc-7)*.15,t1=bot+3.2,e=ax-tc;
+    if(Math.abs(e)<1.15&&y>t0&&y<t1){const tip=y<t0+1.4;c=tip?(Math.abs(e)<.6?(st.power?C.q:C.l):null):e*(lit?-1:1)<0?C.l:C.D;if(!tip&&y>t1-1.3)c=C.P}
+    if(Math.abs(e)<.5&&y>t0-1.2&&y<=t0)c=st.power?C.q:C.h}
+  // body
+  if(y>13.5&&y<30.5){const w=5-(y-13.5)*.13;if(ax<w)c=ax>w-1.1?(lit?C.l:C.D):lit?C.m:C.d}
+  // hood: widening V from the nose; its rim lights up with the navigation array
+  if(y>6.5&&y<19){const w=1.4+(y-6.5)*.58;if(ax<w){const inner=(y-8.5)*.42;c=ax>w-1.1?(lit?C.h:C.d):ax>inner+.9?(lit?C.l:C.m):ax>inner&&y>9?(st.nav?C.p:C.off):y>9?(ax<.9&&y>12?C.P:C.D):C.l}}
+  // nose spire (the comms mast): snapped off until repaired
+  if(y>(st.comm?2:4.6)&&y<=7&&ax<(y<3.4?.6:1.3))c=y<3.4?C.h:lit?C.h:C.l;
+  if(y>4.5&&y<6&&ax>=1.3&&ax<2.6)c=C.m;
+  // cockpit glow down the spine (life support)
+  if(y>19&&y<27.5&&ax<1.1)c=st.life?(ax<.55&&y<23?C.q:y>25?C.P:C.p):C.off;
+  if(y>19&&y<27.5&&ax>=1.1&&ax<2)c=lit?C.l:C.d;
+  // aft fins and tail spike
+  if(y>27&&y<32.5&&ax>=3&&ax<6.2-(y-27)*.35)c=lit?C.d:C.D;
+  if(y>=30.5&&y<37.5&&ax<(y<33?2:1))c=y>36?C.h:lit?C.l:C.m;
+  // hull breach torn through the right wing, or a riveted patch once fixed
+  if(c&&dx>8&&dx<14&&y>17.5&&y<24.5){const e=Math.abs(dx-11)/3+Math.abs(y-21)/3.2+Math.sin(dx*2.1+y*1.3)*.12;
+    if(st.hull){if(Math.abs(dx-11)<2.4&&Math.abs(y-21)<1.8)c=(Math.abs(dx-11)>1.6||Math.abs(y-21)>1.1)?C.h:C.l}
+    else if(e<1)c=e<.7?'#050508':'#7a2a2a'}
+  return c;
+}
 const SHIPIC={};
 function shipIcon(n,scale){
   const key=n+'x'+scale;if(!SHIPIC[key]){
     const cv=document.createElement('canvas');cv.width=cv.height=n;const g=cv.getContext('2d'),M=[],k=40/n;
-    const C={h:'#c9c8c2',l:'#a3a29d',m:'#7d7c78',d:'#5a5956',D:'#3e3d3b',q:'#f2cdb4',p:'#d9a184',P:'#9c6b58'};
-    for(let j=0;j<n;j++)for(let i=0;i<n;i++){
-      const X=(i+.5)*k,y=(j+.5)*k,dx=X-20,ax=Math.abs(dx),lit=dx<0;let c=null;
-      // wings: slope down toward the tips, peach trailing edge
-      if(ax>=4&&ax<18.5){const top=17+(ax-4)*.38,bot=22.5+(ax-4)*.32;if(y>top&&y<bot)c=y<top+1.2?C.h:y>bot-1.6&&ax>5.5?C.p:lit?C.m:C.d}
-      // wing-tip barb
-      if(ax>=17&&ax<19.5&&y>=22&&y<26.5-(ax-17)*1.2)c=C.P;
-      // three towers on each wing, sticking out above and below the wing
-      for(const tc of [7.2,11.4,15.4]){const top=17+(tc-4)*.38,bot=22.5+(tc-4)*.32,t0=top-6.5+(tc-7)*.15,t1=bot+3.2;const e=ax-tc;
-        if(Math.abs(e)<1.15&&y>t0&&y<t1){const tip=y<t0+1.4;c=tip?(Math.abs(e)<.6?C.h:null):e*(lit?-1:1)<0?C.l:C.D;if(!tip&&y>t1-1.3)c=C.P}
-        if(Math.abs(e)<.5&&y>t0-1.2&&y<=t0)c=C.h}
-      // body
-      if(y>13.5&&y<30.5){const w=5-(y-13.5)*.13;if(ax<w)c=ax>w-1.1?(lit?C.l:C.D):lit?C.m:C.d}
-      // hood: widening V from the nose with a peach rim
-      if(y>6.5&&y<19){const w=1.4+(y-6.5)*.58;if(ax<w){const inner=(y-8.5)*.42;c=ax>w-1.1?(lit?C.h:C.d):ax>inner+.9?(lit?C.l:C.m):ax>inner&&y>9?C.p:y>9?(ax<.9&&y>12?C.P:C.D):C.l}}
-      // nose spire with little side spikes
-      if(y>2&&y<=7&&ax<(y<3.4?.6:1.3))c=y<3.4?C.h:lit?C.h:C.l;
-      if(y>4.5&&y<6&&ax>=1.3&&ax<2.6)c=C.m;
-      // cockpit glow down the spine
-      if(y>19&&y<27.5&&ax<1.1)c=ax<.55&&y<23?C.q:y>25?C.P:C.p;
-      if(y>19&&y<27.5&&ax>=1.1&&ax<2)c=lit?C.l:C.d;
-      // aft fins and tail spike
-      if(y>27&&y<32.5&&ax>=3&&ax<6.2-(y-27)*.35)c=lit?C.d:C.D;
-      if(y>=30.5&&y<37.5&&ax<(y<33?2:1))c=y>36?C.h:lit?C.l:C.m;
-      if(c)M[j*n+i]=c}
+    for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=shipColorAt((i+.5)*k,(j+.5)*k,SHIP_ALL);if(c)M[j*n+i]=c}
     // outline: dark pixel wherever a filled pixel touches empty space
-    const O=M.slice();for(let j=0;j<n;j++)for(let i=0;i<n;i++){if(M[j*n+i])continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const ii=i+a,jj=j+b;return ii>=0&&jj>=0&&ii<n&&jj<n&&M[jj*n+ii]}))O[j*n+i]='#161414'}
+    const O=M.slice();for(let j=0;j<n;j++)for(let i=0;i<n;i++){if(M[j*n+i])continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const ii=i+a,jj=j+b;return ii>=0&&jj>=0&&ii<n&&jj<n&&M[jj*n+ii]}))O[j*n+i]='#12141a'}
     for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=O[j*n+i];if(c){g.fillStyle=c;g.fillRect(i,j,1,1)}}
     SHIPIC[key]=cv.toDataURL()}
   return`<img class="pix" src="${SHIPIC[key]}" width="${n*scale}" height="${n*scale}" alt="">`;
@@ -1617,7 +1625,7 @@ function renderShip(){
    <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?`<button class="btn sm alt" data-act="shipgive" data-k="${pt.id}" data-i="${id}" ${my?'':'disabled'}>넣기</button>`:'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>
   <div class="card"><div class="stat-row"><span>수리 기여 순위</span><b>내 기여 ${mine}개</b></div>${top.length?`<ol class="shiprank">${top.map(([id,r],k)=>`<li><span>${k+1}</span><button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(id===uid?P.nick:(PLAYERS[id]&&PLAYERS[id].nick)||r.nick||'단원')}</button><b>${r.n}개</b></li>`).join('')}</ol>`:'<p class="hint">아직 아무도 재료를 넣지 않았습니다. 첫 번째 수리공이 되어 보십시오.</p>'}</div>`;
 }
-/* ship scene: a pixel-art crash site on an alien world; repaired parts light up on the hull */
+/* ship scene: a pixel-art crash site on an alien world; repaired parts show on the downed starfighter */
 const SW=240,SH=120,BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
 let shipBg=null,shipBgKey='',shipTimer=0;
 function shipSceneBuild(st){
@@ -1648,35 +1656,19 @@ function shipSceneBuild(st){
   for(let k=0;k<60;k++){const x=rnd()*SW|0,y=HZ+3+rnd()*(SH-HZ-3)|0;px(x,y,'#2a2236');if(rnd()<.4)px(x+1,y,'#221c2c')}
   // lantern glow on the ground
   const LX=78,LY=104;for(let y=HZ;y<SH;y++)for(let x=20;x<150;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
-  // the ship: long fuselage, nose buried in a mound on the right
-  const cyAt=x=>80+(x-120)*.05,hAt=x=>x<72?6+(x-58)*.3:x>184?Math.max(0,11*(1-Math.pow((x-184)/26,2))):11;
-  // tail fin
-  {const yb=Math.round(cyAt(80)-8);for(let y=46;y<=yb;y++){const t=(y-46)/(yb-46),x0=Math.round(60+t*6),x1=Math.round(70+t*26);for(let x=x0;x<=x1;x++)px(x,y,x===x0||y===46?'#7e849a':x>x1-2?'#3a3e50':'#545a70')}}
-  for(let x=58;x<=210;x++){const cy=cyAt(x),h=hAt(x);if(h<=0)continue;for(let y=Math.round(cy-h);y<=Math.round(cy+h);y++){const r=(y-(cy-h))/(2*h);
-    let col=r<.12?'#8a90a6':r<.5?'#626882':r<.8?'#474c60':'#2e3140';if(r>=.5&&r<.8&&dith(x,y,.3))col='#3a3e50';if((x-64)%19===0&&r>.1&&r<.9)col='#363a4a';px(x,y,col)}}
-  // wing stub
-  for(let k=0;k<10;k++)for(let x=96+k;x<=128;x++)px(x,Math.round(cyAt(x)+9+k*.5),k===0?'#8a90a4':'#4a4f62');
-  // engine nozzle at the tail
-  for(let y=-6;y<=6;y++){px(56,cyAt(58)+y,'#2c2f3c');px(57,cyAt(58)+y,'#3c4052')}
-  // cockpit glass near the nose (navigation)
-  for(let x=176;x<=192;x++){const cy=cyAt(x);for(let y=Math.round(cy-9);y<=Math.round(cy-5)+(x>186?2:0);y++)px(x,y,st.nav?(y<cy-7?'#bff0ff':'#5fd8ff'):(dith(x,y,.4)?'#202838':'#141a26'))}
-  // portholes (life support)
-  for(let x=104;x<=140;x+=9){const y=Math.round(cyAt(x)-3);[[0,0],[1,0],[0,1],[1,1]].forEach(([a,b])=>px(x+a,y+b,st.life?'#ffd68a':'#1a1d28'))}
-  // hatch emblem (power core)
-  {const ex=84,ey=Math.round(cyAt(84));for(let y=-5;y<=5;y++)for(let x=-5;x<=5;x++){const d=Math.hypot(x,y);if(d<=5)px(ex+x,ey+y,d>4?'#22252f':d>3?'#8a90a4':st.power?(d<1.6?'#fff2b0':'#e0a038'):'#2c2a24')}}
-  // hull breach, or a riveted patch once the hull is fixed
-  {const hx=150;for(let y=-5;y<=5;y++)for(let x=-12;x<=12;x++){const e=Math.abs(x)/12+Math.abs(y)/5.5+Math.sin(x*1.7+y)*.12,X=hx+x,Y=Math.round(cyAt(X))+y-1;
-    if(st.hull){if(Math.abs(x)<=9&&Math.abs(y)<=4)px(X,Y,(Math.abs(x)===9||Math.abs(y)===4)?((x+y)%3===0?'#c8ccd8':'#6a7086'):'#8e94a8')}
-    else if(e<.85)px(X,Y,e<.6?'#050508':'#7a2a2a')}
-   if(!st.hull)[[122,-2],[166,3],[176,1]].forEach(([x0,dy])=>{let y=Math.round(cyAt(x0))+dy;for(let k=0;k<9;k++){px(x0+k,y,'#2a2d38');if(k%3===2)y+=k%2?1:-1}})}
-  // antenna mast (comms): bent until repaired
-  {const ax=168,ay=Math.round(cyAt(168)-11);for(let k=1;k<=12;k++)px(st.comm?ax:ax+Math.round(k*k/14),ay-k,'#8a90a4');const tx=st.comm?ax:ax+10,ty=ay-12;px(tx-1,ty,'#c8ccd8');px(tx+1,ty,'#c8ccd8');px(tx,ty-1,'#c8ccd8')}
-  // mound burying the nose
-  for(let x=180;x<238;x++){const h=96-Math.max(0,12-Math.abs(x-208)*.45)-Math.max(0,4-Math.abs(x-196)*.5);for(let y=Math.round(h);y<HZ+3;y++)px(x,y,dith(x,y,.35)?'#241d30':'#191422')}
+  // the ship: the same starfighter lying on the ground, nose to the right, seen at a low angle
+  const S=2.6,Q=.7,PH=-1.05,SCX=122,SCY=70,sn=Math.sin(PH),cs=Math.cos(PH);
+  const toScene=(X,Y)=>{const lx=(X-20)*S,ly=(Y-20)*S;return[SCX-lx*sn-ly*cs,SCY+(lx*cs-ly*sn)*Q]};
+  // shadow under the hull
+  for(let y=88;y<104;y++)for(let x=40;x<210;x++){const d=Math.hypot((x-122)/78,(y-96)/7);if(d<1&&dith(x,y,(1-d)*.9))px(x,y,'#0b0912')}
+  {const M=new Map();for(let y=20;y<118;y++)for(let x=20;x<236;x++){const vx=x+.5-SCX,vy=(y+.5-SCY)/Q,lx=-vx*sn+vy*cs,ly=-vx*cs-vy*sn,col=shipColorAt(20+lx/S,20+ly/S,st);if(col)M.set(y*SW+x,col)}
+   M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW;px(x,y,col);[[1,0],[-1,0],[0,1],[0,-1]].forEach(([a,b])=>{if(!M.has((y+b)*SW+x+a))px(x+a,y+b,'#0d0f16')})})}
+  // dirt piled against the nose where it ploughed in
+  {const [nx]=toScene(20,2);for(let x=Math.round(nx)-14;x<nx+22;x++){const h=97-Math.max(0,9-Math.abs(x-nx-4)*.6);for(let y=Math.round(h);y<HZ+5;y++)px(x,y,dith(x,y,.35)?'#241d30':'#191422')}}
   // lantern post
   px(LX,LY-1,'#ffe9a8');px(LX,LY,'#e09040');px(LX,LY+1,'#5a3a24');
   const stars=[];for(let k=0;k<46;k++)stars.push({x:rnd()*SW|0,y:rnd()*72|0,p:rnd()*6.28,s:.6+rnd()*1.6,big:rnd()<.2});
-  return{c,stars,cyAt,LX,LY};
+  return{c,stars,LX,LY,breach:toScene(11,21),tail:toScene(20,37.5),nose:toScene(20,2)};
 }
 function shipSceneDraw(cv,t){
   const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('');
@@ -1687,12 +1679,13 @@ function shipSceneDraw(cv,t){
   // a shooting star every ~9 seconds
   {const ph=(t%9000)/9000;if(ph<.09){const k=ph/.09,x=150+k*70,y=6+k*22;for(let i=0;i<6;i++)px(x-i*2.4,y-i*.75,i?'#8a86c8':'#ffffff')}}
   // smoke from the breach until every part is repaired
-  if(SHIP.some(p=>!st[p.id])){const n=st.hull?3:6;for(let i=0;i<n;i++){const ph=((t/2400)+i/n)%1,x=150+Math.sin(ph*6+i)*3+ph*8,y=B.cyAt(150)-6-ph*34;if(ph<.9){const z=ph<.3?2:ph<.6?3:4;g.fillStyle=`rgba(160,155,185,${(1-ph)*.7})`;g.fillRect(x|0,y|0,z,z)}}}
-  if(!st.hull&&(t/180|0)%7===0){px(150+(t/97%10)-5,B.cyAt(150)-2,'#ffd65f');px(152+(t/61%6)-3,B.cyAt(150)+1,'#ff8a3a')}
+  const [bx,by]=B.breach;
+  if(SHIP.some(p=>!st[p.id])){const n=st.hull?3:6;for(let i=0;i<n;i++){const ph=((t/2400)+i/n)%1,x=bx+Math.sin(ph*6+i)*3+ph*8,y=by-4-ph*34;if(ph<.9){const z=ph<.3?2:ph<.6?3:4;g.fillStyle=`rgba(160,155,185,${(1-ph)*.7})`;g.fillRect(x|0,y|0,z,z)}}}
+  if(!st.hull&&(t/180|0)%7===0){px(bx+(t/97%10)-5,by-1,'#ffd65f');px(bx+2+(t/61%6)-3,by+1,'#ff8a3a')}
   // engine glow
-  if(st.engine){const f=(t/120|0)%3;for(let y=-4;y<=4;y++)for(let x=1;x<=7+f-Math.abs(y);x++)px(56-x,B.cyAt(56)+y,x<3?'#d8f6ff':x<5?'#5fd8ff':'#2a6aa8')}
+  if(st.engine){const f=(t/120|0)%3,[tx,ty]=B.tail;for(let y=-2;y<=2;y++)for(let x=1;x<=8+f-Math.abs(y)*2;x++)px(tx-x,ty+y+x*.2,x<3?'#d8f6ff':x<6?'#5fd8ff':'#2a6aa8')}
   // antenna beacon
-  if(st.comm&&(t/500|0)%2===0)px(168,B.cyAt(168)-24,'#ff5f6a');
+  if(st.comm&&(t/500|0)%2===0){const [nx,ny]=B.nose;px(nx+1,ny,'#ff5f6a')}
   // lantern flicker
   if((t/140|0)%5!==0)px(B.LX,B.LY-1,'#fffbe0');
 }
