@@ -1545,12 +1545,12 @@ function renderScan(){const sg=sigState();
 }
 /* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
 const SHIP=[
- {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',120],['craterIron',60],['rustBolt',80],['sandSlate',40]]},
- {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',60],['crystal',40],['volcAsh',40],['dark',10]]},
- {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',40],['echoQuartz',30],['crystal',30]]},
- {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',80],['geyserSalt',40],['frostCrystal',30],['marshReed',40]]},
- {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',50],['brokenLens',40],['impactGlass',30],['relic',10]]},
- {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만듭니다.',need:[['oldBoard',30],['iceShell',30],['marshFossil',20]]},
+ {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',1200],['craterIron',120],['rustBolt',90],['sandSlate',90]]},
+ {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',120],['crystal',600],['volcAsh',45],['dark',300]]},
+ {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',120],['echoQuartz',45],['crystal',550]]},
+ {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',1700],['geyserSalt',90],['frostCrystal',120],['marshReed',90]]},
+ {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',70],['brokenLens',45],['impactGlass',90],['relic',70]]},
+ {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',1000],['oldBoard',50],['iceShell',45],['marshFossil',45]]},
 ];
 let SHIPDON=[],shipSel='hull';
 const shipGot=part=>{const m={};SHIPDON.forEach(d=>{if(d.part===part)m[d.id]=(m[d.id]||0)+(+d.n||0)});return m};
@@ -1566,7 +1566,7 @@ function renderShip(){
   const mine=SHIPDON.filter(d=>d.uid===uid).reduce((a,d)=>a+(+d.n||0),0);
   const canAny=pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0);
   return head()+`<div class="shiptop card"><div class="shippic" style="filter:grayscale(${(1-all).toFixed(2)}) brightness(${(.55+.45*all).toFixed(2)})">${img(IC.ship,null,7)}${all<1?'<span class="shipsmoke"></span>':''}</div>
-   <div class="sinfo"><b>${all>=1?'별무리호 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 별무리호'}</b><span class="hint">${all>=1?'모든 단원의 손으로 되살아난 배입니다.':'단원들이 모은 재료로 한 부분씩 고쳐 나갑니다. 재료를 넣을 때마다 그 값만큼 크레딧과 경험치를 받습니다.'}</span>
+   <div class="sinfo"><b>${all>=1?'별무리호 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 별무리호'}</b><span class="hint">${all>=1?'모든 단원의 손으로 되살아난 배입니다.':'단원 모두가 일주일은 힘을 모아야 고칠 수 있는 큰 배입니다. 재료를 넣을 때마다 그 값만큼 크레딧과 경험치를 받습니다.'}</span>
    <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
   <div class="shipgrid">${SHIP.map(x=>{const v=shipPct(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''}" data-act="shipsel" data-k="${x.id}"><b>${x.n}</b><span>${v>=1?'수리 완료':Math.floor(v*100)+'%'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
   <div class="card shipdet"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div><b>${pt.n}</b> <span class="hint">${shipDone(pt)?'수리 완료':Math.floor(shipPct(pt)*100)+'%'}</span><p class="hint" style="margin:4px 0 0">${pt.d}</p></div>
@@ -1577,7 +1577,7 @@ function renderShip(){
 function shipGive(partId,only){
   const pt=SHIP.find(x=>x.id===partId);if(!pt||mode!=='online')return;
   const list=[];
-  pt.need.forEach(([id])=>{if(only&&id!==only)return;const n=Math.min(shipLeft(pt,id),P.inv[id]||0);if(n>0)list.push([id,n])});
+  pt.need.forEach(([id])=>{if(only&&id!==only)return;const n=Math.min(shipLeft(pt,id),P.inv[id]||0,1000);if(n>0)list.push([id,n])});
   if(!list.length){toast('넣을 수 있는 재료가 없습니다.');return}
   const finish=pt.need.every(([id])=>shipLeft(pt,id)-((list.find(x=>x[0]===id)||[,0])[1])<=0);
   list.forEach(([id,n])=>take(id,n));
