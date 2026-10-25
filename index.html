@@ -1399,10 +1399,11 @@ const storable=id=>!!ITEMS[id]&&(ITEMS[id].type==='seed'||id==='moss'||isCropId(
 function farmSave(){if(mode!=='online'){P.sfarm={xu:FARM.xu||0,ore:FARM.ore||0,crys:FARM.crys||0,water:FARM.water,refCd:FARM.refCd||0,pods:FARM.pods,store:FSTORE,log:FLOG.slice(0,30)};save()}}
 // pods open from the crew's running total of donated ore (pod k costs 2k), so donors working at once can never double-unlock
 function farmShape(xu,ore,pods,d){let f=Math.min(FIELD_N,4+(+xu||0)),t=+ore||0;while(f<FIELD_N&&t>=2*f){t-=2*f;f++}
-  // the shared water tank grows the same way from donated crystals: level k costs 10+5k, each level adds 30
+  // the shared water tank grows the same way from donated crystals; each level adds 30
   d=d||{};let lv=0,c=+d.crys||0;while(lv<TANK_LV&&c>=tankNeed(lv)){c-=tankNeed(lv);lv++}const cap=TANK_BASE+TANK_STEP*lv;
   return{fu:f,xu:+xu||0,ore:+ore||0,prog:t,need:2*f,pods,crys:+d.crys||0,tlv:lv,tprog:c,tneed:tankNeed(lv),cap,wset:d.water!=null,water:d.water==null?cap:Math.max(0,Math.min(cap,+d.water)),refCd:+d.refCd||0}}
-const TANK_BASE=90,TANK_STEP=30,TANK_LV=10,tankNeed=lv=>10+5*lv;
+// sized for ~30 crew pooling crystals: 60 for the first level, +30 each after (1,950 for all ten)
+const TANK_BASE=90,TANK_STEP=30,TANK_LV=10,tankNeed=lv=>60+30*lv;
 function farmMerge(path,obj){const r=db.doc(path);return r.update(obj).catch(()=>r.get().then(s=>r.set(Object.assign({},s.exists?s.data():{},obj))))}
 // every key is written each time, because a merge write would otherwise keep stale fields (an old seed) on the server
 const POD0={til:0,seed:null,got:0,wet:0,fert:0,by:null,byN:null};
