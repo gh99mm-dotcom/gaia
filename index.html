@@ -1394,7 +1394,10 @@ function charDeleted(){clearTimeout(saveT);dirty=false;const nick=P.nick;P=newPl
 function crewAdminHTML(){if(mode!=='online')return`<div class="info-sec"><span class="lbl">Crew · 단원 관리</span><span class="hint">공유된 페이지에서 열면 다른 단원의 접속 기록과 삭제 기능이 여기에 보입니다.</span></div>`;
   const on=new Set(PEERS.map(p=>p.presence&&p.presence.uid).filter(Boolean));
   const rows=Object.entries(PLAYERS).filter(([id])=>id!==uid).map(([id,p])=>({id,p,on:on.has(id),seen:p.seen||0})).sort((a,b)=>(b.on-a.on)||(b.seen-a.seen));
-  return`<div class="info-sec"><span class="lbl">Crew · 단원 관리 ${rows.length}명</span>${rows.length?`<div class="fblist">${rows.map(({id,p,on:o,seen})=>`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')} <span class="lv">LV.${p.lvl||1}</span></b><span class="hint" style="color:${o?'var(--green)':'var(--mute)'}">${o?'● 접속 중':'오프라인 · '+agoText(seen)}</span></div><span class="hint">${seen?'마지막 활동 '+fbTime(seen):'마지막 활동 기록 없음 (이번 업데이트 뒤 접속하면 기록됩니다)'} · ${(p.cr||0).toLocaleString()} CR</span><div class="row" style="justify-content:flex-end;gap:5px">${admDel===id?`<span class="hint" style="color:var(--red)">정말 삭제하시겠습니까? 되돌릴 수 없습니다.</span><button class="btn sm ghost" data-act="admdelno">취소</button><button class="btn sm" data-act="admdelyes" data-k="${esc(id)}">삭제</button>`:`<button class="btn sm ghost" data-act="admdel" data-k="${esc(id)}">캐릭터 삭제</button>`}</div></div>`).join('')}</div>`:'<span class="hint">아직 다른 단원이 없습니다.</span>'}</div>`}
+  return`<div class="info-sec"><span class="lbl">Crew · 단원 관리 ${rows.length}명</span>${rows.length?`<div class="fblist">${rows.map(({id,p,on:o,seen})=>`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')} <span class="lv">LV.${p.lvl||1}</span></b><span class="hint" style="color:${o?'var(--green)':'var(--mute)'}">${o?'● 접속 중':'오프라인 · '+agoText(seen)}</span></div><span class="hint">${seen?'마지막 활동 '+fbTime(seen):'마지막 활동 기록 없음 (이번 업데이트 뒤 접속하면 기록됩니다)'} · ${(p.cr||0).toLocaleString()} CR</span><div class="row" style="justify-content:flex-end;gap:5px">${admDel===id?`<span class="hint" style="color:var(--red)">정말 삭제하시겠습니까? 아래 「삭제된 단원」에서 되돌릴 수 있습니다.</span><button class="btn sm ghost" data-act="admdelno">취소</button><button class="btn sm" data-act="admdelyes" data-k="${esc(id)}">삭제</button>`:`<button class="btn sm ghost" data-act="admdel" data-k="${esc(id)}">캐릭터 삭제</button>`}</div></div>`).join('')}</div>`:'<span class="hint">아직 다른 단원이 없습니다.</span>'}</div>${delAdminHTML()}`}
+// deleted characters keep their data (deleted:true only hides them), so the admin can bring them back
+function delAdminHTML(){const L=Object.entries(DELP).sort((a,b)=>(b[1].delAt||b[1].at||0)-(a[1].delAt||a[1].at||0));if(!L.length)return'';
+  return`<div class="info-sec"><span class="lbl">Deleted · 삭제된 단원 ${L.length}명</span><span class="hint">삭제 취소를 누르면 레벨·아이템·크레딧이 그대로 돌아옵니다. 단원이 다시 접속해서 새 캐릭터를 만들기 전에 되돌려 주십시오.</span><div class="fblist">${L.map(([id,p])=>{const full=p.lvl!=null||p.inv;return`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')}${full?` <span class="lv">LV.${p.lvl||1}</span>`:''}</b><span class="hint">삭제 ${fbTime(p.delAt||p.at||0)}${p.delBy?' · '+esc(p.delBy):''}</span></div>${full?`<span class="hint">${(p.cr||0).toLocaleString()} CR · 아이템 ${Object.keys(p.inv||{}).length}종</span>`:'<span class="hint" style="color:var(--red)">예전 방식으로 삭제되어 남은 데이터가 없습니다. 되돌려도 새 캐릭터로 시작합니다.</span>'}<div class="row" style="justify-content:flex-end"><button class="btn sm alt" data-act="admundel" data-k="${esc(id)}">삭제 취소</button></div></div>`}).join('')}</div></div>`}
 /* ───────── admin credit grants ───────── */
 /* ───────── suggestion box ───────── */
 const BELL=['....kk....','...kuuk...','..kuuuuk..','.kuuuuuuk.','.kuuuuuuk.','kuuuuuuuuk','kkkkkkkkkk','....kk....'];
@@ -1516,7 +1519,7 @@ function renderLog(){$('#log').innerHTML=LOG.length?LOG.map(l=>`<li><time>${hhmm
 
 /* ───────── network ───────── */
 let mode='boot',db=null,room=null,uid=null,myRef=null;
-let PLAYERS={},CHAT=[],PEERS=[];
+let PLAYERS={},DELP={},CHAT=[],PEERS=[];
 let saveT=null,saving=false,dirty=false;
 function save(){
   if(mode==='solo'){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}return}
@@ -1543,7 +1546,7 @@ async function connect(){
   try{const s=await myRef.get();if(s.exists&&!s.data().deleted){P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
   renderNet();renderAll();
-  db.collection('players').onSnapshot(sn=>{const m={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},()=>{});
+  db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;if(adminShown())renderAdminAll();if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},()=>{});
   db.collection('grants').onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조');wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
@@ -2584,8 +2587,9 @@ const A={
   if(mode!=='online'){MAILA.push(Object.assign({id,grant:1},g));mailRefresh();return}
   try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 단원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true});$('#admNotice').value='';toast(`모든 단원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
+ async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'단원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
- async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).set({deleted:true,at:Date.now(),nick:p.nick||''});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'단원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
+ async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'단원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
  suggopen(){$('#suggModal').hidden=false;renderSugg();loadMySugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
  suggclose(){$('#suggModal').hidden=true},
  async suggsend(){const t=$('#suggIn'),v=(t&&t.value||'').trim().slice(0,300);if(!v){toast('건의 내용을 적어 주십시오.');return}const it={text:v,at:Date.now(),nick:P.nick};
@@ -2791,7 +2795,7 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
-const SAFE_ACT=new Set(['chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}

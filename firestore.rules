@@ -24,8 +24,9 @@ service cloud.firestore {
     // 단원 명단: 초대장을 쓰면서(같은 순간에 그 초대장을 지우면서)만 등록할 수 있어요.
     match /members/{uid} {
       allow read: if signedIn() && (me() == uid || isAdmin());
-      allow create: if signedIn() && me() == uid && request.resource.data.keys().hasOnly(['id', 'code', 'at']) && (
-        isAdmin() || (
+      // 본인이 초대 코드로 가입하거나, 운영자가 삭제를 취소하며 다시 들여보낼 때 만들어짐
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['id', 'code', 'at']) && (
+        isAdmin() || (me() == uid &&
           request.resource.data.code is string && request.resource.data.code.size() == 8
           && exists(/databases/$(database)/documents/invites/$(request.resource.data.code))
           && !existsAfter(/databases/$(database)/documents/invites/$(request.resource.data.code))));
