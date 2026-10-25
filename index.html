@@ -1101,7 +1101,7 @@ function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div c
 function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',invHTML()+crewAdminHTML()+fbAdminHTML())}
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
-const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 원정에서 재료가 더 자주 나옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 정수기 충전 30분'}};
+const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 원정에서 재료가 더 자주 나옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan]];
 const lifeLv=xp=>1+Math.floor(Math.sqrt((xp||0)/25));
 const lifeNext=l=>25*l*l;
@@ -1317,7 +1317,7 @@ function renderMyFarm(){
   return head()+`<p class="lead">포드를 눌러 고른 뒤 배양토 채우기, 씨앗 심기, 물 주기를 합니다. 물을 한 번 주면 성장 단계 하나만큼 자라고, 물방울이 뜨면 다시 목마른 것입니다.</p>
   <div class="farm-top"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${P.fu<FIELD_N?`<button class="ptile add" data-act="selpod" data-i="add" aria-pressed="${selPod==='add'}" aria-label="포드 증설" title="포드 증설"><span class="plus">+</span></button>`:''}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-P.fu-1))}</div><span class="dome-label">DOME BAY-07 · ${P.fu}/${FIELD_N}</span></div>
   <div class="farm-foot"><div class="card podinfo">${info}</div>
-  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${P.ref?`<button class="btn sm alt" disabled>정수기 충전 중</button><span class="hint" id="refT">남은 시간 ${fmtClock(P.ref-Date.now())}</span>`:Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>정수기 휴식 중</button><span class="hint" id="refT">다시 충전까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>정수기에서 채우기 <small>${P.job==='engineer'?'30분':'1시간'}</small></button><span class="hint">충전이 끝나면 1시간 동안 정수기가 쉽니다</span>`}</div></div></div>`;
+  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>물 채우기</button><span class="hint">누르면 바로 가득 찹니다 · 다시 채우려면 ${P.job==='engineer'?'30분':'1시간'}</span>`}</div></div></div>`;
 }
 /* ---- co-op farming ---- */
 let farmVisit=null,fSel=0;
@@ -1637,10 +1637,10 @@ const A={
  selpod(d){selPod=d.i==='add'?'add':+d.i;renderPanel()},
  soil(d){const i=+d.i;if(i>=P.fu||(P.field[i]&&P.field[i].til))return;if(!spend(1))return;P.field[i]={til:1,wet:0};log(`포드 ${i+1}에 배양토를 채웠다.`);commit()},
  plant(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til||pl.seed)return;if(!take(d.id))return;sfxPlant();const wet=isWet(pl);pl.seed=d.id;pl.got=0;pl.wet=wet?Date.now():0;log(`포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`);commit()},
- water(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 정수기에서 채워 주십시오.');return}P.water--;sfxWater();if(pl.seed)pl.got=effG(pl);pl.wet=Date.now();commit()},
+ water(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}P.water--;sfxWater();if(pl.seed)pl.got=effG(pl);pl.wet=Date.now();commit()},
  fert(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}const it=ITEMS[pl.seed];pl.got=Math.min(it.grow,(pl.got||0)+it.grow*.3);pl.fert=1;log(`포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
  harvest(d){const i=+d.i,pl=P.field[i];if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
- refill(){if(P.ref||P.water>=tankCap())return;if(Date.now()<(P.refCd||0)){toast(`정수기가 쉬는 중입니다. ${fmtClock(P.refCd-Date.now())} 뒤에 다시 충전할 수 있습니다.`);return}const eng=P.job==='engineer';P.ref=Date.now()+(eng?1800e3:3600e3);log(`정수기에 물탱크를 연결했다. ${eng?'30분':'1시간'} 뒤 가득 찬다.`);commit()},
+ refill(){if(P.water>=tankCap())return;if(Date.now()<(P.refCd||0)){toast(`아직 물을 채울 수 없습니다. ${fmtClock(P.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}const eng=P.job==='engineer';P.water=tankCap();P.ref=null;P.refCd=Date.now()+(eng?1800e3:3600e3);sfxWater();log(`물탱크를 가득 채웠다. ${eng?'30분':'1시간'} 뒤에 다시 채울 수 있다.`,'good');commit()},
  expand(){if(P.fu>=FIELD_N)return;const ex=2*P.fu;if(!take('ore',ex))return;P.fu++;selPod=P.fu-1;log(`재배 포드를 하나 더 설치했다. (${P.fu}/${FIELD_N})`,'good');commit()},
  gather(){if(P.exp){toast('이미 원정 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}로 ${fmtDur(gDur*30)} 채집 원정을 떠났다.`);commit()},
  gsite(d){gSite=d.id;renderPanel()},
@@ -2145,7 +2145,7 @@ setInterval(()=>{
   tickPilot();
   migrate();const sig=P.field.map(pl=>pl?`${pl.til}${pl.seed||''}${stage(pl)}${isWet(pl)?1:0}`:'_').join();if(sig!==farmSig){farmSig=sig;renderNav();if(tab==='farm')renderPanel()}else if(tab==='farm')P.field.forEach((pl,i)=>{const b=document.querySelector(`[data-prog="${i}"]`);if(b&&pl&&pl.seed)b.style.width=Math.min(100,effG(pl)/ITEMS[pl.seed].grow*100)+'%'});
   {const gx=expInfo(),k=gx?gx.gd+'/'+gx.tg:'';if(k!==window.__gk){window.__gk=k;renderNav();if(tab==='gather')renderPanel()}else if(gx&&tab==='gather'){const l=$('#gLeft'),n=$('#gNext');if(l&&gx.done<gx.total)l.textContent='남은 시간 '+fmtClock(gx.left);if(n)n.textContent='다음 채집까지 '+fmtClock(gx.next)}}
-  if(P.ref&&Date.now()>=P.ref){P.water=tankCap();P.refCd=P.ref+3600e3;P.ref=null;log('정수기 충전이 끝났다. 물탱크가 가득 찼다.','good');save();if(tab==='farm')renderPanel()}else if(P.ref&&tab==='farm'){const r=$('#refT');if(r)r.textContent='남은 시간 '+fmtClock(P.ref-Date.now())}else if(P.refCd&&tab==='farm'){const r=$('#refT'),l=P.refCd-Date.now();if(r&&l>0)r.textContent='다시 충전까지 '+fmtClock(l);else if(r&&l<=0){P.refCd=0;renderPanel()}}
+  if(P.ref&&Date.now()>=P.ref){P.water=tankCap();P.refCd=P.ref+3600e3;P.ref=null;save();if(tab==='farm')renderPanel()}else if(P.refCd&&tab==='farm'){const r=$('#refT'),l=P.refCd-Date.now();if(r&&l>0)r.textContent='다시 채우기까지 '+fmtClock(l);else if(r&&l<=0){P.refCd=0;renderPanel()}}
 },1000);
 
 $('#logoIc').innerHTML=img(IC.ship,null,2);if($('#authIc'))$('#authIc').innerHTML=img(IC.ship,null,4);$('#joinIc').innerHTML=meImg(4);
