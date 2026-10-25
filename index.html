@@ -1647,32 +1647,36 @@ const SW=240,SH=120,BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
 let shipBg=null,shipBgKey='',shipTimer=0;
 const SHIP_GLOW=new Set(['#4f9a92','#8fd0c4','#6a4a30','#523826','#4a6488']);
 const SHIPV={S:4.1,Q:.5,PH:-.72,X:116,Y:80,CX:214,CY:108,LX:30,LY:108};
+/* day from 06:00 to 18:00 local time, night otherwise */
+const isDay=()=>{const h=new Date().getHours();return h>=6&&h<18};
 function shipSceneBuild(st){
+  const day=isDay();
   const c=document.createElement('canvas');c.width=SW;c.height=SH;const g=c.getContext('2d');
   let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
   const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
   const dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
-  const HZ=92,SKY=['#06061a','#0f0c28','#1d1440','#33205a','#4e2c66','#6b3a6c'];
+  const HZ=92,SKY=day?['#4a6a9a','#5a7aa8','#6e8cb6','#86a0c4','#a2b4cf','#c4c6d2']:['#06061a','#0f0c28','#1d1440','#33205a','#4e2c66','#6b3a6c'];
   for(let y=0;y<HZ;y++){const t=y/HZ*(SKY.length-1),i=Math.min(SKY.length-2,Math.floor(t)),f=t-i;for(let x=0;x<SW;x++)px(x,y,dith(x,y,f)?SKY[i+1]:SKY[i])}
-  for(let k=0;k<70;k++){const x=rnd()*SW|0,y=rnd()*70|0;px(x,y,rnd()<.3?'#8a86b8':'#4a4680')}
-  // nebula streak
-  for(let x=0;x<SW;x++){const cy=20+x*.12+Math.sin(x/17)*4;for(let d=-6;d<=6;d++){const y=Math.round(cy+d);if(dith(x,y,.35*(1-Math.abs(d)/6)))px(x,y,'#3a2a6a')}}
+  for(let k=0;k<70;k++){const x=rnd()*SW|0,y=rnd()*70|0,b=rnd()<.3;if(!day)px(x,y,b?'#8a86b8':'#4a4680')}
+  // nebula streak by night, the sun by day
+  if(day)for(let y=-14;y<=14;y++)for(let x=-14;x<=14;x++){const d=Math.hypot(x,y),X=104+x,Y=16+y;if(d<=5)px(X,Y,d<3.5?'#fffbea':'#fff0c4');else if(d<14&&dith(X,Y,(1-d/14)*.55))px(X,Y,'#e8e2cc')}
+  if(!day)for(let x=0;x<SW;x++){const cy=20+x*.12+Math.sin(x/17)*4;for(let d=-6;d<=6;d++){const y=Math.round(cy+d);if(dith(x,y,.35*(1-Math.abs(d)/6)))px(x,y,'#3a2a6a')}}
   // big planet with craters
   const PX=48,PY=30,PR=21;
   for(let y=-PR-2;y<=PR+2;y++)for(let x=-PR-2;x<=PR+2;x++){const d=Math.hypot(x,y),X=PX+x,Y=PY+y;
-    if(d<=PR){const t=Math.max(0,Math.min(1,(-x-y)/(PR*1.4)+.35));px(X,Y,t>.75?'#b49ae6':dith(X,Y,t)?'#8a6ac8':'#5a3f8f');if(d>PR-1.2&&x>0&&y>0)px(X,Y,'#3d2a66')}
-    else if(d<=PR+2&&dith(X,Y,.4*(PR+2-d)))px(X,Y,'#5a3a8a')}
-  [[-8,-6,5],[6,4,4],[-3,10,3],[10,-9,2.5],[-12,5,2]].forEach(([cx,cy,r])=>{for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++){const d=Math.hypot(x,y);if(d<=r)px(PX+cx+x,PY+cy+y,d>r-1&&(x<0||y<0)?'#4a3278':'#6c4fa8')}});
+    if(d<=PR){const t=Math.max(0,Math.min(1,(-x-y)/(PR*1.4)+.35));px(X,Y,day?(t>.75?'#e8e2f4':dith(X,Y,t)?'#d0c6ea':'#b6aad8'):(t>.75?'#b49ae6':dith(X,Y,t)?'#8a6ac8':'#5a3f8f'));if(d>PR-1.2&&x>0&&y>0)px(X,Y,day?'#a89ccc':'#3d2a66')}
+    else if(d<=PR+2&&dith(X,Y,.4*(PR+2-d)))px(X,Y,day?'#9eaed0':'#5a3a8a')}
+  [[-8,-6,5],[6,4,4],[-3,10,3],[10,-9,2.5],[-12,5,2]].forEach(([cx,cy,r])=>{for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++){const d=Math.hypot(x,y);if(d<=r)px(PX+cx+x,PY+cy+y,d>r-1&&(x<0||y<0)?(day?'#a698cc':'#4a3278'):(day?'#c0b4e0':'#6c4fa8'))}});
   // small moon
-  for(let y=-5;y<=5;y++)for(let x=-5;x<=5;x++)if(Math.hypot(x,y)<=5)px(196+x,16+y,x+y<-2?'#c8c8da':dith(196+x,16+y,.5)?'#9a9ab0':'#7a7a92');
+  for(let y=-5;y<=5;y++)for(let x=-5;x<=5;x++)if(Math.hypot(x,y)<=5)px(196+x,16+y,day?(x+y<-2?'#eef0f6':dith(196+x,16+y,.5)?'#d6dae6':'#c2c8d8'):(x+y<-2?'#c8c8da':dith(196+x,16+y,.5)?'#9a9ab0':'#7a7a92'));
   // mountains: far range, near range, then crags at both edges
   const ridge=(base,amp,fr,col,ph)=>{for(let x=0;x<SW;x++){const h=base-Math.abs(Math.sin(x/fr+ph))*amp-Math.sin(x/(fr*.37)+ph*2)*amp*.25;for(let y=Math.round(h);y<HZ+4;y++)px(x,y,col)}};
-  ridge(84,14,23,'#241a38',1.3);ridge(90,10,13,'#181226',4.1);
-  for(let x=0;x<34;x++){const h=58+Math.abs(x-14)*1.9;for(let y=Math.round(h);y<HZ+2;y++)px(x,y,x<14&&dith(x,y,.5)?'#201830':'#140f1f')}
-  for(let x=SW-26;x<SW;x++){const h=66+Math.abs(x-(SW-8))*1.6;for(let y=Math.round(h);y<HZ+2;y++)px(x,y,'#140f1f')}
+  ridge(84,14,23,day?'#6a7a98':'#241a38',1.3);ridge(90,10,13,day?'#56648a':'#181226',4.1);
+  for(let x=0;x<34;x++){const h=58+Math.abs(x-14)*1.9;for(let y=Math.round(h);y<HZ+2;y++)px(x,y,x<14&&dith(x,y,.5)?(day?'#4e5a78':'#201830'):(day?'#424e6a':'#140f1f'))}
+  for(let x=SW-26;x<SW;x++){const h=66+Math.abs(x-(SW-8))*1.6;for(let y=Math.round(h);y<HZ+2;y++)px(x,y,day?'#424e6a':'#140f1f')}
   // ground
-  for(let y=HZ;y<SH;y++)for(let x=0;x<SW;x++)px(x,y,dith(x,y,(y-HZ)/(SH-HZ)*.6)?'#0e0b14':'#1a1524');
-  for(let k=0;k<60;k++){const x=rnd()*SW|0,y=HZ+3+rnd()*(SH-HZ-3)|0;px(x,y,'#2a2236');if(rnd()<.4)px(x+1,y,'#221c2c')}
+  for(let y=HZ;y<SH;y++)for(let x=0;x<SW;x++)px(x,y,dith(x,y,(y-HZ)/(SH-HZ)*.6)?(day?'#4e423e':'#0e0b14'):(day?'#625450':'#1a1524'));
+  for(let k=0;k<60;k++){const x=rnd()*SW|0,y=HZ+3+rnd()*(SH-HZ-3)|0;px(x,y,day?'#7a6a62':'#2a2236');if(rnd()<.4)px(x+1,y,day?'#463a36':'#221c2c')}
   // lantern glow on the ground
   const LX=SHIPV.LX,LY=SHIPV.LY;if(st.hull)for(let y=HZ;y<SH;y++)for(let x=0;x<160;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
   // the ship: the starfighter belly-down on the ground, nose to the upper right; key light from the planet (upper left), warm fill from the camp lantern
@@ -1683,16 +1687,16 @@ function shipSceneBuild(st){
   const [mx,my]=hull.to(21,24),FX=Math.round(mx),FY=Math.max(Math.round(my)+12,100);
   const FIRES=[];
   // trampled dirt yard in front of the base
-  if(wreck)for(let y=HZ-2;y<SH;y++)for(let x=0;x<SW;x++){const d=Math.hypot((x-FX)/4.6,(y-FY-2)/1.15);if(d<20&&dith(x,y,(1-d/20)*1.1))px(x,y,d<9?'#3e2a1c':'#2c1f18')}
+  if(wreck)for(let y=HZ-2;y<SH;y++)for(let x=0;x<SW;x++){const d=Math.hypot((x-FX)/4.6,(y-FY-2)/1.15);if(d<20&&dith(x,y,(1-d/20)*1.1))px(x,y,day?(d<9?'#8a6a4c':'#74583e'):(d<9?'#3e2a1c':'#2c1f18'))}
   if(wreck)FIRES.forEach(([x0,y0])=>{for(let y=y0-6;y<y0+8;y++)for(let x=x0-14;x<x0+14;x++){const d=Math.hypot((x-x0)/2.2,y-y0-2);if(y>=HZ-2&&d<6&&dith(x,y,(1-d/6)*.8))px(x,y,'#6e3a1a')}});
   // furrow ploughed by the landing, running back from the tail
-  {const [tx,ty]=hull.to(20,34);for(let x=Math.round(tx)-70;x<tx+6;x++){const k=(x-(tx-70))/76,y=Math.round(ty+4+(x-tx)*.06+Math.sin(x*.7)*.6),w=Math.round(k*2.4);if(!dith(x,y,k*1.2))continue;for(let i=0;i<=w;i++)px(x,y+i,'#08070c');px(x,y-1,'#2a2236');if(x%4===0)px(x,y-2,'#241d30')}}
+  {const [tx,ty]=hull.to(20,34);for(let x=Math.round(tx)-70;x<tx+6;x++){const k=(x-(tx-70))/76,y=Math.round(ty+4+(x-tx)*.06+Math.sin(x*.7)*.6),w=Math.round(k*2.4);if(!dith(x,y,k*1.2))continue;for(let i=0;i<=w;i++)px(x,y+i,day?'#3a302c':'#08070c');px(x,y-1,day?'#7a6a62':'#2a2236');if(x%4===0)px(x,y-2,day?'#6a5a52':'#241d30')}}
   const draw=(P,stx)=>{const M=new Map();for(let y=10;y<SH;y++)for(let x=0;x<SW;x++){const [X,Y]=P.from(x+.5,y+.5),col=shipColorAt(X,Y,stx);if(col)M.set(y*SW+x,col)}
     // cast shadow falls to the lower right, away from the planet
-    M.forEach((_,k)=>{const x=k%SW+4,y=(k-k%SW)/SW+3;if(y<SH&&!M.has(y*SW+x))px(x,y,'#07060b')});
-    M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW;if(wreck){if(!SHIP_GLOW.has(col))col=mix(col,'#0c0b10',.66);let w=0;FIRES.forEach(([fx,fy])=>{const d=Math.hypot(x-fx,(y-fy)*1.3);if(d<16)w=Math.max(w,1-d/16)});if(w)col=mix(col,'#ff7a2a',w*w*.75)}else{const d=Math.hypot((x-LX)/1.6,y-LY);if(d<40)col=mix(col,'#e0904a',(1-d/40)*.45)}px(x,y,col)});
+    M.forEach((_,k)=>{const x=k%SW+4,y=(k-k%SW)/SW+3;if(y<SH&&!M.has(y*SW+x))px(x,y,day?'#2e2628':'#07060b')});
+    M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW;if(wreck){if(!SHIP_GLOW.has(col))col=mix(col,day?'#1a1820':'#0c0b10',day?.45:.66);let w=0;FIRES.forEach(([fx,fy])=>{const d=Math.hypot(x-fx,(y-fy)*1.3);if(d<16)w=Math.max(w,1-d/16)});if(w)col=mix(col,'#ff7a2a',w*w*.75)}else{const d=Math.hypot((x-LX)/1.6,y-LY);if(d<40)col=mix(col,'#e0904a',(1-d/40)*.45)}px(x,y,col)});
     // rim: lit edges facing the planet, dark outline elsewhere
-    M.forEach((_,k)=>{const x=k%SW,y=(k-x)/SW;[[0,-1,1],[-1,0,1],[1,0,0],[0,1,0]].forEach(([a,b,lt])=>{const n=(y+b)*SW+x+a;if(!M.has(n))px(x+a,y+b,lt?'#8d7fbf':'#0d0f16')})});return M};
+    M.forEach((_,k)=>{const x=k%SW,y=(k-x)/SW;[[0,-1,1],[-1,0,1],[1,0,0],[0,1,0]].forEach(([a,b,lt])=>{const n=(y+b)*SW+x+a;if(!M.has(n))px(x+a,y+b,lt?(day?'#f0e6c8':'#8d7fbf'):'#0d0f16')})});return M};
   const HM=draw(hull,st);
   if(wreck){draw(chunk,Object.assign({},st,{chunk:1}));
     // molten drips hanging from the underside
@@ -1708,16 +1712,16 @@ function shipSceneBuild(st){
   // lantern post
   if(st.hull){px(LX,LY-1,'#ffe9a8');px(LX,LY,'#e09040');px(LX,LY+1,'#5a3a24')}
   const stars=[];for(let k=0;k<46;k++)stars.push({x:rnd()*SW|0,y:rnd()*72|0,p:rnd()*6.28,s:.6+rnd()*1.6,big:rnd()<.2});
-  return{c,stars,LX,LY,FX,FY,FIRES,lights:[[19,19],[23,18],[17,22],[25,23],[21,25],[15,20]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
+  return{c,day,stars,LX,LY,FX,FY,FIRES,lights:[[19,19],[23,18],[17,22],[25,23],[21,25],[15,20]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
 }
 function shipSceneDraw(cv,t){
-  const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('');
+  const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('')+(isDay()?'d':'n');
   if(!shipBg||shipBgKey!==key){shipBg=shipSceneBuild(st);shipBgKey=key}
   const g=cv.getContext('2d'),B=shipBg;g.drawImage(B.c,0,0);
   const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
-  B.stars.forEach(s=>{const v=(Math.sin(t*s.s/600+s.p)+1)/2;if(v<.15)return;px(s.x,s.y,v>.8?'#ffffff':v>.5?'#c8c4f0':'#6a66a0');if(s.big&&v>.75){px(s.x-1,s.y,'#8a86c8');px(s.x+1,s.y,'#8a86c8');px(s.x,s.y-1,'#8a86c8');px(s.x,s.y+1,'#8a86c8')}});
+  if(!B.day)B.stars.forEach(s=>{const v=(Math.sin(t*s.s/600+s.p)+1)/2;if(v<.15)return;px(s.x,s.y,v>.8?'#ffffff':v>.5?'#c8c4f0':'#6a66a0');if(s.big&&v>.75){px(s.x-1,s.y,'#8a86c8');px(s.x+1,s.y,'#8a86c8');px(s.x,s.y-1,'#8a86c8');px(s.x,s.y+1,'#8a86c8')}});
   // a shooting star every ~9 seconds
-  {const ph=(t%9000)/9000;if(ph<.09){const k=ph/.09,x=150+k*70,y=6+k*22;for(let i=0;i<6;i++)px(x-i*2.4,y-i*.75,i?'#8a86c8':'#ffffff')}}
+  if(!B.day){const ph=(t%9000)/9000;if(ph<.09){const k=ph/.09,x=150+k*70,y=6+k*22;for(let i=0;i<6;i++)px(x-i*2.4,y-i*.75,i?'#8a86c8':'#ffffff')}}
   // smoke columns from the breach and the torn wing until every part is repaired
   const [bx,by]=B.breach,[sx,sy]=B.seam,smoke=(ox,oy,n,sp,a)=>{for(let i=0;i<n;i++){const ph=((t/sp)+i/n)%1,x=ox+Math.sin(ph*6+i)*3+ph*10,y=oy-3-ph*44;if(ph<.92){const z=ph<.25?2:ph<.55?3:ph<.8?4:5;g.fillStyle=`rgba(150,145,170,${(1-ph)*a})`;g.fillRect(x|0,y|0,z,z)}}};
   if(st.hull&&SHIP.some(p=>!st[p.id]))smoke(bx,by,3,2600,.75);
@@ -2363,9 +2367,9 @@ $('#bgmBtn').textContent=bgmOn?'♪ BGM 켜짐':'♪ BGM 꺼짐';$('#bgmBtn').se
 /* ───────── starfield ───────── */
 const cv=$('#stars'),cx=cv.getContext('2d');let stars=[];
 function sizeStars(){const w=Math.ceil(innerWidth/2),h=Math.ceil(innerHeight/2);cv.width=w;cv.height=h;stars=Array.from({length:Math.round(w*h/950)},()=>({x:ri(0,w),y:ri(0,h),c:['#9ea3b8','#9ea3b8','#7c97a8','#6c6790'][ri(0,3)],b:Math.random()*.7}));drawStars()}
-function drawStars(){const w=cv.width,h=cv.height;cx.fillStyle='#06070d';cx.fillRect(0,0,w,h);
-  const g=cx.createRadialGradient(w*.72,h*.22,0,w*.72,h*.22,w*.5);g.addColorStop(0,'rgba(95,90,128,.10)');g.addColorStop(1,'rgba(6,7,13,0)');cx.fillStyle=g;cx.fillRect(0,0,w,h);
-  stars.forEach(s=>{cx.globalAlpha=.2+s.b*.6;cx.fillStyle=s.c;cx.fillRect(s.x,s.y,1,1)});cx.globalAlpha=1;
+function drawStars(){const w=cv.width,h=cv.height,day=isDay();cx.fillStyle=day?'#141a28':'#06070d';cx.fillRect(0,0,w,h);
+  const g=cx.createRadialGradient(w*.72,h*.22,0,w*.72,h*.22,w*.5);g.addColorStop(0,day?'rgba(150,170,210,.14)':'rgba(95,90,128,.10)');g.addColorStop(1,'rgba(6,7,13,0)');cx.fillStyle=g;cx.fillRect(0,0,w,h);
+  if(!day)stars.forEach(s=>{cx.globalAlpha=.2+s.b*.6;cx.fillStyle=s.c;cx.fillRect(s.x,s.y,1,1)});cx.globalAlpha=1;
   const R=Math.round(Math.min(w,h)*.42),px=Math.round(w*.9),py=Math.round(h+R*.55);for(let y=py-R;y<=h;y++)for(let x=px-R;x<=px+R;x++){const d=Math.hypot(x-px,y-py);if(d>R)continue;cx.fillStyle=d>R-1?'#2e3446':(x-px)-(y-py)*.3<-R*.35?'#0a0c14':'#0e111b';cx.fillRect(x,y,1,1)}}
 sizeStars();addEventListener('resize',sizeStars);
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{for(let i=0;i<3;i++){const s=stars[ri(0,stars.length-1)];if(s)s.b=Math.random()*.7}drawStars()},1400);
