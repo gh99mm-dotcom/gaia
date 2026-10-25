@@ -379,6 +379,20 @@ header>.chip:not(.sugg){margin-left:0}
 .raidmem.turn{box-shadow:inset 0 0 0 2px var(--gold)}.raidmem.down{opacity:.5}.raidmain{min-width:0;display:flex;flex-direction:column;gap:8px}
 .raidmons{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}.raidmon{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:110px;background:var(--deep);border:2px solid var(--ink);padding:6px;color:inherit;font:inherit;cursor:pointer}
 .raidmon.tgt{box-shadow:inset 0 0 0 2px var(--red)}.raidmon.dead{opacity:.3;cursor:default}.raidmon.boss{min-width:170px;box-shadow:inset 0 0 0 1px var(--gold)}.raidmon.boss.tgt{box-shadow:inset 0 0 0 2px var(--red)}.raidmon .bar{width:100%}
+.bossgrid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:12px;align-items:stretch}
+@media (max-width:760px){.bossgrid{grid-template-columns:1fr}}
+.bossmain{display:flex;flex-direction:column;gap:10px;min-width:0}
+.bossstage{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px;background:radial-gradient(ellipse at 30% 50%,var(--violetd),var(--deep) 70%);border:2px solid var(--ink)}
+.bosssprite{animation:bossbob 2.4s steps(4) infinite;flex:none}.bossstage.down .bosssprite{filter:grayscale(1) brightness(.6);animation:none}
+@keyframes bossbob{50%{transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){.bosssprite{animation:none}}
+.bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.bosshp{font-family:var(--f-pix);font-size:10px;color:var(--mute);text-align:right}
+.bossact{gap:10px;align-items:center}.bossact .btn{min-width:120px;justify-content:center}
+.bossrank{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:3px}.bossrank li{display:grid;grid-template-columns:22px 1fr auto 52px;gap:6px;align-items:center;font-size:12px}.bossrank li.me{color:var(--gold)}.bossrank em{font-style:normal;font-family:var(--f-pix);font-size:10px;color:var(--mute)}.bossrank small{text-align:right;color:var(--mute)}
+.bosschat{display:flex;flex-direction:column;gap:6px;min-width:0;min-height:420px}
+.bosslog{list-style:none;margin:0;padding:6px 8px;flex:1;min-height:240px;max-height:440px;overflow:auto;background:var(--deep);border:2px solid var(--ink);display:flex;flex-direction:column;gap:4px;font-size:12px}
+.bosslog li{display:flex;flex-wrap:wrap;gap:0 6px;align-items:baseline;overflow-wrap:anywhere}.bosslog li b{color:var(--cyan);font-weight:400}.bosslog li.me b{color:var(--gold)}.bosslog li span{flex:1 1 100%}.bosslog time{font-size:10px;color:var(--dim);margin-left:auto}.bosslog li span{order:3}
+.bossform{display:flex;gap:4px}.bossform input{flex:1;min-width:0;background:var(--deep);color:var(--text);border:2px solid var(--ink);padding:5px 7px;font:inherit}
 .raidacts{display:flex;gap:6px;flex-wrap:wrap}.raidacts .btn{flex:1;justify-content:center}.raiditems{display:flex;flex-direction:column;gap:4px}
 .raidlog{list-style:none;margin:0;padding:6px 8px;background:var(--ink);border:1px solid var(--line);font-size:11.5px;display:flex;flex-direction:column;gap:2px;max-height:150px;overflow:auto}
 .raidev{display:flex;flex-direction:column;gap:8px}.raidev p{margin:0}.raidlist{display:flex;flex-direction:column;gap:5px;margin-top:6px}.raidrow{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;background:var(--deep);border:2px solid var(--ink);padding:5px 8px}
@@ -1121,6 +1135,7 @@ COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}
 COOK.forEach(c=>{const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf}});
 const ORDER=Object.keys(ITEMS);
 const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자'];
+const BOSS_IC=['......kkkkkkkk......','....kkVVVVVVVVkk....','...kVVzzzzzzzzVVk...','..kVzzzzzzzzzzzzVk..','.kVzzzkkkkkkkkzzzVk.','.kVzzkmmmmmmmmkzzVk.','kVzzkmmmkkkkmmmkzzVk','kVzzkmmkrrrrkmmkzzVk','kVzzkmmkrkkrkmmkzzVk','kVzzkmmmkkkkmmmkzzVk','.kVzzkmmmmmmmmkzzVk.','.kVzzzkkkkkkkkzzzVk.','..kVzVzVzzzzVzVzVk..','..kVk.kVk..kVk.kVk..','..kk...kk..kk...kk..','....................'];
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
  {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 개척선 별무리호 · 선체 손상 심각'},
@@ -1128,7 +1143,7 @@ const TABS=[
  {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
  {id:'raid',n:'원정',ic:IC.raygun,cost:'',loc:'파티 원정 · 최대 4명 · 턴제 전투'},
- {id:'adv',n:'탐사',ic:IC.book,cost:'EN 5',loc:'탐사 일지 · 글로 떠나는 원정'},
+ {id:'adv',n:'레이드',ic:BOSS_IC,cost:'',loc:'심연에서 온 침략자 · 모든 단원 공동 레이드'},
  {id:'scan',n:'조사',ic:IC.scan,cost:'30분 신호',loc:'미확인 신호 구역 · 30분마다 신호 수신'},
  {id:'bag',n:'가방',ic:IC.bag,cost:'',loc:'개인 보관함'},
  {id:'shop',n:'상점',ic:IC.shop,cost:'',loc:'궤도 고물상 · 24시간 영업'},
@@ -1307,8 +1322,8 @@ const TITLES=[
  ['lv60','예순 번째 궤도','최고 레벨 60 달성',()=>P.lvl>=60],
  ['soc1','다정한 이웃','단원에게 인사 10번 건네기',()=>st('hi')>=10],
  ['soc2','광장의 이야기꾼','PAD에 글 10개 쓰기',()=>st('post')>=10],
- ['adv1','이야기를 걷는 자','탐사 이야기 5번 완주',()=>st('adv')>=5],
- ['adv2','엔딩 수집가','탐사 엔딩 10종 발견',()=>Object.keys(P.advEnds||{}).length>=10],
+ ['adv1','침략자 사냥꾼','심연의 침략자 50번 공격',()=>st('boss')>=50],
+ ['adv2','심연을 닫은 자','침략자 처치에 3번 참여',()=>st('bosskill')>=3],
  ['dm1','속삭이는 별','귓속말 30번 보내기',()=>st('dm')>=30],
  ['all5','만능 개척자','생활 레벨 네 가지 모두 10 이상',()=>LIFE.every(([k])=>lifeLv(P.lx?.[k])>=10)],
  ['farmmax','풍요의 지배자','농사 생활 레벨 20',()=>lifeLv(P.lx?.farm)>=20],
@@ -1386,7 +1401,7 @@ async function connect(){
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>d.data()).reverse();renderChat()},()=>{});
-  socSubscribe();raidSubscribe();
+  socSubscribe();raidSubscribe();bossSubscribe();
   if(room){room.onPeers(ch=>{PEERS=ch.peers;renderCrew();renderNet();if(tab==='farm')renderPanel()});setPresence()}
 }
 
@@ -1738,6 +1753,68 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
   return`<div class="row" style="justify-content:space-between;align-items:center"><b class="dfloor">${esc(z.n)} · ${r.state==='lobby'?'대기실':`${Math.min(r.step,RAID_STEPS)}/${RAID_STEPS}단계`}</b>${r.state==='run'&&r.phase!=='end'?'<button class="qchip" data-act="raidleave">원정 포기</button>':''}</div>
    <div class="raidwrap"><div class="raidparty">${party}</div><div class="raidmain">${body}</div></div>`}
 function renderRaid(){if(mode!=='online')return head()+'<div class="note">원정은 온라인에서만 떠날 수 있습니다.</div>';return head()+(MYRAID?raidRunHTML(MYRAID):raidLobbyHTML())}
+/* ───────── 레이드: the invader from the abyss ─────────
+   one boss shared by every member (boss/cur); each member may strike once a minute.
+   when it falls, everyone who hit it can claim a reward; a stronger one rises after a short lull.
+   raid chat (boss/chat) keeps only the latest 30 lines and is open only to members on this tab. */
+const BOSS_CD=60e3,BOSS_RESPAWN=30*60e3,BOSS_CHAT_MAX=30;
+const BOSS_NAMES=['공허의 눈 「아자토스」','심연의 촉수 「크툴라」','검은 별의 사도 「니알라」','침묵의 군주 「보르그」','끝없는 굶주림 「가르간」','심해의 왕관 「레비아」'];
+let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='';
+const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
+const bossLv=g=>Math.min(60,25+g*5),bossMax=g=>Math.round(30000*(1+.35*(g-1)));
+const bossAlive=b=>!!b&&b.hp>0;
+function bossTx(ref,fn){if(ref.tx)return ref.tx(fn);return ref.get().then(sn=>{const nx=fn(sn.exists?JSON.parse(JSON.stringify(sn.data())):null);return nx?ref.set(nx).then(()=>nx):null})}
+function bossSpawn(prev){const g=prev?(prev.gen||0)+1:1,mx=bossMax(g);return{gen:g,lv:bossLv(g),name:BOSS_NAMES[(g-1)%BOSS_NAMES.length],hp:mx,max:mx,at:Date.now(),dmg:{},hits:0,prev:prev&&prev.dmg?{gen:prev.gen,name:prev.name,dmg:prev.dmg,killer:prev.killer||''}:(prev&&prev.prev)||null}}
+// first visitor creates the boss; after a kill and the lull, the next visitor raises the next one
+function bossEnsure(){if(bossBusy)return;const b=BOSS,due=!b||(!bossAlive(b)&&Date.now()-(b.killedAt||0)>=BOSS_RESPAWN);if(!due)return;bossBusy=true;
+  bossTx(bossRef(),cur=>{if(cur&&(bossAlive(cur)||Date.now()-(cur.killedAt||0)<BOSS_RESPAWN))return null;return bossSpawn(cur)}).catch(()=>{}).finally(()=>{bossBusy=false})}
+function bossSubscribe(){
+  bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossClaim();if(tab==='adv')bossPaint()},()=>{});
+  bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{})}
+// rewards: once per boss for everyone who landed a hit; a share of the damage adds to it
+function bossClaim(){const b=BOSS;if(!b)return;const src=!bossAlive(b)&&b.dmg&&b.dmg[uid]?{gen:b.gen,name:b.name,dmg:b.dmg,killer:b.killer}:b.prev&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
+  if(!src||(P.bossGot||0)>=src.gen)return;const tot=Object.values(src.dmg).reduce((a,v)=>a+(v.d||0),0)||1,mine=src.dmg[uid].d||0,share=mine/tot;
+  const xp=Math.round(need(P.lvl)*(.25+.5*Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;gainXp(xp);P.cr=(P.cr||0)+cr;add('relic',1);if(src.killer===uid)add('crystal',2);stat('bosskill');
+  log(`${src.name}을(를) 쓰러뜨렸다! 기여도 ${(share*100).toFixed(1)}% · 경험치 +${xp.toLocaleString()} · ${cr} CR · 고대 신호 기록×1${src.killer===uid?' · 마지막 일격 보너스 은하 결정×2':''}`,'rare');commit()}
+const bossReady=()=>Math.max(0,(P.bossAt||0)+BOSS_CD-Date.now());
+async function bossHit(){const b=BOSS;if(!bossAlive(b)||bossReady()>0||isFaint()||bossBusy)return;bossBusy=true;
+  const crit=Math.random()*100<AS('agi'),d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(crit?1.5:1)));let dealt=0,kill=false;
+  try{await bossTx(bossRef(),cur=>{if(!cur||cur.hp<=0||cur.gen!==b.gen)return null;dealt=Math.min(cur.hp,d);cur.hp-=dealt;cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
+    if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
+  bossBusy=false;if(!dealt){bossPaint();return}
+  P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(need(P.lvl)*.006));gainXp(xp);
+  log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':''}`,crit||kill?'rare':'');commit()}
+function bossSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t)return;const m={uid,n:P.nick,t,at:Date.now()};
+  return bossTx(bchatRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-BOSS_CHAT_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
+const bossHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='레이드').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
+function bossMainHTML(){const b=BOSS;if(!b)return`<div class="card"><p class="hint">심연의 균열을 살피는 중…</p></div>`;
+  const alive=bossAlive(b),rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
+  const left=alive?0:Math.max(0,(b.killedAt||0)+BOSS_RESPAWN-Date.now());
+  return`<div class="bossstage ${alive?'':'down'}"><div class="bosssprite">${img(BOSS_IC,null,9)}</div>
+    <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
+    ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp">${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span></div></div>
+   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div>`
+    :`<div class="card"><b>${esc(b.name)}이(가) 쓰러졌다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 더 강한 침략자가 <b id="bossT">${fmtClock(left)}</b> 뒤에 나타납니다.</p></div>`}
+   <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
+    ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
+    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기여도만큼 더), 크레딧, 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>`}
+function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 단원에게 인사해 보십시오.</li>'}
+function renderBoss(){bossEnsure();const here=bossHere();
+  return head()+`<div class="bossgrid"><div class="bossmain" id="bossMain">${bossMainHTML()}</div>
+   <div class="card bosschat"><div class="stat-row"><span>레이드 대화</span><b id="bossHere">${here.length}명</b></div><span class="hint" id="bossWho">${here.map(esc).join(', ')}</span>
+    <ol class="bosslog" id="bossLog">${bossChatLogHTML()}</ol>
+    <form class="bossform" id="bossForm"><input id="bossIn" value="${esc(bossDraft)}" maxlength="120" autocomplete="off" placeholder="레이드 중인 단원에게 말하기" aria-label="레이드 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
+    <span class="hint">레이드 탭에 있는 단원만 보고 말할 수 있습니다. 최근 ${BOSS_CHAT_MAX}개만 남습니다.</span></div></div>`}
+function bossPaint(){const m=$('#bossMain');if(!m){renderPanel();return}m.innerHTML=bossMainHTML()}
+function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=bossChatLogHTML();if(end)l.scrollTop=l.scrollHeight}
+function bossTick(){if(tab!=='adv')return;const b=BOSS,t=$('#bossT');if(!t)return;
+  if(bossAlive(b)){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}
+  else if(b){const left=(b.killedAt||0)+BOSS_RESPAWN-Date.now();if(left<=0)bossEnsure();t.textContent=fmtClock(Math.max(0,left))}
+  const h=bossHere(),hc=$('#bossHere'),hw=$('#bossWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
+setInterval(bossTick,1000);
+document.addEventListener('submit',e=>{if(e.target.id!=='bossForm')return;e.preventDefault();if(tab!=='adv')return;const i=$('#bossIn');const v=i.value;if(!v.trim())return;i.value='';bossDraft='';bossSay(v)});
+document.addEventListener('input',e=>{if(e.target.id==='bossIn')bossDraft=e.target.value});
+
 /* gather scene: the collector robot trundling across the chosen site; each site has its own landscape and a little life of its own */
 const GW=240,GH=84,GBG={};let gTimer=0;
 function gatherBg(site,day){const lt=site==='cave'&&isLight(),key=site+(day?'d':'n')+(lt?'l':'');if(GBG[key])return GBG[key];
@@ -2185,7 +2262,7 @@ function renderPanel(){
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><h2>내 프로필</h2><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0;
-  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,adv:advHTML,ship:renderShip,raid:renderRaid}[tab];
+  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
   $('#stage').innerHTML=f();
   {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;if(Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}
   if(tab==='fish')drawLake();
@@ -2193,7 +2270,7 @@ function renderPanel(){
   if(tab==='gather')startGatherScene();
   if(tab==='bag')renderCook();
   if(tab==='farm'){fitSide();fitBay()}
-  if(tab==='adv'){const l=$('#advLog');if(l)l.scrollTop=l.scrollHeight}
+  if(tab==='adv'){bossEnsure();const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
 }
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat()}
@@ -2279,6 +2356,7 @@ const A={
  raiddef(){raidAct('def')},
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
+ bosshit(){bossHit()},
  raidbag(){raidBag=!raidBag;renderPanel()},
  raidpick(d){raidPick=d.id;renderPanel()},
  raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID)return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);raidBag=false;raidPick=null;commit();renderPanel()}})},
@@ -2559,8 +2637,8 @@ async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const
 document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classList.contains('orgsel'))setRole(t.dataset.role,t.value)});
 let profId=null,profBio=false;
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
-  const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id),ends=Object.keys(p.advEnds||{}).length;
-  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['탐사 엔딩',`${ends}종`]];
+  const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
+  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
   return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
@@ -2634,103 +2712,13 @@ document.addEventListener('keydown',e=>{if(e.target.id==='profBioIn'&&e.key==='E
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.imgctx&&t.files&&t.files.length){addImgs(t.dataset.imgctx,[...t.files]);t.value=''}});
 document.addEventListener('paste',e=>{const t=e.target;if(!ASSETS||!(t.id==='padIn'||t.id==='padReply'))return;const fs=[...(e.clipboardData&&e.clipboardData.files||[])].filter(f=>IMG_TYPES.test(f.type));if(!fs.length)return;e.preventDefault();t.blur();addImgs(t.id==='padReply'?'reply':'pad',fs)});
 document.addEventListener('focusout',e=>{if(!socPend||!isField(e.target))return;const rt=e.relatedTarget;if(rt&&rt.closest&&rt.closest('#stage'))return;setTimeout(()=>{if(socPend&&(tab==='social'||tab==='adv')&&!isField(document.activeElement))renderPanel()},400)});
-/* ───────── text expeditions: branching stories ───────── */
-const ADV_EN=5,ABN={str:'힘',agi:'민첩',luk:'행운',vit:'체력',end:'지구력'};
-const STORIES=[
- {id:'beacon',n:'침묵하는 등대',place:'크레이터 평원 · 북쪽 능선',d:'40년 전에 폐쇄된 항법 등대가 3분마다 한 번씩 깜빡인다.',s:'s',N:{
-  s:{t:'크레이터 평원 북쪽 능선. 버려진 항법 등대가 3분마다 한 번씩 깜빡인다. 정거장 기록상 이 등대는 40년 전에 폐쇄됐다. 정문은 반쯤 열려 있고, 외벽에는 녹슨 사다리가 꼭대기까지 이어져 있다.',o:[{l:'정문으로 들어간다',go:'lobby'},{l:'외벽 사다리를 타고 꼭대기로 오른다',ck:'agi',p:.5,ok:'top',no:'fall'}]},
-  fall:{t:'세 번째 칸에서 손잡이가 부서졌다. 등으로 떨어져 한참 숨을 고른 뒤, 결국 정문으로 향한다.',fx:{hp:-12},o:[{l:'정문으로 들어간다',go:'lobby'}]},
-  top:{t:'등대 꼭대기. 커다란 렌즈 한가운데에 누군가 은하 결정을 끼워 두었다. 결정이 빛을 모아 3분마다 바깥으로 쏘아 보내고 있었다. 렌즈 옆 바닥에는 지하로 이어지는 점검용 승강구가 있다.',o:[{l:'결정을 빼낸다',go:'e_dark'},{l:'그대로 두고 승강구로 내려간다',go:'gen'}]},
-  lobby:{t:'로비 바닥의 먼지 위에 발자국이 한 줄 나 있다. 안으로 들어간 자국만 있고, 나온 자국은 없다. 벽 단말기 화면이 희미하게 켜져 있다.',o:[{l:'단말기를 조사한다',ck:'luk',p:.5,ok:'term',no:'alarm'},{l:'발자국을 따라간다',go:'gen'}]},
-  term:{t:'운영 기록이 남아 있다. 「마지막 근무자: 정비 로봇 7호. 근무 종료 사유: 이동 명령.」 어딘가 익숙한 이름이다.',fx:{xp:15},o:[{l:'발자국을 따라 지하로 간다',go:'gen'}]},
-  alarm:{t:'화면을 건드리자 경보가 울렸다. 천장에서 경비 드론이 떨어져 몸통을 들이받고는 다시 잠들었다.',fx:{hp:-10},o:[{l:'욱신거리는 몸으로 발자국을 따라간다',go:'gen'}]},
-  gen:{t:'지하 발전실. 발자국은 거대한 발전기 앞에서 끊겼다. 발전기 몸체에 손글씨 쪽지가 붙어 있다. 「불을 꺼뜨리지 말아 줘. 누군가는 아직 길을 찾고 있을지도 몰라.」 발전기는 덜덜 떨리며 금방이라도 멈출 것 같다.',o:[{l:'맨손으로 발전기를 고친다',ck:'str',p:.5,ok:'e_fix',no:'e_half'},{l:'응급 수리 키트를 써서 고친다',req:['kit',1],go:'e_fix'},{l:'전원 코어만 뽑아 챙긴다',go:'e_take'}]},
-  e_fix:{end:'등대지기의 약속',t:'발전기가 안정된 소리를 낸다. 등대의 빛이 다시 규칙적으로 돌아가고, 몇 분 뒤 아주 먼 곳에서 짧은 응답 신호가 깜빡였다. 누군가 아직 길을 찾고 있었다.',fx:{cr:150,xp:45,add:[['relic',1]]}},
-  e_half:{end:'흔들리는 불빛',t:'어떻게든 돌려 놓았지만 소리가 불안하다. 등대는 깜빡이다 멈추기를 반복한다. 그래도 아주 꺼지지는 않았다.',fx:{cr:60,xp:25,hp:-8}},
-  e_take:{end:'빛을 가져간 자',t:'전원 코어를 뽑아 들자 등대 전체가 조용해졌다. 무겁고 값진 코어다. 돌아오는 길, 등 뒤의 능선은 처음으로 완전히 어두웠다.',fx:{cr:100,xp:20,add:[['dark',2]]}},
-  e_dark:{end:'꺼진 등대',t:'결정을 빼내자 등대가 숨을 멈춘 것처럼 어두워졌다. 손바닥 위의 결정은 아직 따뜻하다.',fx:{cr:30,xp:15,add:[['crystal',3]]}}}},
- {id:'distress',n:'메탄 바다의 조난 신호',place:'성운 호수 · 동쪽 기슭',d:'안개 낀 메탄 호수 위에서 끊어질 듯한 조난 신호가 잡힌다.',s:'s',N:{
-  s:{t:'성운 호수 동쪽 기슭에서 약한 조난 신호가 잡힌다. 「…여기 …뒤집혔… 산소 …」 액체 메탄 위로 안개가 낮게 깔려 있다. 기슭에는 낡은 부유 썰매가 묶여 있다.',o:[{l:'부유 썰매를 타고 신호 쪽으로 간다',go:'sled'},{l:'기슭을 따라 걸으며 신호를 추적한다',go:'shore'}]},
-  sled:{t:'썰매는 삐걱대지만 떠 있다. 안개 속에서 무언가 커다란 그림자가 썰매 아래를 지나간다. 호수가 크게 출렁인다.',o:[{l:'엔진을 끄고 숨죽여 기다린다',ck:'luk',p:.55,ok:'calm',no:'capsize'},{l:'전속력으로 빠져나간다',ck:'agi',p:.5,ok:'wreck',no:'capsize'}]},
-  capsize:{t:'썰매가 기울며 차가운 메탄이 우주복 틈으로 스며든다. 간신히 매달려 버텼다.',fx:{hp:-15,en:-4},o:[{l:'이를 악물고 신호 쪽으로 간다',go:'wreck'}]},
-  calm:{t:'그림자는 썰매를 한 번 툭 건드리고 깊은 곳으로 사라졌다. 수면 위로 반짝이는 비늘 한 조각이 떠올랐다.',fx:{add:[['crystal',1]]},o:[{l:'비늘을 챙겨 계속 간다',go:'wreck'}]},
-  shore:{t:'기슭을 따라 걷다 보니 신호가 점점 또렷해진다. 바위 사이에 누군가 떨어뜨린 보급 가방이 있다.',fx:{add:[['kit',1]]},o:[{l:'가방을 챙겨 계속 간다',go:'wreck'}]},
-  wreck:{t:'뒤집힌 소형 탐사정. 해치 너머에서 두드리는 소리가 들린다. 안에는 다른 정거장 소속 탐사원이 갇혀 있다. 산소 게이지는 바닥을 가리키고 있다.',o:[{l:'해치를 억지로 연다',ck:'str',p:.5,ok:'e_hand',no:'stuck'},{l:'응급 수리 키트로 산소 라인을 잇는다',req:['kit',1],go:'e_kit'},{l:'좌표만 기록하고 구조대를 부르러 간다',go:'e_coord'}]},
-  stuck:{t:'해치가 꿈쩍도 하지 않는다. 손목이 꺾였다. 안에서 두드리는 소리가 점점 약해진다.',fx:{hp:-10},o:[{l:'한 번 더 힘껏 당긴다',ck:'str',p:.6,ok:'e_hand',no:'e_late'},{l:'구조대를 부르러 달려간다',go:'e_late'}]},
-  e_hand:{end:'메탄 위의 손',t:'해치가 열리고, 탐사원이 기침하며 기어 나왔다. 「…고맙습니다. 이건 우리 정거장 표식입니다. 언젠가 꼭 갚겠습니다.」 그는 낡은 배지를 손에 쥐여 주었다.',fx:{cr:120,xp:40,add:[['relic',1]]}},
-  e_kit:{end:'이어 붙인 숨',t:'키트의 호스로 산소 라인을 이었다. 잠시 후 해치 너머에서 고른 숨소리가 들린다. 구조대가 올 때까지 함께 기다렸다. 그는 자기 몫의 보급품을 나눠 주었다.',fx:{cr:90,xp:50,add:[['drink',2]]}},
-  e_coord:{end:'기록된 좌표',t:'정거장에 좌표를 보냈다. 한 시간 뒤 구조대가 탐사원을 데려왔다는 소식이 들렸다. 이름은 끝내 듣지 못했다.',fx:{cr:60,xp:25}},
-  e_late:{end:'늦은 구조',t:'구조대가 도착했을 때 탐사원은 의식이 없었지만 숨은 붙어 있었다. 마음 한구석이 무겁다.',fx:{cr:40,xp:20}}}},
- {id:'seven',n:'녹슨 7호의 부탁',place:'궤도 고물상 → 잔해 지대',d:'고물상 로봇 7호가 처음으로 부탁을 한다. 잃어버린 기억 모듈을 찾아 달라고.',s:'s',N:{
-  s:{t:'고물상 로봇 녹슨 7호가 평소와 다르게 말을 아낀다. 「부탁이 있어. 잔해 지대에 내 옛 부품이 있대. 기억 모듈이야. 거기엔… 1호부터 6호에 대한 기록이 있을지도 몰라.」',o:[{l:'부탁을 들어준다',go:'field'},{l:'대가를 먼저 묻는다',go:'ask'}]},
-  ask:{t:'「…크레딧은 많이 없어. 대신 돌아오면 이야기를 오래 해 줄게.」 7호의 전원 불빛이 조금 어두워졌다.',o:[{l:'알았어, 다녀올게',go:'field'}]},
-  field:{t:'잔해 지대. 추락한 수송선들이 무덤처럼 늘어서 있다. 7호가 알려 준 좌표에는 거대한 화물선이 반쯤 묻혀 있다. 들어갈 수 있는 곳은 두 군데다.',o:[{l:'무너진 화물칸으로 들어간다',go:'cargo'},{l:'함교 쪽 비상 해치로 비집고 들어간다',ck:'agi',p:.55,ok:'bridge',no:'pinch'}]},
-  pinch:{t:'해치 틈에 발이 끼어 한참을 버둥댔다. 겨우 빠져나와 화물칸 쪽으로 돌아간다.',fx:{hp:-8,en:-2},o:[{l:'화물칸으로 들어간다',go:'cargo'}]},
-  cargo:{t:'화물칸 안은 녹슨 로봇 몸체로 가득하다. 모두 7호와 같은 모델이다. 가슴판에 번호가 새겨져 있다. 1, 2, 3… 6.',o:[{l:'6호의 가슴판을 열어 본다',go:'six'},{l:'눈을 돌리고 함교로 간다',go:'bridge'}]},
-  six:{t:'6호의 가슴 안에 작은 메모리 칩이 남아 있다. 칩에는 짧은 음성 하나. 「7호에게. 우리는 먼저 쉬러 간다. 가게를 부탁해.」',flag:'chip',fx:{xp:10},o:[{l:'칩을 챙겨 함교로 간다',go:'bridge'}]},
-  bridge:{t:'함교. 조종석 옆 보관함에 「기억 모듈 · 7」이라는 라벨이 붙어 있다. 보관함은 잠겨 있고, 옆 단말기에 비밀번호 입력창이 깜빡인다.',o:[{l:'단말기를 해킹한다',ck:'luk',p:.45,ok:'got',no:'lock'},{l:'보관함을 힘으로 부순다',ck:'str',p:.55,ok:'dent',no:'lock'}]},
-  lock:{t:'단말기가 잠기고 경보가 울린다. 잔해 속에서 경비 드론 셋이 깨어났다. 모듈을 포기하고 빠져나와야 한다.',fx:{hp:-14},o:[{l:'빈손으로 돌아간다',go:'e_empty'},{l:'6호의 칩이라도 7호에게 전한다',need:'chip',go:'e_chip'}]},
-  got:{t:'보관함이 열렸다. 손바닥만 한 기억 모듈이 조용히 빛난다.',o:[{l:'7호에게 돌아간다',go:'e_mem'}]},
-  dent:{t:'보관함 문이 떨어져 나갔다. 모듈은 조금 찌그러졌지만 불은 들어온다.',o:[{l:'7호에게 돌아간다',go:'e_dent'}]},
-  e_mem:{end:'일곱 번째의 기억',t:'모듈을 꽂자 7호가 한참 말이 없다가 아주 작게 말했다. 「…다들 여기 있었구나.」 그날 7호는 처음으로 물건값을 깎아 주었다.',fx:{cr:200,xp:50,add:[['dark',2]]}},
-  e_dent:{end:'찌그러진 기억',t:'모듈은 반쯤만 읽혔다. 7호는 그래도 고맙다고 했다. 「반이라도 기억나는 게 어디야.」',fx:{cr:120,xp:35}},
-  e_chip:{end:'먼저 쉬러 간 친구들',t:'칩을 재생하자 7호의 불빛이 오래 깜빡였다. 「…그래. 가게는 내가 지킬게.」',fx:{cr:80,xp:40}},
-  e_empty:{end:'빈손의 귀환',t:'빈손으로 돌아왔다. 7호는 괜찮다고, 기다리는 건 자기가 제일 잘한다고 말했다.',fx:{cr:20,xp:15}}}},
- {id:'ice',n:'얼음 아래의 노래',place:'얼음 간헐천 · 서쪽 들판',d:'밤마다 얼음 아래에서 낮고 긴 노래 같은 진동이 올라온다.',s:'s',N:{
-  s:{t:'얼음 간헐천 들판. 밤마다 얼음 아래에서 노래 같은 진동이 올라온다는 보고가 있었다. 귀를 얼음에 대자, 정말로 낮고 긴 소리가 들린다.',o:[{l:'얼음에 구멍을 뚫는다 (에너지 2)',go:'hole'},{l:'간헐천이 터지는 틈을 타 균열로 내려간다',ck:'agi',p:.5,ok:'cave',no:'steam'}]},
-  steam:{t:'간헐천이 예상보다 일찍 터졌다. 뜨거운 증기에 휩쓸려 굴렀다.',fx:{hp:-15},o:[{l:'그래도 균열로 내려간다',go:'cave'}]},
-  hole:{t:'구멍 아래로 검은 물이 출렁인다. 노래가 또렷해진다. 물속에서 커다란 눈 하나가 이쪽을 올려다본다.',fx:{en:-2},o:[{l:'손전등을 비춘다',go:'light'},{l:'가만히 노래를 따라 흥얼거린다',ck:'luk',p:.5,ok:'song',no:'light'}]},
-  light:{t:'빛이 닿자 눈이 천천히 감기고 노래가 멈췄다. 얼음 아래가 고요해졌다.',o:[{l:'한참을 기다린다',go:'e_quiet'}]},
-  song:{t:'흥얼거리자 노래가 잠시 멈췄다가, 같은 음으로 대답했다. 구멍 위로 반짝이는 결정 가루가 떠올랐다.',fx:{add:[['frostCrystal',2]]},o:[{l:'노래를 녹음해 돌아간다',go:'e_duet'}]},
-  cave:{t:'얼음 동굴. 벽 안에 거대한 생물이 갇혀 있다. 고래처럼 생겼지만 등에 결정이 돋아 있다. 노래는 이 생물이 내는 소리였다. 얼음 한쪽에 금이 가 있다.',o:[{l:'금 간 얼음을 깨 생물을 풀어 준다',ck:'str',p:.5,ok:'e_free',no:'cut'},{l:'등의 결정을 조금만 떼어 간다',go:'e_take'},{l:'조용히 기록만 남긴다',go:'e_rec'}]},
-  cut:{t:'얼음 대신 손등이 갈라졌다. 생물이 괴로운 듯 몸을 뒤척인다.',fx:{hp:-12},o:[{l:'다시 내려친다',ck:'str',p:.6,ok:'e_free',no:'e_rec'},{l:'물러나 기록만 남긴다',go:'e_rec'}]},
-  e_free:{end:'얼음을 깨고',t:'얼음이 갈라지고 생물이 몸을 비틀어 깊은 물속으로 미끄러져 갔다. 멀리서 고맙다는 듯 긴 울음이 한 번 울렸다. 발밑에 결정 비늘이 잔뜩 떨어져 있다.',fx:{cr:100,xp:45,add:[['crystal',3],['frostCrystal',2]]}},
-  e_take:{end:'등의 결정',t:'결정 몇 조각을 떼어 냈다. 생물은 깨지 않았다. 값진 결정이지만, 돌아오는 내내 노래가 귓가에 맴돌았다.',fx:{cr:80,xp:20,add:[['crystal',4]]}},
-  e_rec:{end:'얼음 속 기록',t:'생물의 모습과 노래를 기록해 정거장에 보냈다. 학자들이 들떠서 답장을 보냈다.',fx:{cr:70,xp:35,add:[['relic',1]]}},
-  e_quiet:{end:'멈춘 노래',t:'그날 밤 이후로 얼음 아래 노래는 들리지 않았다. 무언가를 놓쳐 버린 기분이다.',fx:{cr:30,xp:15}},
-  e_duet:{end:'두 목소리',t:'녹음된 노래에는 두 목소리가 겹쳐 있었다. 하나는 얼음 아래의 것, 하나는 내 것.',fx:{cr:90,xp:50}}}},
-];
-const storyById=id=>STORIES.find(s=>s.id===id);
-const storyEnds=s=>Object.entries(s.N).filter(([,n])=>n.end);
-const ckP=o=>Math.max(.05,Math.min(.95,o.p+AS(o.ck)*.03+P.lvl*.004));
-function advFx(fx){if(!fx)return'';const out=[];
-  if(fx.hp){heal(fx.hp,0);out.push(`체력 ${fx.hp>0?'+':''}${fx.hp}`)}if(fx.en){heal(0,fx.en);out.push(`에너지 ${fx.en>0?'+':''}${fx.en}`)}
-  if(fx.cr){P.cr=(P.cr||0)+fx.cr;out.push(`${fx.cr} CR`)}if(fx.xp){gainXp(fx.xp);out.push(`경험치 +${fx.xp}`)}
-  (fx.add||[]).forEach(([id,n])=>{add(id,n);out.push(`${ITEMS[id].n}×${n}`)});return out.join(' · ')}
-function advGo(id){const a=P.adv,S=storyById(a.sid),nd=S.N[id];if(!nd)return;a.node=id;a.log=[...a.log,{k:'p',t:nd.t}].slice(-40);if(nd.flag)a.f=Object.assign({},a.f,{[nd.flag]:1});
-  const fx=advFx(nd.fx);if(fx)a.log.push({k:'fx',t:fx});
-  if(nd.end){a.done=1;a.end=nd.end;const key=S.id+':'+id,first=!(P.advEnds||{})[key];P.advEnds=Object.assign({},P.advEnds,{[key]:((P.advEnds||{})[key]||0)+1});stat('adv');lxp('scan',20);
-    if(first){gainXp(10);a.log.push({k:'fx',t:'새 엔딩 발견 · 경험치 +10'})}a.log.push({k:'end',t:`엔딩 「${nd.end}」`});log(`탐사 「${S.n}」 — 엔딩 「${nd.end}」에 도달했다.`,'rare')}
-  else if(P.hp<=0){a.done=1;a.end=null;a.log.push({k:'no',t:'시야가 흐려진다… 구조 드론이 거점으로 데려왔다. 탐사는 여기까지다.'});log(`탐사 「${S.n}」 도중 쓰러졌다.`,'bad')}}
-function advHTML(){const a=P.adv,S=a&&storyById(a.sid);
-  if(!S){const E=P.advEnds||{};return head()+`<p class="lead">글로 떠나는 탐사입니다. 이야기를 읽고 선택지를 골라 앞으로 나아갑니다. 능력치에 따라 성공 확률이 달라지는 선택도 있고, 고른 길에 따라 엔딩과 보상이 달라집니다. 한 번 출발할 때 에너지 ${ADV_EN}가 듭니다.</p>
-    <div class="advlist">${STORIES.map(s=>{const ends=storyEnds(s),got=ends.filter(([k])=>E[s.id+':'+k]).length;return`<div class="card advcard"><span class="lbl">${esc(s.place)}</span><b class="cook-t">${esc(s.n)}</b><p class="hint" style="margin:0">${esc(s.d)}</p><div class="row" style="justify-content:space-between"><span class="hint">엔딩 ${got}/${ends.length}${got?' · '+ends.filter(([k])=>E[s.id+':'+k]).map(([,n])=>'「'+esc(n.end)+'」').join(' '):''}</span><button class="btn sm" data-act="advstart" data-k="${s.id}">출발 <small>EN ${ADV_EN}</small></button></div></div>`}).join('')}</div>`}
-  const nd=S.N[a.node],last=a.log.length-1;
-  const logH=a.log.map((l,i)=>`<p class="${l.k} ${i>=a.fresh?'new':''}">${esc(l.t)}</p>`).join('');
-  let opts='';if(a.done){opts=`<div class="row">${mode==='online'&&a.end?`<button class="btn alt" data-act="advshare">PAD에 탐사 기록 공유</button>`:''}<button class="btn ghost" data-act="advback">탐사 목록으로</button></div>`}
-  else opts=`<div class="advopts">${nd.o.filter(o=>!o.need||(a.f||{})[o.need]).map((o,k)=>{const i=nd.o.indexOf(o),lack=o.req&&(P.inv[o.req[0]]||0)<o.req[1];return`<button class="btn ${o.ck?'alt':o.req?'gold':'ghost'} advopt" data-act="advopt" data-k="${i}" ${lack?'disabled':''}>${k+1}. ${esc(o.l)}${o.ck?` <small>${ABN[o.ck]} · 성공 ${Math.round(ckP(o)*100)}%</small>`:''}${o.req?` <small>${ITEMS[o.req[0]].n} ${P.inv[o.req[0]]||0}/${o.req[1]}</small>`:''}</button>`}).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">숫자 키 1~${nd.o.length}로도 고를 수 있습니다.</span><button class="qchip" data-act="advquit">탐사 포기</button></div>`;
-  return head()+`<div class="row" style="justify-content:space-between"><b class="dfloor">${esc(S.n)}</b><span class="hint">${esc(S.place)}</span></div><div class="advlog" id="advLog">${logH}</div>${opts}`}
-const AA={
- advstart(d){const S=storyById(d.k);if(!S||(P.adv&&!P.adv.done))return;if(!spend(ADV_EN))return;P.adv={sid:S.id,node:null,log:[],f:{},at:Date.now(),fresh:0};advGo(S.s);log(`탐사 「${S.n}」을(를) 떠났다.`);commit()},
- advopt(d){const a=P.adv;if(!a||a.done)return;const S=storyById(a.sid),nd=S.N[a.node],o=nd&&nd.o[+d.k];if(!o||(o.need&&!(a.f||{})[o.need]))return;
-  if(o.req){if(!take(o.req[0],o.req[1])){toast(`${ITEMS[o.req[0]].n}이(가) 부족합니다.`);return}}
-  a.fresh=a.log.length;a.log=[...a.log,{k:'c',t:o.l}];
-  let go=o.go;if(o.ck){const p=ckP(o),ok=Math.random()<p;a.log.push({k:ok?'ok':'no',t:`${ABN[o.ck]} 판정 ${ok?'성공':'실패'} (${Math.round(p*100)}%)`});go=ok?o.ok:o.no}
-  if(o.req)a.log.push({k:'fx',t:`${ITEMS[o.req[0]].n} ${o.req[1]}개 사용`});
-  advGo(go);commit()},
- advquit(){if(!P.adv)return;const S=storyById(P.adv.sid);log(`탐사 「${S?S.n:''}」을(를) 포기하고 돌아왔다.`);P.adv=null;commit()},
- advback(){P.adv=null;commit()},
- async advshare(){const a=P.adv,S=a&&storyById(a.sid);if(!S||!a.end||mode!=='online')return;const txt=`[탐사 기록] 「${S.n}」에서 엔딩 「${a.end}」에 도달했습니다. 다들 어떤 엔딩을 보셨습니까? #탐사 #${S.n.replace(/\s/g,'_')}`;
-  try{await db.collection('posts').add({uid,nick:P.nick,text:txt.slice(0,200),at:Date.now(),likes:{}})}catch(e){socErr(e);return}stat('post');toast('PAD에 탐사 기록을 올렸습니다.');P.adv=null;commit()},
-};
-Object.assign(A,SA,AA,{
+Object.assign(A,SA,{
  async invnew(){if(!isAdmin||mode!=='online'||!window.__fbInvite)return;const code=window.__fbInvite.mk(),m=$('#invMemo'),memo=(m&&m.value||'').trim().slice(0,20);
   try{await db.doc('invites/'+code).set({by:uid,at:Date.now(),memo})}catch(e){toast('초대장을 만들지 못했습니다.');return}sfxCoin();toast(`초대장 ${fmtCode(code)} 발급!`);A.invcopy({k:code,quiet:1})},
  async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
  async invcopy(d){const t=`[가이아 프로젝트 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주십시오. (1명만 쓸 수 있습니다)`;
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
-['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
-document.addEventListener('keydown',e=>{if(tab!=='adv'||e.isComposing||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const n=+e.key;if(!(n>=1&&n<=9)||!P.adv||P.adv.done)return;const b=document.querySelectorAll('#stage .advopt')[n-1];if(b&&!b.disabled){e.preventDefault();b.click()}});
+['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel'].forEach(k=>SAFE_ACT.add(k));
 /* ───────── join page: character creation ───────── */
 const J_START=2,J_FREE=15,J_MAX=3;
 let J=null;
