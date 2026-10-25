@@ -611,7 +611,7 @@ header>.chip:not(.sugg){margin-left:0}
 .imgmodal{cursor:zoom-out}.imgmodal img{max-width:100%;max-height:100%;object-fit:contain;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--panel2)}
 /* whisper */
 .dmwrap{display:grid;grid-template-columns:210px minmax(0,1fr);gap:10px}
-@media (max-width:620px){.dmwrap{grid-template-columns:minmax(0,1fr)}.dmlist{max-height:180px}}
+@media (max-width:620px){.dmwrap{grid-template-columns:minmax(0,1fr)}.dmlist{max-height:180px;overflow-y:auto;overflow-x:hidden}}
 .dmlist{display:flex;flex-direction:column;gap:2px}
 .dmi{display:flex;gap:6px;align-items:center;text-align:left;background:var(--deep);border:2px solid var(--ink);padding:2px 6px;cursor:pointer;min-width:0;line-height:1.25}
 .dmi .sinfo b{font-size:12px}.dmi .sinfo .hint{font-size:10.5px}.dmlist .lbl{margin:4px 0 0!important}
@@ -620,10 +620,10 @@ header>.chip:not(.sugg){margin-left:0}
 .dmi .sinfo{flex:1}.dmi .sinfo span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dmdot{width:8px;height:8px;background:var(--pink);flex:none;box-shadow:0 0 0 2px var(--pinkd)}
 .dmchat{display:flex;flex-direction:column;gap:8px;min-width:0}
-.dmlog{min-height:260px;max-height:420px;overflow:auto;display:flex;flex-direction:column;gap:3px;background:var(--ink);border:1px solid var(--line);padding:8px}
+.dmlog{min-height:260px;max-height:420px;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:3px;background:var(--ink);border:1px solid var(--line);padding:8px}
 .dmrow{display:flex;gap:7px;align-items:flex-start}.dmrow.me{flex-direction:row-reverse}
-.dmav{flex:none;width:30px;display:flex;justify-content:center;line-height:0}.dmav img{image-rendering:pixelated}
-.dmb{max-width:78%;padding:4px 9px;font-size:12.5px;line-height:1.5;word-break:break-word;white-space:pre-wrap;background:var(--panel2);border:2px solid var(--ink);align-self:flex-start}
+.dmav{flex:none;width:36px;display:flex;justify-content:center;line-height:0;overflow:hidden}.dmav img{image-rendering:pixelated}
+.dmb{max-width:78%;min-width:0;overflow-wrap:anywhere;padding:4px 9px;font-size:12.5px;line-height:1.5;word-break:break-word;white-space:pre-wrap;background:var(--panel2);border:2px solid var(--ink);align-self:flex-start}
 .dmb.me{background:var(--violetd)}
 .dmb time{display:block;font-family:var(--f-pix);font-size:8px;color:var(--dim);margin-top:2px}
 /* text expedition */
