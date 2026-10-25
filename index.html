@@ -1876,8 +1876,11 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
 const raidMyTurn=()=>{const r=MYRAID,c=r&&r.b&&r.b.cur;return!!(r&&r.phase==='battle'&&c&&c.k==='p'&&c.id===uid)};
-function raidAct(kind,arg){const r0=MYRAID;if(!r0||raidBusy)return Promise.resolve(null);raidBusy=true;const want=JSON.stringify(r0.b&&r0.b.cur),seq=r0.seq;
-  return raidTx(r0.id,r=>{if(!r||r.seq!==seq||r.phase!=='battle'||JSON.stringify(r.b.cur)!==want)return null;const b=r.b,a=b.cur;
+// whose turn it is is compared by its fields: Firestore may hand the same map back with its keys in another order
+const turnKey=c=>c?c.k+':'+c.id:'';
+let raidBusyAt=0;
+function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e3)raidBusy=false;if(!r0||raidBusy)return Promise.resolve(null);raidBusy=true;raidBusyAt=Date.now();const want=turnKey(r0.b&&r0.b.cur),seq=r0.seq;
+  return raidTx(r0.id,r=>{if(!r||r.seq!==seq||r.phase!=='battle'||turnKey(r.b.cur)!==want)return null;const b=r.b,a=b.cur;
     // only the member whose turn it is may attack, defend or use an item; monsters and timeouts act only on their own turns
     if(!a||(['atk','def','item'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;
     if(a.k==='p'){const me=r.m[a.id];
@@ -1901,8 +1904,9 @@ function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidN
 function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(P.raidDone||[]).slice(-30),r.id];const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
   if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));stat('raid');if(r.result==='clear')stat('raidclear');
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
-function raidWatch(id){raidSig='';if(raidUnsub){raidUnsub();raidUnsub=null}if(!id){MYRAID=null;return}
-  raidUnsub=raidRef(id).onSnapshot(s=>{if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
+let raidWid=null;
+function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();raidUnsub=null}if(!id){MYRAID=null;return}
+  raidUnsub=raidRef(id).onSnapshot(s=>{if(raidWid!==id)return;if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
     if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
     const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'&&!isField(document.activeElement))renderPanel()},()=>{})}
 function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS.length=0;sn.docs.forEach(d=>{const v=d.data();if(raidNow()-(v.at||0)<30*60e3)RAIDS.push(Object.assign({id:d.id},v))});if(tab==='raid')renderPanel()},()=>{});
@@ -2838,7 +2842,8 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
-const SAFE_ACT=new Set(['admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+// expedition actions keep working while the character is fainted: the expedition runs on its own HP
+const SAFE_ACT=new Set(['raidatk','raiddef','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
