@@ -106,6 +106,7 @@ header>.chip:not(.sugg){margin-left:0}
 .ticker .tk-m.k-n{color:var(--gold)}.ticker .tk-m.k-j{color:var(--green)}.ticker .tk-m.k-c{color:var(--cyan)}
 .ticker .tk-c{font-family:var(--f-pix);font-size:9px;color:var(--dim);white-space:nowrap}
 .ticker .tk-list{position:absolute;left:-2px;right:-2px;top:100%;z-index:15;background:var(--panel);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);max-height:260px;overflow:auto;padding:6px 10px;display:flex;flex-direction:column;gap:5px;cursor:default}
+.tk-x{flex:none;margin-left:8px;padding:0 5px;background:transparent;border:1px solid var(--line);color:var(--mute);font-size:12px;line-height:1.3;cursor:pointer}.tk-x:hover{color:var(--red);border-color:var(--red)}
 .ticker .tk-list div{font-size:12.5px;word-break:break-word}.ticker .tk-list time{font-family:var(--f-pix);font-size:9px;color:var(--dim);margin-right:8px}
 .leftcol{display:flex;flex-direction:column;gap:12px;min-width:0}
 .cook{padding:10px;display:flex;flex-direction:column;gap:8px}
@@ -693,7 +694,6 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 </div>
 
 <div class="modal" id="suggModal" hidden><div class="px infobox" id="suggBox" role="dialog" aria-label="건의함"></div></div>
-<div class="modal" id="adminModal" hidden><div class="px infobox" id="adminBox" role="dialog" aria-label="운영자 도구"></div></div>
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <main class="joinpage" id="joinModal" hidden>
   <div class="joinwrap">
@@ -1285,7 +1285,7 @@ let INV=[];const fmtCode=c=>String(c).slice(0,4)+'-'+String(c).slice(4);
 function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div class="info-sec"><span class="lbl">Invites · 초대장 · 남은 ${INV.length}장</span><span class="hint">초대장 한 장으로 한 명만 가입할 수 있고, 가입에 쓰이면 자동으로 사라집니다.</span>
   <div class="row" style="gap:6px"><input id="invMemo" class="sel" maxlength="20" placeholder="누구에게 줄지 메모 (선택)" style="flex:1;min-width:140px"><button class="btn sm gold" data-act="invnew">초대장 발급</button></div>
   ${INV.length?`<div class="fblist">${INV.map(v=>`<div class="fbitem"><div class="row"><b class="invcode">${fmtCode(v.id)}</b><span class="hint">${fbTime(v.at||0)}</span></div>${v.memo?`<span class="hint">${esc(v.memo)}</span>`:''}<div class="row" style="justify-content:flex-end;gap:5px"><button class="btn sm alt" data-act="invcopy" data-k="${esc(v.id)}">안내문 복사</button><button class="btn sm ghost" data-act="invdel" data-k="${esc(v.id)}">취소</button></div></div>`).join('')}</div>`:'<span class="hint">아직 쓰지 않은 초대장이 없습니다.</span>'}</div>`}
-function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML())}
+function renderAdminAll(){if(!$('#adminBox'))return;renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML())}
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
 const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 로봇이 재료를 더 자주 가져옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
@@ -1341,7 +1341,7 @@ const TITLES=[
 const st=k=>(P.st&&P.st[k])||0;
 let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
 function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==uid);const opts=ORDER.map(id=>`<option value="${id}">${esc(ITEMS[id].n)}</option>`).join('');
-  $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구입니다.</span></div><button class="btn sm ghost" data-act="adminclose">닫기</button></div>
+  $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구입니다.</span></div><button class="qchip" data-act="adminclose">← 돌아가기</button></div>
   <div class="info-sec"><span class="lbl">Me · 나에게</span><div class="row" style="gap:5px">
    <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 신호 가득</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 로봇 즉시 귀환</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
    <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button></div></div>
@@ -1391,8 +1391,8 @@ async function connect(){
   if(!db||!user){goSolo('공용 서버에 연결할 수 없어 혼자 모드로 시작합니다.','공용 서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주십시오.');return}
   C.use('assets').then(a=>{ASSETS=a||null;if(tab==='social')renderPanel()}).catch(()=>{});
   uid=await user.id();try{isAdmin=await user.isOwner()}catch(e){isAdmin=false}$('#adminBtn').hidden=!isAdmin;
-  if(isAdmin)db.collection('feedback').onSnapshot(sn=>{const prev=fbItems().length;FB=sn.docs.map(d=>Object.assign({id:d.id},d.data()));updFbBadge();const n=fbItems().length;if(prev&&n>prev)toast('새 건의가 도착했습니다.');if(!$('#adminModal').hidden)renderAdminAll()},()=>{});
-  if(isAdmin&&window.__fbInvite)db.collection('invites').orderBy('at','desc').onSnapshot(sn=>{INV=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(!$('#adminModal').hidden)renderAdminAll()},()=>{});
+  if(isAdmin)db.collection('feedback').onSnapshot(sn=>{const prev=fbItems().length;FB=sn.docs.map(d=>Object.assign({id:d.id},d.data()));updFbBadge();const n=fbItems().length;if(prev&&n>prev)toast('새 건의가 도착했습니다.');if(adminShown())renderAdminAll()},()=>{});
+  if(isAdmin&&window.__fbInvite)db.collection('invites').orderBy('at','desc').onSnapshot(sn=>{INV=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(adminShown())renderAdminAll()},()=>{});
   const canW=await user.can('data.write');
   if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
   mode='online';myRef=db.doc('players/'+uid);
@@ -1406,7 +1406,7 @@ async function connect(){
   farmLoad();
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
-  db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>d.data()).reverse();renderChat()},()=>{});
+  db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();renderChat()},()=>{});
   socSubscribe();raidSubscribe();bossSubscribe();
   if(room){room.onPeers(ch=>{PEERS=ch.peers;renderCrew();renderNet();if(tab==='farm')renderPanel()});setPresence()}
 }
@@ -1714,7 +1714,7 @@ function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
 function raidWatch(id){if(raidUnsub){raidUnsub();raidUnsub=null}if(!id){MYRAID=null;return}
   raidUnsub=raidRef(id).onSnapshot(s=>{if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
-    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;renderNav();renderPanel();return}if(tab==='raid'&&!isField(document.activeElement))renderPanel()},()=>{})}
+    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;adminView=false;renderNav();renderPanel();return}if(tab==='raid'&&!isField(document.activeElement))renderPanel()},()=>{})}
 function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS.length=0;sn.docs.forEach(d=>{const v=d.data();if(raidNow()-(v.at||0)<30*60e3)RAIDS.push(Object.assign({id:d.id},v))});if(tab==='raid')renderPanel()},()=>{});
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
@@ -2298,11 +2298,13 @@ function renderBag(){
    ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
   </div></div><section class="card cook farmcook" id="cook" aria-label="요리"></section>`;
 }
-let meView=false;
+let meView=false,adminView=false;
+const adminShown=()=>adminView&&!!$('#adminBox');
 // switching to a shorter tab would shrink the page and snap the view upward; pad the stage just enough to stay put
 function holdScroll(y){const st=$('#stage');st.style.minHeight='';const need=y+innerHeight-document.documentElement.scrollHeight;if(need>0)st.style.minHeight=(st.offsetHeight+need)+'px';window.scrollTo(0,y)}
 function renderPanel(){
   // my profile opens as a page in the stage, with a way back to the tab underneath
+  if(adminView&&isAdmin){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><h2>내 프로필</h2><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
@@ -2336,15 +2338,17 @@ const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
 let tickI=0,tickOpen=false,tickTop=0;
 const tickList=()=>CHAT.filter(m=>m.sys&&TICK_RE.test(m.text||'')).slice().reverse().slice(0,10);
 const tickKind=t=>t.startsWith('[공지]')?'n':t.startsWith('새 단원')?'j':'c';
+// the admin can strike any notice off the ticker
+const tickDel=x=>isAdmin&&mode==='online'&&x&&x.id?`<button type="button" class="tk-x" data-act="tickdel" data-k="${esc(x.id)}" title="이 알림 삭제" aria-label="이 알림 삭제">×</button>`:'';
 function renderChat(fresh){
   const el=$('#ticker');if(!el)return;const L=tickList();
   const changed=!!L[0]&&L[0].at!==tickTop&&tickTop!==0;if(changed)tickI=0;tickTop=L[0]?L[0].at:0;if(tickI>=L.length)tickI=0;fresh=fresh===true||changed;
   const m=L[tickI];
-  el.innerHTML=`<span class="tk-l"><i></i>NOTICE · 알림</span>${m?`<span class="tk-m k-${tickKind(m.text)} ${fresh?'in':''}"><time>${hhmm(m.at)}</time>${esc(m.text)}</span>${L.length>1?`<span class="tk-c">${tickI+1}/${L.length}</span>`:''}`:`<span class="tk-m">${mode==='online'?'새 소식이 없습니다.':mode==='solo'?'혼자 모드에서는 알림이 오지 않습니다.':'통신 연결 중…'}</span>`}
-   ${tickOpen&&L.length?`<div class="tk-list">${L.map(x=>`<div class="tk-m k-${tickKind(x.text)}"><time>${hhmm(x.at)}</time>${esc(x.text)}</div>`).join('')}</div>`:''}`;
+  el.innerHTML=`<span class="tk-l"><i></i>NOTICE · 알림</span>${m?`<span class="tk-m k-${tickKind(m.text)} ${fresh?'in':''}"><time>${hhmm(m.at)}</time>${esc(m.text)}</span>${L.length>1?`<span class="tk-c">${tickI+1}/${L.length}</span>`:''}${tickDel(m)}`:`<span class="tk-m">${mode==='online'?'새 소식이 없습니다.':mode==='solo'?'혼자 모드에서는 알림이 오지 않습니다.':'통신 연결 중…'}</span>`}
+   ${tickOpen&&L.length?`<div class="tk-list">${L.map(x=>`<div class="tk-m k-${tickKind(x.text)}"><time>${hhmm(x.at)}</time>${esc(x.text)}${tickDel(x)}</div>`).join('')}</div>`:''}`;
 }
 setInterval(()=>{const n=tickList().length;if(n>1&&!tickOpen){tickI=(tickI+1)%n;renderChat(true)}},6000);
-document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(inT){if(!e.target.closest('.tk-list')){tickOpen=!tickOpen;renderChat()}}else if(tickOpen){tickOpen=false;renderChat()}});
+document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(inT){if(!e.target.closest('.tk-list,[data-act]')){tickOpen=!tickOpen;renderChat()}}else if(tickOpen){tickOpen=false;renderChat()}});
 
 /* ───────── actions ───────── */
 const FAINT_MS=10*60e3;
@@ -2453,8 +2457,8 @@ const A={
  duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+300;sfxCoin();log('낚시 대결 우승! 상금 300 CR','rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
  renamecancel(){renaming=false;renderInfo()},
- adminopen(){if(!isAdmin)return;renderAdminAll();$('#adminModal').hidden=false;const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()},
- adminclose(){$('#adminModal').hidden=true},
+ adminopen(){if(!isAdmin)return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}adminView=true;meView=false;mailView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'});const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()},
+ adminclose(){adminView=false;renderPanel()},
  adm(d){if(!isAdmin)return;const k=d.k;
   if(k==='heal'){P.hp=maxHp();P.en=maxEn();P.t=Date.now()}else if(k==='wake'){P.faint=0;P.faintAt=0;if(P.hp<=0)P.hp=maxHp();if(P.en<=0)P.en=maxEn()}
   else if(k==='water'){FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=0;if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:0}).catch(()=>{});else farmSave()}else if(k==='sig'){P.sig={n:SIG_MAX,t:Date.now()}}
@@ -2470,10 +2474,11 @@ const A={
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[[id,n]],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
+ tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
- profile(){meView=true;mailView=false;renaming=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ profile(){meView=true;mailView=false;adminView=false;renaming=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
- mailopen(){mailView=true;meView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ mailopen(){mailView=true;meView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  mailclose(){mailView=false;renderPanel()},
  mailone(d){if(mailOpenOne(d.k)){commit();mailRefresh();renderPanel()}},
  mailall(){const ids=mailList().map(m=>m.id);let n=0;ids.forEach(id=>{if(mailOpenOne(id))n++});if(n){toast(`우편 ${n}통을 모두 받았습니다.`);commit();mailRefresh();renderPanel()}},
@@ -2555,11 +2560,11 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
-const SAFE_ACT=new Set(['admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}meView=false;mailView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}meView=false;mailView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
@@ -2719,7 +2724,7 @@ const SA={
  padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padback(){openThread(null);renderPanel()},
- profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;mailView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
+ profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;mailView=false;adminView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  relopen(){meView=false;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
  profclose(){profId=null;profBio=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
