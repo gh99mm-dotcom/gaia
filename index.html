@@ -1246,7 +1246,6 @@ const TITLES=[
  ['lv40','마흔 번째 궤도','레벨 40 달성',()=>P.lvl>=40],
  ['soc1','다정한 이웃','단원에게 인사 10번 건네기',()=>st('hi')>=10],
  ['soc2','광장의 이야기꾼','PAD에 글 10개 쓰기',()=>st('post')>=10],
- ['soc3','방명록 단골','방명록에 글 20개 남기기',()=>st('gb')>=20],
  ['adv1','이야기를 걷는 자','탐사 이야기 5번 완주',()=>st('adv')>=5],
  ['adv2','엔딩 수집가','탐사 엔딩 10종 발견',()=>Object.keys(P.advEnds||{}).length>=10],
  ['dm1','속삭이는 별','귓속말 30번 보내기',()=>st('dm')>=30],
@@ -2084,8 +2083,8 @@ document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id=
   const t=e.target.closest('[data-tab]');if(t){meView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}renderNav();renderPanel();renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
-/* ───────── social: PAD feed · whisper · crew directory · guestbook ───────── */
-let socTab='pad',padView='all',padTag='',padThread=null,THR=[],THRP=null,thrUnsub=[],POSTS=[],GUEST=[],DMS=[],dmPeer=null,gbOf=null,editBio=false,padDraft='',replyDraft='',gbDraft='',bioDraft='',dmDraft='',socPend=false,lastPost=0,pdelArm=null;
+/* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
+let socTab='pad',padView='all',padTag='',padThread=null,THR=[],THRP=null,thrUnsub=[],POSTS=[],GUEST=[],DMS=[],dmPeer=null,editBio=false,padDraft='',replyDraft='',bioDraft='',dmDraft='',socPend=false,lastPost=0,pdelArm=null;
 const socBoot=Date.now(),socNoted=new Set(),SOC_LS='nebula-soc-seen',DM_LS='nebula-dm-read',PAD_MAX=200;let socSeen=0,dmRead={};try{socSeen=+localStorage.getItem(SOC_LS)||0;dmRead=JSON.parse(localStorage.getItem(DM_LS)||'{}')||{}}catch(e){}
 const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 const whoP=id=>id===uid?P:(PLAYERS[id]||{});
@@ -2095,8 +2094,8 @@ const socErr=e=>toast(e&&e.code==='quota_exceeded'?'저장 공간이 가득 찼�
 const shortAgo=t=>{const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금';if(m<60)return m+'분';const h=Math.floor(m/60);if(h<24)return h+'시간';return Math.floor(h/24)+'일'};
 function dmUnread(peer){return DMS.filter(d=>d.to===uid&&d.from===peer&&d.at>(dmRead[peer]||0)).length}
 function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>(dmRead[d.from]||0)).length}
-function socUnread(){if(mode!=='online')return 0;return POSTS.filter(p=>p.uid!==uid&&p.at>socSeen&&(!p.re||p.reUid===uid)).length+GUEST.filter(g=>g.to===uid&&g.from!==uid&&g.at>socSeen).length+dmUnreadAll()}
-function markSoc(){const m=Math.max(socSeen,...POSTS.map(p=>p.at||0),...GUEST.filter(g=>g.to===uid).map(g=>g.at||0));if(m>socSeen){socSeen=m;try{localStorage.setItem(SOC_LS,String(m))}catch(e){}queueMicrotask(renderNav)}}
+function socUnread(){if(mode!=='online')return 0;return POSTS.filter(p=>p.uid!==uid&&p.at>socSeen&&(!p.re||p.reUid===uid)).length+dmUnreadAll()}
+function markSoc(){const m=Math.max(socSeen,...POSTS.map(p=>p.at||0));if(m>socSeen){socSeen=m;try{localStorage.setItem(SOC_LS,String(m))}catch(e){}queueMicrotask(renderNav)}}
 function markDm(peer){const last=Math.max(0,...DMS.filter(d=>d.from===peer&&d.to===uid).map(d=>d.at||0));if(last>(dmRead[peer]||0)){dmRead[peer]=last;try{localStorage.setItem(DM_LS,JSON.stringify(dmRead))}catch(e){}queueMicrotask(renderNav)}}
 function socWho(id,nick,sc=2){return`<span class="phead">${headImg(sc,whoP(id))}<span class="who" style="color:${colorOf(id)}">${esc(nick||'단원')}</span>${id===uid?'<span class="hint">(나)</span>':''}</span>`}
 /* ---- PAD images ---- */
@@ -2154,7 +2153,7 @@ function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.fr
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
   return`<p class="lead">단원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
   <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,2)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'단원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 단원을 고르십시오.</p>'}</div></div>`}
-/* ---- crew & guestbook ---- */
+/* ---- crew ---- */
 function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${esc(titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
   ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
@@ -2168,7 +2167,6 @@ function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf
 const giftedToday=id=>(P.giftDay||{})[id]===dayKey();
 function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span class="hint">${affLabel(v)}</span>`}
 /* relationship map: the center person in the middle, everyone else on a ring; each link shows both directions */
-let relCenter=null;
 function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const others=orgAll().filter(([id])=>id!==cid);
   const W=100,H=compact?70:82,cx=W/2,cy=H/2,rx=compact?40:39,ry=compact?27:32,n=others.length;
   const pos=others.map(([id,p],i)=>{const a=-Math.PI/2+i/Math.max(1,n)*Math.PI*2;return{id,p,x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry}});
@@ -2179,11 +2177,10 @@ function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const ot
     [[out,nx,ny,.32],[inn,-nx,-ny,.68]].forEach(([v,ox,oy,t])=>{if(!v)return;const col=affColor(v);
       lines+=`<line x1="${cx+ox}" y1="${cy+oy}" x2="${o.x+ox}" y2="${o.y+oy}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" vector-effect="non-scaling-stroke"/>`;
       labels+=`<span class="rellab" style="left:${(cx+dx*t+ox*2.2)/W*100}%;top:${(cy+dy*t+oy*2.2)/H*100}%;color:${col}">${esc(lab(v))}</span>`})});
-  const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="${center?'profopen':'relcenter'}" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
+  const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="profopen" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
   return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
   <span class="hint">선 위 글자는 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>입니다. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 한 번)</span>`}
-function socRel(){const cid=relCenter&&(relCenter===uid||PLAYERS[relCenter])?relCenter:uid,c=whoP(cid);
-  return`<div class="row" style="justify-content:space-between"><b class="dfloor">${esc(c.nick||'단원')} 중심 관계도</b>${cid!==uid?'<button class="btn sm ghost" data-act="relcenter" data-k="">나를 중심으로</button>':''}</div>${relMapHTML(cid,false)}`}
+function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">단원을 누르면 그 단원의 프로필이 열립니다</span></div>${relMapHTML(uid,false)}`}
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:12px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:12px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m)}
@@ -2214,22 +2211,16 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
-   <div class="info-sec"><span class="lbl">Relations · 인물 관계도</span>${relMapHTML(id,true)}</div>
+   ${me?`<div class="info-sec"><span class="lbl">Relations · 인물 관계도</span>${relMapHTML(uid,true)}</div>`:''}
    ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
-function socGuest(){const to=gbOf&&(gbOf===uid||PLAYERS[gbOf])?gbOf:uid,tp=whoP(to),list=GUEST.filter(g=>g.to===to),others=Object.entries(PLAYERS).filter(([id])=>id!==uid);
-  return`<div class="row" style="gap:4px"><button class="qchip" data-act="gbopen" data-k="" aria-pressed="${to===uid}">내 방명록</button>${others.map(([id,p])=>`<button class="qchip" data-act="gbopen" data-k="${esc(id)}" aria-pressed="${to===id}">${esc(p.nick||'단원')}</button>`).join('')}</div>
-  <div class="card socbox"><div class="row" style="justify-content:space-between">${socWho(to,tp.nick,3)}<span class="hint">방명록 ${list.length}개</span></div>${tp.bio?`<p class="bio">“${esc(tp.bio)}”</p>`:''}
-  ${to===uid?'<span class="hint">단원들이 남긴 글과 인사가 여기에 모입니다. 다른 단원의 방명록에도 한마디 남겨 보십시오.</span>':`<textarea id="gbIn" class="suggta socta" maxlength="120" placeholder="${esc(tp.nick||'단원')} 님에게 한마디 남기기" aria-label="방명록 내용">${esc(gbDraft)}</textarea><div class="row" style="justify-content:space-between"><span class="hint">최대 120자 · Ctrl+Enter로 남기기</span><button class="btn sm" data-act="gbsend">남기기</button></div>`}</div>
-  <div class="plist">${list.length?list.map(g=>{const del=g.from===uid||g.to===uid||isAdmin,x=del?` <button class="pvx" data-act="gbdel" data-k="${esc(g.id)}" aria-label="방명록 지우기">×</button>`:'';return g.kind==='hi'?`<div class="gbe hi"><b style="color:${colorOf(g.from)}">${esc(g.nick||'단원')}</b> 님이 인사를 건넸습니다 <span class="hint">${agoText(g.at)}</span>${x}</div>`:`<div class="card gbe">${socWho(g.from,g.nick)}<p class="ptext">${esc(g.text)}</p><span class="hint">${agoText(g.at)}${x}</span></div>`}).join(''):'<p class="empty" style="padding:14px 0">아직 남겨진 글이 없습니다.</p>'}</div>`}
 function renderSocial(){
   if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['rel','관계도'],['guest','방명록']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
-  return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='guest'?socGuest():socTab==='dm'?socDm():socPad())}
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='dm'?socDm():socPad())}
 function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
-    if(g.at>socBoot&&!socNoted.has(g.id)){socNoted.add(g.id);if(g.kind!=='hi')toast(`${g.nick||'단원'} 님이 방명록을 남겼습니다.`)}
     if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];gainXp(2);log(`${g.nick||'단원'} 님이 인사를 건넸다. 경험치 +2`,'good');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit()}
 function notePosts(){const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'단원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'단원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'단원'} 님이 PAD에서 나를 언급했습니다.`)})}
@@ -2249,8 +2240,7 @@ const SA={
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padback(){openThread(null);renderPanel()},
  profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
- relcenter(d){relCenter=d.k||null;socTab='rel';renderPanel()},
- relopen(){meView=false;relCenter=null;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
+ relopen(){meView=false;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
  profclose(){profId=null;profBio=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
  profbio(){profBio=!profBio;renderPanel();if(profBio)setTimeout(()=>{const i=$('#profBioIn');if(i)i.focus()},30)},
@@ -2270,11 +2260,6 @@ const SA={
  async hi(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||(P.greet||{})[d.k]===dayKey())return;
   try{await db.collection('guest').add({to:d.k,from:uid,nick:P.nick,kind:'hi',text:'',at:Date.now()})}catch(e){socErr(e);return}
   P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});gainXp(5);stat('hi');sfxCoin();log(`${t.nick||'단원'} 님에게 인사를 건넸다. 경험치 +5`,'good');commit()},
- gbopen(d){gbOf=d.k||null;socTab='guest';gbDraft='';renderPanel()},
- async gbsend(){const to=gbOf,t=PLAYERS[to],v=gbDraft.trim().slice(0,120);if(!t||to===uid||mode!=='online')return;if(!v){toast('남길 말을 적어 주십시오.');return}
-  try{await db.collection('guest').add({to,from:uid,nick:P.nick,kind:'msg',text:v,at:Date.now()})}catch(e){socErr(e);return}
-  gbDraft='';stat('gb');log(`${t.nick||'단원'} 님의 방명록에 글을 남겼다.`,'good');commit()},
- async gbdel(d){const g=GUEST.find(x=>x.id===d.k);if(!g||!(g.from===uid||g.to===uid||isAdmin))return;try{await db.collection('guest').doc(d.k).delete()}catch(e){socErr(e)}},
  bioedit(){editBio=true;bioDraft=P.bio||'';renderPanel();setTimeout(()=>{const i=$('#bioIn');if(i)i.focus()},30)},
  biosave(){P.bio=bioDraft.trim().slice(0,40);editBio=false;log(P.bio?'한 줄 소개를 바꿨다.':'한 줄 소개를 지웠다.');save();renderPanel()},
  biocancel(){editBio=false;renderPanel()},
@@ -2286,10 +2271,10 @@ async function padWrite(raw,parent){const ctx=parent?'reply':'pad',L=imgList(ctx
   lastPost=Date.now();clearImgs(ctx);if(parent)replyDraft='';else{padDraft='';padTag='';padView='all'}stat('post');
   if(P.postDay!==dayKey()){P.postDay=dayKey();gainXp(10);log('오늘 첫 PAD 글을 남겼다. 경험치 +10','good')}else log(parent?`${parent.nick||'단원'} 님의 글에 답글을 달았다.`:'PAD에 글을 남겼다.');commit()}
 const isField=el=>el&&el.closest&&el.closest('#stage')&&/^(TEXTAREA|INPUT)$/.test(el.tagName)&&el.type!=='file';
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='padIn'){padDraft=t.value;const c=$('#padCnt');if(c)c.textContent=t.value.length+'/'+PAD_MAX}else if(t.id==='padReply')replyDraft=t.value;else if(t.id==='gbIn')gbDraft=t.value;else if(t.id==='bioIn')bioDraft=t.value;else if(t.id==='dmIn')dmDraft=t.value});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='padIn'){padDraft=t.value;const c=$('#padCnt');if(c)c.textContent=t.value.length+'/'+PAD_MAX}else if(t.id==='padReply')replyDraft=t.value;else if(t.id==='bioIn')bioDraft=t.value;else if(t.id==='dmIn')dmDraft=t.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||e.isComposing||!isField(t))return;
   if(t.id==='dmIn'){e.preventDefault();A.dmsend();return}
-  let act=null;if(t.id==='bioIn')act='biosave';else if(e.ctrlKey||e.metaKey)act={padIn:'padpost',padReply:'padreply',gbIn:'gbsend'}[t.id];
+  let act=null;if(t.id==='bioIn')act='biosave';else if(e.ctrlKey||e.metaKey)act={padIn:'padpost',padReply:'padreply'}[t.id];
   if(!act)return;e.preventDefault();t.blur();A[act]({})});
 document.addEventListener('keydown',e=>{if(e.target.id==='profBioIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();A.profbiosave()}});
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.imgctx&&t.files&&t.files.length){addImgs(t.dataset.imgctx,[...t.files]);t.value=''}});
@@ -2390,7 +2375,7 @@ Object.assign(A,SA,AA,{
  async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
  async invcopy(d){const t=`[가이아 프로젝트 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주십시오. (1명만 쓸 수 있습니다)`;
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
-['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relcenter','relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
+['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
 document.addEventListener('keydown',e=>{if(tab!=='adv'||e.isComposing||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const n=+e.key;if(!(n>=1&&n<=9)||!P.adv||P.adv.done)return;const b=document.querySelectorAll('#stage .advopt')[n-1];if(b&&!b.disabled){e.preventDefault();b.click()}});
 /* ───────── join page: character creation ───────── */
 const J_START=2,J_FREE=15,J_MAX=3;
