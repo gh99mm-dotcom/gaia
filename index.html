@@ -1681,8 +1681,7 @@ function shipSceneBuild(st){
   const hull=place(SHIPV.X,SHIPV.Y,PH,20,22),chunk=place(SHIPV.CX,SHIPV.CY,PH+1.9,35.5,22);
   const wreck=!st.hull,mess=SHIP.some(p=>!st[p.id]);
   const [mx,my]=hull.to(21,24),FX=Math.round(mx),FY=Math.max(Math.round(my)+12,100);
-  // fires burning here and there across the wreck and the ground around it
-  const FIRES=wreck?[hull.to(13,15.5),hull.to(31,20.5),hull.to(22,8.5),hull.to(8,20),hull.to(26,27),[FX-46,FY+6],[FX+40,FY+10],[FX+8,FY+14]].map(([x,y],i)=>[Math.round(x),Math.round(y),i>4?5:4]):[];
+  const FIRES=[];
   // trampled dirt yard in front of the base
   if(wreck)for(let y=HZ-2;y<SH;y++)for(let x=0;x<SW;x++){const d=Math.hypot((x-FX)/4.6,(y-FY-2)/1.15);if(d<20&&dith(x,y,(1-d/20)*1.1))px(x,y,d<9?'#3e2a1c':'#2c1f18')}
   if(wreck)FIRES.forEach(([x0,y0])=>{for(let y=y0-6;y<y0+8;y++)for(let x=x0-14;x<x0+14;x++){const d=Math.hypot((x-x0)/2.2,y-y0-2);if(y>=HZ-2&&d<6&&dith(x,y,(1-d/6)*.8))px(x,y,'#6e3a1a')}});
