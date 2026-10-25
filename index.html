@@ -1311,7 +1311,7 @@ COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}
 COOK.forEach(c=>{const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf}});
 const ORDER=Object.keys(ITEMS);
 const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자'];
-const BOSS_IC=['......kkkkkkkk......','....kkVVVVVVVVkk....','...kVVzzzzzzzzVVk...','..kVzzzzzzzzzzzzVk..','.kVzzzkkkkkkkkzzzVk.','.kVzzkmmmmmmmmkzzVk.','kVzzkmmmkkkkmmmkzzVk','kVzzkmmkrrrrkmmkzzVk','kVzzkmmkrkkrkmmkzzVk','kVzzkmmmkkkkmmmkzzVk','.kVzzkmmmmmmmmkzzVk.','.kVzzzkkkkkkkkzzzVk.','..kVzVzVzzzzVzVzVk..','..kVk.kVk..kVk.kVk..','..kk...kk..kk...kk..','....................'];
+const BOSS_IC=['................','.....kkkkkk.....','...kkuuuuuukk...','..kuuuurruuuwk..','.kuruukkkkuuuwk.','.kuuukmmmmkuuwk.','kuuukmzkkzmkuuwk','kurukmkkhkmkruwk','kuuukmkkkkmkuuwk','kuuukmzkkzmkuwwk','.kuuukmmmmkuuwk.','.kwruukkkkuurwk.','..kwwuuuuuuwwk..','...kkwwwwwwkk...','.....kkkkkk.....','................'];
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
  {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 개척선 별무리호 · 선체 손상 심각'},
