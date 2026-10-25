@@ -177,7 +177,7 @@ header>.chip:not(.sugg){margin-left:0}
 .pod-win .tb{top:6px;right:6px}
 .pod .acts{display:flex;flex-wrap:wrap;gap:5px}
 .pod.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;min-height:150px}
-.frow{display:grid;gap:10px;align-items:start;margin-bottom:10px}.frow.r1{grid-template-columns:minmax(0,5fr) minmax(0,3fr) minmax(0,2fr)}.frow.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.frow{display:grid;gap:10px;align-items:start;margin-bottom:10px}.frow.r1{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}.frow.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .farmcol{display:flex;flex-direction:column;gap:9px;min-width:0}
 .frow .bay{width:100%;height:auto;aspect-ratio:286/296;padding:7% 7.7% 11.5%}
 .frow .pods{grid-template-columns:repeat(4,minmax(0,1fr));gap:5%}
@@ -1439,9 +1439,9 @@ function renderFarm(){
   const here=mode==='online'?[...new Set(PEERS.filter(p=>p.presence&&p.presence.uid!==uid&&p.presence.act==='농사').map(p=>p.presence.nick))]:[];
   return head()+`<p class="lead">모든 단원이 함께 쓰는 돔 농장입니다. 누구나 배양토를 채우고 심고 물을 줄 수 있고, 거둔 작물은 공용 창고에 쌓여 누구나 꺼내 씁니다. 물탱크와 비료용 이끼는 각자 자기 것을 씁니다.${here.length?` <span class="visitors">지금 농장에 있는 단원 · ${here.map(n=>esc(n||'단원')).join(', ')}</span>`:''}</p>
   <div class="frow r1"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${fu<FIELD_N?`<button class="ptile add" data-act="selpod" data-i="add" aria-pressed="${selPod==='add'}" aria-label="포드 증설" title="포드 증설"><span class="plus">+</span></button>`:''}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu-1))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
-  <div class="card podinfo">${info}</div>
+  <div class="farmcol"><div class="card podinfo">${info}</div>
   <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}내 물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>물 채우기</button><span class="hint">누르면 바로 가득 찹니다 · 다시 채우려면 ${P.job==='engineer'?'30분':'1시간'}</span>`}</div></div>
-  </div><div class="frow r2">${storeHTML()}</div>`;
+  </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
 function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0),back=Math.random()<.45;
   farmPut(i,{til:1,wet:pl.wet&&isWet(pl)?pl.wet:0});storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
