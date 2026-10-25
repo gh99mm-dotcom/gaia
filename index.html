@@ -507,13 +507,14 @@ b.no{color:var(--red)}
 
 /* side */
 .crew{padding:11px;display:flex;flex-direction:column;gap:8px}
-.crew ul{list-style:none;margin:0;padding:0 2px 0 0;display:flex;flex-direction:column;gap:5px;max-height:calc(5 * 50px + 4 * 5px);overflow-y:auto}
-.crew li{min-height:50px;box-sizing:border-box;flex-wrap:wrap;row-gap:3px;align-content:center}
+.crew ul{list-style:none;margin:0;padding:0 2px 0 0;display:flex;flex-direction:column;gap:5px;max-height:calc(5 * 34px + 4 * 5px);overflow-y:auto}
+.crew li{min-height:34px;box-sizing:border-box;flex-wrap:nowrap}
 .crew li .namebtn{font-size:12px;font-weight:400;text-decoration-color:transparent}.crew li .namebtn:hover{text-decoration-color:currentColor}
 .crew li{display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 6px;background:var(--deep);border:2px solid var(--ink)}
 .crew li .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.crew li .act{order:5;flex:1 0 100%;min-width:0;padding-left:15px;box-sizing:border-box;font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.crew li .rescue,.crew li .giftbtn{white-space:nowrap;margin-left:auto}.crew li .rescue+.giftbtn{margin-left:4px}
+.crew li .act{flex:1 1 0;min-width:0;text-align:right;font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crew li .nm{flex:0 1 auto}.crew li .lvt{flex:none}
+.crew li .rescue,.crew li .giftbtn{white-space:nowrap;flex:none}
 .crew li .lvt{font-family:var(--f-pix);font-size:9px;color:var(--gold)}
 .msg{word-break:break-word}
 .msg .who{font-weight:700;margin-right:6px}
