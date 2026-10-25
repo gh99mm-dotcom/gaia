@@ -499,6 +499,7 @@ header>.chip:not(.sugg){margin-left:0}
 .chestloot{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px}.chestloot li{display:flex;align-items:center;gap:5px}.chestloot b{color:var(--text)}
 .chestex{display:flex;gap:10px;align-items:center;padding:6px 10px;border:1px solid var(--gold);background:var(--violetd);animation:exglow 1.6s ease-in-out infinite}.chestex>div{display:flex;flex-direction:column;gap:2px}.chestex b{font-size:14px;color:var(--gold);font-weight:400}
 @keyframes exglow{50%{border-color:var(--pink)}}
+.asigcard{display:flex;flex-direction:column;gap:8px}.asigcard .sigbox .btn{margin-left:auto}
 .bossact{gap:10px;align-items:center}.bossact .btn{min-width:120px;justify-content:center}
 .bossrank{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:3px}.bossrank li{display:grid;grid-template-columns:22px 1fr auto 52px;gap:6px;align-items:center;font-size:12px}.bossrank li.me{color:var(--gold)}.bossrank em{font-style:normal;font-family:var(--f-pix);font-size:10px;color:var(--mute)}.bossrank small{text-align:right;color:var(--mute)}
 .bosschat{display:flex;flex-direction:column;gap:6px;min-width:0;min-height:420px}
@@ -2097,7 +2098,7 @@ function bossHi(K){if(BOSS_HR.has(K))return BOSS_HR.get(K);const g=K.g,h=g.lengt
 const bossSpr=(b,sc)=>{const K=bossKind(b),hi=bossHi(K),s2=sc/2;return`<span class="bossart" style="--eye:${K.po.E}">${img(hi.body,null,s2,'',hi.po)}${img(hi.eyes,null,s2,'beye',hi.po)}</span>`};
 const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
 function bossMainHTML(){const b=BOSS;
-  if(!b)return`<div class="card bossidle"><b>심연이 조용합니다</b><p class="hint">아직 침략자가 나타나지 않았습니다. 운영자가 침략자를 소환하면 이곳에 나타납니다.</p></div>`;
+  if(!b)return`<div class="card bossidle"><b>심연이 조용합니다</b><p class="hint">아직 침략자가 나타나지 않았습니다. 운영자가 침략자를 소환하면 이곳에 나타납니다.</p></div>${asigHTML()}`;
   const alive=bossAlive(b),rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
   const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null,urgent=alive&&(b.end||0)-Date.now()<30*60e3;
   return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,10)}</div>
@@ -2109,7 +2110,7 @@ function bossMainHTML(){const b=BOSS;
     :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
-    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기여도만큼 더), 크레딧, 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>`}
+    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기여도만큼 더), 크레딧, 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
 // admin page: pick one of the 14 invaders and a level, then summon it
 let bossPick=0;
 function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
@@ -2127,7 +2128,7 @@ function renderBoss(){const here=bossHere();
     <span class="hint">탐사 탭에 있는 단원만 보고 말할 수 있습니다. 최근 ${BOSS_CHAT_MAX}개만 남습니다.</span></div></div>`}
 function bossPaint(){const m=$('#bossMain');if(!m){renderPanel();return}m.innerHTML=chestHTML()+bossMainHTML()}
 function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=bossChatLogHTML();if(end)l.scrollTop=l.scrollHeight}
-function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT');
+function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT');{const at=$('#asigT');if(at){const sg=asigState();const k='a'+sg.n;if(k!==window.__ak){window.__ak=k;if(window.__akInit)bossPaint();window.__akInit=1}else at.textContent=sg.n>=ASIG_MAX?'신호가 가득 찼습니다. 조사하러 가십시오.':'다음 신호까지 '+fmtClock(sg.next)}}
   if(bossAlive(b)){const c=$('#bossClock');if(c){c.textContent=bossClock(b);c.classList.toggle('urgent',(b.end||0)-Date.now()<30*60e3)}if(t){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}}
   const h=bossHere(),hc=$('#bossHere'),hw=$('#bossWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 setInterval(bossTick,1000);
@@ -2405,6 +2406,14 @@ function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],g
   ${dexOpen?`<div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${dexTab===k}" data-act="dextab" data-k="${k}">${n} <em>${FISHES[k].filter(id=>P.dex[id]).length}/${FISHES[k].length}</em></button>`).join('')}</div>
   <div class="dex">${FISHES[dexTab].map(id=>`<div title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span></div>`).join('')}</div>`:''}</div>`}
 const SIG_MS=30*60e3,SIG_MAX=3;
+// 탐사's old signal receiver: catches a stray signal every 30 minutes (up to 5) while no invader is loose; investigating works like 조사
+const ASIG_MS=30*60e3,ASIG_MAX=5;let lastAsig=null;
+function asigState(){if(!P.asig)P.asig={n:1,t:Date.now()};const el=Date.now()-P.asig.t,gain=Math.floor(el/ASIG_MS),n=Math.min(ASIG_MAX,P.asig.n+gain);return{n,next:n>=ASIG_MAX?0:ASIG_MS-(el%ASIG_MS)}}
+function useAsig(){const st=asigState();if(st.n<=0)return false;const el=Date.now()-P.asig.t,gain=Math.floor(el/ASIG_MS);P.asig={n:st.n-1,t:st.n>=ASIG_MAX?Date.now():P.asig.t+gain*ASIG_MS};return true}
+function asigHTML(){const sg=asigState();return`<div class="card asigcard"><div class="stat-row"><span class="lbl">Old receiver · 구식 신호기</span><b>잡힌 신호 ${sg.n}/${ASIG_MAX}</b></div>
+  <div class="sigbox"><div class="radar">${Array.from({length:ASIG_MAX},(_,k)=>`<span class="blip ${k<sg.n?'on':''}"></span>`).join('')}</div><div class="sinfo"><span class="hint" id="asigT">${sg.n>=ASIG_MAX?'신호가 가득 찼습니다. 조사하러 가십시오.':'다음 신호까지 '+fmtClock(sg.next)}</span></div><button class="btn" data-act="asigscan" ${sg.n?'':'disabled'}>신호 조사 <small>EN 4</small></button></div>
+  <p class="hint">침략자가 없는 동안 낡은 신호기가 심연 쪽에서 새어 나오는 신호를 잡습니다. 30분마다 하나씩, 최대 ${ASIG_MAX}개까지 쌓입니다.</p>
+  ${lastAsig?`<div class="result">${img(IC.scan,null,2)}<div><p>${esc(lastAsig.t)}</p>${lastAsig.got.length||lastAsig.extra?chipsOf(lastAsig.got,lastAsig.extra):''}</div></div>`:''}</div>`}
 function sigState(){if(!P.sig)P.sig={n:1,t:Date.now()};const el=Date.now()-P.sig.t,gain=Math.floor(el/SIG_MS),n=Math.min(SIG_MAX,P.sig.n+gain);return{n,next:n>=SIG_MAX?0:SIG_MS-(el%SIG_MS)}}
 function useSig(){const st=sigState();if(st.n<=0)return false;const el=Date.now()-P.sig.t,gain=Math.floor(el/SIG_MS);P.sig={n:st.n-1,t:st.n>=SIG_MAX?Date.now():P.sig.t+gain*SIG_MS};return true}
 function renderScan(){const sg=sigState();
@@ -2819,6 +2828,9 @@ const A={
  buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||rodMax()>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;P.rodMax=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
  buy(d){const row=BUY.find(r=>r[0]===d.id);if(!row)return;const n=+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
  sell(d){const have=P.inv[d.id]||0;if(!have)return;const n=d.n==='all'?have:1,gain=sellPrice(d.id)*n;take(d.id,n);{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
+ asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=r.add||[];got.forEach(([id,n])=>add(id,n));let extra='';
+  if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
+  gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
  scan(){if(sigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useSig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=r.add||[];const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
