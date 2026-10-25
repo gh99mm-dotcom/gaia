@@ -1832,10 +1832,10 @@ function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${hea
   ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
 /* ───────── affinity: how each player feels about the others ───────── */
-const AFF={rescue:2,like:3,hate:-3},AFF_MIN=-50,AFF_MAX=100;
+const AFF={rescue:2,like:3,hate:-3},AFF_MIN=-100,AFF_MAX=100;
 const affOf=(p,id)=>((p&&p.aff)||{})[id]||0;
-const affLabel=v=>v<=-10?'앙숙':v<0?'서먹함':v<5?'아는 사이':v<10?'동료':v<20?'친구':v<35?'절친':'단짝';
-const affColor=v=>v<0?'var(--red)':v<5?'var(--mute)':v<10?'var(--cyan)':v<20?'var(--green)':'var(--pink)';
+const affLabel=v=>v<=-90?'혐오':v<=-60?'싫다':v<=-30?'불편':v<30?'아무 감정도 없다':v<60?'안면이 있다':v<90?'친구':'절친한 사이';
+const affColor=v=>v<=-60?'var(--red)':v<=-30?'#c48a6a':v<30?'var(--mute)':v<60?'var(--cyan)':v<90?'var(--green)':'var(--pink)';
 function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf(P,id),v=Math.max(AFF_MIN,Math.min(AFF_MAX,before+delta));P.aff=Object.assign({},P.aff,{[id]:v});
   const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'단원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
 function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span class="hint">${affLabel(v)}</span>`}
