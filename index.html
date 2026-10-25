@@ -282,6 +282,7 @@ header>.chip:not(.sugg){margin-left:0}
 .namebtn{background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline dotted var(--dim);text-underline-offset:4px}
 .namebtn:hover{color:var(--cyan)}
 .infobox{max-width:560px!important;max-height:calc(100vh - 40px);overflow:auto;gap:12px!important}
+.mepage{display:flex;flex-direction:column;gap:12px}.mehead{gap:10px;justify-content:flex-start}.mehead .loc{margin-left:auto}
 .info-head{display:flex;gap:12px;align-items:center}
 .info-head h2{font-size:22px;word-break:break-all}
 .info-sec{display:flex;flex-direction:column;gap:6px}
@@ -616,7 +617,6 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <div class="modal" id="suggModal" hidden><div class="px infobox" id="suggBox" role="dialog" aria-label="건의함"></div></div>
 <div class="modal" id="adminModal" hidden><div class="px infobox" id="adminBox" role="dialog" aria-label="운영자 도구"></div></div>
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
-<div class="modal" id="infoModal" hidden><div class="px infobox" id="infoBox" role="dialog" aria-label="내 정보"></div></div>
 <main class="joinpage" id="joinModal" hidden>
   <div class="joinwrap">
     <header class="joinhead"><span id="joinIc"></span><div><h1>개척단 합류</h1><span class="lbl">Crew registration · 단원 등록</span></div></header>
@@ -1262,11 +1262,11 @@ const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['a
 const ptsTotal=()=>25+(P.lvl-1)*3;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
-function renderInfo(){
+function renderInfo(){if(!$('#infoBox'))return;
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv);return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>LV.${lv}</b></div><div class="bar"><i style="--c:var(--green);width:${(cur-lo)/(hi-lo)*100}%"></i></div></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
   const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
-  $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div><button class="btn sm ghost" data-act="infoclose" aria-label="닫기">닫기</button></div>
+  $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div></div>
    <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
    <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받습니다.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
    ${tasteHTML(P)}
@@ -1860,7 +1860,10 @@ function renderBag(){
    ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
   </div></div><section class="card cook farmcook" id="cook" aria-label="요리"></section>`;
 }
+let meView=false;
 function renderPanel(){
+  // my profile opens as a page in the stage, with a way back to the tab underneath
+  if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><h2>내 프로필</h2><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0;
   const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,adv:advHTML,ship:renderShip}[tab];
@@ -2005,8 +2008,8 @@ const A={
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
- profile(){renderInfo();$('#infoModal').hidden=false},
- infoclose(){$('#infoModal').hidden=true},
+ profile(){meView=true;renaming=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ infoclose(){meView=false;renderPanel()},
  settitle(d){const t=TITLES.find(x=>x[0]===d.k);if(!t||!t[3]())return;P.title=d.k;save();renderInfo();renderPilot()},
  setjob(d){if(!JOBS[d.k]||P.job===d.k)return;P.job=d.k;log(`직업을 ${JOBS[d.k].n}(으)로 정했다.`,'rare');save();renderInfo();renderPilot();renderPanel()},
  sound(){soundOn=!soundOn;try{localStorage.setItem('nebula-sound',soundOn?'on':'off')}catch(e){}if(soundOn){ac();sfxBite()}renderPanel()},
@@ -2068,7 +2071,7 @@ const SAFE_ACT=new Set(['shipsel','fssel','fpsel','admgrant','admdel','admdelno'
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg')giftMsg=e.target.value});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}renderNav();renderPanel();renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){meView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}renderNav();renderPanel();renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · guestbook ───────── */
@@ -2235,9 +2238,9 @@ const SA={
  padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padback(){openThread(null);renderPanel()},
- profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;$('#infoModal').hidden=true;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
+ profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  relcenter(d){relCenter=d.k||null;socTab='rel';renderPanel()},
- relopen(){$('#infoModal').hidden=true;relCenter=null;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
+ relopen(){meView=false;relCenter=null;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
  profclose(){profId=null;profBio=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
  profbio(){profBio=!profBio;renderPanel();if(profBio)setTimeout(()=>{const i=$('#profBioIn');if(i)i.focus()},30)},
