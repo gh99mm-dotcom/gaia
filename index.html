@@ -284,6 +284,17 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .fainttag{color:var(--red);font-weight:700}
 .crew li .rescue{padding:2px 6px;font-size:11px;margin-left:4px}
 .sigbox{display:flex;gap:12px;align-items:center}
+.shiptop{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.shiptop .sinfo{flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px}
+.shippic{position:relative;line-height:0;transition:filter .4s}.shipsmoke{position:absolute;left:58%;top:10%;width:14px;height:14px;background:rgba(160,160,180,.45);box-shadow:-6px -10px 0 2px rgba(160,160,180,.3),4px -20px 0 4px rgba(160,160,180,.18);animation:smoke 2.4s steps(4) infinite}
+@keyframes smoke{0%{transform:translateY(0);opacity:.9}100%{transform:translateY(-12px);opacity:.2}}
+.shipgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin:10px 0}
+.shippart{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:7px;color:inherit;font:inherit;cursor:pointer}
+.shippart span{font-size:.85em;color:var(--mute)}.shippart.on{box-shadow:inset 0 0 0 2px var(--cyan)}.shippart.ok b{color:var(--green)}
+.shipdet{margin-bottom:10px}.shipmats{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.shipmats li{display:grid;grid-template-columns:auto 7.5em 1fr auto auto auto;gap:8px;align-items:center}
+.shipmats .smc{font-variant-numeric:tabular-nums}.shipmats .smok{color:var(--green);font-size:.85em;padding:0 6px}
+@media(max-width:560px){.shipmats li{grid-template-columns:auto 1fr auto auto;row-gap:3px}.shipmats li .bar{grid-column:1/-1;order:9}.shipmats li .hint{display:none}}
+.shiprank{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}.shiprank li{display:flex;gap:8px;align-items:center}.shiprank li span{width:1.4em;color:var(--mute)}.shiprank li b{margin-left:auto}
 .radar{display:flex;gap:6px;padding:8px 10px;background:radial-gradient(circle,#10242c 0 60%,#0a1218 61%);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--cyand)}
 .blip{width:10px;height:10px;background:#1b2a30;border:2px solid var(--ink)}
 .blip.on{background:var(--green);box-shadow:0 0 0 2px #26332a;animation:blink 1.4s steps(2) infinite}
@@ -959,6 +970,7 @@ const ORDER=Object.keys(ITEMS);
 const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자'];
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
+ {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 개척선 별무리호 · 선체 손상 심각'},
  {id:'farm',n:'농사',ic:IC.farm,cost:'',loc:'유리 돔 농장 · 21℃ · 습도 41% · 인공 중력 0.8G'},
  {id:'gather',n:'채집',ic:IC.gather,cost:'원정',loc:'지표 원정 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
@@ -1208,6 +1220,7 @@ async function connect(){
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조');wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   db.collection('farmhelp').where('to','==',uid).onSnapshot(receiveHelp,()=>{});
+  db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>d.data()).reverse();renderChat()},()=>{});
   socSubscribe();
@@ -1530,6 +1543,53 @@ function renderScan(){const sg=sigState();
   <div class="card sigbox"><div class="radar">${Array.from({length:SIG_MAX},(_,k)=>`<span class="blip ${k<sg.n?'on':''}"></span>`).join('')}</div><div class="sinfo"><b>잡힌 신호 ${sg.n}/${SIG_MAX}</b><span class="hint" id="sigT">${sg.n>=SIG_MAX?'신호가 가득 찼습니다. 조사하러 가십시오.':'다음 신호까지 '+fmtClock(sg.next)}</span></div></div>
   ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:`<div class="note">조사할 때마다 경험치 +6. 기록 장치를 찾으면 가방에서 해독할 수 있습니다.</div>`}`;
 }
+/* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
+const SHIP=[
+ {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',120],['craterIron',60],['rustBolt',80],['sandSlate',40]]},
+ {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',60],['crystal',40],['volcAsh',40],['dark',10]]},
+ {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',40],['echoQuartz',30],['crystal',30]]},
+ {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',80],['geyserSalt',40],['frostCrystal',30],['marshReed',40]]},
+ {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',50],['brokenLens',40],['impactGlass',30],['relic',10]]},
+ {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만듭니다.',need:[['oldBoard',30],['iceShell',30],['marshFossil',20]]},
+];
+let SHIPDON=[],shipSel='hull';
+const shipGot=part=>{const m={};SHIPDON.forEach(d=>{if(d.part===part)m[d.id]=(m[d.id]||0)+(+d.n||0)});return m};
+const shipLeft=(pt,id)=>Math.max(0,(pt.need.find(x=>x[0]===id)||[,0])[1]-(shipGot(pt.id)[id]||0));
+const shipPct=pt=>{const g=shipGot(pt.id);let a=0,b=0;pt.need.forEach(([id,n])=>{a+=Math.min(n,g[id]||0);b+=n});return a/b};
+const shipDone=pt=>shipPct(pt)>=1;
+const shipAll=()=>SHIP.reduce((a,pt)=>a+shipPct(pt),0)/SHIP.length;
+function renderShip(){
+  if(mode!=='online')return head()+`<div class="note">우주선 수리는 단원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
+  const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP[0],g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
+  const rank={};SHIPDON.forEach(d=>{if(!d.uid)return;const r=rank[d.uid]||(rank[d.uid]={nick:d.nick,n:0});r.n+=+d.n||0});
+  const top=Object.entries(rank).sort((a,b)=>b[1].n-a[1].n).slice(0,8);
+  const mine=SHIPDON.filter(d=>d.uid===uid).reduce((a,d)=>a+(+d.n||0),0);
+  const canAny=pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0);
+  return head()+`<div class="shiptop card"><div class="shippic" style="filter:grayscale(${(1-all).toFixed(2)}) brightness(${(.55+.45*all).toFixed(2)})">${img(IC.ship,null,7)}${all<1?'<span class="shipsmoke"></span>':''}</div>
+   <div class="sinfo"><b>${all>=1?'별무리호 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 별무리호'}</b><span class="hint">${all>=1?'모든 단원의 손으로 되살아난 배입니다.':'단원들이 모은 재료로 한 부분씩 고쳐 나갑니다. 재료를 넣을 때마다 그 값만큼 크레딧과 경험치를 받습니다.'}</span>
+   <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
+  <div class="shipgrid">${SHIP.map(x=>{const v=shipPct(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''}" data-act="shipsel" data-k="${x.id}"><b>${x.n}</b><span>${v>=1?'수리 완료':Math.floor(v*100)+'%'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
+  <div class="card shipdet"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div><b>${pt.n}</b> <span class="hint">${shipDone(pt)?'수리 완료':Math.floor(shipPct(pt)*100)+'%'}</span><p class="hint" style="margin:4px 0 0">${pt.d}</p></div>
+   ${shipDone(pt)?'':`<button class="btn sm" data-act="shipgive" data-k="${pt.id}" ${canAny?'':'disabled'}>가진 재료 모두 넣기</button>`}</div>
+   <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?`<button class="btn sm alt" data-act="shipgive" data-k="${pt.id}" data-i="${id}" ${my?'':'disabled'}>넣기</button>`:'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>
+  <div class="card"><div class="stat-row"><span>수리 기여 순위</span><b>내 기여 ${mine}개</b></div>${top.length?`<ol class="shiprank">${top.map(([id,r],k)=>`<li><span>${k+1}</span><button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(id===uid?P.nick:(PLAYERS[id]&&PLAYERS[id].nick)||r.nick||'단원')}</button><b>${r.n}개</b></li>`).join('')}</ol>`:'<p class="hint">아직 아무도 재료를 넣지 않았습니다. 첫 번째 수리공이 되어 보십시오.</p>'}</div>`;
+}
+function shipGive(partId,only){
+  const pt=SHIP.find(x=>x.id===partId);if(!pt||mode!=='online')return;
+  const list=[];
+  pt.need.forEach(([id])=>{if(only&&id!==only)return;const n=Math.min(shipLeft(pt,id),P.inv[id]||0);if(n>0)list.push([id,n])});
+  if(!list.length){toast('넣을 수 있는 재료가 없습니다.');return}
+  const finish=pt.need.every(([id])=>shipLeft(pt,id)-((list.find(x=>x[0]===id)||[,0])[1])<=0);
+  list.forEach(([id,n])=>take(id,n));
+  const cr=list.reduce((a,[id,n])=>a+sellPrice(id)*n,0),cnt=list.reduce((a,[,n])=>a+n,0);
+  P.cr=(P.cr||0)+cr;gainXp(cnt*2);commit();
+  const at=Date.now();
+  Promise.all(list.map(([id,n])=>db.collection('shipdon').add({part:pt.id,id,n,uid,nick:P.nick,at}))).then(()=>{
+    sfxCoin();log(`별무리호 ${pt.n}에 ${list.map(([id,n])=>ITEMS[id].n+' '+n).join(', ')}을(를) 넣었다. 크레딧 +${cr}, 경험치 +${cnt*2}.`,'good');
+    if(finish){sys(`${P.nick} 님의 손으로 별무리호 ${pt.n} 수리가 끝났습니다!`);if(SHIP.every(x=>x===pt||shipDone(x)))sys('별무리호의 모든 구역이 수리되었습니다. 개척선이 다시 날아오를 준비를 마쳤습니다!')}
+    if(tab==='ship')renderPanel()
+  }).catch(()=>{list.forEach(([id,n])=>add(id,n));P.cr-=cr;commit();toast('재료를 넣지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')})
+}
 const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['moss',10],['ore',12],['crystal',40],['drink',45],['kit',50]];
 const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,relic:25,drink:15,kit:18};
 const FSELL={c:6,r:20,u:60,l:250};
@@ -1577,7 +1637,7 @@ function renderBag(){
 function renderPanel(){
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0;
-  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,adv:advHTML}[tab];
+  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,adv:advHTML,ship:renderShip}[tab];
   $('#stage').innerHTML=f();
   {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;if(Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}
   if(tab==='fish')drawLake();
@@ -1640,6 +1700,8 @@ const A={
  water(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}P.water--;sfxWater();if(pl.seed)pl.got=effG(pl);pl.wet=Date.now();commit()},
  fert(d){const i=+d.i,pl=P.field[i];if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}const it=ITEMS[pl.seed];pl.got=Math.min(it.grow,(pl.got||0)+it.grow*.3);pl.fert=1;log(`포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
  harvest(d){const i=+d.i,pl=P.field[i];if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
+ shipsel(d){shipSel=d.k;renderPanel()},
+ shipgive(d){shipGive(d.k,d.i)},
  refill(){if(P.water>=tankCap())return;if(Date.now()<(P.refCd||0)){toast(`아직 물을 채울 수 없습니다. ${fmtClock(P.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}const eng=P.job==='engineer';P.water=tankCap();P.ref=null;P.refCd=Date.now()+(eng?1800e3:3600e3);sfxWater();log(`물탱크를 가득 채웠다. ${eng?'30분':'1시간'} 뒤에 다시 채울 수 있다.`,'good');commit()},
  expand(){if(P.fu>=FIELD_N)return;const ex=2*P.fu;if(!take('ore',ex))return;P.fu++;selPod=P.fu-1;log(`재배 포드를 하나 더 설치했다. (${P.fu}/${FIELD_N})`,'good');commit()},
  gather(){if(P.exp){toast('이미 원정 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}로 ${fmtDur(gDur*30)} 채집 원정을 떠났다.`);commit()},
@@ -1761,7 +1823,7 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
-const SAFE_ACT=new Set(['admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['shipsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg')giftMsg=e.target.value});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
