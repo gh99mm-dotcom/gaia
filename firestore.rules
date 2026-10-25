@@ -132,6 +132,9 @@ service cloud.firestore {
       allow delete: if member() && (resource.data.host == me() || isAdmin());
     }
 
+    // 레이드: 심연의 침략자(공동 체력)와 레이드 대화. 단원이면 누구나 읽고 기록.
+    match /boss/{id} { allow read, write: if member(); }
+
     // 낚시 대결: 접속한 단원 모두 함께 씀.
     match /duel/{id} { allow read, write: if member(); }
 
