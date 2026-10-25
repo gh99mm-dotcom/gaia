@@ -1391,11 +1391,13 @@ function isWet(pl){if(!pl||!pl.wet)return false;return Date.now()-pl.wet<(pl.see
 let farmSig='';
 let selPod=0;
 /* ---- shared farm: one dome for the whole crew (farm/pods) and a common store (farm/store); water and moss stay personal ---- */
-let FARM={fu:4,pods:[]},FSTORE={},FLOG=[],farmOn=false;
+let FARM={fu:4,xu:0,ore:0,prog:0,need:8,pods:[]},FSTORE={},FLOG=[],farmOn=false;
 const fpod=i=>FARM.pods[i]||null;
 const isCropId=id=>ORDER.some(s=>ITEMS[s].type==='seed'&&ITEMS[s].crop===id);
 const storable=id=>!!ITEMS[id]&&(ITEMS[id].type==='seed'||id==='moss'||isCropId(id));
-function farmSave(){if(mode!=='online'){P.sfarm={xu:FARM.fu-4,pods:FARM.pods,store:FSTORE,log:FLOG.slice(0,30)};save()}}
+function farmSave(){if(mode!=='online'){P.sfarm={xu:FARM.xu||0,ore:FARM.ore||0,pods:FARM.pods,store:FSTORE,log:FLOG.slice(0,30)};save()}}
+// pods open from the crew's running total of donated ore (pod k costs 2k), so donors working at once can never double-unlock
+function farmShape(xu,ore,pods){let f=Math.min(FIELD_N,4+(+xu||0)),t=+ore||0;while(f<FIELD_N&&t>=2*f){t-=2*f;f++}return{fu:f,xu:+xu||0,ore:+ore||0,prog:t,need:2*f,pods}}
 function farmMerge(path,obj){const r=db.doc(path);return r.update(obj).catch(()=>r.get().then(s=>r.set(Object.assign({},s.exists?s.data():{},obj))))}
 // every key is written each time, because a merge write would otherwise keep stale fields (an old seed) on the server
 const POD0={til:0,seed:null,got:0,wet:0,fert:0,by:null,byN:null};
@@ -1405,10 +1407,10 @@ function farmInc(path,field,n){const r=db.doc(path);return r.inc?r.inc({[field]:
 function storeAdd(id,n){FSTORE[id]=Math.max(0,(FSTORE[id]||0)+n);if(!FSTORE[id])delete FSTORE[id];if(mode==='online')farmInc('farm/store',id,n).catch(()=>{});else farmSave()}
 function farmLoad(){if(farmOn)return;
   if(mode==='online'){farmOn=true;
-    db.doc('farm/pods').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FARM={fu:Math.max(4,Math.min(FIELD_N,4+(+d.xu||0))),pods:Array.from({length:FIELD_N},(_,i)=>d['p'+i]||null)};renderNav();if(tab==='farm')renderPanel()},()=>{});
+    db.doc('farm/pods').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FARM=farmShape(d.xu,d.ore,Array.from({length:FIELD_N},(_,i)=>d['p'+i]||null));renderNav();if(tab==='farm')renderPanel()},()=>{});
     db.collection('farmlog').orderBy('at','desc').limit(30).onSnapshot(sn=>{FLOG=sn.docs.map(d=>d.data());if(tab==='farm')renderPanel()},()=>{});
     db.doc('farm/store').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FSTORE={};for(const k in d)if(ITEMS[k]&&+d[k]>0)FSTORE[k]=+d[k];if(tab==='farm')renderPanel()},()=>{})}
-  else if(!FARM.local){const s=P.sfarm||{};FARM={fu:Math.max(4,Math.min(FIELD_N,4+(+s.xu||0))),pods:(s.pods||[]).slice()};FSTORE=Object.assign({},s.store);FLOG=(s.log||[]).slice();FARM.local=1}}
+  else if(!FARM.local){const s=P.sfarm||{};FARM=farmShape(s.xu,s.ore,(s.pods||[]).slice());FSTORE=Object.assign({},s.store);FLOG=(s.log||[]).slice();FARM.local=1}}
 function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge='';
   if(!pl||!pl.til){cls='empty';title=`포드 ${i+1} · 비어 있음`;
     body=`<span class="sub">배양토를 채워야 심을 수 있습니다.</span><div class="acts"><button class="btn sm ghost" data-act="soil" data-i="${i}">배양토 채우기 <small>EN 1</small></button></div>`}
@@ -1433,14 +1435,15 @@ function storeHTML(){const S=Object.keys(FSTORE).filter(id=>FSTORE[id]>0).sort((
 function renderFarm(){
   farmLoad();migrate();
   const fu=FARM.fu,seeds=[...ORDER.filter(id=>ITEMS[id].type==='seed'&&P.inv[id]).map(id=>[id,P.inv[id],'bag']),...ORDER.filter(id=>ITEMS[id].type==='seed'&&FSTORE[id]).map(id=>[id,FSTORE[id],'store'])];
-  const ex=2*fu,ore=P.inv.ore||0;if(selPod!=='add'&&!(selPod<fu))selPod=0;
+  const ore=P.inv.ore||0;if(!(selPod<fu))selPod=0;
   const pods=Array.from({length:fu},(_,i)=>podHTML(i,seeds));
-  const info=selPod==='add'?`<h3>포드 ${fu+1} 증설</h3><span class="sub">운석 파편 ${ore}/${ex}개가 필요합니다. 늘린 포드는 모든 단원이 함께 씁니다.</span><div class="acts"><button class="btn sm ghost" data-act="expand" ${ore>=ex?'':'disabled'}>재배 포드 추가</button></div>`:`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
+  const info=`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
+  const grow=fu>=FIELD_N?`<div class="card podinfo"><h3>재배 포드 증설</h3><span class="sub">포드 ${FIELD_N}개가 모두 열렸습니다.</span></div>`:`<div class="card podinfo"><div class="stat-row"><span>재배 포드 ${fu+1}번 증설</span><b>${FARM.prog}/${FARM.need}</b></div><div class="bar"><i style="--c:var(--gold);width:${FARM.prog/FARM.need*100}%"></i></div><span class="sub">모든 단원이 운석 파편을 하나씩 모아 다음 포드를 엽니다. 다 모이면 바로 열립니다.</span><div class="acts"><button class="btn sm ghost" data-act="fdon" ${ore?'':'disabled'}>운석 파편 1개 넣기</button><span class="hint">내 가방 ${ore}개</span></div></div>`;
   const here=mode==='online'?[...new Set(PEERS.filter(p=>p.presence&&p.presence.uid!==uid&&p.presence.act==='농사').map(p=>p.presence.nick))]:[];
   return head()+`<p class="lead">모든 단원이 함께 쓰는 돔 농장입니다. 누구나 배양토를 채우고 심고 물을 줄 수 있고, 거둔 작물은 공용 창고에 쌓여 누구나 꺼내 씁니다. 물탱크와 비료용 이끼는 각자 자기 것을 씁니다.${here.length?` <span class="visitors">지금 농장에 있는 단원 · ${here.map(n=>esc(n||'단원')).join(', ')}</span>`:''}</p>
-  <div class="frow r1"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${fu<FIELD_N?`<button class="ptile add" data-act="selpod" data-i="add" aria-pressed="${selPod==='add'}" aria-label="포드 증설" title="포드 증설"><span class="plus">+</span></button>`:''}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu-1))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
+  <div class="frow r1"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
   <div class="farmcol"><div class="card podinfo">${info}</div>
-  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}내 물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>물 채우기</button><span class="hint">누르면 바로 가득 찹니다 · 다시 채우려면 ${P.job==='engineer'?'30분':'1시간'}</span>`}</div></div>
+  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}내 물탱크</span><b>${P.water}/${tankCap()}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.water/tankCap()*100}%"></i></div>${Date.now()<(P.refCd||0)?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(P.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${P.water>=tankCap()?'disabled':''}>물 채우기</button><span class="hint">누르면 바로 가득 찹니다 · 다시 채우려면 ${P.job==='engineer'?'30분':'1시간'}</span>`}</div>${grow}</div>
   </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
 function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0),back=Math.random()<.45;
@@ -1896,7 +1899,7 @@ const A={
  cooksel(d){cookSel=d.k;renderCook()},
  cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);if(!c||!canCook(c)){toast('재료가 부족합니다.');return}for(const [id,n] of c.need)ingTake(id,n);P.cook={id:c.id,end:Date.now()+c.sec*1e3};sfxSizzle();log(`${c.n}을(를) 불에 올렸다.`,'');commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;add(ck.id);P.cook=null;sfxCoin();log(`${ITEMS[ck.id].n}을(를) 가방에 넣었다.`,'good');commit()},
- selpod(d){selPod=d.i==='add'?'add':+d.i;renderPanel()},
+ selpod(d){selPod=+d.i;renderPanel()},
  soil(d){const i=+d.i;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spend(1))return;farmPut(i,{til:1,wet:0});log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`);commit()},
  plant(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til||pl.seed)return;if(d.k==='store'){if(!(FSTORE[d.id]>0))return;storeAdd(d.id,-1)}else if(!take(d.id))return;sfxPlant();const wet=isWet(pl);farmPut(i,{til:1,seed:d.id,got:0,wet:wet?Date.now():0,by:uid,byN:P.nick});log(`공용 농장 포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`);commit()},
  water(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til)return;if(P.water<=0){toast('물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}P.water--;sfxWater();const q=Object.assign({},pl);if(q.seed)q.got=effG(q);q.wet=Date.now();farmPut(i,q);if(q.seed&&q.by&&q.by!==uid){gainXp(2);lxp('farm',2);stat('helpfarm')}commit()},
@@ -1909,7 +1912,8 @@ const A={
  shipsel(d){shipSel=d.k;renderPanel()},
  shipgive(d){shipGive(d.k,d.i)},
  refill(){if(P.water>=tankCap())return;if(Date.now()<(P.refCd||0)){toast(`아직 물을 채울 수 없습니다. ${fmtClock(P.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}const eng=P.job==='engineer';P.water=tankCap();P.ref=null;P.refCd=Date.now()+(eng?1800e3:3600e3);sfxWater();log(`물탱크를 가득 채웠다. ${eng?'30분':'1시간'} 뒤에 다시 채울 수 있다.`,'good');commit()},
- expand(){if(FARM.fu>=FIELD_N)return;const ex=2*FARM.fu;if(!take('ore',ex))return;FARM.fu++;if(mode==='online')farmInc('farm/pods','xu',1).catch(()=>{});else farmSave();selPod=FARM.fu-1;log(`공용 농장에 재배 포드를 하나 더 설치했다. (${FARM.fu}/${FIELD_N})`,'good');commit()},
+ fdon(){if(FARM.fu>=FIELD_N)return;if(!take('ore',1)){toast('운석 파편이 없습니다.');return}const before=FARM.fu;FARM=farmShape(FARM.xu,FARM.ore+1,FARM.pods);if(mode==='online')farmInc('farm/pods','ore',1).catch(()=>{});else farmSave();gainXp(1);
+  log(FARM.fu>before?`운석 파편을 넣어 공용 농장 포드 ${FARM.fu}번을 열었다!`:`포드 증설에 운석 파편 1개를 보탰다. (${FARM.prog}/${FARM.need})`,FARM.fu>before?'good':'');commit()},
  gather(){if(P.exp){toast('이미 원정 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}로 ${fmtDur(gDur*30)} 채집 원정을 떠났다.`);commit()},
  gsite(d){gSite=d.id;renderPanel()},
  gdur(d){gDur=+d.k;renderPanel()},
