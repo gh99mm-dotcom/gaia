@@ -1244,8 +1244,13 @@ function genFish(seed,fam,tier){let r=7;for(const c of seed)r=(r*31+c.charCodeAt
  dJar:G(["................","....kkkkkkkk....","....kyyyyyyk....","....kYYYYYYk....","...kkkkkkkkkk...","...kuhhhhhhwk...","..kuhaaaaaahwk..","..kuaaahaaaaak..","..kwaaaaaaaaak..","..kwaayyyyaaak..","..kwaayYYyaabk..","..kwaaaaaaabbk..","..kwbaaaaabbbk..","...kkkkkkkkkk...","................","................"]),
  dRice:G(["................","................",".......kk.......","......kuuk......",".....kuuuuk.....",".....kuuuuk.....","....kuuhuuuk....","....kuuuuuuk....","...kuuuuuuuuk...","...kuffffffuk...","..kuffffffffuk..","..kwffffffffwk..","..kkkkkkkkkkkk..","................","................","................"]),
  dIce:G(["................","......kkkk......","....kkuuuukk....","...kuuuaauuuk...","...kuaaahaauk...","..kuuuaaaauuuk..","..kuhuuuuuuuuk..","..kkkkkkkkkkkk..","...kmmmmmmmmk...","...kcmmmmmmck...","....kcmmmmck....",".....kccccck....","......kssk......",".....kssssk.....",".....kkkkkk.....","................"]),
- dTray:G(["................","......u....u....",".....u....u.....","................","kkkkkkkkkkkkkkkk","koooooooooooooook","kokkkkkokkkkkkok","kokhaakokwwwwkok","kokaaakokuyyukok","kokkkkkokwwwwkok","kokggrkokkkkkkok","kokgrrkokffffkok","kokkkkkokkkkkkok","koooooooooooooook","kkkkkkkkkkkkkkkk","................"]),
+ dTray:G(["................","......u....u....",".....u....u.....","................","kkkkkkkkkkkkkkkk","kbbbbbbbbbbbbbbk","kbkkkkkbkkkkkkbk","kbkhaakbkwwwwkbk","kbkaaakbkuyyukbk","kbkkkkkbkwwwwkbk","kbkggrkbkkkkkkbk","kbkgrrkbkffffkbk","kbkkkkkbkkkkkkbk","kbbbbbbbbbbbbbbk","kkkkkkkkkkkkkkkk","................"]),
  dPot:G(["................","....u....u......","...u....u...u...","....u....u..u...","................","...kkkkkkkkkk...","..kSSSSSSSSSSk..","kkkssssssssssskk","kSkSSSSSSSSSSkSk","kkkSSSSSSSSSSkkk","..kSSSSSSSSSSk..","..kSSSSSSSSSSk..","...kSSSSSSSSk...","..kkkkkkkkkkkk..",".krrrrrrrrrrrrk.","..kRRRRRRRRRRk.."])});}
+Object.assign(TPL,{
+ dBun:["................",".....u...u......","....u...u.......","................","....kkkk.kkkk...","...khhhakhhhak..","..khwhaakhwhaak.","..khhaaakhhaaak.","..kbaaabkbaaabk.","...kbbbk.kbbbk..",".kkkkkkkkkkkkkk.",".kwwwwwwwwwwwwk.","..kkkkkkkkkkkk..","................","................","................"],
+ dCake:["................","................",".........kk.....","........kppk....",".......kkkkk....","......kwwwwwk...","....kkwwwwwwk...","...kwwwwwwwwk...","..khhhhhhhhhk...","..kaaaaaaaaak...","..kwwwwwwwwwk...","..kaaaaaaaabk...","..kbbbbbbbbbk...","..kkkkkkkkkkk...","................","................"],
+ dNoodle:["..........o.....",".........o......","........o..o....",".......o..o.....","......o..o......","..kkkkkkkkkkkk..",".kyyhyyyhyyyyhk.",".kyhyyhyyhyyhyk.",".kaaaaaaaaaaaak.","..kaaaaaaaaaak..","...kbbbbbbbbk...","....kkkkkkkk....","................","................","................","................"],
+ dRoll:["................","................","................","..kkkkk..kkkkk..",".kGGGGGkkGGGGGk.",".kGwwwGkkGwwwGk.",".kGwayGkkGwhaGk.",".kGwwwGkkGwwwGk.",".kGGGGGkkGGGGGk.","..kkkkk..kkkkk..",".kkkkkkkkkkkkkk.",".kwwwwwwwwwwwwk.","..kkkkkkkkkkkk..","................","................","................"]});
 Object.assign(TPL,{"dSlice": ["................", "................", ".......kk.......", "......kppk......", "......kppk......", ".....kphppk.....", "....kpphpppk....", "...kpppkppppk...", "..kppppppppppk..", "..kppppppkpppk..", ".kppppkpppkpppk.", "kpppppppkppppppk", ".kggggggggggggk.", ".kGGGGGGGGGGGGk.", "..kkkkkkkkkkkk..", "................"], "dSalad": ["................", "................", "................", ".......k.k......", "....kkkhkakk....", "..kkgaggggggkk..", ".kGGGGGGaGGaGGk.", ".kggggaggghgggk.", "kggggggggggggggk", "kwuuuuuuuuuuuuwk", ".kwwwwwwwwwwwwk.", "..kwwwwwwwwwwk..", "...kksssssskk...", ".....kssssk.....", "......kkkk......", "................"], "dPie": ["................", "................", "......k..k......", ".....kukkuk.....", "......kukkuk....", "..kkkkkkkkkkkk..", ".kyYyyYyyYyyYyk.", ".kyyyYyyYyyYyyk.", "kyaaaaaaaaaaaayk", "kyabaabaabaabayk", "kyyyyyyyyyyyyyyk", "kssssssssssssssk", "kSSSSSSSSSSSSSSk", ".kkkkkkkkkkkkkk.", "................", "................"], "dCup": [".........krrk...", ".........krk....", "...kkkkkkkrkk...", "..khhhhhhhrrhk..", "..khhhhhhhrhhk..", "..kaahaaaaaaak..", "..kaaaaaaaaaak..", "..kaahaaaaaaak..", "...kahaaaaaak...", "...kaaaaaaaak...", "...kahaaaaaak...", "....khaaaaak....", "....kaaaaaak....", "....kaaaaaak....", ".....kkkkkk.....", "................"], "dSkewer": ["..............ky", ".............kyk", "..........kkkyk.", ".........khaak..", ".........kaaak..", ".......kkkaabk..", "......khaakkk...", "......kaaak.....", "....kkkaabk.....", "...khaakkk......", "...kaaak........", "...kaabk........", "..kykkk.........", ".kyk............", "kyk.............", "yk.............."]});
 const COOK=[
  {id:'d_potRoast',n:'별감자 구이',ic:'dPlate',t:'#c9a06a',need:[['pot',2]],sec:20,hp:55,en:8,xp:6,d:'노릇하게 구운 별감자. 가장 쉬운 요리.'},
@@ -1267,6 +1272,24 @@ const COOK=[
  {id:'d_cactusPie',n:'붉은 선인장 파이',ic:'dPie',t:'#a8626b',need:[['redCactus',1],['corn',1],['berry',2]],sec:90,hp:130,en:40,xp:20,buff:{atk:4},bmin:8,d:'새콤달콤한 선인장 열매 파이.'},
  {id:'d_stew',n:'협곡 고추 스튜',ic:'dBowl',t:'#b0603a',need:[['canyonPepper',2],['dustPot',1],['fish:r',1]],sec:90,hp:140,en:36,xp:20,buff:{atk:6},bmin:10,d:'먹으면 속이 뜨거워집니다.'},
  {id:'d_curry',n:'수정콩 카레',ic:'dBowl',t:'#c9a06a',need:[['crystalBean',2],['dustPot',1],['carrot',1],['canyonPepper',1]],sec:120,hp:150,en:45,xp:26,buff:{atk:5,def:3},bmin:10,d:'매콤한 향이 조리실 가득 퍼집니다.'},
+ {id:'d_berryCake',n:'네온베리 케이크',ic:'dCake',t:'#ff5fb8',need:[['berry',3],['corn',1]],sec:60,hp:40,en:60,xp:14,d:'네온베리를 듬뿍 올린 폭신한 케이크.'},
+ {id:'d_pumpBun',n:'월광호박 찐빵',ic:'dBun',t:'#9b6bff',need:[['pump',1],['rationBean',1]],sec:45,hp:85,en:20,xp:12,d:'보랏빛 호박소가 든 따끈한 찐빵.'},
+ {id:'d_potBun',n:'먼지감자 만두',ic:'dBun',t:'#c9b27a',need:[['dustPot',2],['carrot',1]],sec:45,hp:80,en:22,xp:12,d:'감자와 당근으로 소를 채운 만두.'},
+ {id:'d_fishNoodle',n:'생선 국수',ic:'dNoodle',t:'#8aa9bd',need:[['bogRice',1],['fish:c',2]],sec:50,hp:95,en:25,xp:13,d:'맑은 생선 국물에 만 늪쌀 국수.'},
+ {id:'d_pepperNoodle',n:'협곡 매운 라면',ic:'dNoodle',t:'#d0402a',need:[['canyonPepper',2],['rationBean',1]],sec:50,hp:70,en:40,xp:13,buff:{atk:3},bmin:8,d:'혀가 얼얼할 만큼 매운 라면.'},
+ {id:'d_gimbap',n:'늪쌀 김밥',ic:'dRoll',t:'#f0d040',need:[['bogRice',2],['carrot',1],['fish:c',1]],sec:60,hp:100,en:35,xp:15,d:'당근과 생선을 말아 썬 김밥.'},
+ {id:'d_fishRoll',n:'레어 생선 초밥롤',ic:'dRoll',t:'#ff5a7a',need:[['bogRice',2],['fish:r',1]],sec:70,hp:115,en:40,xp:18,buff:{def:3},bmin:8,d:'귀한 생선 살을 올린 초밥 롤.'},
+ {id:'d_melonJuice',n:'은하 수박 주스',ic:'dCup',t:'#f07a8a',need:[['melon',1],['frostBerry',1]],sec:30,hp:20,en:65,xp:10,d:'서리딸기를 넣어 새콤한 수박 주스.'},
+ {id:'d_frostJam',n:'서리딸기 잼',ic:'dJar',t:'#9fb8e8',need:[['frostBerry',3],['moss',1]],sec:40,hp:15,en:60,xp:11,d:'차갑게 반짝이는 푸른 잼.'},
+ {id:'d_tomatoSoup',n:'토마토 감자 수프',ic:'dBowl',t:'#e05040',need:[['frozenTomato',2],['pot',1]],sec:50,hp:100,en:28,xp:13,d:'진하고 따뜻한 토마토 수프.'},
+ {id:'d_kimchi',n:'얼음무 김치',ic:'dJar',t:'#e04838',need:[['iceRadish',2],['canyonPepper',1]],sec:60,hp:60,en:35,xp:14,buff:{atk:2},bmin:10,d:'아삭하고 칼칼한 무 김치.'},
+ {id:'d_shroomRice',n:'그늘 버섯 덮밥',ic:'dPlate',t:'#8a5ac8',need:[['shadeShroom',1],['bogRice',2]],sec:60,hp:115,en:30,xp:15,d:'버섯을 볶아 밥 위에 얹은 덮밥.'},
+ {id:'d_beanSalad',n:'수정콩 무 샐러드',ic:'dSalad',t:'#8aa9bd',need:[['crystalBean',2],['meteorRadish',1]],sec:45,hp:65,en:40,xp:13,d:'반짝이는 콩과 무를 버무린 샐러드.'},
+ {id:'d_cactusAde',n:'붉은 선인장 에이드',ic:'dCup',t:'#7ad88a',need:[['redCactus',1],['frostCrystal',1]],sec:45,hp:25,en:80,xp:15,buff:{def:2},bmin:8,d:'톡 쏘는 시원한 선인장 에이드.'},
+ {id:'d_lotusCake',n:'안개 연꽃 떡',ic:'dCake',t:'#f0c0d8',need:[['mistLotus',1],['bogRice',2]],sec:60,hp:70,en:55,xp:15,d:'연꽃 향이 나는 쫀득한 떡.'},
+ {id:'d_cornSoup',n:'유성 옥수수 수프',ic:'dBowl',t:'#f2d86a',need:[['corn',2],['pot',1]],sec:45,hp:90,en:30,xp:12,d:'부드럽고 고소한 옥수수 크림 수프.'},
+ {id:'d_fishStew',n:'해물 무 냄비',ic:'dPot',t:'#5f8fb0',need:[['fish:r',1],['fish:c',2],['iceRadish',1]],sec:90,hp:150,en:40,xp:22,buff:{def:5},bmin:10,d:'생선을 아낌없이 넣고 끓인 냄비 요리.'},
+ {id:'d_sashimi',n:'유니크 회 정식',ic:'dFish',t:'#ff8ab0',need:[['fish:u',1],['mistLotus',1],['iceRadish',1]],sec:120,hp:180,en:80,xp:30,buff:{atk:6,def:4},bmin:12,d:'귀한 생선을 얇게 떠 낸 한 상.'},
  {id:'d_feast',n:'성운 정식',ic:'dTray',t:'#bfae80',need:[['fish:u',1],['pump',1],['mistLotus',1],['crystalBean',1]],sec:180,hp:999,en:999,xp:40,buff:{atk:10,def:6},bmin:15,d:'개척단 최고의 한 상. 체력과 에너지가 가득 찹니다.'},
 ];
 COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}});
@@ -1307,7 +1330,7 @@ function ri(a,b){return Math.floor(rand(a,b+1))}
 function pick(t){let s=t.reduce((a,x)=>a+x[1],0),r=Math.random()*s;for(const x of t){if((r-=x[1])<0)return x[0]}return t[0][0]}
 function pickSeed(){return pick([['seed_pot',5],['seed_berry',3],['seed_carrot',3],['seed_corn',2],['seed_pump',1],['seed_melon',1]])}
 const hhmm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
-const iicon=(id,sc=3)=>{const it=ITEMS[id];if(it.big){const sp=spr(TPL[it.big],it.t,it.po),boost={c:1,r:1.08,u:1.16,l:1.26}[it.fish]||1,w=Math.round(sc*12*boost),h=Math.round(w*sp.h/sp.w);return`<img class="pix ${it.fish==='l'?'legend':''}" src="${sp.src}" width="${w}" height="${h}" alt="">`}return img(TPL[it.ic],it.t,sc)};
+const iicon=(id,sc=3)=>{const it=ITEMS[id];if(it.big){const sp=spr(TPL[it.big],it.t,it.po),boost={c:1,r:1.08,u:1.16,l:1.26}[it.fish]||1,w=Math.round(sc*12*boost),h=Math.round(w*sp.h/sp.w);return`<img class="pix ${it.fish==='l'?'legend':''}" src="${sp.src}" width="${w}" height="${h}" alt="">`}if(it.dish){const v=mix(it.t,'#5d6274',.18);return img(TPL[it.ic],null,sc,'',{a:v,b:mix(v,'#07080e',.45),h:mix(v,'#f4f2ee',.4)})}return img(TPL[it.ic],it.t,sc)};
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400)}
 
 /* ───────── player ───────── */
@@ -1642,7 +1665,9 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
     if(col){x.fillStyle=kind!=='empty'&&!dim&&soilC.includes(col)?col:lift(col);x.fillRect(i,j,1,1)}}
   if(!dim){x.fillStyle='#bfae80';x.fillRect(9,gap-1,2,1)}
   return MD[key]=c.toDataURL()}
-function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.as&&ABIL.some(([k])=>(P.as[k]||0)<2)){P.as=Object.assign({},P.as);ABIL.forEach(([k])=>{if((P.as[k]||0)<2)P.as[k]=2})}if(ptsLeft()<0)P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
+function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}
+  if(P.joined&&P.tv!==2){const dish=ORDER.filter(id=>ITEMS[id].dish),keep=a=>(a||[]).filter(id=>ITEMS[id]&&ITEMS[id].dish).slice(0,2);let L=keep(P.likes),H=keep(P.hates).filter(id=>!L.includes(id));
+    const fill=(A,B)=>{while(A.length<2){const c=dish.filter(id=>!A.includes(id)&&!B.includes(id));if(!c.length)break;A.push(c[ri(0,c.length-1)])}};fill(L,H);fill(H,L);P.likes=L;P.hates=H;P.tv=2}if(P.as&&ABIL.some(([k])=>(P.as[k]||0)<2)){P.as=Object.assign({},P.as);ABIL.forEach(([k])=>{if((P.as[k]||0)<2)P.as[k]=2})}if(ptsLeft()<0)P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
   if(!Array.isArray(P.field))P.field=[];
   // the farm is shared now: hand back whatever was growing in the old personal pods
   if(P.fv!==4){P.field.forEach(pl=>{if(!pl||!ITEMS[pl.seed])return;if(stage(pl)===3)add(ITEMS[pl.seed].crop,2);else add(pl.seed,1)});(P.pods||[]).forEach(p=>{if(p&&ITEMS[p.seed])add(p.seed,1)});delete P.pods;P.field=[];P.fv=4}}
@@ -3037,19 +3062,19 @@ Object.assign(A,SA,{
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
 ['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel'].forEach(k=>SAFE_ACT.add(k));
 /* ───────── join page: character creation ───────── */
-const J_START=2,J_FREE=15,J_MAX=3;
+const J_START=2,J_FREE=15,J_MAX=2;
 let J=null;
-const JCAT=[['crop','작물'],['dish','요리'],['fish','물고기'],['mat','재료']];
+const JCAT=[['dish','요리']];
 const jItems=c=>ORDER.filter(id=>{const it=ITEMS[id];if(c==='dish')return!!it.dish;if(c==='fish')return!!it.fish;if(c==='mat')return it.type==='mat';return it.type==='food'&&!it.dish&&!it.fish&&id!=='drink'&&id!=='kit'});
 const jLeft=()=>J_START*ABIL.length+J_FREE-ABIL.reduce((a,[k])=>a+(J.as[k]||0),0);
 function jChips(list,kind){return list.length?list.map(id=>`<span class="ichip ${kind}">${iicon(id,1)}${esc(ITEMS[id].n)}<button type="button" class="pvx" data-act="junpick" data-k="${id}" aria-label="${esc(ITEMS[id].n)} 빼기">×</button></span>`).join(''):`<span class="hint">아직 고르지 않았습니다.</span>`}
 function renderJoin(){if(!J)return;const b=$('#joinBody');if(!b)return;const prev={look:J.look},left=jLeft();
   b.innerHTML=`<div class="jsec"><span class="lbl">Look · 내 모습</span><div class="jlook"><div class="jprev">${meImg(6,prev)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button type="button" class="sw" style="background:${col}" data-act="jlook" data-k="${k}" data-c="${col}" aria-pressed="${J.look[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">네온 색은 게임 안 옷장에서 살 수 있습니다.</span></div></div></div>
-  <div class="jsec"><span class="lbl">Taste · 좋아하는 것 · 싫어하는 것 (각 ${J_MAX}개까지)</span>
+  <div class="jsec"><span class="lbl">Taste · 좋아하는 요리 · 싫어하는 요리 (각 ${J_MAX}개)</span>
    <div class="jpicked"><b style="color:var(--pink);font-size:12px;margin-right:4px">♥ 좋아함</b>${jChips(J.likes,'like')}</div>
    <div class="jpicked"><b style="color:var(--red);font-size:12px;margin-right:4px">✕ 싫어함</b>${jChips(J.hates,'hate')}</div>
    <div class="row" style="gap:5px"><button type="button" class="qchip" data-act="jmode" data-k="like" aria-pressed="${J.mode==='like'}">♥ 좋아하는 것 고르기</button><button type="button" class="qchip" data-act="jmode" data-k="hate" aria-pressed="${J.mode==='hate'}">✕ 싫어하는 것 고르기</button></div>
-   <div class="dtabs" role="tablist">${JCAT.map(([k,n])=>`<button type="button" role="tab" aria-selected="${J.cat===k}" data-act="jcat" data-k="${k}">${n}</button>`).join('')}</div>
+   ${JCAT.length>1?`<div class="dtabs" role="tablist">${JCAT.map(([k,n])=>`<button type="button" role="tab" aria-selected="${J.cat===k}" data-act="jcat" data-k="${k}">${n}</button>`).join('')}</div>`:''}
    <div class="jgrid">${jItems(J.cat).map(id=>{const lk=J.likes.includes(id),ht=J.hates.includes(id);return`<button type="button" class="slot ${lk?'like':ht?'hate':''}" data-act="jpick" data-k="${id}" aria-pressed="${lk||ht}" title="${esc(ITEMS[id].n)}" aria-label="${esc(ITEMS[id].n)}">${iicon(id,2)}</button>`}).join('')}</div>
    <span class="hint">아이콘을 누르면 위에서 고른 쪽(${J.mode==='like'?'좋아함':'싫어함'})에 담깁니다. 한 번 더 누르면 빠집니다.</span></div>
   <div class="jsec"><div class="stat-row"><span class="lbl">Status · 스테이터스</span><b class="${left?'ptsgo':''}">남은 포인트 ${left}</b></div><div class="jstats">${ABIL.map(([k,n,d])=>`<div class="jst"><b>${n}</b><span class="hint">${d}</span><span class="ctl"><button type="button" class="btn sm ghost" data-act="jstat" data-k="${k}" data-d="-1" ${(J.as[k]||0)<=J_START?'disabled':''} aria-label="${n} 내리기">−</button><span class="abv">${J.as[k]||0}</span><button type="button" class="btn sm" data-act="jstat" data-k="${k}" data-d="1" ${left<=0?'disabled':''} aria-label="${n} 올리기">+</button></span></div>`).join('')}</div>
@@ -3066,7 +3091,7 @@ const JA={
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
 };
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
-function showJoin(){J={look:lookOf(P),likes:[...(P.likes||[])],hates:[...(P.hates||[])],as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),mode:'like',cat:'crop'};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
+function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),mode:'like',cat:'dish'};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},180e3);
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;
   if(P.joined&&P.nick!=='새 단원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
