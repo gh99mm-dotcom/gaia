@@ -1795,7 +1795,7 @@ const RAID_ZONES=[
  {id:'r5',n:'얼어붙은 심연',min:34,max:44,t:'#d6d8e0',d:'영하 200도의 얼음 협곡. 극한에 적응한 괴물들이 삽니다.',mons:['서리 늑대','얼음 망령','빙결 거인','심연 박쥐','냉기 결정체'],mid:'얼음 동굴의 군주',boss:'심연의 서리용 「니블」'},
  {id:'r6',n:'붉은 별의 핵',min:40,max:60,t:'#ff5f6a',d:'행성 깊은 곳, 뜨거운 핵 근처. 가장 강한 존재들이 기다립니다.',mons:['용암 정령','화염 와이번','핵의 파수꾼','붉은 망령 기사','태양 벌레'],mid:'핵의 문지기 「이그니스」',boss:'붉은 별의 심장 「카를로스」'}];
 const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
-const RAID_MON_TURN=5e3;
+const RAID_MON_TURN=3e3;
 const RAID_STEPS=8,RAID_TURN=60e3,RAID_EN=8,RAID_MAX=4;
 const RAID_EVENTS=[
  {k:'chest',n:'보급 상자',t:'모래 속에서 구형 보급 상자를 찾았다.',cr:[20,50],item:['kit','drink']},
@@ -1875,8 +1875,11 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
   if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 정거장으로 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
+const raidMyTurn=()=>{const r=MYRAID,c=r&&r.b&&r.b.cur;return!!(r&&r.phase==='battle'&&c&&c.k==='p'&&c.id===uid)};
 function raidAct(kind,arg){const r0=MYRAID;if(!r0||raidBusy)return Promise.resolve(null);raidBusy=true;const want=JSON.stringify(r0.b&&r0.b.cur),seq=r0.seq;
-  return raidTx(r0.id,r=>{if(!r||r.seq!==seq||r.phase!=='battle'||JSON.stringify(r.b.cur)!==want)return null;const b=r.b,a=b.cur;r.seq++;
+  return raidTx(r0.id,r=>{if(!r||r.seq!==seq||r.phase!=='battle'||JSON.stringify(r.b.cur)!==want)return null;const b=r.b,a=b.cur;
+    // only the member whose turn it is may attack, defend or use an item; monsters and timeouts act only on their own turns
+    if(!a||(['atk','def','item'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;
     if(a.k==='p'){const me=r.m[a.id];
       if(kind==='def'){b.def[a.id]=1;raidLog(b,`${me.nick} 님이 방어 태세를 취했다.`)}
       else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:(it.hp||0);if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
@@ -2666,8 +2669,8 @@ const A={
  raidleave(){raidLeave()},
  raidgo(){raidStart()},
  raidtgt(d){raidTgt=+d.k;renderPanel()},
- raidatk(){raidAct('atk',raidTgt)},
- raiddef(){raidAct('def')},
+ raidatk(){if(raidMyTurn())raidAct('atk',raidTgt)},
+ raiddef(){if(raidMyTurn())raidAct('def')},
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
  bosshit(){bossHit()},
@@ -2675,7 +2678,7 @@ const A={
  chestok(){chestOpen=null;renderPanel()},
  raidbag(){raidBag=!raidBag;renderPanel()},
  raidpick(d){raidPick=d.id;renderPanel()},
- raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID)return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);raidBag=false;raidPick=null;commit();renderPanel()}})},
+ raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID||!raidMyTurn())return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);raidBag=false;raidPick=null;commit();renderPanel()}})},
  raidnext(){raidNext()},
  raiddone(){if(MYRAID&&MYRAID.phase==='end')raidClaim(MYRAID);raidWatch(null);renderPanel()},
  growtab(d){growTab=d.k==='tank'?'tank':'pod';renderPanel()},
