@@ -1154,6 +1154,7 @@ function renderInfo(){
    <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
    <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받습니다.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
    ${tasteHTML(P)}
+   ${affHTML(P,uid,true)}
    <div class="info-sec"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></div>
    <div class="info-sec"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${t[1]}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</div>
    <div class="info-sec"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></div>`;
@@ -1193,7 +1194,7 @@ async function connect(){
   renderNet();renderAll();
   db.collection('players').onSnapshot(sn=>{const m={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if((tab==='fish'&&duelOn())||(tab==='farm'&&farmVisit))renderPanel()},()=>{});
   db.collection('grants').onSnapshot(sn=>{sn.docs.forEach(d=>claimGrant(d.id,d.data()))},()=>{});
-  db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
+  db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조');wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   db.collection('farmhelp').where('to','==',uid).onSnapshot(receiveHelp,()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
@@ -1583,7 +1584,7 @@ function renderCrew(){
   const list=Object.entries(PLAYERS).map(([id,p])=>({id,faint:id===uid?isFaint():(p.faint&&Date.now()<p.faint),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
    .sort((a,b)=>(b.on-a.on)||(b.lvl-a.lvl));
   if(!list.find(x=>x.id===uid))list.unshift({id:uid,nick:P.nick,lvl:P.lvl,on:true,act:''});
-  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><span class="nm" style="color:${colorOf(x.id)}">${esc(x.nick)}${x.id===uid?' (나)':''}</span><span class="lvt">LV.${x.lvl}</span><span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN 3</small></button>`:''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
+  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><span class="nm" style="color:${colorOf(x.id)}">${esc(x.nick)}${x.id===uid?' (나)':''}</span><span class="lvt">LV.${x.lvl}</span>${x.id!==uid&&affOf(P,x.id)?`<span class="lvt" style="color:${affColor(affOf(P,x.id))}" title="내 호감도 ${affLabel(affOf(P,x.id))}">♥${affOf(P,x.id)}</span>`:''}<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN 3</small></button>`:''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
 }
 function renderChat(){
   const f=$('#feed');const atBottom=f.scrollHeight-f.scrollTop-f.clientHeight<40;
@@ -1721,13 +1722,17 @@ const A={
 let giftTo=null,giftSel={},giftCr=0,giftMsg='';
 function openGift(id){if(!PLAYERS[id])return;giftTo=id;giftSel={};giftCr=0;giftMsg='';renderGift();$('#giftModal').hidden=false}
 function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]);const sel=Object.entries(giftSel);
-  $('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
+  $('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2><span class="hint">${esc(t.nick)} 님의 나에 대한 호감도 ${affBadge(affOf(t,uid))}</span></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
+  ${tasteHTML(t)||'<span class="hint">이 단원은 아직 취향을 정하지 않았습니다.</span>'}
   <div class="info-sec"><span class="lbl">Items · 누를 때마다 1개씩 담깁니다</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,3)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">보낼 아이템이 없습니다.</p>'}</div></div>
   <div class="info-sec"><span class="lbl">Credits · 크레딧</span><div class="row" style="gap:5px">${[0,50,100,500,1000,5000].map(v=>`<button class="qchip" data-act="giftcr" data-k="${v}" aria-pressed="${giftCr===v}" ${v>(P.cr||0)?'disabled':''}>${v?v.toLocaleString()+' CR':'없음'}</button>`).join('')}</div></div>
   <div class="info-sec"><span class="lbl">Message · 한마디 (선택)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
   <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}<button class="btn sm gold" data-act="giftsend" ${sel.length||giftCr?'':'disabled'}>선물 보내기</button></div>`}
 function receiveGifts(sn){sn.docs.forEach(d=>{P.gotG=P.gotG||[];if(P.gotG.includes(d.id)){db.collection('gifts').doc(d.id).delete().catch(()=>{});return}const g=d.data();P.gotG=[...P.gotG.slice(-40),d.id];
   const parts=[];(g.items||[]).forEach(([i,n])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
+  if(g.from&&PLAYERS[g.from]){const got=(g.items||[]).map(([i])=>i).filter(i=>ITEMS[i]),lk=got.filter(i=>(P.likes||[]).includes(i)),ht=got.filter(i=>(P.hates||[]).includes(i));
+    if(lk.length&&(P.affDay||{})[g.from]!==dayKey()){P.affDay=Object.assign({},P.affDay,{[g.from]:dayKey()});addAff(g.from,AFF.like,`좋아하는 ${ITEMS[lk[0]].n} 선물`)}
+    if(ht.length)addAff(g.from,AFF.hate,`싫어하는 ${ITEMS[ht[0]].n} 선물`)}
   log(`${g.nick||'누군가'} 님의 선물: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`,'rare');toast(`${g.nick||'누군가'} 님이 선물을 보냈습니다!`);sfxCoin();commit();db.collection('gifts').doc(d.id).delete().catch(()=>{})})}
 /* ---- fishing duel ---- */
 let DUEL=null;const DUEL_MS=3*60e3,DPTS={c:1,r:3,u:8,l:25};
@@ -1826,6 +1831,17 @@ function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
 function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${esc(titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
   ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
+/* ───────── affinity: how each player feels about the others ───────── */
+const AFF={rescue:2,like:3,hate:-3},AFF_MIN=-50,AFF_MAX=100;
+const affOf=(p,id)=>((p&&p.aff)||{})[id]||0;
+const affLabel=v=>v<=-10?'앙숙':v<0?'서먹함':v<5?'아는 사이':v<10?'동료':v<20?'친구':v<35?'절친':'단짝';
+const affColor=v=>v<0?'var(--red)':v<5?'var(--mute)':v<10?'var(--cyan)':v<20?'var(--green)':'var(--pink)';
+function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf(P,id),v=Math.max(AFF_MIN,Math.min(AFF_MAX,before+delta));P.aff=Object.assign({},P.aff,{[id]:v});
+  const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'단원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
+function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span class="hint">${affLabel(v)}</span>`}
+function affHTML(p,id,me){if(me){const rows=Object.entries(P.aff||{}).filter(([k])=>PLAYERS[k]).sort((a,b)=>b[1]-a[1]);
+    return`<div class="info-sec"><span class="lbl">Affinity · 내가 느끼는 호감도</span>${rows.length?`<div class="istats">${rows.map(([k,v])=>`<div><span>${esc(PLAYERS[k].nick||'단원')}</span>${affBadge(v)}</div>`).join('')}</div>`:'<span class="hint">아직 호감도가 생긴 단원이 없습니다. 구조받거나 선물을 받으면 생깁니다.</span>'}</div>`}
+  return`<div class="info-sec"><span class="lbl">Affinity · 호감도</span><div class="istats"><div><span>${esc(p.nick||'단원')} → 나</span>${affBadge(affOf(p,uid))}</div><div><span>나 → ${esc(p.nick||'단원')}</span>${affBadge(affOf(P,id))}</div></div><span class="hint">구조해 주면 +${AFF.rescue}, 좋아하는 것을 선물하면 +${AFF.like}(하루 한 번), 싫어하는 것을 선물하면 ${AFF.hate}입니다.</span></div>`}
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:12px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:12px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m)}
@@ -1856,6 +1872,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
+   ${affHTML(p,id,me)}
    ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
 function socGuest(){const to=gbOf&&(gbOf===uid||PLAYERS[gbOf])?gbOf:uid,tp=whoP(to),list=GUEST.filter(g=>g.to===to),others=Object.entries(PLAYERS).filter(([id])=>id!==uid);
   return`<div class="row" style="gap:4px"><button class="qchip" data-act="gbopen" data-k="" aria-pressed="${to===uid}">내 방명록</button>${others.map(([id,p])=>`<button class="qchip" data-act="gbopen" data-k="${esc(id)}" aria-pressed="${to===id}">${esc(p.nick||'단원')}</button>`).join('')}</div>
