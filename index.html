@@ -6,7 +6,7 @@
 <title>가이아 프로젝트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Nanum+Gothic+Coding:wght@400;700&family=Silkscreen:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gugi&family=Nanum+Gothic+Coding:wght@400;700&family=Silkscreen:wght@400;700&display=swap">
 <style>
 /* Layout: 3-column cockpit — pilot card | activity console | crew & comms. Single dark space look by choice. */
 :root{
@@ -35,7 +35,7 @@ button{font:inherit;color:inherit}
 /* header */
 header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:100px;box-sizing:border-box;padding:8px 0}
 .logo{display:flex;align-items:center;gap:16px}
-.logo h1{font-size:28px;line-height:1;color:var(--text);text-shadow:2px 2px 0 var(--ink)}
+.logo h1{font-family:"Gugi",var(--f-display);font-weight:400;letter-spacing:.02em;font-size:28px;line-height:1;color:var(--text);text-shadow:2px 2px 0 var(--ink)}
 .logo .lbl{margin-top:8px;display:block}
 header>.chip:not(.sugg){margin-left:0}
 @media (max-width:620px){header{min-height:90px;justify-content:flex-end;gap:8px}.logo{flex-basis:100%}.logo h1{font-size:24px}header>.sugg{margin-left:0}}
@@ -540,7 +540,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
-.authhead{display:flex;align-items:center;gap:14px}.authhead h1{font-size:30px;line-height:1;text-shadow:2px 2px 0 var(--ink)}.authhead .lbl{display:block;margin-top:6px}
+.authhead{display:flex;align-items:center;gap:14px}.authhead h1{font-family:"Gugi",var(--f-display);font-weight:400;font-size:30px;line-height:1;text-shadow:2px 2px 0 var(--ink)}.authhead .lbl{display:block;margin-top:6px}
 .authcard{padding:20px;display:flex;flex-direction:column;gap:11px}.authcard h2{font-size:20px}
 .authcard input{background:var(--deep);color:var(--text);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:9px 10px;font:inherit;font-size:16px}
 .authcard .btn{justify-content:center;padding:10px 12px;font-size:16px}
