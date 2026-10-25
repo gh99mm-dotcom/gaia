@@ -841,9 +841,9 @@ function shipColorAt(X,y,st){
   // wing-tip barb
   if(ax>=17&&ax<19.5&&y>=22&&y<26.5-(ax-17)*1.2)c=C.P;
   // three towers on each wing; their tips glow once the power core works
-  for(const tc of [7.2,11.4,15.4]){const top=17+(tc-4)*.38,bot=22.5+(tc-4)*.32,t0=top-6.5+(tc-7)*.15,t1=bot+3.2,e=ax-tc;
-    if(Math.abs(e)<1.15&&y>t0&&y<t1){const tip=y<t0+1.4;c=tip?(Math.abs(e)<.6?(st.power?C.q:C.l):null):e*(lit?-1:1)<0?C.l:C.D;if(!tip&&y>t1-1.3)c=C.P}
-    if(Math.abs(e)<.5&&y>t0-1.2&&y<=t0)c=st.power?C.q:C.h}
+  for(const tc of [7.2,11.4,15.4]){const top=17+(tc-4)*.38,bot=22.5+(tc-4)*.32,snap=!st.hull&&lit&&tc>15,t0=snap?top-1.2:top-6.5+(tc-7)*.15,t1=bot+3.2,e=ax-tc;
+    if(Math.abs(e)<1.15&&y>t0&&y<t1){const tip=!snap&&y<t0+1.4;c=tip?(Math.abs(e)<.6?(st.power?C.q:C.l):null):snap&&y<t0+1?'#4a1f16':e*(lit?-1:1)<0?C.l:C.D;if(!tip&&y>t1-1.3)c=C.P}
+    if(!snap&&Math.abs(e)<.5&&y>t0-1.2&&y<=t0)c=st.power?C.q:C.h}
   // body
   if(y>13.5&&y<30.5){const w=5-(y-13.5)*.13;if(ax<w)c=ax>w-1.1?(lit?C.l:C.D):lit?C.m:C.d}
   // hood: widening V from the nose; its rim lights up with the navigation array
@@ -857,12 +857,17 @@ function shipColorAt(X,y,st){
   // aft fins and tail spike
   if(y>27&&y<32.5&&ax>=3&&ax<6.2-(y-27)*.35)c=lit?C.d:C.D;
   if(y>=30.5&&y<37.5&&ax<(y<33?2:1))c=y>36?C.h:lit?C.l:C.m;
-  // hull breach torn through the right wing, or a riveted patch once fixed
-  if(c&&dx>8&&dx<14&&y>17.5&&y<24.5){const e=Math.abs(dx-11)/3+Math.abs(y-21)/3.2+Math.sin(dx*2.1+y*1.3)*.12;
-    if(st.hull){if(Math.abs(dx-11)<2.4&&Math.abs(y-21)<1.8)c=(Math.abs(dx-11)>1.6||Math.abs(y-21)>1.1)?C.h:C.l}
-    else if(e<1)c=e<.7?'#050508':'#7a2a2a'}
+  if(!c||st.hull)return c;
+  // wrecked hull: the right wing is torn off along a jagged, still-glowing seam (st.chunk draws only the severed piece)
+  const cut=shipCut(y);if(st.chunk?dx<=cut:dx>cut)return null;
+  if(Math.abs(dx-cut)<1)return(Math.floor(y*1.3)%2)?'#b0562a':'#4a1f16';
+  if(st.chunk)return c;
+  // breach blown through the wing root, with scorch marks spreading over the hull
+  const e=Math.abs(dx-5.5)/2.8+Math.abs(y-17.5)/2.6+Math.sin(dx*2.1+y*1.3)*.12;if(e<1)return e<.65?'#050508':'#7a2a2a';
+  const sh=Math.sin(Math.floor(X/2.4)*12.9898+Math.floor(y/2.4)*78.233)*43758.5453;if(sh-Math.floor(sh)>.74&&Math.abs(dx-5)<9&&y>12)return(Math.floor(X)+Math.floor(y))%2?'#262a33':'#30343e';
   return c;
 }
+const shipCut=y=>11.5+Math.sin(y*1.9)*.9+Math.sin(y*4.3)*.4;
 const SHIPIC={};
 function shipIcon(n,scale){
   const key=n+'x'+scale;if(!SHIPIC[key]){
@@ -1628,6 +1633,7 @@ function renderShip(){
 /* ship scene: a pixel-art crash site on an alien world; repaired parts show on the downed starfighter */
 const SW=240,SH=120,BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
 let shipBg=null,shipBgKey='',shipTimer=0;
+const SHIPV={S:3.4,Q:.5,PH:-.75,X:122,Y:84,CX:208,CY:106,LX:44,LY:106};
 function shipSceneBuild(st){
   const c=document.createElement('canvas');c.width=SW;c.height=SH;const g=c.getContext('2d');
   let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
@@ -1655,20 +1661,28 @@ function shipSceneBuild(st){
   for(let y=HZ;y<SH;y++)for(let x=0;x<SW;x++)px(x,y,dith(x,y,(y-HZ)/(SH-HZ)*.6)?'#0e0b14':'#1a1524');
   for(let k=0;k<60;k++){const x=rnd()*SW|0,y=HZ+3+rnd()*(SH-HZ-3)|0;px(x,y,'#2a2236');if(rnd()<.4)px(x+1,y,'#221c2c')}
   // lantern glow on the ground
-  const LX=78,LY=104;for(let y=HZ;y<SH;y++)for(let x=20;x<150;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
-  // the ship: the same starfighter lying on the ground, nose to the right, seen at a low angle
-  const S=2.6,Q=.7,PH=-1.05,SCX=122,SCY=70,sn=Math.sin(PH),cs=Math.cos(PH);
-  const toScene=(X,Y)=>{const lx=(X-20)*S,ly=(Y-20)*S;return[SCX-lx*sn-ly*cs,SCY+(lx*cs-ly*sn)*Q]};
-  // shadow under the hull
-  for(let y=88;y<104;y++)for(let x=40;x<210;x++){const d=Math.hypot((x-122)/78,(y-96)/7);if(d<1&&dith(x,y,(1-d)*.9))px(x,y,'#0b0912')}
-  {const M=new Map();for(let y=20;y<118;y++)for(let x=20;x<236;x++){const vx=x+.5-SCX,vy=(y+.5-SCY)/Q,lx=-vx*sn+vy*cs,ly=-vx*cs-vy*sn,col=shipColorAt(20+lx/S,20+ly/S,st);if(col)M.set(y*SW+x,col)}
-   M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW;px(x,y,col);[[1,0],[-1,0],[0,1],[0,-1]].forEach(([a,b])=>{if(!M.has((y+b)*SW+x+a))px(x+a,y+b,'#0d0f16')})})}
-  // dirt piled against the nose where it ploughed in
-  {const [nx]=toScene(20,2);for(let x=Math.round(nx)-14;x<nx+22;x++){const h=97-Math.max(0,9-Math.abs(x-nx-4)*.6);for(let y=Math.round(h);y<HZ+5;y++)px(x,y,dith(x,y,.35)?'#241d30':'#191422')}}
+  const LX=SHIPV.LX,LY=SHIPV.LY;for(let y=HZ;y<SH;y++)for(let x=0;x<160;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
+  // the ship: the starfighter belly-down on the ground, nose to the upper right; key light from the planet (upper left), warm fill from the camp lantern
+  const S=SHIPV.S,Q=SHIPV.Q,PH=SHIPV.PH;
+  const place=(cx,cy,ph,ox,oy)=>{const sn=Math.sin(ph),cs=Math.cos(ph);return{to:(X,Y)=>{const lx=(X-ox)*S,ly=(Y-oy)*S;return[cx-lx*sn-ly*cs,cy+(lx*cs-ly*sn)*Q]},from:(x,y)=>{const vx=x-cx,vy=(y-cy)/Q;return[ox+(-vx*sn+vy*cs)/S,oy+(-vx*cs-vy*sn)/S]}}};
+  const hull=place(SHIPV.X,SHIPV.Y,PH,20,22),chunk=place(SHIPV.CX,SHIPV.CY,PH+1.9,35.5,22);
+  const wreck=!st.hull,mess=SHIP.some(p=>!st[p.id]);
+  // furrow ploughed by the landing, running back from the tail
+  {const [tx,ty]=hull.to(20,34);for(let x=Math.round(tx)-70;x<tx+6;x++){const k=(x-(tx-70))/76,y=Math.round(ty+4+(x-tx)*.06+Math.sin(x*.7)*.6),w=Math.round(k*2.4);if(!dith(x,y,k*1.2))continue;for(let i=0;i<=w;i++)px(x,y+i,'#08070c');px(x,y-1,'#2a2236');if(x%4===0)px(x,y-2,'#241d30')}}
+  const draw=(P,stx)=>{const M=new Map();for(let y=10;y<SH;y++)for(let x=0;x<SW;x++){const [X,Y]=P.from(x+.5,y+.5),col=shipColorAt(X,Y,stx);if(col)M.set(y*SW+x,col)}
+    // cast shadow falls to the lower right, away from the planet
+    M.forEach((_,k)=>{const x=k%SW+4,y=(k-k%SW)/SW+3;if(y<SH&&!M.has(y*SW+x))px(x,y,'#07060b')});
+    M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW,d=Math.hypot((x-LX)/1.6,y-LY);px(x,y,d<40?mix(col,'#e0904a',(1-d/40)*.45):col)});
+    // rim: lit edges facing the planet, dark outline elsewhere
+    M.forEach((_,k)=>{const x=k%SW,y=(k-x)/SW;[[0,-1,1],[-1,0,1],[1,0,0],[0,1,0]].forEach(([a,b,lt])=>{const n=(y+b)*SW+x+a;if(!M.has(n))px(x+a,y+b,lt?'#8d7fbf':'#0d0f16')})});return M};
+  draw(hull,st);
+  if(wreck)draw(chunk,Object.assign({},st,{chunk:1}));
+  // wreckage strewn over the ground
+  if(mess)for(let k=0;k<34;k++){const x=40+rnd()*190|0,y=96+rnd()*22|0,w=1+(rnd()*3|0),col=['#747c8e','#535a6b','#383e4c','#4a1f16'][rnd()*4|0];for(let i=0;i<w;i++)px(x+i,y,col);if(w>2)px(x+1,y-1,'#9aa2b2')}
   // lantern post
   px(LX,LY-1,'#ffe9a8');px(LX,LY,'#e09040');px(LX,LY+1,'#5a3a24');
   const stars=[];for(let k=0;k<46;k++)stars.push({x:rnd()*SW|0,y:rnd()*72|0,p:rnd()*6.28,s:.6+rnd()*1.6,big:rnd()<.2});
-  return{c,stars,LX,LY,breach:toScene(11,21),tail:toScene(20,37.5),nose:toScene(20,2)};
+  return{c,stars,LX,LY,breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
 }
 function shipSceneDraw(cv,t){
   const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('');
@@ -1678,12 +1692,15 @@ function shipSceneDraw(cv,t){
   B.stars.forEach(s=>{const v=(Math.sin(t*s.s/600+s.p)+1)/2;if(v<.15)return;px(s.x,s.y,v>.8?'#ffffff':v>.5?'#c8c4f0':'#6a66a0');if(s.big&&v>.75){px(s.x-1,s.y,'#8a86c8');px(s.x+1,s.y,'#8a86c8');px(s.x,s.y-1,'#8a86c8');px(s.x,s.y+1,'#8a86c8')}});
   // a shooting star every ~9 seconds
   {const ph=(t%9000)/9000;if(ph<.09){const k=ph/.09,x=150+k*70,y=6+k*22;for(let i=0;i<6;i++)px(x-i*2.4,y-i*.75,i?'#8a86c8':'#ffffff')}}
-  // smoke from the breach until every part is repaired
-  const [bx,by]=B.breach;
-  if(SHIP.some(p=>!st[p.id])){const n=st.hull?3:6;for(let i=0;i<n;i++){const ph=((t/2400)+i/n)%1,x=bx+Math.sin(ph*6+i)*3+ph*8,y=by-4-ph*34;if(ph<.9){const z=ph<.3?2:ph<.6?3:4;g.fillStyle=`rgba(160,155,185,${(1-ph)*.7})`;g.fillRect(x|0,y|0,z,z)}}}
-  if(!st.hull&&(t/180|0)%7===0){px(bx+(t/97%10)-5,by-1,'#ffd65f');px(bx+2+(t/61%6)-3,by+1,'#ff8a3a')}
-  // engine glow
-  if(st.engine){const f=(t/120|0)%3,[tx,ty]=B.tail;for(let y=-2;y<=2;y++)for(let x=1;x<=8+f-Math.abs(y)*2;x++)px(tx-x,ty+y+x*.2,x<3?'#d8f6ff':x<6?'#5fd8ff':'#2a6aa8')}
+  // smoke columns from the breach and the torn wing until every part is repaired
+  const [bx,by]=B.breach,[sx,sy]=B.seam,smoke=(ox,oy,n,sp,a)=>{for(let i=0;i<n;i++){const ph=((t/sp)+i/n)%1,x=ox+Math.sin(ph*6+i)*3+ph*10,y=oy-3-ph*44;if(ph<.92){const z=ph<.25?2:ph<.55?3:ph<.8?4:5;g.fillStyle=`rgba(150,145,170,${(1-ph)*a})`;g.fillRect(x|0,y|0,z,z)}}};
+  if(SHIP.some(p=>!st[p.id]))smoke(bx,by,st.hull?3:8,2600,.75);
+  if(!st.hull){smoke(sx,sy,6,2100,.6);
+    // flames licking out of the breach
+    for(let i=0;i<7;i++){const f=Math.sin(t/90+i*1.7),h=2+((f+1)*2|0);for(let k=0;k<h;k++)px(bx-3+i,by-1-k,k>h-2?'#ffd65f':k>0?'#ff8a3a':'#b0402a')}
+    if((t/150|0)%4===0){px(sx+(t/97%8)-4,sy-2,'#ffd65f');px(sx+2+(t/61%6)-3,sy,'#ff8a3a');px(bx+(t/71%9)-4,by-6,'#ffe9a8')}}
+  // engine glow, pointing away from the nose
+  if(st.engine){const f=(t/120|0)%3,[tx,ty]=B.tail,[mx,my]=B.mid,L=Math.hypot(tx-mx,ty-my),ux=(tx-mx)/L,uy=(ty-my)/L;for(let k=1;k<=9+f;k++)for(let w=-2;w<=2;w++){if(Math.abs(w)*2>9+f-k)continue;px(tx+ux*k-uy*w,ty+uy*k+ux*w,k<3?'#d8f6ff':k<6?'#5fd8ff':'#2a6aa8')}}
   // antenna beacon
   if(st.comm&&(t/500|0)%2===0){const [nx,ny]=B.nose;px(nx+1,ny,'#ff5f6a')}
   // lantern flicker
