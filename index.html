@@ -2106,11 +2106,9 @@ function bossHi(K){if(BOSS_HR.has(K))return BOSS_HR.get(K);const g=K.g,h=g.lengt
 const bossSpr=(b,sc)=>{const K=bossKind(b),hi=bossHi(K),s2=sc/2;return`<span class="bossart" style="--eye:${K.po.E}">${img(hi.body,null,s2,'',hi.po)}${img(hi.eyes,null,s2,'beye',hi.po)}</span>`};
 const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
 function bossMainHTML(){const b=BOSS;
-  if(!b)return`<div class="card bossidle"><b>심연이 조용합니다</b><p class="hint">아직 침략자가 나타나지 않았습니다. 운영자가 침략자를 소환하면 이곳에 나타납니다.</p></div>${asigHTML()}`;
-  const alive=bossAlive(b),rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
-  // once the invader has been put down, only the damage ranking stays (plus the old receiver)
-  if(bossKilled(b))return`<div class="card"><div class="stat-row"><span>피해 순위 · ${esc(b.name)} 토벌 완료</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'참여하지 않았습니다'}</b></div>
-    ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}${u===b.killer?' · 마지막 일격':''}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:''}</div>${asigHTML()}`;
+  // no live invader (none yet, put down, failed or sent back): just the old receiver, no ranking
+  if(!bossAlive(b))return`<div class="card bossidle"><b>우주 저편으로 신호를 보냅니다.</b></div>${asigHTML()}`;
+  const alive=true,rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
   const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null,urgent=alive&&(b.end||0)-Date.now()<30*60e3;
   return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,10)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
