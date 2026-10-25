@@ -1380,7 +1380,7 @@ function fitBay(){const b=document.querySelector('.frow .bay');if(!b||!b.clientW
   if(dh!==domeH){domeH=dh;b.querySelectorAll('.ptile[data-dome]').forEach(e=>e.style.backgroundImage=`url(${miniDome(e.dataset.dome,dh)})`)}}
 const MD={};let domeH=20;
 // drawn for the pod cell's own height (H rows on a 20-wide grid) so tall cells get a taller dome rather than stretched pixels
-function miniDome(kind,H=20){const key=kind+H;if(MD[key])return MD[key];const W=20,base=H-3,soil=H-6,cx=9.5,cy=soil,rx=8.6,ry=cy-1.4;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+function miniDome(kind,H=20){const key=kind+H;if(MD[key])return MD[key];const W=20,base=H-3,soil=H-6,cx=9.5,rx=8.6,gap=Math.max(1,Math.round((H-20)*.35)+1),cy=Math.min(soil,gap+rx),ry=cy-gap;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
   const dim=kind==='lock'||kind==='add';
   const inside=(i,j)=>j<base&&i>=1&&i<=W-2&&(j>=cy||((i-cx)/rx)**2+((j-cy)/ry)**2<=1);
   const soilC={dirt:['#4d4337','#3b332b'],wet:['#2c2726','#211e1f'],ready:['#4d4337','#3b332b'],empty:['#151925','#11141d'],lock:['#0c0e15','#0c0e15'],add:['#0c0e15','#0c0e15']}[kind];
@@ -1392,7 +1392,7 @@ function miniDome(kind,H=20){const key=kind+H;if(MD[key])return MD[key];const W=
       else if(j>=soil)col=soilC[j===soil?0:1];
       else{col=dim?'#090b11':'#0d111c';const d=Math.sqrt(((i-cx)/rx)**2+((j-cy)/ry)**2);if(!dim&&i<cx-2&&d>.68&&d<.8)col='#3d4d5e';}}
     if(col){x.fillStyle=col;x.fillRect(i,j,1,1)}}
-  if(!dim){x.fillStyle='#bfae80';x.fillRect(9,0,2,1)}
+  if(!dim){x.fillStyle='#bfae80';x.fillRect(9,gap-1,2,1)}
   return MD[key]=c.toDataURL()}
 function migrate(){if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
   if(!Array.isArray(P.field))P.field=[];
