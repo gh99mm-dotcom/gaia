@@ -383,7 +383,10 @@ header>.chip:not(.sugg){margin-left:0}
 @media (max-width:760px){.bossgrid{grid-template-columns:1fr}}
 .bossmain{display:flex;flex-direction:column;gap:10px;min-width:0}
 .bossstage{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px;background:radial-gradient(ellipse at 30% 50%,var(--violetd),var(--deep) 70%);border:2px solid var(--ink)}
-.bosssprite{animation:bossbob 2.4s steps(4) infinite;flex:none}.bossstage.down .bosssprite{filter:grayscale(1) brightness(.6);animation:none}
+.bosssprite{animation:bossbob 2.4s steps(4) infinite;flex:none}.bossstage{position:relative}.bossstage.hitback{animation:bshake .35s steps(3) 2}@keyframes bshake{33%{transform:translateX(-4px)}66%{transform:translateX(4px)}}
+.bosscb{position:absolute;left:14px;top:6px;z-index:1;text-shadow:1px 1px 0 var(--ink);font-family:var(--f-display);font-size:15px;color:var(--red);animation:bcbup 1.6s ease-out forwards}.bosscb.miss{color:var(--cyan)}@keyframes bcbup{from{transform:translateY(8px);opacity:0}15%{transform:none;opacity:1}80%{opacity:1}to{opacity:0}}
+@media (prefers-reduced-motion:reduce){.bossstage.hitback,.bosscb{animation:none}}
+.bossstage.down .bosssprite{filter:grayscale(1) brightness(.6);animation:none}
 @keyframes bossbob{50%{transform:translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.bosssprite{animation:none}}
 .bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.bosshp{font-family:var(--f-pix);font-size:10px;color:var(--mute);text-align:right}
@@ -1759,7 +1762,7 @@ function renderRaid(){if(mode!=='online')return head()+'<div class="note">원정
    raid chat (boss/chat) keeps only the latest 30 lines and is open only to members on this tab. */
 const BOSS_CD=60e3,BOSS_RESPAWN=30*60e3,BOSS_CHAT_MAX=30;
 const BOSS_NAMES=['공허의 눈 「아자토스」','심연의 촉수 「크툴라」','검은 별의 사도 「니알라」','침묵의 군주 「보르그」','끝없는 굶주림 「가르간」','심해의 왕관 「레비아」'];
-let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='';
+let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='',bossLast=null;
 const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
 const bossLv=g=>Math.min(60,25+g*5),bossMax=g=>Math.round(30000*(1+.35*(g-1)));
 const bossAlive=b=>!!b&&b.hp>0;
@@ -1783,17 +1786,21 @@ async function bossHit(){const b=BOSS;if(!bossAlive(b)||bossReady()>0||isFaint()
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
   P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(need(P.lvl)*.006));gainXp(xp);
-  log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':''}`,crit||kill?'rare':'');commit()}
+  // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
+  let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=Math.max(1,Math.round((10+b.lv*1.2)*(.85+Math.random()*.3)-def()*.6));heal(-hit,0);back=`${hit} 피해`}
+    bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
+  log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
 function bossSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t)return;const m={uid,n:P.nick,t,at:Date.now()};
   return bossTx(bchatRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-BOSS_CHAT_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
 const bossHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='탐사').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
 function bossMainHTML(){const b=BOSS;if(!b)return`<div class="card"><p class="hint">심연의 균열을 살피는 중…</p></div>`;
   const alive=bossAlive(b),rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
   const left=alive?0:Math.max(0,(b.killedAt||0)+BOSS_RESPAWN-Date.now());
-  return`<div class="bossstage ${alive?'':'down'}"><div class="bosssprite">${img(BOSS_IC,null,9)}</div>
+  const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null;
+  return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${img(BOSS_IC,null,9)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
     ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp">${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span></div></div>
-   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div>`
+   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div><p class="hint">공격하면 침략자가 반격합니다(방어력만큼 줄고, 민첩이 높으면 피할 수 있음). 체력이 0이 되면 기절하니 음식으로 체력을 채우십시오.</p>`
     :`<div class="card"><b>${esc(b.name)}이(가) 쓰러졌다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 더 강한 침략자가 <b id="bossT">${fmtClock(left)}</b> 뒤에 나타납니다.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
