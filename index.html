@@ -391,7 +391,7 @@ header>.chip:not(.sugg){margin-left:0}
 .bossrank{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:3px}.bossrank li{display:grid;grid-template-columns:22px 1fr auto 52px;gap:6px;align-items:center;font-size:12px}.bossrank li.me{color:var(--gold)}.bossrank em{font-style:normal;font-family:var(--f-pix);font-size:10px;color:var(--mute)}.bossrank small{text-align:right;color:var(--mute)}
 .bosschat{display:flex;flex-direction:column;gap:6px;min-width:0;min-height:420px}
 .bosslog{list-style:none;margin:0;padding:6px 8px;flex:1;min-height:240px;max-height:440px;overflow:auto;background:var(--deep);border:2px solid var(--ink);display:flex;flex-direction:column;gap:4px;font-size:12px}
-.bosslog li{display:flex;flex-wrap:wrap;gap:0 6px;align-items:baseline;overflow-wrap:anywhere}.bosslog li b{color:var(--cyan);font-weight:400}.bosslog li.me b{color:var(--gold)}.bosslog li span{flex:1 1 100%}.bosslog time{font-size:10px;color:var(--dim);margin-left:auto}.bosslog li span{order:3}
+.bosslog li{display:flex;flex-wrap:wrap;gap:0 6px;align-items:baseline;overflow-wrap:anywhere}.bosslog li b{color:var(--cyan);font-weight:400;display:inline-flex;align-items:center;gap:5px}.bosslog li b img{flex:none}.bosslog li.me b{color:var(--gold)}.bosslog li span{flex:1 1 100%}.bosslog time{font-size:10px;color:var(--dim);margin-left:auto}.bosslog li span{order:3}
 .bossform{display:flex;gap:4px}.bossform input{flex:1;min-width:0;background:var(--deep);color:var(--text);border:2px solid var(--ink);padding:5px 7px;font:inherit}
 .raidacts{display:flex;gap:6px;flex-wrap:wrap}.raidacts .btn{flex:1;justify-content:center}.raiditems{display:flex;flex-direction:column;gap:4px}
 .raidlog{list-style:none;margin:0;padding:6px 8px;background:var(--ink);border:1px solid var(--line);font-size:11.5px;display:flex;flex-direction:column;gap:2px;max-height:150px;overflow:auto}
@@ -1798,7 +1798,7 @@ function bossMainHTML(){const b=BOSS;if(!b)return`<div class="card"><p class="hi
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
     <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기여도만큼 더), 크레딧, 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>`}
-function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 단원에게 인사해 보십시오.</li>'}
+function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 단원에게 인사해 보십시오.</li>'}
 function renderBoss(){bossEnsure();const here=bossHere();
   return head()+`<div class="bossgrid"><div class="bossmain" id="bossMain">${bossMainHTML()}</div>
    <div class="card bosschat"><div class="stat-row"><span>탐사 대화</span><b id="bossHere">${here.length}명</b></div><span class="hint" id="bossWho">${here.map(esc).join(', ')}</span>
