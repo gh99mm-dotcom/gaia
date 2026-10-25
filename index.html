@@ -1647,8 +1647,8 @@ const SW=240,SH=120,BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
 let shipBg=null,shipBgKey='',shipTimer=0;
 const SHIP_GLOW=new Set(['#4f9a92','#8fd0c4','#6a4a30','#523826','#4a6488']);
 const SHIPV={S:4.1,Q:.5,PH:-.72,X:116,Y:80,CX:214,CY:108,LX:30,LY:108};
-/* day from 06:00 to 18:00 local time, night otherwise */
-const isDay=()=>{const h=new Date().getHours();return h>=6&&h<18};
+/* day from 06:00 to 18:00 Korea time (UTC+9, no DST), night otherwise — the same for every player */
+const isDay=()=>{const h=(new Date().getUTCHours()+9)%24;return h>=6&&h<18};
 function shipSceneBuild(st){
   const day=isDay();
   const c=document.createElement('canvas');c.width=SW;c.height=SH;const g=c.getContext('2d');
