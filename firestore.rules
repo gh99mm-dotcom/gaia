@@ -124,6 +124,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // 원정 파티: 단원 모두 읽고(모집 목록), 파티 진행은 단원이면 누구나 기록. 만든 사람이나 운영자만 지움.
+    match /parties/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.host == me();
+      allow update: if member();
+      allow delete: if member() && (resource.data.host == me() || isAdmin());
+    }
+
     // 낚시 대결: 접속한 단원 모두 함께 씀.
     match /duel/{id} { allow read, write: if member(); }
 
