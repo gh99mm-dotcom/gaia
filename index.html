@@ -1657,7 +1657,7 @@ const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 �
 const hasMat=m=>(m||[]).every(([id,n])=>(P.inv[id]||0)>=n);
 const matHTML=m=>`<span class="matrow">${(m||[]).map(([id,n])=>`<span class="ichip ${(P.inv[id]||0)>=n?'':'minus'}">${iicon(id,1)}${ITEMS[id].n} ${P.inv[id]||0}/${n}</span>`).join('')}</span>`;
 const RODS=[
- {n:'녹슨 기본 낚싯대',t:'#7e8193',price:0,d:'일반 · 레어 어종까지 낚을 수 있습니다.'},
+ {n:'녹슨 기본 낚싯대',t:'#7e8193',price:0,d:'일반 · 레어 어종까지 낚을 수 있습니다. 열 번에 한 번은 씨앗이 걸려 올라옵니다.'},
  {n:'심해 탄소 낚싯대',t:'#8aa9bd',price:3000,d:'유니크 어종까지 낚을 수 있습니다.'},
  {n:'중력파 낚싯대',t:'#bfae80',price:25000,d:'레전더리 어종까지 낚을 수 있습니다.'},
 ];
@@ -2032,7 +2032,7 @@ function renderFish(){
     <div class="bob-txt ${ph==='bite'||aim?'hot':''}">${txt}</div></div>
   </div>
   <div class="row">${inWater?`<button class="btn alt" data-act="pull">끌어올리기!</button>`:aim?`<button class="btn gold" data-act="throw">던지기!</button>`:`<button class="btn" data-act="cast">캐스팅 <small>EN 3</small></button>`}${inWater||ph==='early'||ph==='miss'||ph==='idle'?bonusTxt:''}<button class="qchip" style="margin-left:auto" data-act="sound" aria-pressed="${soundOn}">소리 ${soundOn?'켜짐':'꺼짐'}</button></div>
-  ${lastFish?`<div class="card result">${iicon(lastFish.id,3)}<div><p><b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier} 등급</p><p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}</p></div></div>`:''}
+  ${lastFish?`<div class="card result">${iicon(lastFish.id,3)}<div><p><b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier?ITEMS[lastFish.id].tier+' 등급':'기본 낚싯대에 걸린 씨앗'}</p><p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}</p></div></div>`:''}
   ${dexHTML()}`;
 }
 let AC=null,soundOn=true,sfxVol=100;try{soundOn=localStorage.getItem('nebula-sound')!=='off';const v=localStorage.getItem('nebula-sfxv');if(v!=null)sfxVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
@@ -2516,6 +2516,9 @@ const A={
  pull(){if(fish.ph==='wait'){clearTimeout(fish.t1);fish={ph:'early',bonus:fish.bonus,a:fish.a};log('너무 일찍 당겨서 물고기가 놀라 도망쳤다.','bad');renderPanel();return}
   if(fish.ph!=='bite')return;clearTimeout(fish.t2);const ms=Date.now()-fish.at;sfxSplash();
   const bo=!!fish.bonus,fast=ms<450,rod=P.rod||0,wr=30+(bo?3:0)+(P.job==='angler'?3:0)+AS('luk')*.3+GF('luck')+lifePct('fish'),wu=rod>=1?8+(bo?2:0):0,wl=rod>=2?.5+(bo?.5:0)+(fast?.5:0):0;const tr=pick([['c',100-wr-wu-wl],['r',wr],['u',wu],['l',wl]]);
+  // the basic rod snags a seed one cast in ten instead of a fish
+  if(rod===0&&Math.random()<.1){const seeds=Object.keys(ITEMS).filter(k=>ITEMS[k].type==='seed'),sid=seeds[ri(0,seeds.length-1)],sxp=3;add(sid);gainXp(sxp);lxp('fish',4);lastFish={id:sid,ms,xp:sxp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
+    log(`물고기 대신 ${ITEMS[sid].n}이(가) 낚싯바늘에 걸려 올라왔다!`,'good');commit();return}
   const id=FISHES[tr][ri(0,FISHES[tr].length-1)],xp=FT[tr].xp,first=!P.dex[id];add(id);P.dex[id]=(P.dex[id]||0)+1;gainXp(xp);stat('fish');if(tr==='l')stat('legend');lxp('fish',{c:8,r:15,u:30,l:60}[tr]);duelCatch(tr,id);lastFish={id,ms,xp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
   log(`${ITEMS[id].n}을(를) 낚았다! (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」을 낚았습니다!`);commit()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
