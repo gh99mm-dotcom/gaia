@@ -1657,7 +1657,7 @@ const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 �
 const hasMat=m=>(m||[]).every(([id,n])=>(P.inv[id]||0)>=n);
 const matHTML=m=>`<span class="matrow">${(m||[]).map(([id,n])=>`<span class="ichip ${(P.inv[id]||0)>=n?'':'minus'}">${iicon(id,1)}${ITEMS[id].n} ${P.inv[id]||0}/${n}</span>`).join('')}</span>`;
 const RODS=[
- {n:'녹슨 기본 낚싯대',t:'#7e8193',price:0,d:'일반 · 레어 어종까지 낚을 수 있습니다. 열 번에 한 번은 씨앗이 걸려 올라옵니다.'},
+ {n:'녹슨 기본 낚싯대',t:'#7e8193',price:0,d:'일반 · 레어 어종까지 낚을 수 있습니다. 가끔 물고기가 아닌 것이 낚입니다.'},
  {n:'심해 탄소 낚싯대',t:'#8aa9bd',price:3000,d:'유니크 어종까지 낚을 수 있습니다.'},
  {n:'중력파 낚싯대',t:'#bfae80',price:25000,d:'레전더리 어종까지 낚을 수 있습니다.'},
 ];
