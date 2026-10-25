@@ -330,6 +330,11 @@ header>.chip:not(.sugg){margin-left:0}
 .info-head h2{font-size:22px;word-break:break-all}
 .info-sec{display:flex;flex-direction:column;gap:6px}
 .mepage{display:flex;flex-direction:column;gap:12px}
+.metabs{margin:0}.mehead .metabs button{font-size:15px;padding:5px 12px}
+.mecard.mylook{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+.mlprev{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;background:radial-gradient(ellipse at 50% 45%,var(--violetd),var(--panel) 70%);border:2px solid var(--ink);position:sticky;top:10px}
+.mlbody{display:flex;flex-direction:column;gap:10px;min-width:0}.mlsec{display:flex;flex-direction:column;gap:4px}
+@media(max-width:620px){.mecard.mylook{grid-template-columns:1fr}.mlprev{position:static}}
 .mehero{display:grid;grid-template-columns:auto minmax(0,1fr) 170px;gap:16px;align-items:center;padding:14px;background:radial-gradient(ellipse at 12% 50%,var(--violetd),var(--deep) 65%);border:2px solid var(--ink)}
 .meport{padding:6px;background:var(--panel);border:2px solid var(--ink);line-height:0}
 .meid{display:flex;flex-direction:column;gap:6px;min-width:0}.meid h2{font-size:24px;overflow-wrap:anywhere}.meid .lv{font-family:var(--f-pix);font-size:9px;letter-spacing:.1em;color:var(--gold)}
@@ -1366,7 +1371,7 @@ const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['a
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
-function renderInfo(){if(!$('#infoBox'))return;
+function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${lifePct(k).toFixed(1)}%</span></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
   const xpN=need(P.lvl),xpP=P.lvl>=MAX_LV?100:Math.min(100,(P.xp||0)/xpN*100),gearN=Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음';
@@ -2089,6 +2094,14 @@ function wardHTML(){const of=outfitOf(P),nv=neonPick&&LOOKS[neonSlot]&&!ownsNeon
   const pvP=nv?Object.assign({},P,{look:Object.assign({},lookOf(P),{[neonSlot]:neonPick})}):P,pvNames=[...(nv?[`${LOOKS[neonSlot].n} ${NEON.find(n=>n[0]===neonPick)[1]}`]:[]),...Object.values(wPrev).map(id=>(wardById(id)||{}).n||'')];
   // clicking an item tries it on in the big preview without buying or wearing it
   return`<div class="lookbox" style="align-items:flex-start"><div class="lookprev">${meImg(6,pvP,wPrev)}${pv?`<span class="hint wpvl">미리보기 중 · ${pvNames.map(esc).join(', ')}</span><button class="qchip" data-act="wprevclr">원래대로</button>`:'<span class="hint wpvl">아이템을 누르면 미리 입어 볼 수 있습니다</span>'}</div><div class="looks"><div class="dtabs" role="tablist"><button role="tab" aria-selected="${wardTab==='look'}" data-act="wtab" data-k="look">모습</button>${Object.entries(WARD).map(([k,g])=>{const cur=wardById(of[k]);return`<button role="tab" aria-selected="${wardTab===k}" data-act="wtab" data-k="${k}">${g.n}<em class="wcur">${cur&&cur.price?esc(cur.n):''}</em></button>`}).join('')}</div>${wardTab==='look'?lookSwatches():''}${(wardTab==='look'?[]:[[wardTab,WARD[wardTab]]]).map(([k,g])=>`<div><div class="wgrid">${g.list.map(it=>{const own=ownsW(it.id),on=of[k]===it.id,can=(P.cr||0)>=it.price&&hasMat(it.mat);return`<div class="witem ${on?'on':''} ${wPrev[k]===it.id?'pv':''}" data-act="wprev" data-k="${k}" data-id="${it.id}" role="button" tabindex="0" title="${esc(it.n)} 미리보기">${meImg(2,P,{[k]:it.id})}<b>${it.n}</b>${own?'':`<span class="price">${img(IC.coin,null,1)}${it.price.toLocaleString()}</span>${it.mat?matHTML(it.mat):''}`}${on?'<span class="hint">착용 중</span>':own?`<button class="btn sm" data-act="wwear" data-k="${k}" data-id="${it.id}">착용</button>`:`<button class="btn sm gold" data-act="wbuy" data-k="${k}" data-id="${it.id}" ${can?'':'disabled'}>구매</button>`}</div>`}).join('')}</div></div>`).join('')}</div></div>`}
+// 내 모습: change what I already own — free and bought colours, and wardrobe items I have — without the shop's prices in the way
+function myLookHTML(){const lk=lookOf(P),of=outfitOf(P),tabs=[['color','색상'],...Object.entries(WARD).map(([k,g])=>[k,g.n])];
+  let body='';
+  if(mlTab==='color')body=Object.entries(LOOKS).map(([k,g])=>{const mine=[...g.opts,...NEON.filter(([c])=>ownsNeon(c))];return`<div class="mlsec"><span class="lbl">${g.n}</span><div class="swatches">${mine.map(([col,nm])=>`<button class="sw ${NEONSET.has(col)?'neonsw':''}" style="background:${col};--g:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${esc(nm)}" aria-label="${g.n} ${esc(nm)}"></button>`).join('')}</div></div>`}).join('')+`<span class="hint">가지고 있는 네온 색도 여기에 함께 나옵니다. 새 네온 색은 상점의 옷장에서 살 수 있습니다.</span>`;
+  else{const g=WARD[mlTab],mine=g.list.filter(it=>ownsW(it.id));body=`<div class="wgrid">${mine.map(it=>{const on=of[mlTab]===it.id;return`<div class="witem ${on?'on':''}" data-act="wwear" data-k="${mlTab}" data-id="${it.id}" role="button" tabindex="0" aria-pressed="${on}" title="${esc(it.n)} 착용">${meImg(2,P,{[mlTab]:it.id})}<b>${esc(it.n)}</b><span class="hint">${on?'착용 중':'눌러서 착용'}</span></div>`}).join('')}</div>${mine.length<=1?`<p class="hint">아직 가진 ${g.n} 아이템이 없습니다.</p>`:''}`}
+  return`<div class="mecard mylook"><div class="mlprev">${meImg(8)}<span class="hint">지금 내 모습</span></div>
+   <div class="mlbody"><div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${mlTab===k}" data-act="mltab" data-k="${k}">${n}${k!=='color'?`<em class="wcur">${WARD[k].list.filter(it=>ownsW(it.id)).length-1}</em>`:''}</button>`).join('')}</div>${body}
+    <div class="row" style="justify-content:flex-end"><button class="qchip" data-act="mlshop">옷장에서 더 사기 →</button></div></div></div>`}
 const headImg=(sc,p)=>{let g=avatarGrid(p).slice(0,25);while(g.length>16&&![...g[0]].some(c=>c!=='.'))g=g.slice(1);const h=img(g,null,sc/2,'',lookPal(p)),gl=lookGlow(p);return gl?h.replace('<img ',`<img style="filter:drop-shadow(0 0 ${Math.max(2,sc)}px ${gl})" `):h};
 let lakePh=0,LAKE=null;
 function lakeBase(W,H,hz){let r=7;const rnd=()=>((r=(r*9301+49297)%233280)/233280);
@@ -2325,7 +2338,7 @@ function renderBag(){
    ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
   </div></div><section class="card cook farmcook" id="cook" aria-label="요리"></section>`;
 }
-let meView=false,adminView=false;
+let meView=false,adminView=false,meTab='me',mlTab='color';
 const adminShown=()=>adminView&&!!$('#adminBox');
 // switching to a shorter tab would shrink the page and snap the view upward; pad the stage just enough to stay put
 function holdScroll(y){const st=$('#stage');st.style.minHeight='';const need=y+innerHeight-document.documentElement.scrollHeight;if(need>0)st.style.minHeight=(st.offsetHeight+need)+'px';window.scrollTo(0,y)}
@@ -2333,7 +2346,7 @@ function renderPanel(){
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
-  if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><h2>내 프로필</h2><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
+  if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0;
   const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
@@ -2464,6 +2477,9 @@ const A={
  addpt(d){if(ptsLeft()<=0||!ABIL.find(a=>a[0]===d.k))return;P.as=Object.assign({},P.as);P.as[d.k]=(P.as[d.k]||0)+1;save();renderInfo();renderPilot()},
  resetpt(){P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
+ metab(d){meTab=d.k==='look'?'look':'me';renderPanel()},
+ mltab(d){if(d.k==='color'||WARD[d.k])mlTab=d.k;renderPanel()},
+ mlshop(){if(raidLocked())return;meView=false;tab='shop';shopTab='ward';renderNav();renderPanel();setPresence()},
  wprev(d){if(!wardById(d.id))return;if(wPrev[d.k]===d.id)delete wPrev[d.k];else wPrev[d.k]=d.id;renderPanel()},
  wprevclr(){wPrev={};neonPick=null;neonSlot=null;renderPanel()},
  wwear(d){if(!ownsW(d.id))return;delete wPrev[d.k];P.outfit=Object.assign({},outfitOf(P),{[d.k]:d.id});save();renderPanel();renderPilot()},
@@ -2587,7 +2603,7 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
-const SAFE_ACT=new Set(['tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
