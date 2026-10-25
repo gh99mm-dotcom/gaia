@@ -1209,7 +1209,12 @@ function renderAdminAll(){renderAdmin();$('#adminBox').insertAdjacentHTML('befor
 /* ───────── profile: titles, jobs, life levels ───────── */
 const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 원정에서 재료가 더 자주 나옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan]];
-const lifeLv=xp=>1+Math.floor(Math.sqrt((xp||0)/25));
+const LIFE_MAX=20,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
+// each life level adds 0.5% to that activity's bonus chance; maxing all four (황금손) adds a further 1% to every one
+const goldHand=()=>LIFE.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
+const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(goldHand()?1:0);
+const lifeHit=k=>Math.random()*100<lifePct(k);
+const LIFE_FX={farm:'수확 +1 확률',gather:'원정 재료 추가 확률',fish:'레어 이상 어종 확률 +',scan:'조사 보상 2배 확률'};
 const lifeNext=l=>25*l*l;
 function stat(k,n=1){P.st=P.st||{};P.st[k]=(P.st[k]||0)+n}
 function lxp(k,n){P.lx=P.lx||{};const before=lifeLv(P.lx[k]);P.lx[k]=(P.lx[k]||0)+n;const after=lifeLv(P.lx[k]);if(after>before){const nm=LIFE.find(l=>l[0]===k)[1];log(`${nm} 생활 레벨 ${after} 달성!`,'rare')}}
@@ -1245,7 +1250,12 @@ const TITLES=[
  ['adv1','이야기를 걷는 자','탐사 이야기 5번 완주',()=>st('adv')>=5],
  ['adv2','엔딩 수집가','탐사 엔딩 10종 발견',()=>Object.keys(P.advEnds||{}).length>=10],
  ['dm1','속삭이는 별','귓속말 30번 보내기',()=>st('dm')>=30],
- ['all5','만능 개척자','생활 레벨 네 가지 모두 5 이상',()=>LIFE.every(([k])=>lifeLv(P.lx?.[k])>=5)],
+ ['all5','만능 개척자','생활 레벨 네 가지 모두 10 이상',()=>LIFE.every(([k])=>lifeLv(P.lx?.[k])>=10)],
+ ['farmmax','풍요의 지배자','농사 생활 레벨 20',()=>lifeLv(P.lx?.farm)>=20],
+ ['gathermax','행성의 발굴자','채집 생활 레벨 20',()=>lifeLv(P.lx?.gather)>=20],
+ ['fishmax','심연의 낚시꾼','낚시 생활 레벨 20',()=>lifeLv(P.lx?.fish)>=20],
+ ['scanmax','별의 해독자','조사 생활 레벨 20',()=>lifeLv(P.lx?.scan)>=20],
+ ['gold','황금손','생활 레벨 네 가지 모두 20 · 모든 확률 +1%',()=>goldHand()],
 ];
 const st=k=>(P.st&&P.st[k])||0;
 let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
@@ -1263,7 +1273,7 @@ const ptsTotal=()=>25+(P.lvl-1)*3;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
 function renderInfo(){if(!$('#infoBox'))return;
-  const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv);return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>LV.${lv}</b></div><div class="bar"><i style="--c:var(--green);width:${(cur-lo)/(hi-lo)*100}%"></i></div></div></div>`}).join('');
+  const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${lifePct(k).toFixed(1)}%</span></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
   const stats=[['레벨',`LV.${P.lvl}`],['체력',`${P.hp}/${maxHp()}`],['에너지',`${P.en}/${maxEn()}`],['공격력',atk()],['방어력',def()],['크레딧',`${(P.cr||0).toLocaleString()} CR`],['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['제작 장비',Object.values(P.gear||{}).map(id=>craftById(id)?.n).filter(Boolean).join(', ')||'없음'],['낚싯대',RODS[P.rod||0].n],['어류 도감',`${Object.keys(P.dex||{}).length}/115`]];
   $('#infoBox').innerHTML=`<div class="info-head">${meImg(4)}<div style="min-width:0;flex:1"><span class="lv">${esc(titleName())}</span>${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}<span class="hint">직업 · ${P.job?JOBS[P.job].n+' ('+JOBS[P.job].d+')':'없음'}</span></div></div>
@@ -1478,9 +1488,9 @@ function renderFarm(){
   <div class="card tank tcard">${tankInner(Date.now()<FARM.refCd)}</div>${grow}</div>
   </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
-function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0),back=Math.random()<.45;
+function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0)+(lb?1:0),back=Math.random()<.45;
   farmPut(i,{til:1,wet:pl.wet&&isWet(pl)?pl.wet:0});storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
-  log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
+  log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
 const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌습니다.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있습니다.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
 const hasMat=m=>(m||[]).every(([id,n])=>(P.inv[id]||0)>=n);
 const matHTML=m=>`<span class="matrow">${(m||[]).map(([id,n])=>`<span class="ichip ${(P.inv[id]||0)>=n?'':'minus'}">${iicon(id,1)}${ITEMS[id].n} ${P.inv[id]||0}/${n}</span>`).join('')}</span>`;
@@ -1521,7 +1531,7 @@ function renderGather(){
   <div class="row"><button class="btn" data-act="gather">원정 출발 <small>EN 2</small></button><span class="hint">${fmtDur(gDur*30)} 뒤 귀환 · 채집 ${GDUR[gDur]}회</span></div>
   ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`;
 }
-function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='scout'&&Math.random()<.5?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}}
+function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='scout'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}}
   Object.entries(got).forEach(([id,n])=>add(id,n));gainXp(3*x.pending);stat('gather',x.pending);lxp('gather',4*x.pending);P.exp=Object.assign({},x.e,{tg:x.tg+x.pending});
   if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 중 땅속에서 무기를 발견했다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
   lastGather={t:`${x.site.n}에서 ${x.pending}회분 채집물을 받았다.${wf?` 희귀 무기 「${wf.n}」도 발견했다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
@@ -1968,7 +1978,7 @@ const A={
   fish.t1=setTimeout(()=>{fish.ph='bite';fish.at=Date.now();sfxBite();if(tab==='fish')renderPanel();fish.t2=setTimeout(()=>{if(fish.ph==='bite'){fish.ph='miss';fish.bonus=null;log('물고기가 미끼만 먹고 달아났다.','bad');if(tab==='fish')renderPanel()}},1300)},ri(1800,5200))},
  pull(){if(fish.ph==='wait'){clearTimeout(fish.t1);fish={ph:'early',bonus:fish.bonus,a:fish.a};log('너무 일찍 당겨서 물고기가 놀라 도망쳤다.','bad');renderPanel();return}
   if(fish.ph!=='bite')return;clearTimeout(fish.t2);const ms=Date.now()-fish.at;sfxSplash();
-  const bo=!!fish.bonus,fast=ms<450,rod=P.rod||0,wr=30+(bo?3:0)+(P.job==='angler'?3:0)+AS('luk')*.3+GF('luck'),wu=rod>=1?8+(bo?2:0):0,wl=rod>=2?.5+(bo?.5:0)+(fast?.5:0):0;const tr=pick([['c',100-wr-wu-wl],['r',wr],['u',wu],['l',wl]]);
+  const bo=!!fish.bonus,fast=ms<450,rod=P.rod||0,wr=30+(bo?3:0)+(P.job==='angler'?3:0)+AS('luk')*.3+GF('luck')+lifePct('fish'),wu=rod>=1?8+(bo?2:0):0,wl=rod>=2?.5+(bo?.5:0)+(fast?.5:0):0;const tr=pick([['c',100-wr-wu-wl],['r',wr],['u',wu],['l',wl]]);
   const id=FISHES[tr][ri(0,FISHES[tr].length-1)],xp=FT[tr].xp,first=!P.dex[id];add(id);P.dex[id]=(P.dex[id]||0)+1;gainXp(xp);stat('fish');if(tr==='l')stat('legend');lxp('fish',{c:8,r:15,u:30,l:60}[tr]);duelCatch(tr,id);lastFish={id,ms,xp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
   log(`${ITEMS[id].n}을(를) 낚았다! (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」을 낚았습니다!`);commit()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
@@ -2023,7 +2033,7 @@ const A={
  buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||(P.rod||0)>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
  buy(d){const row=BUY.find(r=>r[0]===d.id);if(!row)return;const n=+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
  sell(d){const have=P.inv[d.id]||0;if(!have)return;const n=d.n==='all'?have:1,gain=sellPrice(d.id)*n;take(d.id,n);{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
- scan(){if(sigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useSig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);const got=r.add||[];got.forEach(([id,n])=>add(id,n));let extra='';
+ scan(){if(sigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useSig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=r.add||[];const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
