@@ -1143,7 +1143,7 @@ const TABS=[
  {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
  {id:'raid',n:'원정',ic:IC.raygun,cost:'',loc:'파티 원정 · 최대 4명 · 턴제 전투'},
- {id:'adv',n:'레이드',ic:BOSS_IC,cost:'',loc:'심연에서 온 침략자 · 모든 단원 공동 레이드'},
+ {id:'adv',n:'탐사',ic:BOSS_IC,cost:'',loc:'심연에서 온 침략자 · 모든 단원 공동 토벌'},
  {id:'scan',n:'조사',ic:IC.scan,cost:'30분 신호',loc:'미확인 신호 구역 · 30분마다 신호 수신'},
  {id:'bag',n:'가방',ic:IC.bag,cost:'',loc:'개인 보관함'},
  {id:'shop',n:'상점',ic:IC.shop,cost:'',loc:'궤도 고물상 · 24시간 영업'},
@@ -1753,7 +1753,7 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
   return`<div class="row" style="justify-content:space-between;align-items:center"><b class="dfloor">${esc(z.n)} · ${r.state==='lobby'?'대기실':`${Math.min(r.step,RAID_STEPS)}/${RAID_STEPS}단계`}</b>${r.state==='run'&&r.phase!=='end'?'<button class="qchip" data-act="raidleave">원정 포기</button>':''}</div>
    <div class="raidwrap"><div class="raidparty">${party}</div><div class="raidmain">${body}</div></div>`}
 function renderRaid(){if(mode!=='online')return head()+'<div class="note">원정은 온라인에서만 떠날 수 있습니다.</div>';return head()+(MYRAID?raidRunHTML(MYRAID):raidLobbyHTML())}
-/* ───────── 레이드: the invader from the abyss ─────────
+/* ───────── 탐사: the invader from the abyss ─────────
    one boss shared by every member (boss/cur); each member may strike once a minute.
    when it falls, everyone who hit it can claim a reward; a stronger one rises after a short lull.
    raid chat (boss/chat) keeps only the latest 30 lines and is open only to members on this tab. */
@@ -1786,7 +1786,7 @@ async function bossHit(){const b=BOSS;if(!bossAlive(b)||bossReady()>0||isFaint()
   log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':''}`,crit||kill?'rare':'');commit()}
 function bossSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t)return;const m={uid,n:P.nick,t,at:Date.now()};
   return bossTx(bchatRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-BOSS_CHAT_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
-const bossHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='레이드').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
+const bossHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='탐사').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
 function bossMainHTML(){const b=BOSS;if(!b)return`<div class="card"><p class="hint">심연의 균열을 살피는 중…</p></div>`;
   const alive=bossAlive(b),rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
   const left=alive?0:Math.max(0,(b.killedAt||0)+BOSS_RESPAWN-Date.now());
@@ -1801,10 +1801,10 @@ function bossMainHTML(){const b=BOSS;if(!b)return`<div class="card"><p class="hi
 function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 단원에게 인사해 보십시오.</li>'}
 function renderBoss(){bossEnsure();const here=bossHere();
   return head()+`<div class="bossgrid"><div class="bossmain" id="bossMain">${bossMainHTML()}</div>
-   <div class="card bosschat"><div class="stat-row"><span>레이드 대화</span><b id="bossHere">${here.length}명</b></div><span class="hint" id="bossWho">${here.map(esc).join(', ')}</span>
+   <div class="card bosschat"><div class="stat-row"><span>탐사 대화</span><b id="bossHere">${here.length}명</b></div><span class="hint" id="bossWho">${here.map(esc).join(', ')}</span>
     <ol class="bosslog" id="bossLog">${bossChatLogHTML()}</ol>
-    <form class="bossform" id="bossForm"><input id="bossIn" value="${esc(bossDraft)}" maxlength="120" autocomplete="off" placeholder="레이드 중인 단원에게 말하기" aria-label="레이드 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
-    <span class="hint">레이드 탭에 있는 단원만 보고 말할 수 있습니다. 최근 ${BOSS_CHAT_MAX}개만 남습니다.</span></div></div>`}
+    <form class="bossform" id="bossForm"><input id="bossIn" value="${esc(bossDraft)}" maxlength="120" autocomplete="off" placeholder="탐사 중인 단원에게 말하기" aria-label="탐사 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
+    <span class="hint">탐사 탭에 있는 단원만 보고 말할 수 있습니다. 최근 ${BOSS_CHAT_MAX}개만 남습니다.</span></div></div>`}
 function bossPaint(){const m=$('#bossMain');if(!m){renderPanel();return}m.innerHTML=bossMainHTML()}
 function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=bossChatLogHTML();if(end)l.scrollTop=l.scrollHeight}
 function bossTick(){if(tab!=='adv')return;const b=BOSS,t=$('#bossT');if(!t)return;
