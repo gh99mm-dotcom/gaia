@@ -179,8 +179,9 @@ header>.chip:not(.sugg){margin-left:0}
 .pod.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;min-height:150px}
 .frow{display:grid;gap:10px;align-items:start;margin-bottom:10px}.frow.r1{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}.frow.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .farmcol{display:flex;flex-direction:column;gap:9px;min-width:0}
-.frow .bay{width:100%;height:auto;aspect-ratio:286/296;padding:7% 7.7% 11.5%}
-.frow .pods{grid-template-columns:repeat(4,minmax(0,1fr));gap:5%}
+.frow .bay{width:100%;height:auto;aspect-ratio:10/6;padding:4.6% 5.4% 8.4%}
+.frow .bay .dome-label{bottom:3.4%}
+.frow .pods{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;height:100%;align-content:center}
 .frow .ptile{width:100%;height:auto;aspect-ratio:1}
 .frow .ptile.add .plus{top:32%}
 .fstore{display:flex;flex-direction:column;gap:6px}
@@ -190,7 +191,7 @@ header>.chip:not(.sugg){margin-left:0}
 .fstore .bag{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))}
 .flog li{font-size:11px}.flog time{font-family:var(--f-pix);font-size:9px;color:var(--dim)}.flog b{font-weight:400;color:var(--text)}
 .flist em{font-style:normal;color:var(--mute);font-size:11px}.flist .btn{padding:2px 6px;font-size:11px}
-@media (max-width:760px){.frow.r1,.frow.r2{grid-template-columns:minmax(0,1fr)}.frow .bay{max-width:340px;margin:0 auto}}
+@media (max-width:760px){.frow.r1,.frow.r2{grid-template-columns:minmax(0,1fr)}.frow .bay{max-width:100%}}
 .farm-foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}
 .pod{display:flex;flex-direction:column;gap:10px;align-items:stretch}
 .pod-win{height:84px;background:linear-gradient(var(--deep),#111725);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--cyand);display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;position:relative}
@@ -1343,7 +1344,7 @@ let lastGather=null,lastScan=null,fish={ph:'idle'},lastFish=null,selItem=null;
 
 const FIELD_N=16;
 let BAYF=null;
-function bayFrame(){if(BAYF)return BAYF;const W=143,H=148,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+function bayFrame(){if(BAYF)return BAYF;const W=240,H=144,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
   const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
   // body + bevel
   R(0,0,W,H,'#05060b');R(1,1,W-2,H-2,'#1b1f2b');R(1,1,W-2,1,'#4a4f60');R(1,1,1,H-2,'#41444f');R(1,H-2,W-2,1,'#0c0e15');R(W-2,1,1,H-2,'#0c0e15');
