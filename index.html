@@ -98,6 +98,14 @@ header>.chip:not(.sugg){margin-left:0}
 .pilot{padding:12px;display:flex;flex-direction:column;gap:10px}
 .pilot-top{display:flex;gap:12px;align-items:center}
 .avatar{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px}
+.mailbtn{position:relative;flex:none;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px 4px;cursor:pointer;line-height:0}
+.mailbtn:hover{background:var(--panel2)}.mailbtn.has{box-shadow:inset 0 0 0 1px var(--gold),0 0 6px rgba(191,174,128,.5)}
+.mailbtn em{position:absolute;top:-7px;right:-8px;font-style:normal;font-family:var(--f-pix);font-size:9px;line-height:1;background:var(--pink);color:var(--ink);padding:2px 4px;border:2px solid var(--ink)}.mailbtn em:empty{display:none}
+.maillist{display:flex;flex-direction:column;gap:6px}
+.mailitem{display:flex;gap:10px;align-items:center;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:8px 10px}
+.mailitem.sys{box-shadow:inset 0 0 0 1px var(--gold)}.mailfrom{flex:none;width:44px;display:flex;justify-content:center}
+.mailsys{font-family:var(--f-pix);font-size:9px;color:var(--gold);border:1px solid var(--gold);padding:3px 4px}
+.mailbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.mailmsg{margin:0;font-size:12.5px}
 .pilot-name{font-family:var(--f-display);font-size:17px;line-height:1.1;word-break:break-all}
 .lv{font-family:var(--f-pix);font-size:9px;color:var(--gold);letter-spacing:.08em}
 .stat{display:flex;flex-direction:column;gap:4px}
@@ -1192,8 +1200,6 @@ function crewAdminHTML(){if(mode!=='online')return`<div class="info-sec"><span c
   const rows=Object.entries(PLAYERS).filter(([id])=>id!==uid).map(([id,p])=>({id,p,on:on.has(id),seen:p.seen||0})).sort((a,b)=>(b.on-a.on)||(b.seen-a.seen));
   return`<div class="info-sec"><span class="lbl">Crew · 단원 관리 ${rows.length}명</span>${rows.length?`<div class="fblist">${rows.map(({id,p,on:o,seen})=>`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')} <span class="lv">LV.${p.lvl||1}</span></b><span class="hint" style="color:${o?'var(--green)':'var(--mute)'}">${o?'● 접속 중':'오프라인 · '+agoText(seen)}</span></div><span class="hint">${seen?'마지막 활동 '+fbTime(seen):'마지막 활동 기록 없음 (이번 업데이트 뒤 접속하면 기록됩니다)'} · ${(p.cr||0).toLocaleString()} CR</span><div class="row" style="justify-content:flex-end;gap:5px">${admDel===id?`<span class="hint" style="color:var(--red)">정말 삭제하시겠습니까? 되돌릴 수 없습니다.</span><button class="btn sm ghost" data-act="admdelno">취소</button><button class="btn sm" data-act="admdelyes" data-k="${esc(id)}">삭제</button>`:`<button class="btn sm ghost" data-act="admdel" data-k="${esc(id)}">캐릭터 삭제</button>`}</div></div>`).join('')}</div>`:'<span class="hint">아직 다른 단원이 없습니다.</span>'}</div>`}
 /* ───────── admin credit grants ───────── */
-function claimGrant(id,g){if(!g||!(+g.cr>0))return;const got=P.gr||[];if(got.includes(id))return;P.gr=[...got,id].slice(-80);if((+g.at||0)<(P.joined||0)){save();return}
-  const cr=Math.min(100000,Math.floor(+g.cr));P.cr=(P.cr||0)+cr;log(`운영자 선물 · ${String(g.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');toast(`운영자 선물: ${cr.toLocaleString()} CR을 받았습니다!`);sfxCoin();commit()}
 /* ───────── suggestion box ───────── */
 const ENV=["kkkkkkkkkk","kuuuuuuuuk","kkuuuuuukk","kukkuukkuk","kuuukkuuuk","kuuuuuuuuk","kkkkkkkkkk"];
 let FB=[];
@@ -1326,7 +1332,7 @@ async function connect(){
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
   renderNet();renderAll();
   db.collection('players').onSnapshot(sn=>{const m={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},()=>{});
-  db.collection('grants').onSnapshot(sn=>{sn.docs.forEach(d=>claimGrant(d.id,d.data()))},()=>{});
+  db.collection('grants').onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조');wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   farmLoad();
@@ -1350,7 +1356,7 @@ function renderPilot(){
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').innerHTML=`
   <div class="pilot-top"><div class="avatar">${meImg(3)}</div>
-   <div style="min-width:0"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
+   <div style="min-width:0"><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
@@ -1960,6 +1966,7 @@ let meView=false;
 function holdScroll(y){const st=$('#stage');st.style.minHeight='';const need=y+innerHeight-document.documentElement.scrollHeight;if(need>0)st.style.minHeight=(st.offsetHeight+need)+'px';window.scrollTo(0,y)}
 function renderPanel(){
   // my profile opens as a page in the stage, with a way back to the tab underneath
+  if(mailView){$('#stage').innerHTML=mailHTML();return}
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><h2>내 프로필</h2><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0;
@@ -2012,7 +2019,7 @@ let soldBack={};
 const A={
  async admgrant(){if(!isAdmin)return;const msg=($('#admNotice').value||'').trim().slice(0,80),cr=Math.floor(+$('#admGrantCr').value||0);if(!msg){toast('공지 내용을 먼저 적어 주십시오.');return}if(cr<1||cr>100000){toast('크레딧은 1~100,000 사이로 적어 주십시오.');return}
   const g={cr,msg,at:Date.now(),by:P.nick},id='g'+g.at.toString(36);
-  if(mode!=='online'){claimGrant(id,g);return}
+  if(mode!=='online'){MAILA.push(Object.assign({id,grant:1},g));mailRefresh();return}
   try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 단원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true});$('#admNotice').value='';toast(`모든 단원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
  admdelno(){admDel=null;renderAdminAll()},
@@ -2086,9 +2093,9 @@ const A={
  giftadd(d){const have=P.inv[d.id]||0;giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
  giftreset(){giftSel={};renderGift()},
  giftcr(d){giftCr=+d.k;renderGift()},
- giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;if(giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 이미 선물했습니다. 내일 다시 보낼 수 있습니다.`);return}const items=Object.entries(giftSel).filter(([i,n])=>n>0&&(P.inv[i]||0)>=n);const cr=Math.min(giftCr,P.cr||0);if(!items.length&&!cr)return;
+ giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&(P.inv[i]||0)>=n);const cr=Math.min(giftCr,P.cr||0),note=!items.length&&!cr;if(note&&!giftMsg.trim())return;if(!note&&giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 이미 선물했습니다. 쪽지는 언제든 보낼 수 있습니다.`);return}
   items.forEach(([i,n])=>take(i,n));P.cr-=cr;const msg=giftMsg.trim().slice(0,40);save();
-  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items,cr,msg,at:Date.now()}).then(()=>{P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});sfxCoin();log(`${t.nick} 님에게 선물을 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
+  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items,cr,msg,at:Date.now()}).then(()=>{if(!note)P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
  duelstart(){if(mode!=='online'||duelOn())return;const now=Date.now();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)).catch(()=>toast('대결을 열지 못했습니다.'))},
  duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+300;sfxCoin();log('낚시 대결 우승! 상금 300 CR','rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
@@ -2108,8 +2115,12 @@ const A={
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
- profile(){meView=true;renaming=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ profile(){meView=true;mailView=false;renaming=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
+ mailopen(){mailView=true;meView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ mailclose(){mailView=false;renderPanel()},
+ mailone(d){if(mailOpenOne(d.k)){commit();mailRefresh();renderPanel()}},
+ mailall(){const ids=mailList().map(m=>m.id);let n=0;ids.forEach(id=>{if(mailOpenOne(id))n++});if(n){toast(`우편 ${n}통을 모두 받았습니다.`);commit();mailRefresh();renderPanel()}},
  settitle(d){const t=TITLES.find(x=>x[0]===d.k);if(!t||!t[3]())return;P.title=d.k;save();renderInfo();renderPilot()},
  setjob(d){if(!JOBS[d.k]||P.job===d.k)return;P.job=d.k;log(`직업을 ${JOBS[d.k].n}(으)로 정했다.`,'rare');save();renderInfo();renderPilot();renderPanel()},
  sound(){soundOn=!soundOn;try{localStorage.setItem('nebula-sound',soundOn?'on':'off')}catch(e){}if(soundOn){ac();sfxBite()}renderPanel()},
@@ -2143,16 +2154,37 @@ function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filte
   ${tasteHTML(t)||'<span class="hint">이 단원은 아직 취향을 정하지 않았습니다.</span>'}
   <div class="info-sec"><span class="lbl">Items · 누를 때마다 1개씩 담깁니다</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,3)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">보낼 아이템이 없습니다.</p>'}</div></div>
   <div class="info-sec"><span class="lbl">Credits · 크레딧</span><div class="row" style="gap:5px">${[0,50,100,500,1000,5000].map(v=>`<button class="qchip" data-act="giftcr" data-k="${v}" aria-pressed="${giftCr===v}" ${v>(P.cr||0)?'disabled':''}>${v?v.toLocaleString()+' CR':'없음'}</button>`).join('')}</div></div>
-  <div class="info-sec"><span class="lbl">Message · 한마디 (선택)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
-  <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}${giftedToday(giftTo)?'<span class="hint" style="color:var(--red)">오늘은 이미 선물했습니다</span>':''}<button class="btn sm gold" data-act="giftsend" ${(sel.length||giftCr)&&!giftedToday(giftTo)?'':'disabled'}>선물 보내기</button></div>`}
-function receiveGifts(sn){sn.docs.forEach(d=>{P.gotG=P.gotG||[];if(P.gotG.includes(d.id)){db.collection('gifts').doc(d.id).delete().catch(()=>{});return}const g=d.data();P.gotG=[...P.gotG.slice(-40),d.id];
+  <div class="info-sec"><span class="lbl">Message · 쪽지 (아이템 없이 쪽지만 보내도 됩니다)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
+  <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}${giftedToday(giftTo)&&(sel.length||giftCr)?'<span class="hint" style="color:var(--red)">오늘은 이미 선물했습니다</span>':''}<button class="btn sm gold" id="giftGo" data-act="giftsend" ${giftGoOk(sel)?'':'disabled'}>${sel.length||giftCr?'선물 보내기':'쪽지 보내기'}</button></div>`}
+const giftGoOk=sel=>(sel.length||giftCr)?!giftedToday(giftTo):!!giftMsg.trim();
+/* ───────── mailbox: gifts and notes from crew, gifts from the admin; nothing is applied until opened ───────── */
+let MAILG=[],MAILA=[],mailView=false,mailNoted=new Set();
+function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>!got.includes(g.id));
+  MAILG.forEach(g=>{if(mailNoted.has(g.id))return;mailNoted.add(g.id);if((+g.at||0)>socBoot)toast(`${g.sys?'운영자':(g.nick||'누군가')} 님에게서 ${mailHasGift(g)?'선물':'쪽지'}이 왔습니다. 우편함을 확인하십시오.`)});mailRefresh()}
+function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0)||got.includes(d.id))return;
+  if((+g.at||0)<(P.joined||0)){P.gr=[...(P.gr||[]),d.id].slice(-80);ch=true;return}MAILA.push(Object.assign({id:d.id,grant:1},g))});if(ch)save();mailRefresh()}
+const mailHasGift=g=>(g.items||[]).some(([i,n])=>ITEMS[i]&&n>0)||(+g.cr||0)>0;
+const mailList=()=>[...MAILA,...MAILG].sort((a,b)=>(+b.at||0)-(+a.at||0));
+function mailRefresh(){const b=$('#mailBtn');if(b){const n=mailList().length;b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n)}if(mailView)renderPanel()}
+function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
+  if(a){const cr=Math.min(100000,Math.floor(+a.cr));P.gr=[...(P.gr||[]),id].slice(-80);P.cr=(P.cr||0)+cr;MAILA=MAILA.filter(x=>x.id!==id);log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');sfxCoin();return true}
+  const g=MAILG.find(x=>x.id===id);if(!g)return false;P.gotG=[...(P.gotG||[]).slice(-60),id];MAILG=MAILG.filter(x=>x.id!==id);
   const parts=[];(g.items||[]).forEach(([i,n])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
-  if(g.from&&!g.sys&&PLAYERS[g.from]&&(P.affDay||{})[g.from]!==dayKey()){P.affDay=Object.assign({},P.affDay,{[g.from]:dayKey()});
-    const got=(g.items||[]).map(([i])=>i).filter(i=>ITEMS[i]),lk=got.filter(i=>(P.likes||[]).includes(i)),ht=got.filter(i=>(P.hates||[]).includes(i));
+  if(parts.length&&g.from&&!g.sys&&PLAYERS[g.from]&&(P.affDay||{})[g.from]!==dayKey()){P.affDay=Object.assign({},P.affDay,{[g.from]:dayKey()});
+    const gi=(g.items||[]).map(([i])=>i).filter(i=>ITEMS[i]),lk=gi.filter(i=>(P.likes||[]).includes(i)),ht=gi.filter(i=>(P.hates||[]).includes(i));
     if(lk.length)addAff(g.from,AFF.like,`좋아하는 ${ITEMS[lk[0]].n} 선물`);
     if(ht.length)addAff(g.from,AFF.hate,`싫어하는 ${ITEMS[ht[0]].n} 선물`);
     if(!lk.length&&!ht.length)addAff(g.from,AFF.gift,'선물')}
-  log(`${g.nick||'누군가'} 님의 선물: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`,'rare');toast(`${g.nick||'누군가'} 님이 선물을 보냈습니다!`);sfxCoin();commit();db.collection('gifts').doc(d.id).delete().catch(()=>{})})}
+  const who=g.sys?'운영자':(g.nick||'누군가');log(parts.length?`${who} 님의 선물을 받았다: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`:`${who} 님의 쪽지 — “${String(g.msg||'').slice(0,40)}”`,parts.length?'rare':'good');if(parts.length)sfxCoin();
+  if(mode==='online')db.collection('gifts').doc(id).delete().catch(()=>{});return true}
+function mailHTML(){const L=mailList();
+  return`<div class="stage-head mehead"><button class="qchip" data-act="mailclose">← 돌아가기</button><h2>우편함</h2><span class="loc">${L.length?L.length+'통 도착':'비어 있음'}</span></div>
+  ${L.length?`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">선물은 받기를 눌러야 가방에 들어옵니다. 쪽지는 확인하면 사라집니다.</span><button class="btn sm gold" data-act="mailall">모두 받기</button></div>
+  <div class="maillist">${L.map(m=>{const sysm=m.grant||m.sys,gift=m.grant||mailHasGift(m),who=sysm?'운영자':(m.nick||'단원');
+    const chips=m.grant?`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`:[...(m.items||[]).filter(([i,n])=>ITEMS[i]&&n>0).map(([i,n])=>`<span class="ichip">${iicon(i,1)}${ITEMS[i].n} ×${n}</span>`),...((+m.cr||0)>0?[`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`]:[])].join('');
+    return`<div class="mailitem ${sysm?'sys':''}"><div class="mailfrom">${sysm?`<span class="mailsys">운영자</span>`:headImg(3,whoP(m.from))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">· ${gift?'선물':'쪽지'}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(String(m.msg).slice(0,80))}”</p>`:''}${chips?`<div class="chips">${chips}</div>`:''}</div><button class="btn sm ${gift?'gold':'ghost'}" data-act="mailone" data-k="${esc(m.id)}">${gift?'받기':'확인'}</button></div>`}).join('')}</div>`
+  :'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 단원이나 운영자가 보낸 선물과 쪽지가 여기에 도착합니다.</p>'}`}
+
 /* ---- fishing duel ---- */
 let DUEL=null;const DUEL_MS=3*60e3,DPTS={c:1,r:3,u:8,l:25};
 const duelOn=()=>DUEL&&Date.now()>=DUEL.start&&Date.now()<DUEL.end;
@@ -2168,10 +2200,10 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
 const SAFE_ACT=new Set(['shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
-document.addEventListener('input',e=>{if(e.target.id==='giftMsg')giftMsg=e.target.value});
+document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){meView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){meView=false;mailView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
@@ -2331,7 +2363,7 @@ const SA={
  padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padback(){openThread(null);renderPanel()},
- profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
+ profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;mailView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  relopen(){meView=false;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
  profclose(){profId=null;profBio=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
