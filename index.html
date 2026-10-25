@@ -441,8 +441,10 @@ header>.chip:not(.sugg){margin-left:0}
 .dmdot{width:8px;height:8px;background:var(--pink);flex:none;box-shadow:0 0 0 2px var(--pinkd)}
 .dmchat{display:flex;flex-direction:column;gap:8px;min-width:0}
 .dmlog{min-height:260px;max-height:420px;overflow:auto;display:flex;flex-direction:column;gap:6px;background:var(--ink);border:1px solid var(--line);padding:10px}
+.dmrow{display:flex;gap:7px;align-items:flex-start}.dmrow.me{flex-direction:row-reverse}
+.dmav{flex:none;width:30px;display:flex;justify-content:center;line-height:0}.dmav img{image-rendering:pixelated}
 .dmb{max-width:78%;padding:6px 10px;font-size:12.5px;line-height:1.5;word-break:break-word;white-space:pre-wrap;background:var(--panel2);border:2px solid var(--ink);align-self:flex-start}
-.dmb.me{align-self:flex-end;background:var(--violetd)}
+.dmb.me{background:var(--violetd)}
 .dmb time{display:block;font-family:var(--f-pix);font-size:8px;color:var(--dim);margin-top:2px}
 /* text expedition */
 .advlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
@@ -2149,10 +2151,11 @@ function dmListHTML(){const cv=dmConvs(),have=new Set(cv.map(c=>c[0])),fresh=Obj
    +(fresh.length?`<span class="lbl" style="margin-top:6px">New · 새 귓속말</span>`+fresh.map(([id,p])=>`<button class="dmi" data-act="dmopen" data-k="${esc(id)}" aria-pressed="${dmPeer===id}">${headImg(2,p)}<span class="sinfo"><b>${esc(p.nick||'단원')}</b><span class="hint">${isOn(id)?'접속 중':'오프라인'}</span></span></button>`).join(''):'')
    ||'<p class="hint">귓속말을 나눌 단원이 아직 없습니다.</p>'}
 function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.from===dmPeer&&d.to===uid)).sort((a,b)=>a.at-b.at);
-  return ms.length?ms.map(d=>`<div class="dmb ${d.from===uid?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div>`).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
+  // each message carries its sender's portrait; a run of messages from the same person shows it once
+  return ms.length?ms.map((d,i)=>{const me=d.from===uid,first=!i||ms[i-1].from!==d.from;return`<div class="dmrow ${me?'me':''}"><span class="dmav">${first?headImg(3,whoP(d.from)):''}</span><div class="dmb ${me?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div></div>`}).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
   return`<p class="lead">단원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
-  <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,2)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'단원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 단원을 고르십시오.</p>'}</div></div>`}
+  <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,3)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'단원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 단원을 고르십시오.</p>'}</div></div>`}
 /* ---- crew ---- */
 function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${esc(titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
   ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
