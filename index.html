@@ -179,10 +179,10 @@ header>.chip:not(.sugg){margin-left:0}
 .pod.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;min-height:150px}
 .frow{display:grid;gap:10px;align-items:start;margin-bottom:10px}.frow.r1{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}.frow.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .farmcol{display:flex;flex-direction:column;gap:9px;min-width:0}
-.frow .bay{width:100%;height:auto;aspect-ratio:10/6;padding:4.6% 5.4% 8.4%}
+.frow .bay{width:100%;height:auto;aspect-ratio:10/6;padding:3.9% 4.6% 7.3%}
 .frow .bay .dome-label{bottom:3.4%}
-.frow .pods{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;height:100%;align-content:center}
-.frow .ptile{width:100%;height:auto;aspect-ratio:1}
+.frow .pods{height:100%;aspect-ratio:9/5;max-width:100%;margin:0 auto;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:2px}
+.frow .ptile{width:100%;height:100%}
 .frow .ptile.add .plus{top:32%}
 .fstore{display:flex;flex-direction:column;gap:6px}
 .flist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;max-height:210px;overflow:auto}
@@ -1212,7 +1212,7 @@ const TITLES=[
  ['scan1','신호 추적자','이상 신호 30번 조사',()=>(P.st?.scan||0)>=30],
  ['rich','궤도의 부호','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
  ['farm3','별밭의 은둔자','작물 300번 수확',()=>st('harvest')>=300],
- ['farm4','돔의 군주','공용 농장 재배 포드 16개 모두 열기',()=>(FARM.fu||0)>=16],
+ ['farm4','돔의 군주','공용 농장 재배 포드 45개 모두 열기',()=>(FARM.fu||0)>=FIELD_N],
  ['farm5','대지의 손길','농사 생활 레벨 10',()=>lifeLv(P.lx?.farm)>=10],
  ['gather2','크레이터를 걷는 그림자','채집 500회',()=>st('gather')>=500],
  ['gather3','행성의 해부학자','채집 생활 레벨 10',()=>lifeLv(P.lx?.gather)>=10],
@@ -1342,7 +1342,7 @@ function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<sp
 /* ───────── panels ───────── */
 let lastGather=null,lastScan=null,fish={ph:'idle'},lastFish=null,selItem=null;
 
-const FIELD_N=16;
+const FIELD_N=45;
 let BAYF=null;
 function bayFrame(){if(BAYF)return BAYF;const W=240,H=144,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
   const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
