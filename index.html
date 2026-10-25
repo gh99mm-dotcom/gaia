@@ -460,6 +460,30 @@ header>.chip:not(.sugg){margin-left:0}
 .padc{display:flex;gap:10px;align-items:flex-start;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:10px}
 .padc.reply{border-width:0 0 1px;box-shadow:none;border-color:var(--line);background:transparent}
 .padcb{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.padnew{padding:12px 14px;gap:12px;background:linear-gradient(180deg,var(--panel2),var(--deep))}
+.padwho{display:flex;gap:6px;align-items:baseline;font-weight:400;font-size:13px}
+.padnew textarea{background:transparent;border:0;border-bottom:1px solid var(--line);box-shadow:none;padding:4px 0 8px;font-size:14px;min-height:64px;resize:vertical}
+.padnew textarea:focus{outline:none;border-bottom-color:var(--cyan)}
+.padtabs{gap:0;border-bottom:1px solid var(--line)}.padtabs button{background:none!important;border:0!important;box-shadow:none!important;padding:8px 14px;color:var(--mute);border-bottom:2px solid transparent!important;margin-bottom:-1px}
+.padtabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--cyan)!important}
+.twav.big{width:52px;height:52px}
+:root[data-skin="light"] .padtabs button[aria-selected="true"]{box-shadow:none!important}
+@media(max-width:520px){.padnew .padcb>.row .hint{display:none}}
+#stage .twfeed{background:none;border:0;box-shadow:none;gap:8px}
+#stage .tw{background:var(--deep);border:1px solid var(--line);padding:12px 14px;transition:border-color .15s,background .15s}
+#stage .tw:last-child{border-bottom:1px solid var(--line)}#stage .tw:hover{border-color:var(--dim);background:var(--panel)}
+#stage .tw.big{background:var(--panel);border-color:var(--dim)}
+#stage .twfeed>.padc.reply{background:var(--deep);border:1px solid var(--line)}
+.twav{flex:none;width:46px;height:46px;padding:0;display:grid;place-items:center;overflow:hidden;background:var(--panel2);border:1px solid var(--line)}.twav img{max-width:none;flex:none}
+.twh b{font-size:13.5px}.twh .hint{font-size:11px}
+.twtext{font-size:14px;line-height:1.7;margin-top:2px}
+.twtext .tag{color:var(--cyan)}.twtext .men{color:var(--gold)}
+.twact{gap:6px;margin-top:6px}
+.twact .twbtn{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid transparent;font-size:11.5px}
+.twact .twbtn i{font-style:normal;font-size:13px;line-height:1}
+.twact .twbtn:hover{border-color:var(--line);background:var(--panel2)}
+.twdel{margin-left:auto;font-size:11px!important;opacity:.7}.twdel:hover{opacity:1;color:var(--red)!important}.twdel.arm{opacity:1;color:var(--red)}
+.twrt{padding-left:56px}
 .twfeed{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column}
 .tw{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
 .tw:last-child{border-bottom:0}
@@ -1238,7 +1262,7 @@ const wpnById=id=>WPNS.find(w=>w.id===id);
 Object.assign(TPL,{wArmor:["................", "...kkk....kkk...", "..khhak..kahhk..", ".khaaakkkkaaahk.", ".kaaaabhhbaaaak.", ".kaaaabaabaaaak.", "..kkaabaabaakk..", "...kaabaabaak...", "...kaabhhbaak...", "...kaaabbaaak...", "...kaaaaaaaak...", "...kbaayyaabk...", "...kbbbbbbbbk...", "....kkkkkkkk....", "................", "................"],wRing:["................", "....kkkkkkkk....", "...kyk....kyk...", "..kyk......kyk..", "..kyk......kyk..", "...kyk....kyk...", "....kyk..kyk....", ".....kykkyk.....", "......kyyk......", ".....kkhhkk.....", "....khhaaabk....", "....khaaaabk....", "....kaaaabbk....", ".....kabbbk.....", "......kkkk......", "................"]});
 
 const GF=k=>{let v=0;const g=P.gear||{};for(const s2 in g){const f=craftById(g[s2]);if(f&&f.fx[k])v+=f.fx[k]}const w=P.wpn&&wpnById(P.wpn);if(w&&w.fx[k])v+=w.fx[k];return v};
-const maxHp=()=>60+P.lvl*12+(P.job==='guard'?20:0)+AS('vit')*8+GF('hp'), maxEn=()=>30+P.lvl*2+AS('end')*2+GF('en'), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='fighter'?1.15:1)), def=()=>Math.floor(P.lvl*1.5)+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='guard'?5:0)+GF('def')+BUFF('def'), need=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
+const maxHp=()=>60+P.lvl*12+(P.job==='guard'?20:0)+AS('vit')*8+GF('hp'), maxEn=()=>30+P.lvl*2+AS('end')*2+GF('en'), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='fighter'?1.15:1)), def=()=>Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='guard'?5:0)+GF('def')+BUFF('def'), need=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
 function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났습니다. 음식을 먹거나 잠시 쉬십시오.');return false}if(P.en<n){toast(`에너지가 부족합니다 (필요 ${n})`);return false}P.en-=n;return true}
 function add(id,n=1){P.inv[id]=(P.inv[id]||0)+n}
@@ -1367,7 +1391,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보냅니다. 지금 접속하지 않은 단원도 다음에 들어오면 받습니다.</span>
    <div class="row" style="gap:5px">${others.map(([id,p])=>`<button class="qchip" data-act="admrescue" data-k="${id}">${esc(p.nick||'단원')} 기절 해제</button>`).join('')}<button class="btn sm ghost" data-act="admchat">최근 알림 지우기</button></div></div>`:''}`}
-const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
+const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
@@ -2649,22 +2673,20 @@ const replies=id=>{const m={};[...POSTS,...THR].forEach(p=>{if(p.re===id)m[p.id]
 const myRt=id=>POSTS.find(x=>x.rt===id&&x.uid===uid);
 function twHTML(p,big){const isRt=!!p.rt,s=isRt?Object.assign({},p.rto||{},{id:p.rt}):p,orig=isRt?(POSTS.find(x=>x.id===p.rt)||(THRP&&THRP.id===p.rt?THRP:null)):p;
   const lk=orig?Object.values(orig.likes||{}).filter(Boolean).length:0,liked=!!(orig&&orig.likes&&orig.likes[uid]),rc=replies(s.id).length,rtc=POSTS.filter(x=>x.rt===s.id).length,rted=!!myRt(s.id),k=esc(s.id),canDel=!isRt&&(p.uid===uid||isAdmin);
-  return`<article class="tw ${big?'big':''}" ${big?'':`data-act="padopen" data-k="${k}"`}>${isRt?`<div class="twrt">⇄ ${esc(p.nick||'단원')} 님이 재전송했습니다</div>`:''}<div class="twrow"><div class="twav">${headImg(2,whoP(s.uid))}</div><div class="twbody">
-   <div class="twh"><b style="color:${colorOf(s.uid)}">${esc(s.nick||'단원')}</b><span class="hint">@${esc(s.nick||'단원')} · ${shortAgo(s.at||Date.now())}</span>${canDel?`<button class="twbtn" style="margin-left:auto" data-act="pdel" data-k="${esc(p.id)}">${pdelArm===p.id?'정말 삭제':'삭제'}</button>`:''}</div>
+  return`<article class="tw ${big?'big':''}" ${big?'':`data-act="padopen" data-k="${k}"`}>${isRt?`<div class="twrt">⇄ ${esc(p.nick||'단원')} 님이 재전송했습니다</div>`:''}<div class="twrow"><div class="twav">${headImg(3,whoP(s.uid))}</div><div class="twbody">
+   <div class="twh"><b style="color:${colorOf(s.uid)}">${esc(s.nick||'단원')}</b><span class="hint">@${esc(s.nick||'단원')} · ${shortAgo(s.at||Date.now())}</span>${canDel?`<button class="twbtn twdel ${pdelArm===p.id?'arm':''}" data-act="pdel" data-k="${esc(p.id)}">${pdelArm===p.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
    ${s.re?`<div class="hint">↳ <button class="tag" data-act="padopen" data-k="${esc(s.re)}">@${esc(s.reNick||'단원')}</button> 님에게 답글</div>`:''}
    ${s.text?`<p class="twtext">${richText(s.text)}</p>`:''}${imgsHTML(s.img)}
-   <div class="twact"><button class="twbtn" data-act="padopen" data-k="${k}" aria-label="답글">답글 ${rc}</button>${s.re?'':`<button class="twbtn rt ${rted?'on':''}" data-act="padrt" data-k="${k}" aria-pressed="${rted}">⇄ ${rtc}</button>`}<button class="twbtn like ${liked?'on':''}" data-act="plike" data-k="${k}" aria-pressed="${liked}">♥ ${lk}</button></div></div></div></article>`}
-function padCompose(){return`<div class="padc">${headImg(3,P)}<div class="padcb"><textarea id="padIn" class="suggta socta" maxlength="${PAD_MAX}" placeholder="지금 정거장에서 무슨 일이 있습니까? #해시태그 @콜사인 도 쓸 수 있습니다" aria-label="PAD 글 쓰기">${esc(padDraft)}</textarea>${imgPrev('pad')}<div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${imgPicker('pad')}<span class="hint">Ctrl+Enter로 게시${ASSETS?' · 이미지는 붙여넣기도 됩니다':''}</span></span><span class="row" style="gap:8px"><span class="twcnt" id="padCnt">${padDraft.length}/${PAD_MAX}</span><button class="btn sm" data-act="padpost" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'게시'}</button></span></div></div></div>`}
+   <div class="twact"><button class="twbtn" data-act="padopen" data-k="${k}" aria-label="답글 ${rc}개"><i>↩</i>${rc}</button>${s.re?'':`<button class="twbtn rt ${rted?'on':''}" data-act="padrt" data-k="${k}" aria-pressed="${rted}" aria-label="재전송 ${rtc}"><i>⇄</i>${rtc}</button>`}<button class="twbtn like ${liked?'on':''}" data-act="plike" data-k="${k}" aria-pressed="${liked}" aria-label="좋아요 ${lk}"><i>♥</i>${lk}</button></div></div></div></article>`}
+function padCompose(){return`<div class="padc padnew"><div class="twav big">${headImg(3,P)}</div><div class="padcb"><b class="padwho">${esc(P.nick)}<span class="hint">@${esc(P.nick)}</span></b><textarea id="padIn" class="suggta socta" maxlength="${PAD_MAX}" placeholder="지금 정거장에서 무슨 일이 있습니까? #해시태그 @콜사인 도 쓸 수 있습니다" aria-label="PAD 글 쓰기">${esc(padDraft)}</textarea>${imgPrev('pad')}<div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${imgPicker('pad')}<span class="hint">Ctrl+Enter로 게시${ASSETS?' · 이미지는 붙여넣기도 됩니다':''}</span></span><span class="row" style="gap:8px"><span class="twcnt" id="padCnt">${padDraft.length}/${PAD_MAX}</span><button class="btn sm" data-act="padpost" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'게시'}</button></span></div></div></div>`}
 function socPad(){
   if(padThread){const main=THRP||POSTS.find(x=>x.id===padThread),rs=replies(padThread).sort((a,b)=>a.at-b.at);
     return`<div class="row"><button class="btn sm ghost" data-act="padback">← 타임라인</button><span class="hint">스레드</span></div><div class="twfeed">${main?twHTML(main,true):'<p class="empty" style="padding:14px">지워졌거나 불러오는 중인 글입니다.</p>'}
      ${main?`<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="padReply" class="suggta socta" maxlength="${PAD_MAX}" placeholder="@${esc(main.nick||'단원')} 님에게 답글 달기" aria-label="답글">${esc(replyDraft)}</textarea>${imgPrev('reply')}<div class="row" style="justify-content:space-between;gap:8px">${imgPicker('reply')||'<span></span>'}<span class="row" style="gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" data-act="padreply" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'답글'}</button></span></div></div></div>`:''}
      ${rs.map(r=>twHTML(r)).join('')||(main?'<p class="hint" style="padding:10px 14px">아직 답글이 없습니다.</p>':'')}</div>`}
-  const tags={};POSTS.forEach(p=>{if(p.rt||p.re)return;(String(p.text||'').match(TAG_RE)||[]).forEach(t=>tags[t.slice(1)]=(tags[t.slice(1)]||0)+1)});const trend=Object.entries(tags).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const me=new RegExp('@'+P.nick.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![^\\s@#])');
   const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&me.test(s.text||'');return true});
-  return padCompose()+`<div class="dtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
-  ${trend.length?`<div class="row" style="gap:4px"><span class="lbl">Trend · 지금 뜨는 태그</span>${trend.map(([t,n])=>`<button class="qchip" data-act="padtag" data-k="${esc(t)}">#${esc(t)} <span class="hint">${n}</span></button>`).join('')}</div>`:''}
+  return padCompose()+`<div class="dtabs padtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
   <div class="twfeed">${list.length?list.map(p=>twHTML(p)).join(''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
 function openThread(id){thrUnsub.forEach(f=>{try{f()}catch(e){}});thrUnsub=[];THR=[];THRP=null;padThread=id;replyDraft='';clearImgs('reply');pdelArm=null;
   if(id&&mode==='online'){thrUnsub.push(db.collection('posts').where('re','==',id).onSnapshot(sn=>{THR=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='social')renderPanel()},()=>{}));
