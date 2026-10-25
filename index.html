@@ -1795,6 +1795,7 @@ const RAID_ZONES=[
  {id:'r5',n:'얼어붙은 심연',min:34,max:44,t:'#d6d8e0',d:'영하 200도의 얼음 협곡. 극한에 적응한 괴물들이 삽니다.',mons:['서리 늑대','얼음 망령','빙결 거인','심연 박쥐','냉기 결정체'],mid:'얼음 동굴의 군주',boss:'심연의 서리용 「니블」'},
  {id:'r6',n:'붉은 별의 핵',min:40,max:60,t:'#ff5f6a',d:'행성 깊은 곳, 뜨거운 핵 근처. 가장 강한 존재들이 기다립니다.',mons:['용암 정령','화염 와이번','핵의 파수꾼','붉은 망령 기사','태양 벌레'],mid:'핵의 문지기 「이그니스」',boss:'붉은 별의 심장 「카를로스」'}];
 const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
+const RAID_MON_TURN=5e3;
 const RAID_STEPS=8,RAID_TURN=60e3,RAID_EN=8,RAID_MAX=4;
 const RAID_EVENTS=[
  {k:'chest',n:'보급 상자',t:'모래 속에서 구형 보급 상자를 찾았다.',cr:[20,50],item:['kit','drink']},
@@ -1861,7 +1862,7 @@ function raidStep(r){const z=raidZone(r),rnd=raidRoll(r,(r.seed+r.step*7919)%214
 function raidBattle(r,mons,intro){r.phase='battle';r.ev={n:intro};r.b={mons,round:0,order:[],ti:-1,def:{},flee:{},log:[intro]};raidNextTurn(r);return r}
 function raidOrder(r){const b=r.b,a=[...raidUp(r).map(u=>({k:'p',id:u,agi:r.m[u].agi})),...b.mons.map((m,i)=>m.hp>0?{k:'m',id:i,agi:m.agi}:null).filter(Boolean)];a.sort((x,y)=>y.agi-x.agi||(x.k==='p'?-1:1));return a.map(o=>({k:o.k,id:o.id}))}
 function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.order.length){b.round++;b.order=raidOrder(r);b.ti=0}const a=b.order[b.ti];if(!a)return;
-    if(a.k==='m'&&b.mons[a.id].hp>0){b.cur=a;b.turnEnd=raidNow()+700;return}
+    if(a.k==='m'&&b.mons[a.id].hp>0){b.cur=a;b.turnEnd=raidNow()+RAID_MON_TURN;return}
     if(a.k==='p'&&raidUp(r).includes(a.id)){b.cur=a;delete b.def[a.id];b.turnEnd=raidNow()+RAID_TURN;return}}}
 function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
 // after any action: victory, wipe, or the next turn
@@ -1892,7 +1893,7 @@ let raidHbAt=0;
 function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();
   if(now-raidHbAt>15e3&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:{[uid]:now}}).catch(()=>{})}
   if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
-  const t=$('#raidT');if(t&&r.b&&r.b.cur&&r.b.cur.k==='p'){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
+  const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
   if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
 function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(P.raidDone||[]).slice(-30),r.id];const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
   if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));stat('raid');if(r.result==='clear')stat('raidclear');
@@ -1932,7 +1933,7 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
   else if(r.phase==='battle'){
     const mons=b.mons.map((m,i)=>`<button class="raidmon ${m.hp<=0?'dead':''} ${raidTgt===i&&m.hp>0?'tgt':''} ${m.kind}" data-act="raidtgt" data-k="${i}" ${m.hp<=0?'disabled':''}>${img(MON_SPR,m.t,m.kind==='boss'?5:m.kind==='mid'?4:3)}<b>${esc(m.n)}</b><span class="hint">Lv.${m.L}${m.kind==='boss'?' · 보스':m.kind==='mid'?' · 중간 보스':m.kind==='elite'?' · 정예':''}</span>${raidBar(m.hp,m.max,'var(--red)')}<span class="hint">${m.hp}/${m.max}</span></button>`).join('');
     const foods=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i].type==='food'&&(ITEMS[i].hp||0)>0),tgts=raidIn(r).filter(u=>!(r.left||{})[u]);if(raidPick&&!foods.includes(raidPick))raidPick=null;const pk=raidPick&&ITEMS[raidPick];
-    body=`<div class="card raidbattle"><div class="row" style="justify-content:space-between"><b>${r.step>=RAID_STEPS?'보스전':'전투'} · ${b.round}라운드</b><span class="hint">${myTurn?`<b style="color:var(--gold)">내 턴</b> · 남은 시간 <b id="raidT"></b>`:`${esc(curNick||'')}의 턴${b.cur&&b.cur.k==='p'?` · <span id="raidT"></span>`:''}`}</span></div>
+    body=`<div class="card raidbattle"><div class="row" style="justify-content:space-between"><b>${r.step>=RAID_STEPS?'보스전':'전투'} · ${b.round}라운드</b><span class="hint">${myTurn?`<b style="color:var(--gold)">내 턴</b> · 남은 시간 <b id="raidT"></b>`:`${esc(curNick||'')}의 턴${b.cur?` · <span id="raidT"></span>`:''}`}</span></div>
      <div class="raidmons">${mons}</div>
      <div class="raidacts"><button class="btn" data-act="raidatk" ${myTurn?'':'disabled'}>공격</button><button class="btn alt" data-act="raiddef" ${myTurn?'':'disabled'}>방어</button><button class="btn alt" data-act="raidbag" aria-pressed="${raidBag}" ${me&&me.hp>0?'':'disabled'}>${raidBag?'아이템 닫기':'아이템 쓰기'}</button><button class="btn ghost" data-act="raidfleev" ${me&&me.hp>0?'':'disabled'}>${b.flee[uid]?'도망 취소':'도망 찬성'} <small>${Object.keys(b.flee).filter(u=>b.flee[u]&&raidUp(r).includes(u)).length}/${raidUp(r).length}</small></button></div>
      ${raidBag?`<div class="card raiditems"><div class="stat-row"><span>쓸 수 있는 아이템</span><b>${foods.length}종</b></div>${foods.length?`<div class="bag">${foods.map(i=>`<button class="slot" data-act="raidpick" data-id="${i}" aria-pressed="${i===raidPick}" aria-label="${ITEMS[i].n} ${P.inv[i]}개" title="${ITEMS[i].n}">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">전투에서 쓸 수 있는 회복 아이템이 없습니다.</p>'}
