@@ -1825,7 +1825,7 @@ const RAID_EVENTS=[
 const raidMonXp=(L,kind)=>Math.round(need(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1));
 function raidMon(zone,L,kind,name,n){const s={elite:[1.5,1.1,1.1],mid:[2.2,1.15,1.15],boss:[3,1.15,1.2]}[kind]||[1,1,1],pm=kind==='mid'||kind==='boss'?1+.7*(n-1):1;
   const hp=Math.round((14+L*5+L*L*.06)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3.5+L*1.4+L*L*.018)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
-const RAIDS=[];let MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
+const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
 const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 const raidRef=id=>db.doc('parties/'+id);
@@ -1838,7 +1838,7 @@ function raidLog(b,t){b.log=[...(b.log||[]),t].slice(-7)}
 // party members still in the run (not left), and of those the ones still standing
 const raidIn=r=>r.ids.filter(u=>!(r.left||{})[u]);
 const raidUp=r=>raidIn(r).filter(u=>r.m[u]&&r.m[u].hp>0);
-function raidDriver(r){const now=raidNow(),hb=r.hb||{};return raidIn(r).find(u=>now-(hb[u]||0)<12e3)||r.host}
+function raidDriver(r){const now=raidNow(),hb=r.hb||{};return raidIn(r).find(u=>now-(hb[u]||0)<45e3)||r.host}
 /* ---- building a step ---- */
 function raidRoll(r,seed){let x=seed;const rnd=()=>(x=(x*16807)%2147483647)/2147483647;return rnd}
 function raidStep(r){const z=raidZone(r),rnd=raidRoll(r,(r.seed+r.step*7919)%2147483646+1),n=raidIn(r).length,avg=Math.round(raidIn(r).reduce((a,u)=>a+r.m[u].lvl,0)/n);
@@ -1890,16 +1890,17 @@ function raidNext(){const r0=MYRAID;if(!r0||(r0.phase!=='event'&&r0.phase!=='won
 /* ---- the driver plays monsters and timeouts; everyone keeps a heartbeat ---- */
 let raidHbAt=0;
 function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();
-  if(now-raidHbAt>5e3&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:{[uid]:now}}).catch(()=>{})}
+  if(now-raidHbAt>15e3&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:{[uid]:now}}).catch(()=>{})}
   if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
   const t=$('#raidT');if(t&&r.b&&r.b.cur&&r.b.cur.k==='p'){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
   if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
 function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(P.raidDone||[]).slice(-30),r.id];const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
   if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));stat('raid');if(r.result==='clear')stat('raidclear');
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
-function raidWatch(id){if(raidUnsub){raidUnsub();raidUnsub=null}if(!id){MYRAID=null;return}
+function raidWatch(id){raidSig='';if(raidUnsub){raidUnsub();raidUnsub=null}if(!id){MYRAID=null;return}
   raidUnsub=raidRef(id).onSnapshot(s=>{if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
-    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;adminView=false;renderNav();renderPanel();return}if(tab==='raid'&&!isField(document.activeElement))renderPanel()},()=>{})}
+    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
+    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'&&!isField(document.activeElement))renderPanel()},()=>{})}
 function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS.length=0;sn.docs.forEach(d=>{const v=d.data();if(raidNow()-(v.at||0)<30*60e3)RAIDS.push(Object.assign({id:d.id},v))});if(tab==='raid')renderPanel()},()=>{});
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
@@ -1918,7 +1919,7 @@ function raidStart(id){raidTx(id||MYRAID.id,r=>{if(!r||r.state!=='lobby'||r.host
 /* ---- views ---- */
 const MON_SPR=["................","....kk....kk....","...kaak..kaak...","...kabbkkbbak...","....kaaaaaak.....","...kaawaawaak...","..kaaakaakaaak..","..kaaaaaaaaaak..","..kabaaaaaabak..","...kaabbbbaak...","....kaaaaaak....","...kak.kk.kak...","..kk..k..k..kk..","................","................","................"];
 function raidBar(v,max,col){return`<div class="bar"><i style="--c:${col};width:${Math.max(0,v/max*100)}%"></i></div>`}
-function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span><span class="hint">중간 보스 · ${z.mid}<br>보스 · ${z.boss}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 맞지 않습니다</span>`}</button>`}).join('');
+function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 맞지 않습니다</span>`}</button>`}).join('');
   const z=RAID_ZONES.find(x=>x.id===raidSel)||RAID_ZONES[0],list=RAIDS.filter(x=>x.ids.length<RAID_MAX);
   return`<p class="lead">혼자 또는 최대 ${RAID_MAX}명의 파티로 원정을 떠납니다. ${RAID_STEPS}단계를 지나며 몬스터나 사건을 만나고, 마지막에는 보스가 기다립니다. 전투는 민첩이 높은 순서로 턴이 돌아오며, 한 사람의 턴은 ${RAID_TURN/1000}초입니다. 출발한 뒤에는 새로 합류할 수 없습니다.</p>
   <div class="row" style="gap:6px;margin:8px 0"><button class="btn" data-act="raidnew" data-k="solo" ${raidFits(z)?'':'disabled'}>혼자 출발 <small>EN ${RAID_EN}</small></button><button class="btn alt" data-act="raidnew" data-k="party" ${raidFits(z)?'':'disabled'}>파티 모집 <small>EN ${RAID_EN}</small></button><span class="hint">선택 구역 · ${z.n}</span></div>
