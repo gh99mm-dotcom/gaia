@@ -202,6 +202,11 @@ header>.chip:not(.sugg){margin-left:0}
 .pod h3{font-size:14px}
 .pod .sub{font-size:11px;color:var(--mute)}
 .seeds{display:flex;flex-direction:column;gap:6px}
+/* the side column keeps fixed card heights so the farm layout never jumps; long content scrolls inside */
+@media (min-width:761px){.farmcol.side .card{display:flex;flex-direction:column;gap:6px;overflow:hidden;box-sizing:border-box}
+ .farmcol.side .pcard{height:212px}.farmcol.side .tcard{height:132px}.farmcol.side .gcard{height:176px}
+ .pcard .seeds{flex:1;min-height:0;overflow-y:auto;padding-right:2px}.pcard .acts,.gcard .acts{margin-top:auto}.tcard .tfoot{margin-top:auto}
+ .pcard h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 .seedbtn{display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--panel2);border:2px solid var(--ink);cursor:pointer;text-align:left;font-size:12px}
 .seedbtn:hover{background:var(--violetd)}
 .seedbtn em{margin-left:auto;font-style:normal;font-family:var(--f-pix);font-size:10px;color:var(--gold)}
@@ -1449,13 +1454,13 @@ function renderFarm(){
   const pods=Array.from({length:fu},(_,i)=>podHTML(i,seeds));
   const info=`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
   const tabs=`<div class="row growtabs" style="gap:4px"><button class="qchip" data-act="growtab" data-k="pod" aria-pressed="${growTab==='pod'}">재배 포드 증설</button><button class="qchip" data-act="growtab" data-k="tank" aria-pressed="${growTab==='tank'}">물탱크 증설</button></div>`,cr=P.inv.crystal||0;
-  const grow=`<div class="card podinfo">${tabs}${growTab==='tank'?(FARM.tlv>=TANK_LV?`<span class="sub">물탱크가 최대 용량 ${FARM.cap}까지 늘었습니다.</span>`:`<div class="stat-row"><span>물탱크 ${FARM.tlv+1}단계 증설 · 용량 ${FARM.cap} → ${FARM.cap+TANK_STEP}</span><b>${FARM.tprog}/${FARM.tneed}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.tprog/FARM.tneed*100}%"></i></div><span class="sub">모든 단원이 은하 결정을 하나씩 모아 공용 물탱크를 키웁니다.</span><div class="acts"><button class="btn sm ghost" data-act="tdon" ${cr?'':'disabled'}>은하 결정 1개 넣기</button><span class="hint">내 가방 ${cr}개</span></div>`)
-   :(fu>=FIELD_N?`<span class="sub">포드 ${FIELD_N}개가 모두 열렸습니다.</span>`:`<div class="stat-row"><span>재배 포드 ${fu+1}번 증설</span><b>${FARM.prog}/${FARM.need}</b></div><div class="bar"><i style="--c:var(--gold);width:${FARM.prog/FARM.need*100}%"></i></div><span class="sub">모든 단원이 운석 파편을 하나씩 모아 다음 포드를 엽니다. 다 모이면 바로 열립니다.</span><div class="acts"><button class="btn sm ghost" data-act="fdon" ${ore?'':'disabled'}>운석 파편 1개 넣기</button><span class="hint">내 가방 ${ore}개</span></div>`)}</div>`;
+  const grow=`<div class="card podinfo gcard">${tabs}${growTab==='tank'?(FARM.tlv>=TANK_LV?`<span class="sub">물탱크가 최대 용량 ${FARM.cap}까지 늘었습니다.</span>`:`<div class="stat-row"><span>물탱크 ${FARM.tlv+1}단계 증설 · 용량 ${FARM.cap} → ${FARM.cap+TANK_STEP}</span><b>${FARM.tprog}/${FARM.tneed}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.tprog/FARM.tneed*100}%"></i></div><span class="sub">모든 단원이 은하 결정을 하나씩 모아 키웁니다.</span><div class="acts"><button class="btn sm ghost" data-act="tdon" ${cr?'':'disabled'}>은하 결정 1개 넣기</button><span class="hint">내 가방 ${cr}개</span></div>`)
+   :(fu>=FIELD_N?`<span class="sub">포드 ${FIELD_N}개가 모두 열렸습니다.</span>`:`<div class="stat-row"><span>재배 포드 ${fu+1}번 증설</span><b>${FARM.prog}/${FARM.need}</b></div><div class="bar"><i style="--c:var(--gold);width:${FARM.prog/FARM.need*100}%"></i></div><span class="sub">모든 단원이 운석 파편을 하나씩 모아 다음 포드를 엽니다.</span><div class="acts"><button class="btn sm ghost" data-act="fdon" ${ore?'':'disabled'}>운석 파편 1개 넣기</button><span class="hint">내 가방 ${ore}개</span></div>`)}</div>`;
   const here=mode==='online'?[...new Set(PEERS.filter(p=>p.presence&&p.presence.uid!==uid&&p.presence.act==='농사').map(p=>p.presence.nick))]:[];
   return head()+`<p class="lead">모든 단원이 함께 쓰는 돔 농장입니다. 누구나 배양토를 채우고 심고 물을 줄 수 있고, 거둔 작물은 공용 창고에 쌓여 누구나 꺼내 씁니다. 물탱크와 비료용 이끼는 각자 자기 것을 씁니다.${here.length?` <span class="visitors">지금 농장에 있는 단원 · ${here.map(n=>esc(n||'단원')).join(', ')}</span>`:''}</p>
   <div class="frow r1"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
-  <div class="farmcol"><div class="card podinfo">${info}</div>
-  <div class="card tank"><div class="stat-row"><span>${img(DROP,null,2)}공용 물탱크</span><b>${FARM.water}/${FARM.cap}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.water/FARM.cap*100}%"></i></div>${Date.now()<FARM.refCd?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(FARM.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${FARM.water>=FARM.cap?'disabled':''}>물 채우기</button><span class="hint">누구나 가득 채울 수 있습니다 · 채운 뒤 모두 ${P.job==='engineer'?'30분':'1시간'} 대기</span>`}<span class="hint">물을 줄 때마다 공용 물 1과 내 에너지 1을 씁니다.</span></div>${grow}</div>
+  <div class="farmcol side"><div class="card podinfo pcard">${info}</div>
+  <div class="card tank tcard"><div class="stat-row"><span>${img(DROP,null,2)}공용 물탱크</span><b>${FARM.water}/${FARM.cap}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.water/FARM.cap*100}%"></i></div>${Date.now()<FARM.refCd?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(FARM.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${FARM.water>=FARM.cap?'disabled':''}>물 채우기</button><span class="hint">누구나 가득 채움 · 채운 뒤 모두 ${P.job==='engineer'?'30분':'1시간'} 대기</span>`}<span class="hint tfoot">물 주기 1회 = 공용 물 1 + 내 EN 1</span></div>${grow}</div>
   </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
 function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0),back=Math.random()<.45;
