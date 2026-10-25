@@ -484,6 +484,10 @@ header>.chip:not(.sugg){margin-left:0}
 .twact .twbtn:hover{border-color:var(--line);background:var(--panel2)}
 .twdel{margin-left:auto;font-size:11px!important;opacity:.7}.twdel:hover{opacity:1;color:var(--red)!important}.twdel.arm{opacity:1;color:var(--red)}
 .twrt{padding-left:56px}
+.twrlbl{padding:4px 2px 0}
+.twanc{display:flex;flex-direction:column;gap:8px;position:relative}
+.twanc>.tw{opacity:.85}.twanc>.tw::after{content:"";position:absolute;left:36px;bottom:-9px;width:2px;height:8px;background:var(--line)}
+#stage .twanc>.tw{position:relative}.twgone{padding:8px 14px;border:1px dashed var(--line);margin:0}
 .twfeed{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column}
 .tw{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
 .tw:last-child{border-bottom:0}
@@ -2635,7 +2639,7 @@ document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id=
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
-let socTab='pad',padView='all',padTag='',padThread=null,THR=[],THRP=null,thrUnsub=[],POSTS=[],GUEST=[],DMS=[],dmPeer=null,editBio=false,padDraft='',replyDraft='',bioDraft='',dmDraft='',socPend=false,lastPost=0,pdelArm=null;
+let socTab='pad',padView='all',padTag='',padThread=null,THR=[],THRP=null,THRA=[],thrTok=0,thrUnsub=[],POSTS=[],GUEST=[],DMS=[],dmPeer=null,editBio=false,padDraft='',replyDraft='',bioDraft='',dmDraft='',socPend=false,lastPost=0,pdelArm=null;
 const socBoot=Date.now(),socNoted=new Set(),SOC_LS='nebula-soc-seen',DM_LS='nebula-dm-read',PAD_MAX=200;let socSeen=0,dmRead={};try{socSeen=+localStorage.getItem(SOC_LS)||0;dmRead=JSON.parse(localStorage.getItem(DM_LS)||'{}')||{}}catch(e){}
 const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 const whoP=id=>id===uid?P:(PLAYERS[id]||{});
@@ -2681,16 +2685,22 @@ function twHTML(p,big){const isRt=!!p.rt,s=isRt?Object.assign({},p.rto||{},{id:p
 function padCompose(){return`<div class="padc padnew"><div class="twav big">${headImg(3,P)}</div><div class="padcb"><b class="padwho">${esc(P.nick)}<span class="hint">@${esc(P.nick)}</span></b><textarea id="padIn" class="suggta socta" maxlength="${PAD_MAX}" placeholder="지금 정거장에서 무슨 일이 있습니까? #해시태그 @콜사인 도 쓸 수 있습니다" aria-label="PAD 글 쓰기">${esc(padDraft)}</textarea>${imgPrev('pad')}<div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${imgPicker('pad')}<span class="hint">Ctrl+Enter로 게시${ASSETS?' · 이미지는 붙여넣기도 됩니다':''}</span></span><span class="row" style="gap:8px"><span class="twcnt" id="padCnt">${padDraft.length}/${PAD_MAX}</span><button class="btn sm" data-act="padpost" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'게시'}</button></span></div></div></div>`}
 function socPad(){
   if(padThread){const main=THRP||POSTS.find(x=>x.id===padThread),rs=replies(padThread).sort((a,b)=>a.at-b.at);
-    return`<div class="row"><button class="btn sm ghost" data-act="padback">← 타임라인</button><span class="hint">스레드</span></div><div class="twfeed">${main?twHTML(main,true):'<p class="empty" style="padding:14px">지워졌거나 불러오는 중인 글입니다.</p>'}
-     ${main?`<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="padReply" class="suggta socta" maxlength="${PAD_MAX}" placeholder="@${esc(main.nick||'단원')} 님에게 답글 달기" aria-label="답글">${esc(replyDraft)}</textarea>${imgPrev('reply')}<div class="row" style="justify-content:space-between;gap:8px">${imgPicker('reply')||'<span></span>'}<span class="row" style="gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" data-act="padreply" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'답글'}</button></span></div></div></div>`:''}
-     ${rs.map(r=>twHTML(r)).join('')||(main?'<p class="hint" style="padding:10px 14px">아직 답글이 없습니다.</p>':'')}</div>`}
+    return`<div class="row"><button class="btn sm ghost" data-act="padback">← 타임라인</button><span class="hint">스레드</span></div><div class="twfeed">${THRA.length?`<div class="twanc">${THRA.map(a=>a.gone?'<p class="hint twgone">지워진 글입니다.</p>':twHTML(a)).join('')}</div>`:''}${main?twHTML(main,true):'<p class="empty" style="padding:14px">지워졌거나 불러오는 중인 글입니다.</p>'}
+     ${rs.length?`<span class="lbl twrlbl">답글 ${rs.length}개</span>`:''}${rs.map(r=>twHTML(r)).join('')||(main?'<p class="hint" style="padding:10px 14px">아직 답글이 없습니다.</p>':'')}
+     ${main?`<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="padReply" class="suggta socta" maxlength="${PAD_MAX}" placeholder="@${esc(main.nick||'단원')} 님에게 답글 달기" aria-label="답글">${esc(replyDraft)}</textarea>${imgPrev('reply')}<div class="row" style="justify-content:space-between;gap:8px">${imgPicker('reply')||'<span></span>'}<span class="row" style="gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" data-act="padreply" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'답글'}</button></span></div></div></div>`:''}</div>`}
   const me=new RegExp('@'+P.nick.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![^\\s@#])');
   const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&me.test(s.text||'');return true});
   return padCompose()+`<div class="dtabs padtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
   <div class="twfeed">${list.length?list.map(p=>twHTML(p)).join(''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
-function openThread(id){thrUnsub.forEach(f=>{try{f()}catch(e){}});thrUnsub=[];THR=[];THRP=null;padThread=id;replyDraft='';clearImgs('reply');pdelArm=null;
+// a reply opened as a thread shows the conversation above it: walk up the re chain (from the feed, else from the server)
+async function loadAnc(start){const tok=++thrTok,out=[];let re=start&&start.re;
+  for(let n=0;re&&n<12;n++){let q=POSTS.find(x=>x.id===re)||THRA.find(x=>x.id===re);if(!q&&mode==='online'){try{const d=await db.doc('posts/'+re).get();q=d.exists?Object.assign({id:re},d.data()):null}catch(e){q=null}}
+    if(tok!==thrTok)return;if(!q){out.unshift({id:re,gone:1});break}out.unshift(q);re=q.re}
+  if(tok!==thrTok)return;const k=out.map(x=>x.id).join();if(k!==THRA.map(x=>x.id).join()){THRA=out;if(tab==='social'&&padThread)renderPanel()}}
+function openThread(id){thrUnsub.forEach(f=>{try{f()}catch(e){}});thrUnsub=[];THR=[];THRP=null;THRA=[];thrTok++;padThread=id;replyDraft='';clearImgs('reply');pdelArm=null;
   if(id&&mode==='online'){thrUnsub.push(db.collection('posts').where('re','==',id).onSnapshot(sn=>{THR=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='social')renderPanel()},()=>{}));
-    thrUnsub.push(db.doc('posts/'+id).onSnapshot(s=>{THRP=s.exists?Object.assign({id},s.data()):null;if(tab==='social')renderPanel()},()=>{}))}}
+    thrUnsub.push(db.doc('posts/'+id).onSnapshot(s=>{THRP=s.exists?Object.assign({id},s.data()):null;loadAnc(THRP);if(tab==='social')renderPanel()},()=>{}))}
+  else if(id)loadAnc(POSTS.find(x=>x.id===id))}
 /* ---- whisper ---- */
 function dmConvs(){const m={};DMS.forEach(d=>{const peer=d.from===uid?d.to:d.from;if(!m[peer]||m[peer].at<d.at)m[peer]=d});return Object.entries(m).sort((a,b)=>b[1].at-a[1].at)}
 function dmListHTML(){const cv=dmConvs(),have=new Set(cv.map(c=>c[0])),fresh=Object.entries(PLAYERS).filter(([id])=>id!==uid&&!have.has(id));
