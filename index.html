@@ -353,6 +353,15 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .orgsel{font-size:11px;padding:3px 4px;max-width:120px}
 .orgnm{font-size:10px;width:100%;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 3px}
 @media (max-width:520px){.orgdepts{flex-direction:column;align-items:stretch;border-top:0;border-left:2px solid var(--line);padding:6px 0 0 12px}.orgdept::before{top:50%;left:-14px;width:12px;height:2px}}
+/* relationship map */
+.relmap{position:relative;width:100%;max-width:640px;margin:0 auto;background:radial-gradient(ellipse at 50% 50%,#151b2e 0 35%,var(--deep) 75%);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.relmap svg{position:absolute;inset:0;width:100%;height:100%}
+.relnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel);border:2px solid var(--ink);padding:3px 5px 2px;cursor:pointer;color:var(--text);font:inherit;z-index:2}
+.relnode:hover{box-shadow:inset 0 0 0 1px var(--cyan)}
+.relnode.center{border-color:var(--gold);z-index:3}.relnode.me .nm{color:var(--gold)}
+.relnode .orgface{height:20px;background:none}.relnode .nm{font-size:10px;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rellab{position:absolute;transform:translate(-50%,-50%);font-size:9.5px;line-height:1.3;padding:0 4px;background:rgba(6,7,13,.88);border:1px solid var(--line);white-space:nowrap;pointer-events:none;z-index:1}
+.relmap.compact .relnode .nm{max-width:54px}
 /* PAD images */
 .imgbtn{cursor:pointer;color:var(--cyan)}.imgbtn.off{opacity:.45;cursor:not-allowed}
 .padprev{display:flex;gap:6px;flex-wrap:wrap}
@@ -454,7 +463,9 @@ b.no{color:var(--red)}
 /* side */
 .side{display:flex;flex-direction:column;gap:12px;min-width:0}
 .crew{padding:11px;display:flex;flex-direction:column;gap:8px}
-.crew ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;max-height:220px;overflow:auto}
+.crew ul{list-style:none;margin:0;padding:0 2px 0 0;display:flex;flex-direction:column;gap:5px;max-height:calc(5 * 34px + 4 * 5px);overflow-y:auto}
+.crew li{min-height:34px;box-sizing:border-box}
+.crew li .namebtn{font-size:12px;font-weight:400;text-decoration-color:transparent}.crew li .namebtn:hover{text-decoration-color:currentColor}
 .crew li{display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 6px;background:var(--deep);border:2px solid var(--ink)}
 .crew li .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .crew li .act{margin-left:auto;font-size:11px;color:var(--mute);white-space:nowrap}
@@ -1154,7 +1165,7 @@ function renderInfo(){
    <div class="info-sec"><span class="lbl">Stats · 스탯</span><div class="istats">${stats.map(([k,v])=>`<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></div>
    <div class="info-sec"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div><div class="abil">${ABIL.map(([k,n,d])=>`<div class="ab"><span class="abn">${n}</span><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div><div class="row" style="justify-content:space-between"><span class="hint">처음에 25포인트(기본 2씩 + 15)를 받고, 레벨이 오를 때마다 3포인트씩 더 받습니다.</span><button class="qchip" data-act="resetpt">포인트 초기화</button></div></div>
    ${tasteHTML(P)}
-   ${affHTML(P,uid,true)}
+   <div class="info-sec"><div class="row" style="justify-content:space-between"><span class="lbl">Relations · 인물 관계도</span><button class="btn sm alt" data-act="relopen">관계도 보기</button></div></div>
    <div class="info-sec"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></div>
    <div class="info-sec"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${t[1]}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</div>
    <div class="info-sec"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></div>`;
@@ -1584,7 +1595,7 @@ function renderCrew(){
   const list=Object.entries(PLAYERS).map(([id,p])=>({id,faint:id===uid?isFaint():(p.faint&&Date.now()<p.faint),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
    .sort((a,b)=>(b.on-a.on)||(b.lvl-a.lvl));
   if(!list.find(x=>x.id===uid))list.unshift({id:uid,nick:P.nick,lvl:P.lvl,on:true,act:''});
-  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><span class="nm" style="color:${colorOf(x.id)}">${esc(x.nick)}${x.id===uid?' (나)':''}</span><span class="lvt">LV.${x.lvl}</span>${x.id!==uid&&affOf(P,x.id)?`<span class="lvt" style="color:${affColor(affOf(P,x.id))}" title="내 호감도 ${affLabel(affOf(P,x.id))}">♥${affOf(P,x.id)}</span>`:''}<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN 3</small></button>`:''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
+  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${colorOf(x.id)}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button><span class="lvt">LV.${x.lvl}</span>${x.id!==uid&&affOf(P,x.id)?`<span class="lvt" style="color:${affColor(affOf(P,x.id))}" title="내 호감도 ${affLabel(affOf(P,x.id))}">♥${affOf(P,x.id)}</span>`:''}<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN 3</small></button>`:''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
 }
 function renderChat(){
   const f=$('#feed');const atBottom=f.scrollHeight-f.scrollTop-f.clientHeight<40;
@@ -1842,9 +1853,23 @@ function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf
   const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'단원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
 const giftedToday=id=>(P.giftDay||{})[id]===dayKey();
 function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span class="hint">${affLabel(v)}</span>`}
-function affHTML(p,id,me){if(me){const rows=Object.entries(P.aff||{}).filter(([k])=>PLAYERS[k]).sort((a,b)=>b[1]-a[1]);
-    return`<div class="info-sec"><span class="lbl">Affinity · 내가 느끼는 호감도</span>${rows.length?`<div class="istats">${rows.map(([k,v])=>`<div><span>${esc(PLAYERS[k].nick||'단원')}</span>${affBadge(v)}</div>`).join('')}</div>`:'<span class="hint">아직 호감도가 생긴 단원이 없습니다. 구조받거나 선물을 받으면 생깁니다.</span>'}</div>`}
-  return`<div class="info-sec"><span class="lbl">Affinity · 호감도</span><div class="istats"><div><span>${esc(p.nick||'단원')} → 나</span>${affBadge(affOf(p,uid))}</div><div><span>나 → ${esc(p.nick||'단원')}</span>${affBadge(affOf(P,id))}</div></div><span class="hint">구조해 주면 +${AFF.rescue}. 선물은 한 사람에게 하루 한 번 보낼 수 있고, 좋아하는 것이면 +${AFF.like}, 싫어하는 것이면 ${AFF.hate}, 그 밖의 선물은 +${AFF.gift}입니다.</span></div>`}
+/* relationship map: the center person in the middle, everyone else on a ring; each link shows both directions */
+let relCenter=null;
+function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const others=orgAll().filter(([id])=>id!==cid);
+  const W=100,H=compact?70:82,cx=W/2,cy=H/2,rx=compact?40:39,ry=compact?27:32,n=others.length;
+  const pos=others.map(([id,p],i)=>{const a=-Math.PI/2+i/Math.max(1,n)*Math.PI*2;return{id,p,x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry}});
+  const lab=v=>Math.abs(v)>=30?affLabel(v):(v>0?'+':'')+v;
+  let lines='',labels='';
+  pos.forEach(o=>{const out=affOf(C,o.id),inn=affOf(o.p,cid);if(!out&&!inn){lines+=`<line x1="${cx}" y1="${cy}" x2="${o.x}" y2="${o.y}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3" vector-effect="non-scaling-stroke"/>`;return}
+    const dx=o.x-cx,dy=o.y-cy,L=Math.hypot(dx,dy)||1,nx=-dy/L*0.9,ny=dx/L*0.9;
+    [[out,nx,ny,.32],[inn,-nx,-ny,.68]].forEach(([v,ox,oy,t])=>{if(!v)return;const col=affColor(v);
+      lines+=`<line x1="${cx+ox}" y1="${cy+oy}" x2="${o.x+ox}" y2="${o.y+oy}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" vector-effect="non-scaling-stroke"/>`;
+      labels+=`<span class="rellab" style="left:${(cx+dx*t+ox*2.2)/W*100}%;top:${(cy+dy*t+oy*2.2)/H*100}%;color:${col}">${esc(lab(v))}</span>`})});
+  const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="${center?'profopen':'relcenter'}" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
+  return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
+  <span class="hint">선 위 글자는 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>입니다. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 한 번)</span>`}
+function socRel(){const cid=relCenter&&(relCenter===uid||PLAYERS[relCenter])?relCenter:uid,c=whoP(cid);
+  return`<div class="row" style="justify-content:space-between"><b class="dfloor">${esc(c.nick||'단원')} 중심 관계도</b>${cid!==uid?'<button class="btn sm ghost" data-act="relcenter" data-k="">나를 중심으로</button>':''}</div>${relMapHTML(cid,false)}`}
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:12px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:12px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m)}
@@ -1875,7 +1900,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
-   ${affHTML(p,id,me)}
+   <div class="info-sec"><span class="lbl">Relations · 인물 관계도</span>${relMapHTML(id,true)}</div>
    ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
 function socGuest(){const to=gbOf&&(gbOf===uid||PLAYERS[gbOf])?gbOf:uid,tp=whoP(to),list=GUEST.filter(g=>g.to===to),others=Object.entries(PLAYERS).filter(([id])=>id!==uid);
   return`<div class="row" style="gap:4px"><button class="qchip" data-act="gbopen" data-k="" aria-pressed="${to===uid}">내 방명록</button>${others.map(([id,p])=>`<button class="qchip" data-act="gbopen" data-k="${esc(id)}" aria-pressed="${to===id}">${esc(p.nick||'단원')}</button>`).join('')}</div>
@@ -1885,8 +1910,8 @@ function socGuest(){const to=gbOf&&(gbOf===uid||PLAYERS[gbOf])?gbOf:uid,tp=whoP(
 function renderSocial(){
   if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['guest','방명록']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
-  return head()+sub+(socTab==='crew'?socCrew():socTab==='guest'?socGuest():socTab==='dm'?socDm():socPad())}
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['rel','관계도'],['guest','방명록']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='guest'?socGuest():socTab==='dm'?socDm():socPad())}
 function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
@@ -1909,7 +1934,9 @@ const SA={
  padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padback(){openThread(null);renderPanel()},
- profopen(d){if(!d.k)return;profId=d.k;profBio=false;socTab='crew';renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
+ profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;$('#infoModal').hidden=true;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
+ relcenter(d){relCenter=d.k||null;socTab='rel';renderPanel()},
+ relopen(){$('#infoModal').hidden=true;relCenter=null;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
  profclose(){profId=null;profBio=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
  profbio(){profBio=!profBio;renderPanel();if(profBio)setTimeout(()=>{const i=$('#profBioIn');if(i)i.focus()},30)},
@@ -2049,7 +2076,7 @@ Object.assign(A,SA,AA,{
  async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
  async invcopy(d){const t=`[별무리 개척단 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주십시오. (1명만 쓸 수 있습니다)`;
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
-['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
+['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relcenter','relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
 document.addEventListener('keydown',e=>{if(tab!=='adv'||e.isComposing||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const n=+e.key;if(!(n>=1&&n<=9)||!P.adv||P.adv.done)return;const b=document.querySelectorAll('#stage .advopt')[n-1];if(b&&!b.disabled){e.preventDefault();b.click()}});
 /* ───────── join page: character creation ───────── */
 const J_START=2,J_FREE=15,J_MAX=3;
