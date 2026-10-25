@@ -330,11 +330,10 @@ header>.chip:not(.sugg){margin-left:0}
 .info-head h2{font-size:22px;word-break:break-all}
 .info-sec{display:flex;flex-direction:column;gap:6px}
 .mepage{display:flex;flex-direction:column;gap:12px}
-.mehead .metabs{margin:0;display:inline-flex;gap:2px;padding:3px;background:var(--deep);border:1px solid var(--line)}
-.mehead .metabs button{font-family:var(--f-display);font-size:15px;padding:6px 16px;background:none!important;border:0!important;box-shadow:none!important;color:var(--mute);position:relative;transition:color .15s,background .15s}
+.mehead .metabs{margin:0;display:flex;gap:0;border-bottom:1px solid var(--line)}
+.mehead .metabs button{font-size:13px;padding:8px 14px;background:none!important;border:0!important;box-shadow:none!important;color:var(--mute);border-bottom:2px solid transparent!important;margin-bottom:-1px}
 .mehead .metabs button:hover{color:var(--text)}
-.mehead .metabs button[aria-selected="true"]{color:var(--text);background:var(--violetd)!important}
-.mehead .metabs button[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:2px;height:2px;background:var(--cyan)}
+.mehead .metabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--cyan)!important}
 :root[data-skin="light"] .mehead .metabs button[aria-selected="true"]{box-shadow:none!important}
 .mecard.mylook{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
 .mlprev{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;background:radial-gradient(ellipse at 50% 45%,var(--violetd),var(--panel) 70%);border:2px solid var(--ink);position:sticky;top:10px}
