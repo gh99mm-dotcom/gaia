@@ -2207,12 +2207,12 @@ let profId=null,profBio=false;
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id),ends=Object.keys(p.advEnds||{}).length;
   const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['탐사 엔딩',`${ends}종`]];
-  return`<div class="card profcard" id="profCard"><div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
+  return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
    ${me?`<div class="info-sec"><span class="lbl">Relations · 인물 관계도</span>${relMapHTML(uid,true)}</div>`:''}
-   ${me?'':`<div class="row" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gbopen" data-k="${k}">방명록</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}</div>`}
+</div>`}
 function renderSocial(){
   if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
@@ -2375,7 +2375,7 @@ Object.assign(A,SA,AA,{
  async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
  async invcopy(d){const t=`[가이아 프로젝트 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}\n회원가입 탭에서 아이디·비밀번호·콜사인과 함께 초대코드를 적어 주십시오. (1명만 쓸 수 있습니다)`;
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
-['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbopen','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
+['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel','advback','advshare'].forEach(k=>SAFE_ACT.add(k));
 document.addEventListener('keydown',e=>{if(tab!=='adv'||e.isComposing||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const n=+e.key;if(!(n>=1&&n<=9)||!P.adv||P.adv.done)return;const b=document.querySelectorAll('#stage .advopt')[n-1];if(b&&!b.disabled){e.preventDefault();b.click()}});
 /* ───────── join page: character creation ───────── */
 const J_START=2,J_FREE=15,J_MAX=3;
