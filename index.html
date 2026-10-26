@@ -536,6 +536,12 @@ header>.chip:not(.sugg){margin-left:0}
 .pcm.host{border-color:var(--gold)}.pcm.empty{opacity:.45;border-style:dashed}.pcm.empty i{width:22px;height:22px;border:2px dashed var(--mute);border-radius:50%;display:block}
 .pcfoot{display:flex;align-items:center;justify-content:space-between;gap:8px}.pcfoot b{font-family:var(--f-pix)}
 .raidtopbtn{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.raidtopbtn .btn{padding:7px 14px;font-size:14px}
+.padphone{--ph-body:#111217;--ph-line:#000000;--ph-hi:#2a2d38;--ph-hole:#07080c;max-width:400px;margin:10px auto 0;background:var(--ph-body);border:3px solid var(--ph-line);border-radius:30px;padding:0 12px;box-shadow:inset 0 0 0 2px var(--ph-hi),4px 4px 0 rgba(0,0,0,.35)}
+:root[data-skin="light"] .padphone{--ph-body:#fbfaf7;--ph-line:#8b877f;--ph-hi:#ffffff;--ph-hole:#ece9e3;box-shadow:inset 0 0 0 2px var(--ph-hi)}
+.pp-top{height:38px;display:flex;align-items:center;justify-content:center;gap:10px}.pp-spk{width:64px;height:9px;border:2px solid var(--ph-line);border-radius:6px;background:var(--ph-hole)}.pp-cam{width:9px;height:9px;border:2px solid var(--ph-line);border-radius:50%;background:var(--ph-hole)}
+.pp-screen{border:3px solid var(--ph-line);background:var(--panel);padding:10px;min-height:620px;min-width:0}
+.pp-bot{height:52px;display:flex;align-items:center;justify-content:center}.pp-home{width:26px;height:26px;border:3px solid var(--ph-line);border-radius:50%;background:var(--ph-hole)}
+@media (max-width:480px){.padphone{border-radius:22px;padding:0 7px}.pp-screen{padding:6px}}
 .raidev{display:flex;flex-direction:column;gap:8px}.raidev p{margin:0}.raidlist{display:flex;flex-direction:column;gap:5px;margin-top:6px}.raidrow{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;background:var(--deep);border:2px solid var(--ink);padding:5px 8px}
 .gscene{border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:10px;line-height:0;background:#06061a}.gscene canvas{width:100%;aspect-ratio:240/84;image-rendering:pixelated;display:block}
 .shipscene{border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:10px;line-height:0;background:#06061a}
@@ -3403,7 +3409,9 @@ function renderSocial(){
   if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
   const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
-  return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='dm'?socDm():socPad())}
+  return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='dm'?socDm():padPhone(socPad()))}
+// PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
+const padPhone=h=>`<div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>`;
 function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
