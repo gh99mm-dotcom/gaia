@@ -1087,6 +1087,7 @@ onAuthStateChanged(auth,async u=>{
 /* ───────── pixel sprites ───────── */
 const PAL={q:'#e2d39a',u:'#d6d8e0',m:'#7fd0d0',z:'#7a6fa0',k:'#07080e',w:'#b9bccb',p:'#93707f',P:'#4f3442',v:'#5f5a80',V:'#34304b',c:'#7c97a8',C:'#3a5160',g:'#71877a',G:'#37473d',y:'#a99a74',Y:'#62563d',r:'#8f555c',R:'#4d2a30',s:'#7e8193',S:'#41444f',o:'#9a7a5e',h:'#d6d8e0',d:'#3b332b',e:'#4d4337',n:'#29231f',f:'#211e1f'};
 const IC={
+ req:['................','.......rr.......','..kkkkkRRkkkkk..','..kqqqqqqqqqqk..','..kqrrrrrrrrqk..','..kqqqqqqqqqqk..','..kqqkkkkkkqqk..','..kqqkyyyykqqk..','..kqqkyyyykqqk..','..kqqkkkkkkqqk..','..kqqqqqqqqqqk..','..kqYYYYYYYYqk..','..kqqqqqqqqqqk..','..kqqYYYYYYqqk..','..kkkkkkkkkkkk..','................'],
  raygun:['................','................','................','....kkkkkkk.....','...kwwwwwwwkkk..','..kwsssssssksmkm','.kmwsSsSsSskmmmm','.kmwssssssskkmkm','..kwwwwwwwwk....','...kkkksskk.....','......kssk......','.....kssk.......','.....kSSk.......','....kSSk........','....kkkk........','................'],
 farm:["................",".......gg.......","......gGGg......","..gg..gGGg..gg..",".gGGg..gg..gGGg.",".gGGGg.gg.gGGGg.","..gGGGggggGGGg..","....gGGggGGg....",".......gg.......",".......gg.......","..kkkkkkkkkkkk..","..kVVVVVVVVVVk..","..kvccvvvvccvk..","...kVVVVVVVVk...","...kVvvvvvvVk...","....kkkkkkkk...."],
 gather:["................","......k.........",".....kck........","....kcwck...k...","....kccCk..kck..","...kcwcCCk.kcCk.","...kccCCCkkcwCk.","..k.kcCCk.kccCk.","..kckkcCk.kcCCk.",".kcwckkck.kcCk..",".kccCk.kk..kk...","kcwcCCk.........","kSSSSSSSSSSSSSk.",".kSsSSsSSSsSSk..","..kkkkkkkkkkkk..","................"],
@@ -1407,6 +1408,7 @@ const TABS=[
  {id:'adv',n:'탐사',ic:BOSS_IC,cost:'',loc:'심연에서 온 침략자 · 모든 단원 공동 토벌'},
  {id:'scan',n:'조사',ic:IC.scan,cost:'다섯 갈래 길',loc:'정착지 주변 · 다섯 갈래 길 탐색'},
  {id:'bag',n:'가방',ic:IC.bag,cost:'',loc:'개인 보관함'},
+ {id:'req',n:'의뢰',ic:IC.req,cost:'',loc:'마담 로자의 의뢰 중개소 · 매일 새 포스터'},
  {id:'shop',n:'상점',ic:IC.shop,cost:'',loc:'궤도 고물상 · 24시간 영업'},
 ];
 const SCANS=[
@@ -2962,12 +2964,11 @@ function renderShop(){
     const bulk=ones.length>1?`<div class="row sellones"><span class="hint" style="flex:1;min-width:160px">${sellArm?`1개짜리 ${ones.length}종: ${ones.map(id=>ITEMS[id].n).join(', ')}`:`1개만 있는 아이템 ${ones.length}종을 한 번에 팔 수 있습니다.`}</span>${sellArm?'<button class="btn sm ghost" data-act="sellones" data-k="no">취소</button>':''}<button class="btn sm ${sellArm?'gold':'alt'}" data-act="sellones">${sellArm?'정말 팔기':'1개짜리 모두 팔기'} · +${onesCr.toLocaleString()} CR</button></div>`:'';
     return back+(ids.length?`${bulk}<div class="bag sellbag">${ids.map(id=>`<button class="slot" data-act="sellsel" data-id="${id}" aria-pressed="${id===sellSel}" aria-label="${ITEMS[id].n} ${P.inv[id]}개" title="${ITEMS[id].n} · 한 개 ${sellPrice(id)} CR">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>${pick}`:'<p class="hint" style="padding:10px">팔 물건이 없습니다.</p>')})();
   if(shopTab==='ward')rows=wardHTML();
-  if(shopTab==='req')rows=reqHTML();
-  const tabs=[['req','의뢰'],['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
+  const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
   return head()+`<div class="shop">
-   <div class="shoptop"><div class="shopmain"><div class="card keeper ${shopTab==='req'?'broker':''}"><span class="bot">${shopTab==='req'?img(WIGBOT,null,4,'',WIGPO):img(IC.robot,null,4)}${shopTab==='req'?'':'<i class="botlight"></i>'}</span><div class="sinfo"><b>${shopTab==='req'?'의뢰 중개인 · 마담 로자 <small class="hint">(고물상 로봇 아님)</small>':'고물상 로봇 · 녹슨 7호'}</b><p class="say">“${shopTab==='req'?BROKER[keeperLine%BROKER.length]:KEEPER[keeperLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${cr.toLocaleString()} CR</b></div></div></div>
+   <div class="shoptop"><div class="shopmain"><div class="card keeper"><span class="bot">${img(IC.robot,null,4)}<i class="botlight"></i></span><div class="sinfo"><b>고물상 로봇 · 녹슨 7호</b><p class="say">“${KEEPER[keeperLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${cr.toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${shopTab===k}" data-act="shoptab" data-k="${k}"${k==='sell'?' style="margin-left:auto"':''}>${n}</button>`).join('')}</div>
-   <div class="slist ${shopTab==='req'?'reqlist':''}">${rows}</div></div>${slotHTML()}</div></div>`;
+   <div class="slist">${rows}</div></div>${slotHTML()}</div></div>`;
 }
 /* ───────── slot machine beside the junk robot: 100 CR a pull; every pull pays something ───────── */
 const SLOT_BET=100,SLOT_SYM=['seven','star','bell','cherry'],SLOT_W=[1,2,3,4];
@@ -3052,6 +3053,9 @@ function reqList(){const day=dayKey();if(P.req&&P.req.day===day&&Array.isArray(P
   P.req={day,list,done:[]};save();return P.req}
 const reqName=id=>id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id);
 const reqIcon=(id,sc)=>id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],sc):iicon(id,sc);
+let brokerLine=0,brokerSeen=false;
+function renderReq(){if(!brokerSeen){brokerLine=ri(0,BROKER.length-1);brokerSeen=true}
+  return head()+`<div class="card keeper broker"><span class="bot">${img(WIGBOT,null,4,'',WIGPO)}</span><div class="sinfo"><b>의뢰 중개인 · 마담 로자 <small class="hint">(고물상 로봇 아님)</small></b><p class="say">“${BROKER[brokerLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>${reqHTML()}`}
 function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q,i)=>{const done=R.done.includes(i),have=ingHave(q.id),ok=have>=q.n;
   return`<div class="poster ${done?'done':''}" style="--tilt:${[-2,1.5,-1,2,-1.5][i]}deg"><i class="pin"></i><span class="pt">구합니다!</span>
    <div class="pimg">${reqIcon(q.id,3)}</div><b class="pname">${esc(reqName(q.id))} ×${q.n}</b><span class="pwho">의뢰인 · ${esc(q.who)}</span>
@@ -3101,7 +3105,7 @@ function renderPanel(){bagWinRender();
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0,ps=document.querySelector('#stage .pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
-  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
+  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,req:renderReq,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
   $('#stage').innerHTML=f();
   {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;const np=document.querySelector('#stage .pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;if(Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}
   if(tab==='fish')drawLake();
@@ -3398,7 +3402,7 @@ const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raiditem','raidba
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}meView=false;mailView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}if(t.dataset.tab==='req')brokerSeen=false;meView=false;mailView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
