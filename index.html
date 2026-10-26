@@ -1649,7 +1649,7 @@ async function connect(){
   renderNet();renderAll();
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;if(adminShown())renderAdminAll();if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},()=>{});
   db.collection('grants').onSnapshot(receiveGrants,()=>{});
-  db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)){if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조');wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
+  db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)&&(r.adm||rescueCd(P)<=0)){if(!r.adm){P.rescuedAt=Date.now();if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조')}wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   farmLoad();
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
@@ -2977,10 +2977,10 @@ function renderCrew(){
   const ul=$('#crew');
   if(mode!=='online'){ul.innerHTML=`<li><span class="dot on"></span><span class="nm">${esc(P.nick)} (나)</span><span class="lvt">LV.${P.lvl}</span></li><li class="hint" style="border-style:dashed">${mode==='solo'?'공유된 페이지에서 열면 다른 단원이 여기에 보입니다.':'연결 중…'}</li>`;return}
   const online={};PEERS.forEach(p=>{if(p.presence&&p.presence.uid)online[p.presence.uid]=p.presence.act||''});
-  const list=Object.entries(PLAYERS).map(([id,p])=>({id,faint:id===uid?isFaint():(p.faint&&Date.now()<p.faint),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
+  const list=Object.entries(PLAYERS).map(([id,p])=>({id,rcd:rescueCd(id===uid?P:p),faint:id===uid?isFaint():(p.faint&&Date.now()<p.faint),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
    .sort((a,b)=>(b.on-a.on)||(b.lvl-a.lvl));
   if(!list.find(x=>x.id===uid))list.unshift({id:uid,nick:P.nick,lvl:P.lvl,on:true,act:''});
-  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${colorOf(x.id)}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button><span class="lvt">LV.${x.lvl}</span>${x.id!==uid&&affOf(P,x.id)?`<span class="lvt" style="color:${affColor(affOf(P,x.id))}" title="내 호감도 ${affLabel(affOf(P,x.id))}">♥${affOf(P,x.id)}</span>`:''}<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN 3</small></button>`:''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
+  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${colorOf(x.id)}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button><span class="lvt">LV.${x.lvl}</span>${x.id!==uid&&affOf(P,x.id)?`<span class="lvt" style="color:${affColor(affOf(P,x.id))}" title="내 호감도 ${affLabel(affOf(P,x.id))}">♥${affOf(P,x.id)}</span>`:''}<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?(x.rcd>0?`<button class="btn sm ghost rescue" disabled title="구조를 받은 지 30분이 지나야 다시 구조할 수 있습니다">구조 <small>${Math.ceil(x.rcd/60e3)}분</small></button>`:`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN 3</small></button>`):''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
 }
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
 const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
@@ -3011,6 +3011,8 @@ document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(i
 const FAINT_MS=10*60e3;
 const isFaint=()=>P.faint&&Date.now()<P.faint;
 function checkFaint(){if(isFaint())return;if(P.hp<=0||P.en<=0){const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했습니다! 개척단원 목록에서 구조할 수 있습니다.`)}}
+// rescue cooldown: once someone is rescued they can't be rescued again for 30 minutes
+const RESCUE_CD=30*60e3,rescueCd=p=>Math.max(0,(+(p&&p.rescuedAt)||0)+RESCUE_CD-Date.now());
 function wake(by){P.faint=0;P.faintAt=0;const k=by?.4:.25;P.hp=Math.max(P.hp,Math.round(maxHp()*k));P.en=Math.max(P.en,Math.round(maxEn()*k));P.t=Date.now();log(by?`${by} 님이 구조해 줬다. 정신이 돌아왔다.`:'겨우 정신을 차렸다.','good');commit()}
 function commit(){checkFaint();save();renderPilot();renderNav();renderPanel();renderCrew()}
 let soldBack={};
@@ -3115,7 +3117,7 @@ const A={
  neonpick(d){neonPick=d.c||null;neonSlot=d.c?d.k:null;renderPanel()},
  neonbuy(){const c=neonPick;if(!c||!NEONSET.has(c)||ownsNeon(c))return;if((P.cr||0)<NEON_PRICE){toast('크레딧이 부족합니다.');return}P.cr-=NEON_PRICE;sfxCoin();P.own=[...(P.own||[]),'neon'+c];if(LOOKS[neonSlot])P.look=Object.assign({},lookOf(P),{[neonSlot]:c});neonPick=null;neonSlot=null;renderPilot();log(`${NEON.find(n=>n[0]===c)[1]} 색을 샀다.`,'good');commit()},
  setlook(d){if(!LOOKS[d.k]||!(LOOKS[d.k].opts.some(o=>o[0]===d.c)||(NEONSET.has(d.c)&&ownsNeon(d.c))))return;P.look=Object.assign({},lookOf(P),{[d.k]:d.c});save();renderPanel();renderPilot()},
- rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');addAff(d.k,AFF.rescue,'구조함');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
+ rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(rescueCd(t)>0){toast(`${t.nick} 님은 구조를 받은 지 30분이 지나지 않았습니다. ${Math.ceil(rescueCd(t)/60e3)}분 뒤에 다시 구조할 수 있습니다.`);return}if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');addAff(d.k,AFF.rescue,'구조함');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
  gift(d){openGift(d.k)},
  giftclose(){$('#giftModal').hidden=true},
  giftadd(d){if(!isDish(d.id))return;const have=P.inv[d.id]||0;if(giftCount()>=GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
@@ -3144,7 +3146,7 @@ const A={
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[{id,n}],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true,adm:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
- admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
+ admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now(),adm:true}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
  profile(){meView=true;mailView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
