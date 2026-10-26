@@ -3168,7 +3168,14 @@ function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filte
 const giftGoOk=sel=>(sel.length||giftCr)?!giftedToday(giftTo):!!giftMsg.trim();
 /* ───────── mailbox: gifts and notes from crew, gifts from the admin; nothing is applied until opened ───────── */
 let MAILG=[],MAILA=[],mailView=false,mailNoted=new Set();
-function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>!got.includes(g.id));
+// affinity from a gift is settled as soon as it arrives (not when the mailbox is opened), once per gift and once a day per giver
+function giftAff(g){if(!g||!g.from||g.sys||g.from===uid||!mailHasGift(g)||(P.affG||[]).includes(g.id))return false;P.affG=[...(P.affG||[]).slice(-80),g.id];
+  if((P.affDay||{})[g.from]===dayKey())return true;P.affDay=Object.assign({},P.affDay,{[g.from]:dayKey()});
+  const gi=giftItems(g).map(([i])=>i).filter(i=>ITEMS[i]),lk=gi.filter(i=>(P.likes||[]).includes(i)),ht=gi.filter(i=>(P.hates||[]).includes(i));
+  if(lk.length)addAff(g.from,AFF.like,`좋아하는 ${ITEMS[lk[0]].n} 선물`);
+  if(ht.length)addAff(g.from,AFF.hate,`싫어하는 ${ITEMS[ht[0]].n} 선물`);
+  if(!lk.length&&!ht.length)addAff(g.from,AFF.gift,'선물');return true}
+function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>!got.includes(g.id));if(MAILG.map(giftAff).some(Boolean)){save();renderPilot()}
   MAILG.forEach(g=>{if(mailNoted.has(g.id))return;mailNoted.add(g.id);if((+g.at||0)>socBoot)toast(`${g.sys?'운영자':(g.nick||'누군가')} 님에게서 ${mailHasGift(g)?'선물':'쪽지'}이 왔습니다. 우편함을 확인하십시오.`)});mailRefresh()}
 function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0)||got.includes(d.id))return;
   if((+g.at||0)<(P.joined||0)){P.gr=[...(P.gr||[]),d.id].slice(-80);ch=true;return}MAILA.push(Object.assign({id:d.id,grant:1},g))});if(ch)save();mailRefresh()}
@@ -3181,11 +3188,7 @@ function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
   if(a){const cr=Math.min(100000,Math.floor(+a.cr));P.gr=[...(P.gr||[]),id].slice(-80);P.cr=(P.cr||0)+cr;MAILA=MAILA.filter(x=>x.id!==id);log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');sfxCoin();return true}
   const g=MAILG.find(x=>x.id===id);if(!g)return false;P.gotG=[...(P.gotG||[]).slice(-60),id];MAILG=MAILG.filter(x=>x.id!==id);
   const parts=[];giftItems(g).forEach(([i,n])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
-  if(parts.length&&g.from&&!g.sys&&PLAYERS[g.from]&&(P.affDay||{})[g.from]!==dayKey()){P.affDay=Object.assign({},P.affDay,{[g.from]:dayKey()});
-    const gi=giftItems(g).map(([i])=>i).filter(i=>ITEMS[i]),lk=gi.filter(i=>(P.likes||[]).includes(i)),ht=gi.filter(i=>(P.hates||[]).includes(i));
-    if(lk.length)addAff(g.from,AFF.like,`좋아하는 ${ITEMS[lk[0]].n} 선물`);
-    if(ht.length)addAff(g.from,AFF.hate,`싫어하는 ${ITEMS[ht[0]].n} 선물`);
-    if(!lk.length&&!ht.length)addAff(g.from,AFF.gift,'선물')}
+  giftAff(g);
   const who=g.sys?'운영자':(g.nick||'누군가');log(parts.length?`${who} 님의 선물을 받았다: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`:`${who} 님의 쪽지 — “${String(g.msg||'').slice(0,40)}”`,parts.length?'rare':'good');if(parts.length)sfxCoin();
   if(mode==='online')db.collection('gifts').doc(id).delete().catch(()=>{});return true}
 function mailHTML(){const L=mailList();
