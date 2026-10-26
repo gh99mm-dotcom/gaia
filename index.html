@@ -2841,29 +2841,31 @@ function renderShop(){
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${shopTab===k}" data-act="shoptab" data-k="${k}"${k==='sell'?' style="margin-left:auto"':''}>${n}</button>`).join('')}</div>
    <div class="slist">${rows}</div></div>${slotHTML()}</div></div>`;
 }
-/* ───────── slot machine beside the junk robot: 10 CR a pull, about 89% paid back ───────── */
-const SLOT_BET=10,SLOT_SYM=['seven','star','bell','cherry'],SLOT_W=[1,2,3,4];
+/* ───────── slot machine beside the junk robot: 100 CR a pull, about 89% paid back ───────── */
+const SLOT_BET=100,SLOT_SYM=['seven','star','bell','cherry'],SLOT_W=[1,2,3,4];
 // 777 x100 · ★★★ x15 · bell x10 · cherry x3 = x4 · any two cherries = half back
 const slotPay=f=>{const [a,b,c]=f;if(a===b&&b===c)return{seven:100,star:15,bell:10,cherry:4}[a]*SLOT_BET;const ch=f.filter(x=>x==='cherry').length;return ch===2?SLOT_BET/2:0};
 const slotRoll=()=>{let t=Math.random()*10;for(let i=0;i<4;i++){if((t-=SLOT_W[i])<0)return SLOT_SYM[i]}return 'cherry'};
 let slotFace=['seven','cherry','seven'],slotBusy=false,slotMsg='';const SLOTIMG={};
 function slotCanvas(W,H,draw){const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');const px=(x,y,col)=>{if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
   const rect=(x0,y0,x1,y1,col)=>{g.fillStyle=col;g.fillRect(x0,y0,x1-x0+1,y1-y0+1)},frame=(x0,y0,x1,y1,col)=>{rect(x0,y0,x1,y0,col);rect(x0,y1,x1,y1,col);rect(x0,y0,x0,y1,col);rect(x1,y0,x1,y1,col)};draw(px,rect,frame);return c.toDataURL()}
-function slotArt(){if(SLOTIMG.cab)return SLOTIMG;const K='#07080e';
-  // cabinet in the station's colours: slate-violet body, tarnished gold trim, muted red lamp
+function slotArt(){const lt=isLight();if(SLOTIMG.cab&&SLOTIMG.lt===lt)return SLOTIMG;SLOTIMG.lt=lt;
+  // cabinet in the station's colours (night: slate-violet and tarnished gold; 우주모드 OFF: faded lavender, paper and dusty pastels)
+  const C=lt?{K:'#6e6a72',b0:'#9690ab',b1:'#aaa6bc',hl:'#cfcbdc',hl2:'#bdb9cc',sh:'#7e7a94',sh2:'#8a86a0',top:'#d8d4e2',topi:'#e7e4ec',lampA:'#b27d77',lampB:'#d8b4ae',lampH:'#f6efe8',win:'#ece8e2',trim:'#a3905f',trimH:'#c4b48a',reel:'#f6f4f0',reelE:'#d6d0c6',reelL:'#e6e2da',reelD:'#c4bdb0',line:'#c48a86',pnl:'#d8d4e2',btn:['#cfadb0','#d4c494','#a8bea8','#a8bcc4'],btnH:'#ffffff',slot:'#bdb7ad',slotI:'#a8a298',disp:'#d0cbc2',tray:'#d8d4cc',trayE:'#c4bfb6',coin:'#c4ae78',coinH:'#efe2bc',base:'#c9c3b9',baseH:'#dcd7ce',brk:'#a8a4ae',brkH:'#cfcbd4',rod:['#a8aeb6','#d4d8de','#8a9098'],knob:['#d8b4ae','#b27d77']}
+    :{K:'#07080e',b0:'#2c2a44',b1:'#38345a',hl:'#5a5488',hl2:'#4a4672',sh:'#24223a',sh2:'#2c2a46',top:'#1d1a30',topi:'#141224',lampA:'#a8505a',lampB:'#d88a86',lampH:'#f4d8cc',win:'#141822',trim:'#a88a48',trimH:'#c8a860',reel:'#d8d2c4',reelE:'#a8a294',reelL:'#c4bdb0',reelD:'#98927f',line:'#d8606a',pnl:'#1d1a30',btn:['#c8606a','#d8b860','#7ab890','#6aa8c8'],btnH:'#f0ece4',slot:'#0c1016',slotI:'#07080e',disp:'#262a34',tray:'#20242e',trayE:'#121620',coin:'#c8a048',coinH:'#f0d890',base:'#24203a',baseH:'#3a3458',brk:'#3a404a',brkH:'#6a727c',rod:['#8a929c','#b8c0c8','#5a626c'],knob:['#e8a8a0','#b8505a']};const K=C.K;
   SLOTIMG.cab=slotCanvas(56,72,(px,rect,frame)=>{
-    rect(6,14,45,63,'#2c2a44');rect(7,15,44,62,'#38345a');for(let y=15;y<63;y++){px(7,y,'#5a5488');px(8,y,'#4a4672');px(44,y,'#24223a');px(43,y,'#2c2a46')}frame(6,14,45,63,K);
-    rect(9,6,42,14,'#1d1a30');frame(9,6,42,14,K);rect(12,9,39,11,'#141224');
-    for(let y=0;y<7;y++)for(let x=20;x<32;x++)if(((x-25.5)/6)**2+((y-6.5)/6)**2<=1)px(x,y,x>26||y>4?'#a8505a':'#d88a86');for(let x=20;x<32;x++)px(x,6,K);px(23,2,'#f4d8cc');px(24,2,'#f4d8cc');
-    rect(9,18,42,39,K);rect(10,19,41,38,'#141822');frame(10,19,41,38,'#a88a48');for(let x=11;x<41;x++)px(x,20,'#c8a860');
-    [12,21,30].forEach(x0=>{rect(x0,22,x0+7,36,'#d8d2c4');for(let x=x0;x<x0+8;x++){px(x,22,'#a8a294');px(x,36,'#a8a294')}for(let y=22;y<37;y++){px(x0,y,'#c4bdb0');px(x0+7,y,'#98927f')}});
-    for(const y of [28,29,30]){px(11,y,'#d8606a');px(40,y,'#d8606a')}
-    rect(9,42,42,48,'#1d1a30');frame(9,42,42,48,K);[[13,'#c8606a'],[20,'#d8b860'],[27,'#7ab890'],[34,'#6aa8c8']].forEach(([x,c])=>{rect(x,44,x+4,46,c);px(x,44,'#f0ece4');px(x+4,46,K)});
-    rect(11,50,25,56,K);rect(12,51,24,55,'#0c1016');rect(31,50,38,56,K);rect(32,51,37,55,'#262a34');rect(34,52,35,54,K);
-    rect(9,57,42,63,K);rect(10,58,41,62,'#20242e');for(let x=12;x<40;x++)px(x,58,'#121620');[[16,60],[19,61],[33,60]].forEach(([x,y])=>{rect(x,y,x+2,y+1,'#c8a048');px(x,y,'#f0d890')});
-    rect(4,64,47,69,K);rect(5,65,46,68,'#24203a');for(let x=5;x<47;x++)px(x,65,'#3a3458');
-    rect(45,45,49,53,K);rect(46,46,48,52,'#3a404a');px(46,47,'#6a727c')});
-  SLOTIMG.lever=slotCanvas(7,34,(px,rect)=>{for(let y=7;y<33;y++){px(2,y,'#8a929c');px(3,y,'#b8c0c8');px(4,y,'#5a626c')}for(let y=0;y<7;y++)for(let x=0;x<7;x++)if(((x-3)/3.2)**2+((y-3)/3.2)**2<=1)px(x,y,x<3&&y<3?'#e8a8a0':'#b8505a')});
+    rect(6,14,45,63,C.b0);rect(7,15,44,62,C.b1);for(let y=15;y<63;y++){px(7,y,C.hl);px(8,y,C.hl2);px(44,y,C.sh);px(43,y,C.sh2)}frame(6,14,45,63,K);
+    rect(9,6,42,14,C.top);frame(9,6,42,14,K);rect(12,9,39,11,C.topi);
+    for(let y=0;y<7;y++)for(let x=20;x<32;x++)if(((x-25.5)/6)**2+((y-6.5)/6)**2<=1)px(x,y,x>26||y>4?C.lampA:C.lampB);for(let x=20;x<32;x++)px(x,6,K);px(23,2,C.lampH);px(24,2,C.lampH);
+    rect(9,18,42,39,K);rect(10,19,41,38,C.win);frame(10,19,41,38,C.trim);for(let x=11;x<41;x++)px(x,20,C.trimH);
+    [12,21,30].forEach(x0=>{rect(x0,22,x0+7,36,C.reel);for(let x=x0;x<x0+8;x++){px(x,22,C.reelE);px(x,36,C.reelE)}for(let y=22;y<37;y++){px(x0,y,C.reelL);px(x0+7,y,C.reelD)}});
+    for(const y of [28,29,30]){px(11,y,C.line);px(40,y,C.line)}
+    rect(9,42,42,48,C.pnl);frame(9,42,42,48,K);[13,20,27,34].forEach((x,i)=>{rect(x,44,x+4,46,C.btn[i]);px(x,44,C.btnH);px(x+4,46,K)});
+    rect(11,50,25,56,K);rect(12,51,24,55,C.slot);rect(31,50,38,56,K);rect(32,51,37,55,C.disp);rect(34,52,35,54,C.slotI);
+    rect(9,57,42,63,K);rect(10,58,41,62,C.tray);for(let x=12;x<40;x++)px(x,58,C.trayE);[[16,60],[19,61],[33,60]].forEach(([x,y])=>{rect(x,y,x+2,y+1,C.coin);px(x,y,C.coinH)});
+    rect(4,64,47,69,K);rect(5,65,46,68,C.base);for(let x=5;x<47;x++)px(x,65,C.baseH);
+    rect(45,45,49,53,K);rect(46,46,48,52,C.brk);px(46,47,C.brkH)});
+  SLOTIMG.lever=slotCanvas(7,34,(px,rect)=>{for(let y=7;y<33;y++){px(2,y,C.rod[0]);px(3,y,C.rod[1]);px(4,y,C.rod[2])}for(let y=0;y<7;y++)for(let x=0;x<7;x++)if(((x-3)/3.2)**2+((y-3)/3.2)**2<=1)px(x,y,x<3&&y<3?C.knob[0]:C.knob[1])});
   // reel symbols, 8x13 so they sit in the reel windows
   const sym={seven:(px)=>{for(let x=1;x<7;x++){px(x,2,'#c8343c');px(x,3,x===6?'#9a2028':'#c8343c')}px(1,4,'#c8343c');[[5,4],[5,5],[4,6],[4,7],[3,8],[3,9],[3,10],[3,11]].forEach(([x,y])=>{px(x,y,'#c8343c');px(x+1,y,'#9a2028')})},
     cherry:(px)=>{const ch=(cx,cy)=>{[[0,-1],[-1,0],[0,0],[1,0],[0,1],[1,1],[-1,1],[1,-1],[-1,-1]].forEach(([a,b])=>px(cx+a,cy+b,(a+b>0)?'#9a2028':'#c8343c'));px(cx-1,cy-1,'#f8e0d8')};ch(2,9);ch(5,10);[[2,7],[3,6],[3,5],[4,4],[5,3],[5,8],[5,7],[5,6],[5,5],[5,4]].forEach(([x,y])=>px(x,y,'#4f7a3a'));px(6,2,'#7ab05a');px(5,2,'#7ab05a')},
