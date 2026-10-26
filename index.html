@@ -3047,7 +3047,9 @@ const REQ_POOL=[['pot',10,20,15,'배고픈 기관실 3교대 팀'],['berry',8,15
  ['fish:c',5,10,25,'정거장 식당 주방장'],['fish:r',1,3,120,'희귀 어종 수집가'],['ore',15,30,10,'선체 보수 작업반'],['crystal',5,10,40,'동력로 정비사'],['moss',10,20,8,'온실 관리인'],['dark',2,4,90,'수상한 연구원'],
  ['d_potRoast',2,4,60,'야근하는 관제사'],['d_hoe',1,3,90,'회가 먹고 싶은 선장'],['d_grill',1,2,110,'생선구이 마니아']];
 function reqRng(seed){let x=seed%2147483647||1;return()=>(x=(x*16807)%2147483647)/2147483647}
-function reqList(){const day=dayKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list))return P.req;
+// posters change twice a day, at 08:00 and 20:00 Korea time (UTC+9): one 12-hour window per key
+const REQ_WIN=12*3600e3,reqKey=()=>'r'+Math.floor((Date.now()+3600e3)/REQ_WIN),reqLeft=()=>REQ_WIN-((Date.now()+3600e3)%REQ_WIN);
+function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list))return P.req;
   let h=0;for(const c of day+uid)h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+7),pool=REQ_POOL.slice(),list=[],mul=1+Math.min(60,P.lvl)/30;
   for(let k=0;k<5&&pool.length;k++){const [id,a,b,per,who]=pool.splice(Math.floor(rnd()*pool.length),1)[0],n=a+Math.floor(rnd()*(b-a+1));list.push({id,n,cr:Math.round(n*per*mul/10)*10,who})}
   P.req={day,list,done:[]};save();return P.req}
@@ -3061,7 +3063,7 @@ function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q
    <div class="pimg">${reqIcon(q.id,3)}</div><b class="pname">${esc(reqName(q.id))} ×${q.n}</b><span class="pwho">의뢰인 · ${esc(q.who)}</span>
    <span class="preward">${img(IC.coin,null,2)}${q.cr.toLocaleString()} CR</span><span class="phave ${ok?'ok':''}">가진 것 ${Math.min(have,999)}/${q.n}</span>
    ${done?'<span class="pstamp">완료</span>':`<button class="btn sm ${ok?'gold':''}" data-act="reqgo" data-k="${i}" ${ok?'':'disabled'}>납품하기</button>`}</div>`}).join('')}</div>
-  <p class="hint">포스터는 매일 새로 붙습니다. 오늘 남은 의뢰 ${R.list.length-R.done.length}개.</p>`}
+  <p class="hint">포스터는 매일 오전 8시와 오후 8시에 새로 붙습니다. 다음 교체까지 <b id="reqT">${fmtClock(reqLeft())}</b> · 남은 의뢰 ${R.list.length-R.done.length}개.</p>`}
 function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
 function renderBag(){return head()+bagInner()}
 function bagInner(){
@@ -3742,7 +3744,7 @@ setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.tex
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
 addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm'){fitSide();fitBay()}});
 setInterval(()=>{
-  scoutTick();if(!!BBGM!==bossBgmWant())syncBgm();{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
+  scoutTick();if(!!BBGM!==bossBgmWant())syncBgm();if(tab==='req'){if(P.req&&P.req.day!==reqKey())renderPanel();else{const e=$('#reqT');if(e)e.textContent=fmtClock(reqLeft())}}{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
