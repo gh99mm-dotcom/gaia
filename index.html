@@ -1581,7 +1581,7 @@ function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.q
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
 /* three crew roles: 기관사 fights and fixes, 항해사 scouts and takes hits, 의무원 heals and backs the party up */
-const JOBS={mech:{n:'기관사',r:'전투 · 엔지니어',d:'공격력 +15% · 무기 강화 재료 30% 절약 · 물 채우기 대기 30분'},
+const JOBS={mech:{n:'기관사',r:'전투 · 엔지니어',d:'공격력 +15% · 무기 강화 재료 30% 절약 · 원정 우주선 자재 +1'},
  nav:{n:'항해사',r:'탐사 · 탱커',d:'방어력 +6 · 최대 체력 +30 · 채집 로봇이 재료를 더 자주 가져옴 · 조사 이동 시간 25% 단축'},
  medic:{n:'의무원',r:'힐러 · 서포터',d:'음식 회복량 +50% (원정에서 동료에게 써도 적용) · 원정 전투에서 이길 때마다 파티 전원 체력 10% 회복 · 구조에 에너지가 들지 않고 구조한 단원은 체력 70%로 깨어남'}};
 const jobOf=p=>p&&p.job?JOBS[p.job]||JOBS[OLDJOB[p.job]]||null:null;
@@ -2029,7 +2029,7 @@ function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;l
 // after any action: victory, wipe, or the next turn
 function raidSettle(r){const b=r.b,z=raidZone(r);
   if(b.mons.every(m=>m.hp<=0)){if(raidIn(r).some(u=>r.m[u].job==='medic'&&r.m[u].hp>0)){raidIn(r).forEach(u=>{const m=r.m[u];if(m.hp>0)m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.1))});raidLog(b,'의무원이 전투가 끝난 동료들을 치료했다. 모두 체력 +10%')}let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});const crB=crs(b.mons.filter(m=>m.kind==='boss').reduce((a,m)=>a+m.L*16,0));cr=crs(cr);const crM=Math.max(0,cr-crB);
-    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=crM;L.cb.boss+=cr-crM;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0);if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
+    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=crM;L.cb.boss+=cr-crM;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n=n0&&r.m[u].job==='mech'?n0+1:n0;if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
     const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}`};
     if(boss)raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5);L.cr+=crs(200);L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=crs(200)});return r}
@@ -3227,8 +3227,8 @@ const A={
  fsput(d){const have=P.inv[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-bag')||{}).value)||1)));if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);storeLogAdd('put',d.id,n);log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
  shipsel(d){shipSel=d.k;renderPanel()},
  shipgive(d){shipGive(d.k,d.i)},
- refill(){if(FARM.water>=FARM.cap)return;if(Date.now()<FARM.refCd){toast(`아직 물을 채울 수 없습니다. ${fmtClock(FARM.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}const eng=P.job==='mech';FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+(eng?1800e3:3600e3);sfxWater();
-  if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:FARM.refCd}).catch(()=>{});else farmSave();log(`공용 물탱크를 가득 채웠다. ${eng?'30분':'1시간'} 뒤에 다시 채울 수 있다.`,'good');commit()},
+ refill(){if(FARM.water>=FARM.cap)return;if(Date.now()<FARM.refCd){toast(`아직 물을 채울 수 없습니다. ${fmtClock(FARM.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+3600e3;sfxWater();
+  if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:FARM.refCd}).catch(()=>{});else farmSave();log(`공용 물탱크를 가득 채웠다. 1시간 뒤에 다시 채울 수 있다.`,'good');commit()},
  raidzone(d){raidSel=d.k;renderPanel()},
  raidnew(d){raidCreate(d.k==='solo')},
  raidjoin(d){raidJoin(d.k)},
