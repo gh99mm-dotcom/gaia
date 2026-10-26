@@ -1571,7 +1571,12 @@ let INV=[];const fmtCode=c=>String(c).slice(0,4)+'-'+String(c).slice(4);
 function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div class="info-sec"><span class="lbl">Invites · 초대장 · 남은 ${INV.length}장</span><span class="hint">초대장 한 장으로 한 명만 가입할 수 있고, 가입에 쓰이면 자동으로 사라집니다.</span>
   <div class="row" style="gap:6px"><input id="invMemo" class="sel" maxlength="20" placeholder="누구에게 줄지 메모 (선택)" style="flex:1;min-width:140px"><button class="btn sm gold" data-act="invnew">초대장 발급</button></div>
   ${INV.length?`<div class="fblist">${INV.map(v=>`<div class="fbitem"><div class="row"><b class="invcode">${fmtCode(v.id)}</b><span class="hint">${fbTime(v.at||0)}</span></div>${v.memo?`<span class="hint">${esc(v.memo)}</span>`:''}<div class="row" style="justify-content:flex-end;gap:5px"><button class="btn sm alt" data-act="invcopy" data-k="${esc(v.id)}">안내문 복사</button><button class="btn sm ghost" data-act="invdel" data-k="${esc(v.id)}">취소</button></div></div>`).join('')}</div>`:'<span class="hint">아직 쓰지 않은 초대장이 없습니다.</span>'}</div>`}
-function renderAdminAll(){if(!$('#adminBox'))return;renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply()}
+// keep what the admin is typing when snapshots redraw the panel
+function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},ae=document.activeElement,fid=ae&&box.contains(ae)&&ae.id?ae.id:null,sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  box.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{if(el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value});
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
+  Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
+  if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}}
 // the admin page is split into tabs: tools, member management, deleted members; sections say which tab they belong to
 let admTab='tools';
 function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.querySelector('.info-head'),nc=Object.keys(PLAYERS).filter(id=>id!==uid).length,nd=Object.keys(DELP).length;
@@ -3125,7 +3130,7 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
  g.addEventListener('pointerup',()=>{if(!rs)return;rs=null;try{localStorage.setItem('gaia-bagsize',JSON.stringify([bagWin.offsetWidth,bagWin.offsetHeight]))}catch(e){}})}
 function renderPanel(){bagWinRender();
   // my profile opens as a page in the stage, with a way back to the tab underneath
-  if(adminView&&isAdmin){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
+  if(adminView&&isAdmin){if(!$('#stage #adminBox'))$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
