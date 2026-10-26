@@ -1902,7 +1902,8 @@ const RAID_EVENTS=[
 const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1)*(kind==='boss'?1+Math.pow(L/15,1.5):1));
 function raidMon(zone,L,kind,name,n){const s={elite:[1.5,1.1,1.1],mid:[2.2,1.15,1.15],boss:[3,1.15,1.2]}[kind]||[1,1,1],pm=kind==='mid'||kind==='boss'?1+.7*(n-1):1;
   // higher-level monsters get gradually tougher: x(1+L/60) on HP, so Lv.30 is x1.5 and Lv.60 is x2
-  const hp=Math.round((14+L*5+L*L*.06)*(1+L/60)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3.5+L*1.4+L*L*.018)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
+  // attack is x2 at Lv.1 easing to x1.6 at Lv.60, so a same-level fighter falls in ~6-8 normal hits / ~4-6 boss hits
+  const hp=Math.round((14+L*5+L*L*.06)*(1+L/60)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3.5+L*1.4+L*L*.018)*(2-L/150)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
 const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
@@ -2150,7 +2151,7 @@ async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossR
   bossBusy=false;if(!dealt){bossPaint();return}
   P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
-  let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=Math.max(1,Math.round((10+b.lv*1.2)*bossKind(b).atk*(.85+Math.random()*.3)-def()*.6));heal(-hit,0);back=`${hit} 피해`}
+  let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=Math.max(1,Math.round((12+b.lv*4)*bossKind(b).atk*(.85+Math.random()*.3)-def()*.4));heal(-hit,0);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
   sfxBossHit(crit);if(kill)sfxBossKill();else sfxBossBack(bossLast&&bossLast.miss);
   log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
