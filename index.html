@@ -2075,12 +2075,13 @@ function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b
   const xp=Math.round(raidMonXp(src.lv||P.lvl,'boss')*1.5*1.5*(1+Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
   P.chests=[...(P.chests||[]),{gen:src.gen,name:src.name,share,xp,cr,relic:1,crystal:src.killer===uid?2:0}].slice(-5);
   log(`${src.name}을(를) 쓰러뜨렸다! 탐사 화면에 보상 상자가 도착했다.`,'rare');sys(`[공지] ${src.name} 토벌 성공! 참여한 단원은 탐사 화면에서 보상 상자를 여십시오.`);commit()}
-const CHEST_EX=.05;let chestOpen=null,chestAnim=0;
+// 탐사-only wardrobe drop: 3% at full contribution (20%+ of the damage), down to 1.5% for a token hit
+const CHEST_EX=.03,chestEx=c=>CHEST_EX*(.5+.5*Math.min(1,(c&&c.share||0)*5));let chestOpen=null,chestAnim=0;
 const CHEST=["..kkkkkkkkkkkkkk..", ".k%@@@@@@@@@@@@%k.", "k%@||||||||||||@%k", "k@|////////////|@k", "k@|////////////|@k", "kkkkkkkkkkkkkkkkkk", "k%@@@@@kkkk@@@@@%k", "k@|////k**k////|@k", "k@|////k%%k////|@k", "k@|/////kk/////|@k", "k@|////////////|@k", "k%@@@@@@@@@@@@@@%k", ".kkkkkkkkkkkkkkkk."],CHEST_OPEN=["..kkkkkkkkkkkkkk..", ".k%@@@@@@@@@@@@%k.", "k%@||||||||||||@%k", "kkkkkkkkkkkkkkkkkk", "..*..*..**..*..*..", "k@**@*@****@*@**@k", "k%@@@@@kkkk@@@@@%k", "k@|////k**k////|@k", "k@|////k%%k////|@k", "k@|/////kk/////|@k", "k@|////////////|@k", "k%@@@@@@@@@@@@@@%k", ".kkkkkkkkkkkkkkkk."];
 // open the oldest waiting chest: grant what it holds and roll for a 탐사-only wardrobe item
 function openChest(){const c=(P.chests||[])[0];if(!c||chestAnim)return;chestAnim=1;renderPanel();
   setTimeout(()=>{chestAnim=0;P.chests=(P.chests||[]).slice(1);gainXp(c.xp);P.cr=(P.cr||0)+c.cr;add('relic',c.relic||1);if(c.crystal)add('crystal',c.crystal);
-    let ex=null;const pool=Object.values(WARD).flatMap(g=>g.list.filter(it=>it.ex&&!(P.own||[]).includes(it.id)));if(pool.length&&Math.random()<CHEST_EX){ex=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),ex.id]}
+    let ex=null;const pool=Object.values(WARD).flatMap(g=>g.list.filter(it=>it.ex&&!(P.own||[]).includes(it.id)));if(pool.length&&Math.random()<chestEx(c)){ex=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),ex.id]}
     chestOpen=Object.assign({},c,{ex:ex&&ex.id});
     log(`보상 상자를 열었다! 경험치 +${c.xp.toLocaleString()} · ${c.cr} CR · 고대 신호 기록×${c.relic||1}${c.crystal?` · 은하 결정×${c.crystal}`:''}${ex?` · 탐사 전용 옷장 아이템 「${ex.n}」!`:''}`,'rare');
     if(ex)sys(`[공지] ${P.nick} 님이 보상 상자에서 탐사 전용 아이템 「${ex.n}」을(를) 얻었습니다!`);sfxCoin();commit()},900)}
@@ -2091,7 +2092,7 @@ function chestHTML(){const n=(P.chests||[]).length,c=(P.chests||[])[0];
      ${ex?`<div class="chestex">${meImg(3,P,{[slot]:ex.id})}<div><span class="lbl">탐사 전용 · 5%</span><b>${esc(ex.n)}</b><span class="hint">내 모습에서 바로 착용할 수 있습니다.</span></div></div>`:''}
      <button class="btn sm ghost" data-act="chestok">확인${n?` · 남은 상자 ${n}개`:''}</button></div></div>`}
   if(!c)return'';
-  return`<div class="chestcard ${chestAnim?'shake':''}"><div class="chestspr">${img(CHEST,null,4,"",WPAL)}</div><div class="chestbody"><b>보상 상자가 도착했습니다${n>1?` ×${n}`:''}</b><span class="hint">${esc(c.name)} 토벌 보상 · 무엇이 들어 있을까요? 5% 확률로 탐사 전용 옷장 아이템이 나옵니다.</span><button class="btn gold" data-act="chestopen" ${chestAnim?'disabled':''}>${chestAnim?'여는 중…':'상자 열기'}</button></div></div>`}
+  return`<div class="chestcard ${chestAnim?'shake':''}"><div class="chestspr">${img(CHEST,null,4,"",WPAL)}</div><div class="chestbody"><b>보상 상자가 도착했습니다${n>1?` ×${n}`:''}</b><span class="hint">${esc(c.name)} 토벌 보상 · 무엇이 들어 있을까요? 기여도에 따라 ${(chestEx(c)*100).toFixed(1)}% 확률로 탐사 전용 옷장 아이템이 나옵니다.</span><button class="btn gold" data-act="chestopen" ${chestAnim?'disabled':''}>${chestAnim?'여는 중…':'상자 열기'}</button></div></div>`}
 const bossReady=()=>Math.max(0,(P.bossAt||0)+BOSS_CD-Date.now());
 async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossReady()>0||isFaint()||bossBusy)return;bossBusy=true;
   const crit=Math.random()*100<AS('agi'),d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(crit?1.5:1)));let dealt=0,kill=false;
