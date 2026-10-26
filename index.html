@@ -543,7 +543,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bosslog{list-style:none;margin:0;padding:6px 8px;flex:1;min-height:240px;max-height:440px;overflow:auto;background:var(--deep);border:2px solid var(--ink);display:flex;flex-direction:column;gap:4px;font-size:13px}
 .bosslog li{display:flex;flex-wrap:wrap;gap:0 6px;align-items:baseline;overflow-wrap:anywhere}.bosslog li b{color:var(--cyan);font-weight:400;display:inline-flex;align-items:center;gap:5px}.bosslog li b img{flex:none}.bosslog li.me b{color:var(--gold)}.bosslog li span{flex:1 1 100%}.bosslog time{font-size:11px;color:var(--dim);margin-left:auto}.bosslog li span{order:3}
 .bossform{display:flex;gap:4px}.bossform input{flex:1;min-width:0;background:var(--deep);color:var(--text);border:2px solid var(--ink);padding:5px 7px;font:inherit}
-.raidacts{display:flex;gap:6px;flex-wrap:wrap}.raidacts .btn{flex:1;justify-content:center}.raiditems{display:flex;flex-direction:column;gap:4px}
+.raidacts{display:flex;gap:6px;flex-wrap:wrap}.raidsk{display:flex;flex-direction:column;gap:5px;margin-top:6px}.raidsk .btn.sk{flex-direction:column;gap:1px;line-height:1.2}.raidsk .btn.sk small{font-size:11px;opacity:.8}.raidacts .btn{flex:1;justify-content:center}.raiditems{display:flex;flex-direction:column;gap:4px}
 .raidlog{list-style:none;margin:0;padding:6px 8px;background:var(--ink);border:1px solid var(--line);font-size:12.5px;display:flex;flex-direction:column;gap:2px;max-height:150px;overflow:auto}
 .pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:8px;margin-top:8px}
 .pcard{display:flex;flex-direction:column;background:var(--deep);border:2px solid var(--ink);overflow:hidden}.pcard.off{opacity:.6}.pcard:not(.off){box-shadow:0 0 0 1px var(--gold) inset}
@@ -2029,7 +2029,13 @@ function raidBattle(r,mons,intro){r.phase='battle';r.ev={n:intro};r.b={mons,roun
 function raidOrder(r){const b=r.b,a=[...raidUp(r).map(u=>({k:'p',id:u,agi:r.m[u].agi})),...b.mons.map((m,i)=>m.hp>0?{k:'m',id:i,agi:m.agi}:null).filter(Boolean)];a.sort((x,y)=>y.agi-x.agi||(x.k==='p'?-1:1));return a.map(o=>({k:o.k,id:o.id}))}
 function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.order.length){b.round++;b.order=raidOrder(r);b.ti=0}const a=b.order[b.ti];if(!a)return;
     if(a.k==='m'&&b.mons[a.id].hp>0){b.cur=a;b.turnEnd=raidNow()+RAID_MON_TURN;return}
-    if(a.k==='p'&&raidUp(r).includes(a.id)){b.cur=a;delete b.def[a.id];b.turnEnd=raidNow()+RAID_TURN;return}}}
+    if(a.k==='p'&&raidUp(r).includes(a.id)){b.cur=a;delete b.def[a.id];if(b.taunt&&b.taunt.u===a.id)b.taunt=null;const c=(b.cd||{})[a.id];if(c){c.s0=Math.max(0,(c.s0||0)-1);c.s1=Math.max(0,(c.s1||0)-1)}b.turnEnd=raidNow()+RAID_TURN;return}}}
+// job skills: each is ready at the start of a battle, then waits 3 (first) or 4 (second) of its user's own turns
+const RSK={medic:[{n:'응급 처치',d:'동료 한 명의 체력을 전부 회복 (쓰러진 동료도 일으킴)',cd:3},{n:'전체 치료',d:'살아 있는 파티 전원 최대 체력의 50% 회복',cd:4}],
+  mech:[{n:'연속 타격',d:'고른 적을 두 번 공격',cd:3},{n:'과부하 방전',d:'모든 적을 공격 (공격력 80%)',cd:4}],
+  nav:[{n:'약점 분석',d:'고른 적을 공격하고 그 적의 방어력을 이 전투 동안 10% 깎음',cd:3},{n:'방패 전개',d:'다음 내 턴까지 적의 단일 공격을 대신 맞고, 그동안 방어력 +100%',cd:4}]};
+const rJob=m=>m?(OLDJOB[m.job]||m.job||''):'';
+const rskLeft=(b,u,i)=>((b.cd||{})[u]||{})['s'+i]||0;
 function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
 // after any action: victory, wipe, or the next turn
 function raidSettle(r){const b=r.b,z=raidZone(r);
@@ -2048,14 +2054,23 @@ let raidBusyAt=0;
 function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e3)raidBusy=false;if(!r0||raidBusy)return Promise.resolve(null);raidBusy=true;raidBusyAt=Date.now();const want=turnKey(r0.b&&r0.b.cur),seq=r0.seq;
   return raidTx(r0.id,r=>{if(!r||r.seq!==seq||r.phase!=='battle'||turnKey(r.b.cur)!==want)return null;const b=r.b,a=b.cur;
     // only the member whose turn it is may attack, defend or use an item; monsters and timeouts act only on their own turns
-    if(!a||(['atk','def','item'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;
+    if(!a||(['atk','def','item','sk'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;
     if(a.k==='p'){const me=r.m[a.id];
-      if(kind==='def'){b.def[a.id]=1;raidLog(b,`${me.nick} 님이 방어 태세를 취했다.`)}
+      if(kind==='sk'){const j=rJob(me),i=arg&&arg.s|0,sk=(RSK[j]||[])[i];if(!sk||rskLeft(b,a.id,i)>0)return null;b.cd=b.cd||{};b.cd[a.id]=Object.assign({s0:0,s1:0},b.cd[a.id]);b.cd[a.id]['s'+i]=sk.cd;
+        const live=b.mons.map((m,k)=>m.hp>0?k:-1).filter(k=>k>=0),tm=b.mons[live.includes(arg.tgt)?arg.tgt:live[0]];
+        const strike=(m,mul)=>{const [d,c]=raidHit(me.atk*mul,m.def,me.crit||0);m.hp=Math.max(0,m.hp-d);return`${m.n} ${d}${c?'(치명타)':''}${m.hp<=0?' · 쓰러뜨렸다!':''}`};
+        if(j==='medic'&&i===0){const u=arg.to&&r.m[arg.to]&&!(r.left||{})[arg.to]?arg.to:a.id,to=r.m[u],h=to.maxHp-to.hp;to.hp=to.maxHp;raidLog(b,`[${sk.n}] ${me.nick} → ${u===a.id?'자신':to.nick} 체력 전부 회복 (+${h})`)}
+        else if(j==='medic'){raidUp(r).forEach(u=>{const m=r.m[u];m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.5))});raidLog(b,`[${sk.n}] ${me.nick} 님이 파티 전원의 체력을 50% 회복시켰다.`)}
+        else if(j==='mech'&&i===0){const t1=strike(tm,1),t2=tm.hp>0?strike(tm,1):'(이미 쓰러짐)';raidLog(b,`[${sk.n}] ${me.nick} → ${t1} / ${t2}`)}
+        else if(j==='mech'){raidLog(b,`[${sk.n}] ${me.nick} → ${live.map(k=>strike(b.mons[k],.8)).join(', ')}`)}
+        else if(j==='nav'&&i===0){const t=strike(tm,1);tm.def=Math.round(tm.def*.9*10)/10;raidLog(b,`[${sk.n}] ${me.nick} → ${t} · ${tm.n}의 방어력 10% 감소`)}
+        else{b.taunt={u:a.id};raidLog(b,`[${sk.n}] ${me.nick} 님이 방패를 펼쳤다. 다음 턴까지 공격을 대신 맞는다. (방어력 +100%)`)}}
+      else if(kind==='def'){b.def[a.id]=1;raidLog(b,`${me.nick} 님이 방어 태세를 취했다.`)}
       else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:Math.round((it.hp||0)*(me.job==='medic'?1.5:1));if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
       else{const live=b.mons.map((m,i)=>m.hp>0?i:-1).filter(i=>i>=0),ti=live.includes(arg)?arg:live[0],m=b.mons[ti];const [d,c]=raidHit(me.atk,m.def,me.crit||0);m.hp=Math.max(0,m.hp-d);raidLog(b,`${me.nick}${kind==='auto'?'(자동)':''} → ${m.n} ${d} 피해${c?' · 치명타!':''}${m.hp<=0?' · 쓰러뜨렸다!':''}`)}}
     else{const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
-      const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),hits=aoe?tg:[tg[Math.floor(Math.random()*tg.length)]];
-      hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def,m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?'의 광역 공격':''} → ${me.nick} ${d} 피해${tag}${me.hp<=0?' · 쓰러졌다!':''}`)})}
+      const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=aoe?tg:[tz||tg[Math.floor(Math.random()*tg.length)]];
+      hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?'의 광역 공격':''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)})}
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
   const all=raidUp(r).every(u=>r.b.flee[u]);if(all){const boss=r.b.mons.some(m=>m.kind==='boss');raidUp(r).forEach(u=>{r.m[u].hp=Math.max(1,Math.round(r.m[u].hp/2))});raidLog(r.b,'모두 동의해 전투에서 빠져나왔다. 도망치느라 모두 체력이 절반으로 줄었다.');if(boss){r.phase='end';r.result='fled';r.ev={n:'보스에게서 도망쳤다',res:'지금까지 모은 보상만 가지고 돌아갑니다. 모두 체력이 절반으로 줄었습니다.'}}else{r.phase='won';r.ev={n:'도망쳤다!',res:'이 전투의 보상은 없고, 모두 체력이 절반으로 줄었습니다.'}}}return r}).catch(()=>{})}
@@ -2112,7 +2127,7 @@ function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);ret
       <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn sm" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 부족'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
   <span class="lbl" style="display:block;margin-top:10px">Zone · 원정 구역</span><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>`}
 function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='battle'&&b.cur&&b.cur.k==='p'&&b.cur.id===uid,curNick=b&&b.cur?(b.cur.k==='p'?(r.m[b.cur.id]||{}).nick:b.mons[b.cur.id].n):'';
-  const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row" style="justify-content:space-between"><b>${esc(m.nick)}${u===uid?' (나)':''}</b><span class="hint">Lv.${m.lvl}${gone?' · 이탈':m.hp<=0?' · 쓰러짐':''}${b&&b.def[u]?' · 방어':''}${b&&b.flee[u]?' · 도망 찬성':''}</span></div>${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 민첩 ${m.agi}</span></div>`}).join('');
+  const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row" style="justify-content:space-between"><b>${esc(m.nick)}${u===uid?' (나)':''}</b><span class="hint">Lv.${m.lvl}${gone?' · 이탈':m.hp<=0?' · 쓰러짐':''}${b&&b.def[u]?' · 방어':''}${b&&b.taunt&&b.taunt.u===u?' · 방패':''}${b&&b.flee[u]?' · 도망 찬성':''}</span></div>${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 민첩 ${m.agi}</span></div>`}).join('');
   let body='';
   if(r.state==='lobby')body=`<div class="card"><b>${esc(z.n)} 원정 대기실</b><p class="hint">파티장이 출발하면 원정이 시작됩니다. 출발한 뒤에는 새로 합류할 수 없습니다. (${r.ids.length}/${RAID_MAX}명)</p><div class="row" style="gap:6px">${r.host===uid?`<button class="btn" data-act="raidgo">출발</button>`:'<span class="hint">파티장을 기다리는 중…</span>'}<button class="btn ghost sm" data-act="raidleave">${r.host===uid?'파티 해산':'나가기'}</button></div></div>`;
   else if(r.phase==='battle'){
@@ -2121,6 +2136,9 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
     body=`<div class="card raidbattle"><div class="row" style="justify-content:space-between"><b>${r.step>=RAID_STEPS?'보스전':'전투'} · ${b.round}라운드</b><span class="hint">${myTurn?`<b style="color:var(--gold)">내 턴</b> · 남은 시간 <b id="raidT"></b>`:`${esc(curNick||'')}의 턴${b.cur?` · <span id="raidT"></span>`:''}`}</span></div>
      <div class="raidmons">${mons}</div>
      <div class="raidacts"><button class="btn" data-act="raidatk" ${myTurn?'':'disabled'}>공격</button><button class="btn alt" data-act="raiddef" ${myTurn?'':'disabled'}>방어</button><button class="btn alt" data-act="raidbag" aria-pressed="${raidBag}" ${me&&me.hp>0?'':'disabled'}>${raidBag?'아이템 닫기':'아이템 쓰기'}</button></div>
+     ${me&&RSK[rJob(me)]?`<div class="raidsk"><span class="lbl">${JOBS[rJob(me)].n} 스킬</span><div class="raidacts">${RSK[rJob(me)].map((k,i)=>{const left=rskLeft(b,uid,i);return`<button class="btn ${left?'ghost':'gold'} sk" data-act="raidsk" data-k="${i}" title="${k.d}" ${myTurn&&!left?'':'disabled'}><b>${k.n}</b><small>${left?`${left}턴 뒤`:`${k.cd}턴마다`}</small></button>`}).join('')}</div>
+      ${rJob(me)==='medic'?`<div class="row" style="gap:4px;flex-wrap:wrap"><span class="hint">응급 처치 대상</span>${tgts.map(u=>`<button class="qchip" data-act="raidto" data-k="${u}" aria-pressed="${(raidItemTo||uid)===u}">${esc(r.m[u].nick)}${u===uid?' (나)':''} ${r.m[u].hp}/${r.m[u].maxHp}</button>`).join('')}</div>`:''}
+      <span class="hint">${RSK[rJob(me)].map(k=>`${k.n}: ${k.d}`).join(' · ')}</span></div>`:''}
      ${raidBag?`<div class="card raiditems"><div class="stat-row"><span>쓸 수 있는 아이템</span><b>${foods.length}종</b></div>${foods.length?`<div class="bag">${foods.map(i=>`<button class="slot" data-act="raidpick" data-id="${i}" aria-pressed="${i===raidPick}" aria-label="${ITEMS[i].n} ${P.inv[i]}개" title="${ITEMS[i].n}">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">전투에서 쓸 수 있는 회복 아이템이 없습니다.</p>'}
       ${pk?`<div class="fspick">${iicon(raidPick,2)}<div><b>${pk.n}</b><span class="hint">체력 +${pk.hp>=999?'전부':pk.hp} · ${P.inv[raidPick]}개</span></div></div><span class="lbl">누구에게 쓸까요?</span><div class="row" style="gap:4px;flex-wrap:wrap">${tgts.map(u=>`<button class="qchip" data-act="raidto" data-k="${u}" aria-pressed="${(raidItemTo||uid)===u}">${esc(r.m[u].nick)}${u===uid?' (나)':''} ${r.m[u].hp}/${r.m[u].maxHp}</button>`).join('')}</div><button class="btn" data-act="raiditem" data-k="${raidPick}" ${myTurn?'':'disabled'}>${myTurn?'쓰기':'내 턴에 쓸 수 있습니다'}</button>`:foods.length?'<p class="hint">쓸 아이템을 누르십시오.</p>':''}</div>`:''}
      <ol class="raidlog">${(b.log||[]).map(l=>`<li>${esc(l)}</li>`).join('')}</ol>
@@ -3245,6 +3263,7 @@ const A={
  raidtgt(d){raidTgt=+d.k;renderPanel()},
  raidatk(){if(raidMyTurn())raidAct('atk',raidTgt)},
  raiddef(){if(raidMyTurn())raidAct('def')},
+ raidsk(d){if(raidMyTurn())raidAct('sk',{s:+d.k,tgt:raidTgt,to:raidItemTo||uid})},
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
  bosshit(){bossHit()},
@@ -3431,7 +3450,7 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
