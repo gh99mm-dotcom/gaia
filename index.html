@@ -1900,10 +1900,12 @@ const RAID_EVENTS=[
 // a full clear in your own zone is worth about half a level, so expeditions lead the XP race without breaking the 60-level curve
 // bosses pay out far more the higher they are: ×(1+(L/15)^1.5) on top of the base share
 const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1)*(kind==='boss'?1+Math.pow(L/15,1.5):1));
-function raidMon(zone,L,kind,name,n){const s={elite:[1.5,1.1,1.1],mid:[2.2,1.15,1.15],boss:[3,1.15,1.2]}[kind]||[1,1,1],pm=kind==='mid'||kind==='boss'?1+.7*(n-1):1;
-  // higher-level monsters get gradually tougher: x(1+L/60) on HP, so Lv.30 is x1.5 and Lv.60 is x2
-  // attack is x2 at Lv.1 easing to x1.6 at Lv.60, so a same-level fighter falls in ~6-8 normal hits / ~4-6 boss hits
-  const hp=Math.round((14+L*5+L*L*.06)*(1+L/60)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3.5+L*1.4+L*L*.018)*(2-L/150)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
+/* monsters are tuned for a full party of 4 same-level crew (typical ATK/DEF/HP of a balanced build):
+   a normal monster soaks ~8 of their hits, elite ~14, mid boss ~22, boss ~34; a normal monster drops one of them in ~6 hits, elite ~4.5, mid ~3.5, boss ~2.5.
+   Smaller parties face the same monsters, so going solo is meant to be very hard. */
+const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mid:[22,3.5,1.15],boss:[34,2.5,1.2]};
+function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],def=Math.round((1+L*.6)*k[2]),hp=Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)),atk=Math.round(typHp(L)/k[1]+typDef(L)*.5);
+  return{n:name,L,kind:kind||'',hp,max:hp,atk,def,agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
 const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
@@ -1925,7 +1927,7 @@ function raidStep(r){const z=raidZone(r),rnd=raidRoll(r,(r.seed+r.step*7919)%214
   if(r.step>=RAID_STEPS){const b=raidMon(z,Math.min(z.max,Math.max(avg+1,z.min+3)),'boss',z.boss,n);return raidBattle(r,[b],`보스 출현! ${b.n} (Lv.${b.L})`)}
   const roll=rnd();
   if(roll<.09&&!r.midDone){r.midDone=1;const m=raidMon(z,lvl(1),'mid',z.mid,n);return raidBattle(r,n>1?[m,raidMon(z,lvl(-1),'',z.mons[Math.floor(rnd()*5)],n)]:[m],`강한 기운! 중간 보스 ${m.n} (Lv.${m.L})이(가) 나타났다.`)}
-  if(roll<.58){const k=roll<.16?'elite':'',cnt=k?1:Math.min(4,1+Math.floor(rnd()*2)+Math.floor((n-1)/2));const ms=Array.from({length:cnt},()=>raidMon(z,lvl(k?1:0),k,(k?'흉포한 ':'')+z.mons[Math.floor(rnd()*5)],n));
+  if(roll<.58){const k=roll<.16?'elite':'',cnt=k?1:2+Math.floor(rnd()*2);const ms=Array.from({length:cnt},()=>raidMon(z,lvl(k?1:0),k,(k?'흉포한 ':'')+z.mons[Math.floor(rnd()*5)],n));
     return raidBattle(r,ms,`${ms.map(m=>`${m.n} Lv.${m.L}`).join(', ')}와(과) 마주쳤다!`)}
   const ev=RAID_EVENTS[Math.floor(rnd()*RAID_EVENTS.length)],res=[];
   raidIn(r).forEach(u=>{const me=r.m[u],L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});
