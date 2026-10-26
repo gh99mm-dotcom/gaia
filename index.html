@@ -1868,10 +1868,12 @@ const SITES=[
 ];
 SITES.forEach(st=>{const g=GX[st.id];if(!g)return;g.mats.forEach(([id],k)=>st.t.push([id,[14,10,5][k]]));g.crops.forEach(([id])=>st.t.push(['seed_'+id,4]));st.ex=g.crops.map(([id])=>'seed_'+id)});
 let gSite='crater',gDur=4;
-const GDUR={1:2,2:3,4:7,8:12,16:20,24:28};const gCount=e=>e.gc||(e.slots*2);
+const GDUR={1:2,2:3,4:7,8:12,16:20,24:28};
+// trip lengths offered: a quick 10-minute run (one pickup) plus the 30-minute-slot trips above
+const GOPTS=[['s10',10,1],...Object.keys(GDUR).map(Number).map(k=>[k,k*30,GDUR[k]])],gOpt=k=>GOPTS.find(o=>o[0]===k)||GOPTS[3];const gCount=e=>e.gc||(e.slots*2);
 const fmtDur=m=>{const h=Math.floor(m/60),r=m%60;return(h?h+'시간':'')+(h&&r?' ':'')+(r?r+'분':'')};
 const fmtClock=ms=>{ms=Math.max(0,ms);const t=Math.ceil(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return(h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(s).padStart(2,'0')};
-function expInfo(){const e=P.exp;if(!e)return null;const total=e.slots,el=Date.now()-e.start,done=Math.min(total,Math.floor(el/SLOT)),G=gCount(e),gd=Math.floor(G*done/total),tg=e.tg!=null?e.tg:(e.taken||0)*2;return{e,total,done,G,gd,tg,pending:Math.max(0,gd-tg),next:done>=total?0:SLOT-(el%SLOT),left:Math.max(0,total*SLOT-el),site:SITES.find(x=>x.id===e.site)||SITES[0]}}
+function expInfo(){const e=P.exp;if(!e)return null;const SL=e.sl||SLOT,total=e.slots,el=Date.now()-e.start,done=Math.min(total,Math.floor(el/SL)),G=gCount(e),gd=Math.floor(G*done/total),tg=e.tg!=null?e.tg:(e.taken||0)*2;return{e,total,done,G,gd,tg,pending:Math.max(0,gd-tg),next:done>=total?0:SL-(el%SL),left:Math.max(0,total*SL-el),site:SITES.find(x=>x.id===e.site)||SITES[0]}}
 /* ───────── expedition (원정): solo or a party of up to 4 heads out through 8 steps of a zone; turn-based battles ─────────
    One shared document per party (parties/{id}). Every change goes through a transaction (ref.tx), so a player's move,
    a monster's move and a timeout can never overwrite each other. The "driver" (the host, or the next member still
@@ -2385,7 +2387,7 @@ function renderGather(){
   const x=expInfo();
   if(x){const fin=x.done>=x.total;
     return head()+`<div class="gscene"><canvas id="gCv" width="${GW}" height="${GH}" aria-label="채집 로봇이 지나가는 풍경"></canvas></div><div class="card" style="display:flex;flex-direction:column;gap:9px">
-     <div class="row" style="justify-content:space-between"><b>채집 로봇 · ${x.site.n} ${fin?'귀환 완료':'채집 중'}</b><span class="hint">${fmtDur(x.total*30)} 파견 · ${x.site.temp}</span></div>
+     <div class="row" style="justify-content:space-between"><b>채집 로봇 · ${x.site.n} ${fin?'귀환 완료':'채집 중'}</b><span class="hint">${fmtDur(x.total*(x.e.sl?x.e.sl/60e3:30))} 파견 · ${x.site.temp}</span></div>
      <div class="stat"><div class="stat-row"><span>채집 ${x.gd}/${x.G}회</span><b id="gLeft">${fin?'완료':'남은 시간 '+fmtClock(x.left)}</b></div><div class="bar"><i id="gBar" style="--c:var(--green);width:${x.done/x.total*100}%"></i></div></div>
      ${fin?'':`<span class="hint" id="gNext">다음 채집까지 ${fmtClock(x.next)}</span>`}
      <div class="row"><button class="btn ${x.pending?'gold':''}" data-act="gclaim" ${x.pending?'':'disabled'}>획득물 받기${x.pending?` <small>${x.pending}회분</small>`:''}</button>${fin?'':`<button class="btn ghost sm" data-act="grecall">로봇 불러들이기</button>`}</div>
@@ -2393,8 +2395,8 @@ function renderGather(){
     ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`}
   return head()+`<div class="gscene"><canvas id="gCv" width="${GW}" height="${GH}" aria-label="채집 로봇이 지나가는 풍경"></canvas></div><p class="lead">채집 로봇을 보내면 로봇이 알아서 채집해 옵니다. 30분 2회 · 1시간 3회 · 2시간 7회 · 4시간 12회 · 8시간 20회 · 12시간 28회. 아주 가끔(3%) 희귀 무기가 묻혀 있기도 합니다.</p>
   <div style="display:flex;flex-direction:column;gap:6px"><span class="lbl">Duration · 파견 시간</span>
-   <div class="row" style="gap:5px">${Object.keys(GDUR).map(Number).map(k=>`<button class="qchip" data-act="gdur" data-k="${k}" aria-pressed="${k===gDur}">${fmtDur(k*30)} · ${GDUR[k]}회</button>`).join('')}</div></div>
-  <div class="row"><button class="btn" data-act="gather">로봇 보내기 <small>EN 2</small></button><span class="hint">${fmtDur(gDur*30)} 뒤 귀환 · 채집 ${GDUR[gDur]}회</span></div>
+   <div class="row" style="gap:5px">${GOPTS.map(([k,m,c])=>`<button class="qchip" data-act="gdur" data-k="${k}" aria-pressed="${k===gDur}">${fmtDur(m)} · ${c}회</button>`).join('')}</div></div>
+  <div class="row"><button class="btn" data-act="gather">로봇 보내기 <small>EN 2</small></button><span class="hint">${fmtDur(gOpt(gDur)[1])} 뒤 귀환 · 채집 ${gOpt(gDur)[2]}회</span></div>
   <div><span class="lbl">Site · 채집 장소</span><div class="sites" role="radiogroup" aria-label="채집 장소" style="margin-top:6px">${SITES.map(st=>`<button class="site" role="radio" aria-checked="${st.id===gSite}" data-act="gsite" data-id="${st.id}"><b>${st.n} <span class="lv">${st.temp}</span></b><span class="hint">${st.d}</span><span class="chips">${st.t.filter(([id])=>!/^seed_/.test(id)).slice(0,6).map(([id])=>`<span class="ichip">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</span><span class="chips">${(st.ex||[]).map(id=>`<span class="ichip exc">${iicon(id,1)}전용 · ${ITEMS[id].n.replace(' 씨앗','')}</span>`).join('')}</span></button>`).join('')}</div></div>
   ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`;
 }
@@ -3115,9 +3117,9 @@ const A={
   log(FARM.tlv>before?`은하 결정을 넣어 공용 물탱크를 ${FARM.cap}까지 늘렸다!`:`물탱크 증설에 은하 결정 1개를 보탰다. (${FARM.tprog}/${FARM.tneed})`,FARM.tlv>before?'good':'');commit()},
  fdon(){if(FARM.fu>=FIELD_N)return;if(!take('ore',1)){toast('운석 파편이 없습니다.');return}const before=FARM.fu;FARM=farmShape(FARM.xu,FARM.ore+1,FARM.pods,{crys:FARM.crys,water:FARM.wset?FARM.water:null,refCd:FARM.refCd});if(mode==='online')farmInc('farm/pods','ore',1).catch(()=>{});else farmSave();gainXp(1);
   log(FARM.fu>before?`운석 파편을 넣어 공용 농장 포드 ${FARM.fu}번을 열었다!`:`포드 증설에 운석 파편 1개를 보탰다. (${FARM.prog}/${FARM.need})`,FARM.fu>before?'good':'');commit()},
- gather(){if(P.exp){toast('채집 로봇이 이미 일하는 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);P.exp={site:gSite,start:Date.now(),slots:gDur,gc:GDUR[gDur]||gDur*2,taken:0,tg:0};log(`${st.n}에 ${fmtDur(gDur*30)} 동안 채집 로봇을 보냈다.`);commit()},
+ gather(){if(P.exp){toast('채집 로봇이 이미 일하는 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);const o=gOpt(gDur);P.exp=o[0]==='s10'?{site:gSite,start:Date.now(),slots:1,sl:10*60e3,gc:1,taken:0,tg:0}:{site:gSite,start:Date.now(),slots:o[0],gc:o[2],taken:0,tg:0};log(`${st.n}에 ${fmtDur(o[1])} 동안 채집 로봇을 보냈다.`);commit()},
  gsite(d){gSite=d.id;renderPanel()},
- gdur(d){gDur=+d.k;renderPanel()},
+ gdur(d){gDur=d.k==='s10'?'s10':+d.k;renderPanel()},
  gclaim(){if(claimGather())commit()},
  grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){log(`${x.site.n}에서 채집 로봇을 불러들였다. (${x.gd}/${x.G}회 채집)`);P.exp=null}commit()},
  cast(){if(['wait','bite','aim'].includes(fish.ph))return;ac();if(!spend(3))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:9,zc:ri(-68,68)};commit();
@@ -3170,7 +3172,7 @@ const A={
  adm(d){if(!isAdmin)return;const k=d.k;
   if(k==='heal'){P.hp=maxHp();P.en=maxEn();P.t=Date.now()}else if(k==='wake'){P.faint=0;P.faintAt=0;if(P.hp<=0)P.hp=maxHp();if(P.en<=0)P.en=maxEn()}
   else if(k==='water'){FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=0;if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:0}).catch(()=>{});else farmSave()}else if(k==='sig'){const sc=scoutSt();if(sc.mv)sc.mv.e=Date.now()}
-  else if(k==='exp'){if(P.exp)P.exp=Object.assign({},P.exp,{start:Date.now()-P.exp.slots*SLOT})}
+  else if(k==='exp'){if(P.exp)P.exp=Object.assign({},P.exp,{start:Date.now()-P.exp.slots*(P.exp.sl||SLOT)})}
   else if(k==='farm'){FARM.pods.forEach((pl,i)=>{if(pl&&pl.seed)farmPut(i,Object.assign({},pl,{got:ITEMS[pl.seed].grow}))})}
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
   log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했습니다.')},
@@ -3278,7 +3280,7 @@ function duelHTML(){if(mode!=='online')return'';const now=Date.now();
 function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.duel={id:DUEL.id,score:0,best:''};const pts=DPTS[tr];P.duel=Object.assign({},P.duel,{score:P.duel.score+pts});const ord='crul';if(!P.duel.best||ord.indexOf(ITEMS[id].fish)>=ord.indexOf(ITEMS[P.duel.best]?.fish||'c'))P.duel.best=id;log(`낚시 대결 +${pts}점 (총 ${P.duel.score}점)`,'good')}
 
 /* ───────── events ───────── */
-document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=+e.target.value;renderPanel()}});
+document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
 const SAFE_ACT=new Set(['raidatk','raiddef','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
