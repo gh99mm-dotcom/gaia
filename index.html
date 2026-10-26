@@ -850,7 +850,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @keyframes bottilt{0%,70%{transform:rotate(0)}80%{transform:rotate(-4deg)}90%{transform:rotate(3deg)}}
 .keeper .say{margin:2px 0 6px;color:var(--mute);font-size:13px}
 .spcrow{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold) 55%,transparent)}.spcico{flex:none;display:grid;place-items:center;width:56px;height:56px;border:1px solid color-mix(in srgb,var(--gold) 60%,transparent);background:radial-gradient(circle,color-mix(in srgb,var(--gold) 22%,transparent),transparent 70%),var(--deep)}
-.spctag{font-family:var(--f-pix);font-size:10px;padding:0 4px;border:1px solid currentColor;color:var(--gold);vertical-align:middle}
+.spctag{font-family:var(--f-pix);font-size:10px;padding:0 4px;border:1px solid currentColor;color:var(--gold);vertical-align:middle}.spctag.bound{color:var(--pink)}
 .keeper .bal{font-family:var(--f-pix);font-weight:400;font-size:13px;color:var(--gold)}
 .slist{display:flex;flex-direction:column;gap:5px;max-height:420px;overflow:auto}
 .srow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:6px 8px}
@@ -1333,7 +1333,7 @@ const ITEMS={
  relic4:{n:'고대 신호 기록 4급',ic:'scroll',t:'#7fb0d8',type:'relic',xp:1000,sv:80,d:'Lv.20~29에서 발견되는 기록. 해독하면 경험치 +1,000.'},
  relic3:{n:'고대 신호 기록 3급',ic:'scroll',t:'#b090e0',type:'relic',xp:2500,sv:150,d:'Lv.30~39에서 발견되는 기록. 해독하면 경험치 +2,500.'},
  relic2:{n:'고대 신호 기록 2급',ic:'scroll',t:'#ffd65f',type:'relic',xp:6000,sv:300,d:'Lv.40~49에서 발견되는 기록. 해독하면 경험치 +6,000.'},
- invite:{n:'고물상 수제 초대장',ic:'scroll',t:'#c9b98a',type:'keep',sv:10000,d:'고물상 로봇 녹슨 7호가 고철을 두드려 손수 만든 초대장. 소중한 사람에게 우편으로 보내 보세요.'},
+ invite:{n:'고물상 수제 초대장',ic:'scroll',t:'#c9b98a',type:'keep',bound:1,once:1,d:'고물상 로봇 녹슨 7호가 고철을 두드려 손수 만든 초대장. 산 사람에게 귀속되어 팔거나 보낼 수 없고, 한 계정에 한 장만 살 수 있습니다.'},
  relic1:{n:'고대 신호 기록 1급',ic:'scroll',t:'#ff8a5a',type:'relic',xp:12000,sv:600,d:'Lv.50~60에서 발견되는 기록. 해독하면 경험치 +12,000.'},
 };
 /* gather-only materials & crops */
@@ -3753,11 +3753,11 @@ function renderShop(){
   if(shopTab==='sup')rows=BUY.filter(([id])=>ITEMS[id].type!=='seed').map(buyRow).join('');
   else if(shopTab==='seed')rows=BUY.filter(([id])=>ITEMS[id].type==='seed').map(([id,pr])=>buyRow([id,pr]).replace(itemDesc(id),ITEMS[id].d)).join('');
 
-  else if(shopTab==='spc')rows=`<p class="hint" style="margin:0 0 4px">녹슨 7호가 고철 더미에서 손수 만든 물건들입니다. 다른 곳에서는 구할 수 없습니다.</p>`+SPECIAL.map(([id,pr])=>`<div class="srow spcrow"><span class="spcico">${iicon(id,3)}</span><div class="sinfo"><b>${ITEMS[id].n} <span class="spctag">한정 수제품</span></b><span class="hint">${ITEMS[id].d}${P.inv[id]?` · 보유 ${P.inv[id]}`:''}</span></div>${price(pr)}<div class="sbtns"><button class="btn sm gold" data-act="buy" data-id="${id}" data-n="1" ${cr>=pr?'':'disabled'}>구매</button></div></div>`).join('');
+  else if(shopTab==='spc')rows=`<p class="hint" style="margin:0 0 4px">녹슨 7호가 고철 더미에서 손수 만든 물건들입니다. 다른 곳에서는 구할 수 없습니다.</p>`+SPECIAL.map(([id,pr])=>`<div class="srow spcrow"><span class="spcico">${iicon(id,3)}</span><div class="sinfo"><b>${ITEMS[id].n} <span class="spctag">한정 수제품</span>${ITEMS[id].bound?' <span class="spctag bound">귀속</span>':''}${ITEMS[id].once?' <span class="spctag bound">계정당 1장</span>':''}</b><span class="hint">${ITEMS[id].d}${P.inv[id]?` · 보유 ${P.inv[id]}`:''}</span></div>${price(pr)}<div class="sbtns">${ITEMS[id].once&&((P.once||{})[id]||P.inv[id]>0)?'<span class="hint">구매 완료</span>':`<button class="btn sm gold" data-act="buy" data-id="${id}" data-n="1" ${cr>=pr?'':'disabled'}>구매</button>`}</div></div>`).join('');
   else if(shopTab==='rod')rows=RODS.slice(1).map((r,k)=>{const lv=k+1;return`<div class="srow">${img(IC.rod,r.t,2)}<div class="sinfo"><b>${r.n}</b><span class="hint">${r.d}</span></div>${price(r.price)}${ownBtn(rodMax()>=lv,'buyrod',lv,r.price,(P.rod||0)===lv)}</div>`}).join('');
 
 
-  else rows=(()=>{const bb=Object.entries(soldBack).filter(([,b])=>b.n>0);const back=bb.length?`<span class="lbl">Buyback · 되사기 (상점을 나가면 사라집니다)</span>`+bb.map(([id,b])=>`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">방금 판 물건 ${b.n}개 · 판 값 그대로 되살 수 있습니다</span></div>${price(b.pr)}<div class="sbtns"><button class="btn sm" data-act="rebuy" data-id="${id}" data-n="1" ${cr>=b.pr?'':'disabled'}>×1</button><button class="btn sm ghost" data-act="rebuy" data-id="${id}" data-n="all" ${cr>=b.pr*b.n?'':'disabled'}>전부</button></div></div>`).join('')+`<span class="lbl" style="margin-top:6px">Sell · 판매</span>`:'';const ids=ORDER.filter(id=>P.inv[id]);if(sellSel&&!P.inv[sellSel])sellSel=null;
+  else rows=(()=>{const bb=Object.entries(soldBack).filter(([,b])=>b.n>0);const back=bb.length?`<span class="lbl">Buyback · 되사기 (상점을 나가면 사라집니다)</span>`+bb.map(([id,b])=>`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">방금 판 물건 ${b.n}개 · 판 값 그대로 되살 수 있습니다</span></div>${price(b.pr)}<div class="sbtns"><button class="btn sm" data-act="rebuy" data-id="${id}" data-n="1" ${cr>=b.pr?'':'disabled'}>×1</button><button class="btn sm ghost" data-act="rebuy" data-id="${id}" data-n="all" ${cr>=b.pr*b.n?'':'disabled'}>전부</button></div></div>`).join('')+`<span class="lbl" style="margin-top:6px">Sell · 판매</span>`:'';const ids=ORDER.filter(id=>P.inv[id]&&!isBound(id));if(sellSel&&!P.inv[sellSel])sellSel=null;
     // laid out like the bag: a grid of what I carry, pick one, choose how many, sell
     const it=sellSel&&ITEMS[sellSel],pr=it?sellPrice(sellSel):0,have=it?P.inv[sellSel]:0,q=Math.max(1,Math.min(sellN,have||1));
     const pick=it?`<div class="card sellpick">${iicon(sellSel,3)}<div class="sinfo"><b>${it.n} ×${have}</b><span class="hint">${esc(it.d||'')}</span><span class="hint">한 개 ${pr.toLocaleString()} CR</span></div>
@@ -4233,7 +4233,7 @@ const A={
  eqrod(d){const lv=+d.k;if(!RODS[lv]||lv>rodMax())return;if(fish&&['aim','wait','bite'].includes(fish.ph)){toast('낚시 중에는 낚싯대를 바꿀 수 없습니다.');return}P.rodMax=rodMax();P.rod=lv;log(`${RODS[lv].n}으로 바꿔 들었다.`);commit()},
  buysuit(d){const lv=+d.k,u=SUITS[lv];if(!u||suitMax()>=lv)return;if((P.cr||0)<u.price){toast('크레딧이 부족합니다.');return}if(!hasMat(u.mat)){toast('재료가 부족합니다.');return}u.mat.forEach(([id,n])=>take(id,n));P.cr-=u.price;sfxFanfare(lv>=3);P.suit=lv;P.suitMax=lv;log(`${u.n}을 입었다. 방어력 +${u.def}`,'rare');commit();suitPop(lv)},
  buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||rodMax()>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;P.rodMax=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
- buy(d){const row=[...BUY,...SPECIAL].find(r=>r[0]===d.id);if(!row)return;const n=+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
+ buy(d){const row=[...BUY,...SPECIAL].find(r=>r[0]===d.id);if(!row)return;const once=ITEMS[d.id].once;if(once&&((P.once||{})[d.id]||P.inv[d.id]>0)){toast('한 계정에 한 장만 살 수 있습니다.');return}const n=once?1:+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);if(once)P.once=Object.assign({},P.once,{[d.id]:Date.now()});log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
  sellones(d){if(d.k==='no'){sellArm=false;renderPanel();return}const ones=ORDER.filter(id=>P.inv[id]===1&&ITEMS[id].type!=='keep');if(ones.length<2)return;if(!sellArm){sellArm=true;renderPanel();return}sellArm=false;let gain=0;ones.forEach(id=>{const pr=sellPrice(id);take(id,1);gain+=pr;const b=soldBack[id]||{n:0,pr};soldBack[id]={n:b.n+1,pr:b.pr}});if(ones.includes(sellSel))sellSel=null;P.cr=(P.cr||0)+gain;sfxSell(true);log(`1개짜리 아이템 ${ones.length}종을 한 번에 팔았다. (+${gain} CR)`,'good');commit()},
  spresadd(){if(!isAdmin||mode!=='online')return;const st=spresAt($('#spDay').value,+$('#spHour').value===20?20:8),h=+$('#spDur').value||12,mat=$('#spMat').value,n=Math.max(1,Math.min(99,Math.round(+$('#spN').value)||0)),cr=Math.max(1,Math.round(+$('#spCr').value)||0),lim=Math.max(1,Math.min(99,Math.round(+$('#spLim').value)||1));
   if(!isFinite(st)){toast('시작 날짜를 골라 주십시오.');return}if(!ITEMS[mat]){toast('자재를 골라 주십시오.');return}const end=st+h*3600e3;if(end<=Date.now()){toast('이미 지난 시간입니다.');return}
@@ -4246,7 +4246,7 @@ const A={
  reqgo(d){const R=reqList(),i=+d.k,q=R.list[i];if(!q||R.done.includes(i))return;if(ingHave(q.id)<q.n){toast('물건이 모자랍니다.');return}ingTake(q.id,q.n);R.done=[...R.done,i];P.cr=(P.cr||0)+q.cr;stat('req');sfxFanfare(false);log(`의뢰 완료 · ${q.who}에게 ${reqName(q.id)} ${q.n}개를 납품했다. (+${q.cr.toLocaleString()} CR)`,'rare');commit()},
  sellsel(d){sellArm=false;sellSel=sellSel===d.id?null:d.id;sellN=1;renderPanel()},
  sellq(d){const have=P.inv[sellSel]||0;sellN=d.k==='max'?have:Math.max(1,Math.min(have,sellN+(+d.k)));renderPanel()},
- sell(d){const have=P.inv[d.id]||0;if(!have)return;const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
+ sell(d){const have=P.inv[d.id]||0;if(!have||isBound(d.id))return;const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
  asigskip(){if(bossAlive(BOSS))return;if(!useAsig())return;lastAsig=null;log('구식 신호기: 잡힌 신호를 무시하고 흘려보냈다.');commit()},
  asigpow(){if(bossAlive(BOSS))return;const sg=asigState();P.asig=sg.off?{n:sg.n,t:Date.now()}:{n:sg.n,t:Date.now(),off:1};log(sg.off?'구식 신호기를 다시 켰다. SOS 신호를 보내기 시작한다.':'구식 신호기를 껐다.');commit()},
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
@@ -4305,11 +4305,12 @@ const chipsTxt=(list,cr)=>[...(list||[]).filter(x=>ITEMS[x.id]).map(x=>ITEMS[x.i
 let mailTab='in',MYTR=[],mlTo='',mlMsg='',mlAtt={},trTo='',trMsg='',trGive={},trGiveCr=0,trWant={},trWantCr=0,trPick='',mlBusy=false;
 const mailKind=g=>g.kind==='trade'?'거래 제안':g.kind==='tradeok'?'거래 성사':g.kind==='tradeno'?'거래 반환':g.kind==='letter'?'편지':mailHasGift(g)?'선물':'쪽지';
 const trLock=tid=>db.doc('boss/tr_'+tid);
-const attList=o=>Object.entries(o).filter(([i,n])=>ITEMS[i]&&n>0).map(([id,n])=>({id,n:Math.min(ML_EACH,Math.floor(n))}));
+const isBound=id=>!!(ITEMS[id]&&ITEMS[id].bound);
+const attList=o=>Object.entries(o).filter(([i,n])=>ITEMS[i]&&!isBound(i)&&n>0).map(([id,n])=>({id,n:Math.min(ML_EACH,Math.floor(n))}));
 const mlChips=(list,cr)=>[...list.filter(x=>ITEMS[x.id]).map(x=>`<span class="ichip">${iicon(x.id,1)}${ITEMS[x.id].n} ×${x.n}</span>`),...(cr>0?[`<span class="ichip">${img(IC.coin,null,1)}${(+cr).toLocaleString()} CR</span>`]:[])].join('');
 const haveAll=(list,cr)=>list.every(x=>(P.inv[x.id]||0)>=x.n)&&(P.cr||0)>=(cr||0);
 // pick items out of my bag: tap to attach (up to 3 kinds), set how many (up to 10 each)
-function attPicker(sel,act,qact){const ids=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i]);const L=attList(sel);
+function attPicker(sel,act,qact){const ids=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i]&&!isBound(i));const L=attList(sel);
   return`<div class="mlatt">${L.length?L.map(x=>`<div class="mlrow">${iicon(x.id,2)}<b>${esc(ITEMS[x.id].n)}</b><input class="sel mlq" type="number" min="1" max="${Math.min(ML_EACH,P.inv[x.id]||0)}" value="${x.n}" data-q="${qact}" data-k="${x.id}" aria-label="${esc(ITEMS[x.id].n)} 개수"><span class="hint">/ ${Math.min(ML_EACH,P.inv[x.id]||0)}</span><button class="pvx" data-act="${act}" data-id="${x.id}" aria-label="빼기">×</button></div>`).join(''):'<span class="hint">아래 가방에서 넣을 아이템을 누르십시오.</span>'}</div>
    <span class="hint">아이템은 ${ML_TYPES}종류까지, 종류마다 ${ML_EACH}개까지 넣을 수 있습니다. (${L.length}/${ML_TYPES})</span>
    ${ids.length?`<div class="bag mlbag">${ids.map(i=>`<button class="slot" data-act="${act}" data-id="${i}" aria-pressed="${!!sel[i]}" title="${esc(ITEMS[i].n)}" aria-label="${esc(ITEMS[i].n)} ${P.inv[i]}개">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">가방이 비어 있습니다.</p>'}`}
@@ -4329,7 +4330,7 @@ function mailWriteHTML(){if(mode!=='online')return'<p class="hint" style="paddin
    <span class="lbl">첨부할 아이템</span>${attPicker(mlAtt,'mlatt','ml')}
    <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="mlsend" ${mlBusy?'disabled':''}>편지 보내기</button></div></div>`}
 function mailTradeHTML(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">거래는 온라인에 접속했을 때 할 수 있습니다.</p>';
-  const W=attList(trWant),cat=ORDER.filter(i=>ITEMS[i]&&!trWant[i]);
+  const W=attList(trWant),cat=ORDER.filter(i=>ITEMS[i]&&!isBound(i)&&!trWant[i]);
   return`<div class="card mlform"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="lbl">거래할 단원</span>${toSel('trTo',trTo)}</div>
    <span class="lbl">내가 줄 것</span>${attPicker(trGive,'trgive','tg')}
    <div class="row" style="gap:6px;align-items:center"><span class="hint">크레딧도 함께 주기</span><input id="trGiveCr" class="sel" type="number" min="0" max="${P.cr||0}" value="${trGiveCr||0}" style="width:100px" aria-label="줄 크레딧"><span class="hint">CR (가진 크레딧 ${(P.cr||0).toLocaleString()})</span></div>
