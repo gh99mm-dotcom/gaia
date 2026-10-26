@@ -1619,7 +1619,7 @@ function renderLog(){$('#log').innerHTML=LOG.length?LOG.map(l=>`<li><time>${hhmm
 
 /* ───────── network ───────── */
 let mode='boot',db=null,room=null,uid=null,myRef=null;
-let PLAYERS={},DELP={},CHAT=[],PEERS=[];
+let PLAYERS={},DELP={},CHAT=[],PEERS=[],chimeAt=Date.now();
 let saveT=null,saving=false,dirty=false;
 function save(){
   if(mode==='solo'){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}return}
@@ -1653,7 +1653,9 @@ async function connect(){
   farmLoad();
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
-  db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();renderChat()},()=>{});
+  db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
+    // a fresh notice from the admin rings the station chime
+    const nw=CHAT.filter(m=>m.adm&&(+m.at||0)>chimeAt);if(nw.length){chimeAt=Math.max(...nw.map(m=>+m.at||0));sfxChime()}renderChat()},()=>{});
   socSubscribe();raidSubscribe();bossSubscribe();
   if(room){room.onPeers(ch=>{PEERS=ch.peers;renderCrew();renderNet();if(tab==='farm')renderPanel()});setPresence()}
 }
@@ -2406,6 +2408,8 @@ function sfxBossHit(crit){if(!soundOn)return;const a=ac();if(!a)return;const t=a
 function sfxBossBack(miss){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.32;if(miss){noiseBurst(a,t,.25,'bandpass',900,2600,.18,1.5);tone(a,'sine',520,900,t+.05,.12,.06);return}
   tone(a,'sawtooth',70,38,t,.55,.22);tone(a,'square',55,30,t+.02,.5,.12);noiseBurst(a,t,.5,'lowpass',500,80,.45,1.6);tone(a,'sine',180,60,t+.08,.3,.15)}
 function sfxBossKill(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.2;tone(a,'sawtooth',220,30,t,1.6,.18);noiseBurst(a,t,1.4,'lowpass',1200,60,.5,1.2);[523,659,784,1046].forEach((f,i)=>tone(a,'triangle',f,0,t+1+i*.12,.5,.08))}
+// 딩-동-댕: three soft bell tones going up (C5 E5 G5), with a faint octave shimmer
+function sfxChime(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.05;[[523.25,0],[659.25,.42],[783.99,.84]].forEach(([f,d])=>{tone(a,'sine',f,0,t+d,1.3,.16);tone(a,'sine',f*2,0,t+d,.7,.04);tone(a,'triangle',f,0,t+d,.25,.05)})}
 function sfxStop(){if(!soundOn)return;const a=ac();if(!a)return;tone(a,'square',140,0,a.currentTime,.03,.04)}
 /* ───────── look & wardrobe ───────── */
 const LOOKS={helmet:{n:'헬멧',opts:[['#b9bccb','흰색'],['#8a8da0','은색'],['#41444f','검정'],['#a8626b','붉은'],['#b0906f','주황'],['#a99a74','금색'],['#8ba790','연두'],['#7c97a8','하늘'],['#9a8fc0','보라'],['#93707f','장미']]},
@@ -2995,7 +2999,7 @@ const A={
  async admgrant(){if(!isAdmin)return;const msg=($('#admNotice').value||'').trim().slice(0,80),cr=Math.floor(+$('#admGrantCr').value||0);if(!msg){toast('공지 내용을 먼저 적어 주십시오.');return}if(cr<1||cr>100000){toast('크레딧은 1~100,000 사이로 적어 주십시오.');return}
   const g={cr,msg,at:Date.now(),by:P.nick},id='g'+g.at.toString(36);
   if(mode!=='online'){MAILA.push(Object.assign({id,grant:1},g));mailRefresh();return}
-  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 단원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true});$('#admNotice').value='';toast(`모든 단원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
+  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 단원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true,adm:true});$('#admNotice').value='';toast(`모든 단원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
  admtab(d){if(!isAdmin)return;admTab=['tools','crew','del'].includes(d.k)?d.k:'tools';renderAdminAll()},
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'단원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
@@ -3120,7 +3124,7 @@ const A={
  admgive(){if(!isAdmin)return;const id=$('#admItem').value,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[{id,n}],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
- admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
+ admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true,adm:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
