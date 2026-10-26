@@ -498,6 +498,14 @@ header>.chip:not(.sugg){margin-left:0}
 .bossclock{font-family:var(--f-pix);font-size:10px;color:var(--gold)}.bossclock.urgent{color:var(--red);animation:blink 1s steps(2) infinite}
 .asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossdim{padding-bottom:64px}.bossdim::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.38);pointer-events:none}.bossdim .bosssprite{filter:brightness(.8)}
 .bossretov{position:absolute;left:0;right:0;bottom:12px;z-index:1;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center;color:#e8e8f0;text-shadow:0 2px 4px #000}.bossretov p{margin:0;font-weight:700}.bossretT{font-family:var(--f-pix);font-size:30px;line-height:1;color:#fff;letter-spacing:.08em}
+.beacon{position:relative;border:2px solid var(--ink);line-height:0;overflow:hidden;margin-bottom:10px;background:#06070d}.beacon>img{width:100%;height:auto;display:block;image-rendering:pixelated}
+.beacon>img.bwave{position:absolute;inset:0;opacity:0;animation:bwave 1.6s steps(4) infinite}.beacon>img.bwave.lamp{animation-duration:1.2s}@keyframes bwave{0%{opacity:0}25%{opacity:1}75%{opacity:.35}100%{opacity:0}}
+.bglow{position:absolute;width:22%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,170,60,.55) 0%,rgba(255,140,40,.22) 35%,rgba(255,120,30,0) 70%);mix-blend-mode:screen;pointer-events:none;animation:bglow 1.2s ease-in-out infinite}
+@keyframes bglow{50%{opacity:.45;transform:translate(-50%,-50%) scale(.85)}}
+.bcap{position:absolute;left:10px;top:10px;font-family:var(--f-pix);font-size:12px;line-height:1.2;color:#f0e6d6;background:rgba(5,6,11,.62);padding:4px 8px;text-shadow:0 1px 0 #000}
+@media (max-width:480px){.bcap{font-size:10px;left:6px;top:6px;padding:3px 6px}}
+.beacon.off .bwave,.beacon.off .bglow{display:none}.beacon.off>img:first-child{filter:brightness(.75) saturate(.6)}
+@media (prefers-reduced-motion:reduce){.beacon>img.bwave{animation:none;opacity:.7}.bglow{animation:none}}
 .bossidle{padding:28px 16px;text-align:center}
 .bosspicks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px;margin:4px 0 8px}.bosspick{justify-content:flex-start;gap:6px;text-align:left;font-size:11px;padding:3px 6px}.bosspick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chestcard{display:flex;gap:14px;align-items:center;padding:12px 14px;border:2px solid var(--gold);background:linear-gradient(135deg,rgba(191,174,128,.16),var(--deep) 60%)}
@@ -2134,13 +2142,74 @@ function bossHi(K){if(BOSS_HR.has(K))return BOSS_HR.get(K);const g=K.g,h=g.lengt
 const bossSpr=(b,sc)=>{const K=bossKind(b),hi=bossHi(K),s2=sc/2;return`<span class="bossart" style="--eye:${K.po.E}">${img(hi.body,null,s2,'',hi.po)}${img(hi.eyes,null,s2,'beye',hi.po)}</span>`};
 const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
 const BOSS_RET=10*60e3,bossRetLeft=b=>bossKilled(b)&&b.killedAt?Math.max(0,b.killedAt+BOSS_RET-Date.now()):0;
+/* 탐사 idle scene: the old SOS beacon drifting against the station's starfield and dark planet */
+const BCN_W=240,BCN_H=120,BCN={};
+function beaconImg(){if(BCN.src)return BCN;const W=BCN_W,H=BCN_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  const px=(x,y,col)=>{x=Math.round(x);y=Math.round(y);if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x,y,1,1)};let sd=911;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  const dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
+  // backdrop: the same night sky as the station — dark void, soft glow, scattered stars, the big dark planet low on the right
+  g.fillStyle='#06070d';g.fillRect(0,0,W,H);const gr=g.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.55);gr.addColorStop(0,'rgba(95,90,128,.16)');gr.addColorStop(1,'rgba(6,7,13,0)');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  for(let k=0;k<190;k++){const x=rnd()*W|0,y=rnd()*H|0;g.globalAlpha=.25+rnd()*.6;px(x,y,['#9ea3b8','#9ea3b8','#7c97a8','#6c6790'][k%4])}g.globalAlpha=1;
+  [[22,18],[200,12],[180,96],[34,100],[90,8]].forEach(([x,y])=>{px(x,y,'#e8e8f4');px(x-1,y,'#7c80a0');px(x+1,y,'#7c80a0');px(x,y-1,'#7c80a0');px(x,y+1,'#7c80a0')});
+  {const R=78,cx=250,cy=150;for(let y=cy-R;y<H;y++)for(let x=cx-R;x<W;x++){const d=Math.hypot(x-cx,y-cy);if(d>R)continue;px(x,y,d>R-1?'#2e3446':(x-cx)-(y-cy)*.3<-R*.35?(dith(x,y,.5)?'#0e111b':'#0a0c14'):'#0e111b')}}
+  const O='#0a0c10',FR=['#2e3640','#262d36'],TP=['#4a5460','#3e4752'],SD='#1c2229',RU=['#6e4c2a','#8e6634','#4e3822'];
+  const x0=62,x1=170,yT=66,yF=74,yB=98,D=8;
+  // cables hanging under the hull (drawn first so the hull sits over them)
+  const cable=(ax,ay,bx,by,sag,col,hi)=>{const n=Math.max(8,Math.abs(bx-ax));for(let i=0;i<=n;i++){const t=i/n,x=ax+(bx-ax)*t,y=ay+(by-ay)*t+Math.sin(Math.PI*t)*sag;px(x,y,col);px(x,y-1,hi)}};
+  cable(x0+8,yB-2,x0+46,yB-2,10,'#3a2a1e','#5a4030');cable(x0+36,yB-1,x0+92,yB-3,13,'#2e2420','#4a3a2c');cable(x0+70,yB-2,x1+6,yB-6,8,'#3a2a1e','#5a4030');cable(x0+20,yB-1,x0+60,yB-1,6,'#2a2e34','#44505a');
+  // top face (receding up-right), right side face, front face
+  for(let r=0;r<D;r++){const y=yT+r,sh=D-1-r;for(let x=x0+sh;x<=x1+sh;x++){if((x===x0+sh||x===x1+sh)&&(r===0))continue;px(x,y,r===0?'#5a6470':dith(x,y,.5)?TP[0]:TP[1])}}
+  for(let cI=0;cI<D;cI++)for(let y=yF-cI;y<=yB-cI;y++)px(x1+1+cI,y,cI===D-1||y===yB-cI?O:dith(x1+cI,y,.4)?SD:'#232a32');
+  for(let y=yF;y<=yB;y++)for(let x=x0;x<=x1;x++){if((x===x0||x===x1)&&(y===yF||y===yB))continue;const t=(y-yF)/(yB-yF);px(x,y,dith(x,y,t)?FR[1]:FR[0])}
+  for(let x=x0+1;x<x1;x++){px(x,yB,O);px(x,yF,'#566270')}for(let y=yF+1;y<yB;y++){px(x0,y,O);px(x1,y,'#3a4450')}
+  for(let r=0;r<D;r++){px(x0+D-1-r-1,yT+r,O)}for(let x=x0+D;x<=x1+D;x++)px(x,yT-1,O);
+  [[x0+1,x0+28],[x0+30,x0+56],[x0+58,x0+84],[x0+86,x1-1]].forEach(([a,b])=>{for(let x=a;x<=b;x++){px(x,yF+1,'#4a5662');px(x,yF+2,'#3a4450');px(x,yB-1,'#181d24');px(x,yB-2,'#1e242c')}for(let y=yF+2;y<yB-2;y++)px(a,y,'#3a4450')});
+  // seams between the hull segments
+  [28,56,84].forEach(o=>{const sx=x0+o;for(let y=yF+1;y<yB;y++){px(sx,y,'#14181e');px(sx+1,y,'#3e4854')}for(let r=0;r<D;r++){px(sx+D-1-r,yT+r,'#262c34');px(sx+D-r,yT+r,'#56606c')}
+    for(let y=yF+3;y<yB-2;y+=4){px(sx-1,y,'#566270')}});
+  // left end: vent grille
+  for(let y=yF+4;y<=yB-4;y++)for(let x=x0+3;x<=x0+22;x++)px(x,y,y===yF+4||y===yB-4||x===x0+3||x===x0+22?'#14181e':(y%2?'#141a20':'#3a4450'));
+  // panels with screens and lamps
+  const box=(ax,ay,bx,by,fill)=>{for(let y=ay;y<=by;y++)for(let x=ax;x<=bx;x++)px(x,y,y===ay||y===by||x===ax||x===bx?'#14181e':fill);for(let x=ax+1;x<bx;x++)px(x,ay+1,'#4e5a66')};
+  box(x0+33,yF+6,x0+51,yB-4,'#323a44');box(x0+36,yF+10,x0+48,yF+15,'#10141a');px(x0+38,yF+12,'#ff4a3a');px(x0+39,yF+12,'#ff8a6a');px(x0+45,yF+12,'#4aa0ff');px(x0+46,yF+12,'#9ad0ff');for(let x=x0+36;x<=x0+48;x+=2)px(x,yB-7,'#5a6672');
+  box(x0+60,yF+5,x0+79,yB-5,'#2c343e');for(let y=yF+8;y<yB-7;y+=2)for(let x=x0+63;x<=x0+76;x++)px(x,y,x%3?'#4a5662':'#3a4450');px(x0+66,yF+3,'#ff4a3a');
+  box(x0+88,yF+5,x0+104,yB-5,'#323a44');box(x0+91,yF+8,x0+101,yF+13,'#182028');for(let x=x0+92;x<=x0+100;x+=2)px(x,yF+10,x%4?'#6ac08a':'#3a6a4a');px(x0+93,yB-8,'#ffb03a');px(x0+97,yB-8,'#ff4a3a');
+  // rust and grime: heavier along the edges and the lower hull
+  for(let y=yT-1;y<=yB;y++)for(let x=x0;x<=x1+D;x++){const inTop=y<yF&&x>=x0+(D-1-(y-yT))&&x<=x1+(D-1-(y-yT)),inF=y>=yF&&x>x0&&x<x1;if(!inTop&&!inF)continue;
+    const n=(Math.sin(x*.9+y*1.7)+Math.sin(x*.31-y*.53)+Math.sin(x*2.3+y*.4))/3,edge=inTop?.15:(y>yB-6?.25:y<yF+3?.2:0);if(n+edge>.56&&rnd()<.6)px(x,y,RU[(x+y)%3]);else if(n+edge>.44&&rnd()<.18)px(x,y,RU[2])}
+  // housing box on top, with yellow stencil
+  const hx0=110,hx1=130,hy0=56,hy1=66;for(let r=0;r<4;r++)for(let x=hx0+3-r;x<=hx1+3-r;x++)px(x,hy0-4+r,r===0?'#6a7480':'#56606c');
+  for(let y=hy0;y<=hy1;y++)for(let x=hx0;x<=hx1;x++)px(x,y,y===hy0?'#6a7480':x===hx0||y===hy1?O:dith(x,y,.4)?'#3e4752':'#46505c');for(let y=hy0-3;y<=hy1-1;y++){px(hx1+1,y,'#262c34')}
+  [[116,61],[117,61],[119,61],[120,61],[121,62],[123,61],[124,61],[124,62]].forEach(([x,y])=>px(x,y,'#c8b060'));px(112,59,RU[0]);px(128,64,RU[1]);px(113,64,RU[2]);
+  // mast with two dishes and the beacon lamp on top
+  for(let y=20;y<hy0-3;y++){px(119,y,'#2a3038');px(120,y,'#6a7480');px(121,y,'#4a525c');px(122,y,'#2a3038')}for(let k=0;k<7;k++){px(115+k,48-k*.5,'#4a525c');px(126-k,48-k*.5,'#4a525c')}
+  const dish=(cx,cy,rx,ry,face)=>{for(let y=-ry;y<=ry;y++)for(let x=-rx;x<=rx;x++){const e=x*x/(rx*rx)+y*y/(ry*ry);if(e>1)continue;px(cx+x,cy+y,e>.72?(x*face>0?'#a8b0ba':'#6a727c'):(e<.25?'#4a525c':dith(cx+x,cy+y,.5)?'#7a828c':'#8a929c'))}
+    for(let k=1;k<=rx+3;k++)px(cx+face*k,cy-k*.3,'#9aa2ac');px(cx+face*(rx+3),cy-(rx+3)*.3,'#c8d0d8');px(cx-2,cy+1,RU[0]);px(cx+1,cy-2,RU[1])};
+  dish(110,40,5,8,-1);for(let x=111;x<=119;x++)px(x,40,'#4a525c');dish(134,32,7,5,1);for(let x=122;x<=128;x++)px(x,33,'#4a525c');
+  for(let x=116;x<=125;x++){px(x,19,'#4a525c');px(x,20,'#2a3038')}
+  for(let y=13;y<=18;y++)for(let x=117;x<=124;x++){const e=((x-120.5)/4)**2+((y-18)/5.5)**2;if(e>1)continue;px(x,y,x<119&&y<16?'#ffe68a':x>122?'#c0601a':'#ff9a2a')}px(120,12,'#ffcc5a');
+  // yagi on the left, a thin whip at the end
+  for(let y=46;y<=yT+1;y++)px(86,y,'#6a7480');[[47,6],[50,5],[53,4],[56,3]].forEach(([y,w])=>{for(let x=86-w;x<=86+w;x++)px(x,y,'#7a828c');px(86-w,y+1,'#3a4048')});
+  for(let k=0;k<26;k++){px(72-k*.18,yT+2-k,'#6a7480')}px(67,yT-24,'#c8d0d8');
+  // a cable looping from the housing back over the hull
+  cable(hx0,hy1-2,x0+30,yT+3,-6,'#3a2a1e','#5a4030');cable(hx1+2,hy1-1,x1-10,yT+4,-4,'#2e2420','#4a3a2c');
+  BCN.src=c.toDataURL();
+  // signal waves: separate layers so they can pulse outward
+  BCN.waves=[];const arc=(cx,cy,r,a0,a1,col)=>{const c2=document.createElement('canvas');c2.width=W;c2.height=H;const q=c2.getContext('2d');q.fillStyle=col;
+    for(let a=a0;a<=a1;a+=.6/r){q.fillRect(Math.round(cx+Math.cos(a)*r),Math.round(cy+Math.sin(a)*r),1,1)}return c2.toDataURL()};
+  [9,15,21,27].forEach(r=>BCN.waves.push(arc(x1+D+4,yF+8,r,-.75,.75,'#d07a3a')));
+  BCN.lamp=[arc(124,15,5,-.9,.9,'#e8a050'),arc(124,15,9,-.8,.8,'#c87a3a')];
+  return BCN}
+function beaconHTML(off){const b=beaconImg();return`<div class="beacon ${off?'off':''}"><img class="pix" src="${b.src}" alt="낡은 SOS 신호기">
+  ${b.waves.map((w,i)=>`<img class="pix bwave" src="${w}" alt="" style="animation-delay:${i*.35}s">`).join('')}${b.lamp.map((w,i)=>`<img class="pix bwave lamp" src="${w}" alt="" style="animation-delay:${i*.3}s">`).join('')}
+  <span class="bglow" style="left:${120.5/BCN_W*100}%;top:${15/BCN_H*100}%"></span><span class="bcap">${off?'신호기가 꺼져 있습니다.':'우주 저편으로 신호를 보냅니다.'}</span></div>`}
 function bossMainHTML(){const b=BOSS;
   // just put down: the fallen invader's stage dims for 10 minutes before you head back out to space
   if(bossRetLeft(b)>0)return`<div class="bossstage bossdim"><div class="bosssprite">${bossSpr(b,10)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 토벌 성공</span>${raidBar(0,b.max,'var(--red)')}<span class="bosshp">0 / ${b.max.toLocaleString()}</span></div>
     <div class="bossretov"><p>10분 뒤에 우주로 돌아갑니다.</p><span class="bossretT" id="bossRet">${fmtClock(bossRetLeft(b))}</span></div></div>`;
   // no live invader (none yet, put down, failed or sent back): just the old receiver, no ranking
-  if(!bossAlive(b))return`<div class="card bossidle"><b>우주 저편으로 신호를 보냅니다.</b></div>${asigHTML()}`;
+  if(!bossAlive(b))return beaconHTML(asigState().off)+asigHTML();
   const alive=true,rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
   const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null,urgent=alive&&(b.end||0)-Date.now()<30*60e3;
   return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,10)}</div>
