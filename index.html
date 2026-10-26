@@ -3539,7 +3539,7 @@ function drawRoomCv(){const cv=$('#roomCv');if(!cv)return;const W=192,H=96,FY=66
   themeDecorFront(x,R,TH,rm,W,H,FY);
   /* rug + character */
   if(rm.theme!=='ruin'){const rc=RUGC[rm.theme]||RUGC.space;for(let j=0;j<10;j++){const half=Math.round(30*Math.sqrt(1-((j-4.5)/5)**2));R(98-half,80+j,half*2,1,j===0||j===9?rc[0]:rc[1])}for(let i=74;i<122;i+=6)R(i,84,3,1,rc[2]);for(let i=76;i<120;i+=6)R(i+1.5,82,.5,.5,rc[2]);for(let i=76;i<120;i+=6)R(i+1.5,86.5,.5,.5,rc[2])}
-  drawAvatars(x);roomDetail(x,cv,rm,W,H,FY);themeAnim(x,rm,W,H,FY);
+  drawAvatars(x);drawPets(x);roomDetail(x,cv,rm,W,H,FY);themeAnim(x,rm,W,H,FY);
   /* lamp */
   R(88,2,16,2,'#2a2e3a');R(90,4,12,1,LP.fx);
   if(LP.rgb==='prism'){[['220,130,170',40],['127,184,164',96],['95,140,220',152]].forEach(([rgb,cx2])=>{const g=x.createRadialGradient(cx2,10,2,cx2,40,80);g.addColorStop(0,`rgba(${rgb},.16)`);g.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=g;x.fillRect(0,0,W,H)})}
@@ -3582,7 +3582,18 @@ function drawAvatars(x){roomAvatars().slice().sort((a,b)=>a.dy-b.dy).forEach(a=>
   if(a.emote&&EMOTES[a.emote]){const g=EMOTES[a.emote],bx=ax+2,by=46;x.fillStyle='#05060b';x.fillRect(bx-1,by-1,11,10);x.fillStyle='#d6d8e0';x.fillRect(bx,by,9,8);x.fillRect(bx+1,by+8,2,2);gridOn(x,g,bx+1+(g[0].length<6?1:0),by+1,null)}x.restore()})}
 function roomLabels(){const el=$('#roomNames');if(!el)return;el.innerHTML=roomAvatars().map(a=>`<span class="rname ${a.me?'me':''} ${a.away?'away':''}" title="${a.away?'자리 비움':''}" style="left:${a.x/192*100}%;top:${(61.5+(a.dy||0))/96*100}%">${a.me?'나':esc(a.nick||'단원')}</span>`).join('')}
 let wanderAt=0;
-setInterval(()=>{if(!roomShown())return;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;let mv=!calm&&(Date.now()%240<75);if(!calm&&Date.now()>wanderAt){wanderAt=Date.now()+4000+Math.random()*5000;if(Math.abs(myTX-myRX)<.5){myTX=Math.max(80,Math.min(116,96+(Math.random()*2-1)*14));pushRoomPresence()}}if(Math.abs(myTX-myRX)>.5){myRX+=Math.sign(myTX-myRX)*Math.min(.5,Math.abs(myTX-myRX));mv=true}
+// pets roam the room floor on their own (each viewer sees their own wander; nothing is synced)
+const PETW={},PET_FLY=new Set(['jelly','plasmoth','propdrone','orbsat']),petImgC={};
+const petPic=id=>{if(!petImgC[id]){const im=new Image();im.src=PET_PNG[id];petImgC[id]=im}return petImgC[id]};
+function roomPets(){return roomAvatars().map(a=>{const pt=a.p&&a.p.pet&&petById(a.p.pet.id);if(!pt)return null;const k=(a.id||'me')+':'+pt.id;
+  if(!PETW[k])PETW[k]={x:a.x-14,tx:a.x-14,y:84,ty:84,wait:Date.now()+800+Math.random()*2000,dir:-1};return{k,pt,w:PETW[k]}}).filter(Boolean)}
+function petStep(){let mv=false;const now=Date.now();roomPets().forEach(({w})=>{const dx=w.tx-w.x,dy=w.ty-w.y;
+  if(Math.abs(dx)>.3||Math.abs(dy)>.3){w.x+=Math.sign(dx)*Math.min(.45,Math.abs(dx));w.y+=Math.sign(dy)*Math.min(.15,Math.abs(dy));if(Math.abs(dx)>.3)w.dir=Math.sign(dx);w.step=(w.step||0)+1;mv=true}
+  else if(now>w.wait){w.tx=14+Math.random()*164;w.ty=81+Math.random()*7;w.wait=now+1500+Math.random()*4500;if(Math.random()<.25){w.tx=w.x;w.ty=w.y;w.dir=-w.dir;mv=true}}});return mv}
+function drawPets(x){const t=Date.now()/1000;roomPets().sort((a,b)=>a.w.y-b.w.y).forEach(({pt,w})=>{const im=petPic(pt.id);if(!im.complete)return;const fly=PET_FLY.has(pt.id),moving=Math.abs(w.tx-w.x)>.3,
+    hop=fly?Math.round(Math.sin(t*2.2+w.x*.1)*1.5)-6:(moving&&(w.step>>2)%2?-1:0),X=Math.round(w.x),Y=Math.round(w.y);
+  x.fillStyle='rgba(0,0,0,.35)';x.fillRect(X-4,Y,9,1);x.save();x.imageSmoothingEnabled=false;x.translate(X,Y-12+hop);if(w.dir>0)x.scale(-1,1);x.drawImage(im,-6,0,12,12);x.restore()})}
+setInterval(()=>{if(!roomShown())return;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;let mv=!calm&&(Date.now()%240<75);if(!calm&&petStep())mv=true;if(!calm&&Date.now()>wanderAt){wanderAt=Date.now()+4000+Math.random()*5000;if(Math.abs(myTX-myRX)<.5){myTX=Math.max(80,Math.min(116,96+(Math.random()*2-1)*14));pushRoomPresence()}}if(Math.abs(myTX-myRX)>.5){myRX+=Math.sign(myTX-myRX)*Math.min(.5,Math.abs(myTX-myRX));mv=true}
   rsPeers.forEach(p=>{const pr=p.presence;if(!pr||!pr.uid||p.isMe)return;const tx=pr.x||96;if(peerX[pr.uid]==null)peerX[pr.uid]=tx;if(Math.abs(tx-peerX[pr.uid])>.5){peerX[pr.uid]+=Math.sign(tx-peerX[pr.uid])*Math.min(1.5,Math.abs(tx-peerX[pr.uid]));mv=true}if(pr.emote&&Date.now()-(pr.ea||0)<3600)mv=true});
   if(myEmote&&Date.now()-myEmote.at<3600)mv=true;else if(myEmote&&Date.now()-myEmote.at>=3600){myEmote=null;pushRoomPresence();mv=true}
   if(mv){drawRoomCv();roomLabels()}},70);
