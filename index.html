@@ -1626,7 +1626,8 @@ function save(){
   if(mode!=='online')return;dirty=true;clearTimeout(saveT);saveT=setTimeout(flush,350);
 }
 async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
-function sys(text){if(mode!=='online'||!TICK_RE.test(text))return;db.collection('chat').add({uid,nick:P.nick,text,at:Date.now(),sys:true}).catch(()=>{})}
+// adm marks a notice sent from the admin side: it pins to the ticker and rings the chime for everyone
+function sys(text,adm){if(mode!=='online'||!TICK_RE.test(text))return;const d={uid,nick:P.nick,text,at:Date.now(),sys:true};if(adm&&isAdmin)d.adm=true;db.collection('chat').add(d).catch(()=>{})}
 function setPresence(){if(room&&mode==='online')room.presence({uid,nick:P.nick,act:TABS.find(t=>t.id===tab).n}).catch(()=>{})}
 function goSolo(msg,why){mode='solo';isAdmin=true;$('#adminBtn').hidden=false;FB=P&&P.sugg?[{id:'me',nick:P.nick,list:P.sugg}]:[];setTimeout(updFbBadge,0);if(why){const b=$('#soloBanner');b.innerHTML=`<b>⚠ 진행 상황이 공용 서버에 저장되지 않습니다</b><span>${esc(why)}</span><span>지금은 이 브라우저에만 임시로 저장돼서, 다른 기기로 들어오거나 브라우저 기록이 지워지면 사라질 수 있습니다. 새로고침해도 계속되면 운영자(선장)에게 알려 주십시오.</span>`;b.hidden=false}try{const s=localStorage.getItem(LS);if(s){const o=JSON.parse(s);P=Object.assign(newPlayer('단원'),o);P.fv=o.fv||0}}catch(e){}if(msg)toast(msg);renderNet();renderAll();if(!P.joined||P.nick==='새 단원')showJoin()}
 
@@ -1654,7 +1655,7 @@ async function connect(){
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
-    // a notice from the admin that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
+    // every notice sent from the admin side (adm:true) that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
     const adm=CHAT.filter(m=>m.adm);if(chimeSeen){const nw=adm.filter(m=>!chimeSeen.has(m.id));if(nw.length){sfxChime();toast(String(nw[nw.length-1].text||'').slice(0,60))}}chimeSeen=new Set([...(chimeSeen||[]),...adm.map(m=>m.id)]);renderChat()},()=>{});
   socSubscribe();raidSubscribe();bossSubscribe();
   if(room){room.onPeers(ch=>{PEERS=ch.peers;renderCrew();renderNet();if(tab==='farm')renderPanel()});setPresence()}
@@ -3126,7 +3127,7 @@ const A={
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
   log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했습니다.')},
  admbosspick(d){if(!isAdmin)return;bossPick=Math.max(0,Math.min(BOSS_KINDS.length-1,+d.k||0));renderAdminAll()},
- admboss(){if(!isAdmin)return;const lv=Math.max(1,Math.min(99,Math.round(+$('#admBossLv').value)||30)),K=BOSS_KINDS[bossPick];bossSummon(bossPick,lv).then(nx=>{if(!nx){toast('이미 침략자가 출현 중입니다.');return}toast(`${K.n} Lv.${lv}을(를) 소환했습니다.`);sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`);renderAdminAll()}).catch(()=>toast('소환하지 못했습니다.'))},
+ admboss(){if(!isAdmin)return;const lv=Math.max(1,Math.min(99,Math.round(+$('#admBossLv').value)||30)),K=BOSS_KINDS[bossPick];bossSummon(bossPick,lv).then(nx=>{if(!nx){toast('이미 침략자가 출현 중입니다.');return}toast(`${K.n} Lv.${lv}을(를) 소환했습니다.`);sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`,true);renderAdminAll()}).catch(()=>toast('소환하지 못했습니다.'))},
  admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
  admgive(){if(!isAdmin)return;const id=$('#admItem').value,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
