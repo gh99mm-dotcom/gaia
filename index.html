@@ -2144,16 +2144,17 @@ const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
 const BOSS_RET=10*60e3,bossRetLeft=b=>bossKilled(b)&&b.killedAt?Math.max(0,b.killedAt+BOSS_RET-Date.now()):0;
 /* 탐사 idle scene: the old SOS beacon drifting against the station's starfield and dark planet */
 const BCN_W=240,BCN_H=120,BCN={};
-function beaconImg(){if(BCN.src)return BCN;const W=BCN_W,H=BCN_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+function beaconImg(){const dk=(isDay()||isLight())?'d':'n';if(BCN.src&&BCN.k===dk)return BCN;BCN.k=dk;const W=BCN_W,H=BCN_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
   const px=(x,y,col)=>{x=Math.round(x);y=Math.round(y);if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x,y,1,1)};let sd=911;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
   const dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
-  // backdrop: the same night sky as the station — dark void, soft glow, scattered stars, the big dark planet low on the right
-  g.fillStyle='#06070d';g.fillRect(0,0,W,H);const gr=g.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.55);gr.addColorStop(0,'rgba(95,90,128,.16)');gr.addColorStop(1,'rgba(6,7,13,0)');g.fillStyle=gr;g.fillRect(0,0,W,H);
-  for(let k=0;k<190;k++){const x=rnd()*W|0,y=rnd()*H|0;g.globalAlpha=.25+rnd()*.6;px(x,y,['#9ea3b8','#9ea3b8','#7c97a8','#6c6790'][k%4])}g.globalAlpha=1;
-  [[22,18],[200,12],[180,96],[34,100],[90,8]].forEach(([x,y])=>{px(x,y,'#e8e8f4');px(x-1,y,'#7c80a0');px(x+1,y,'#7c80a0');px(x,y-1,'#7c80a0');px(x,y+1,'#7c80a0')});
-  {const R=78,cx=250,cy=150;for(let y=cy-R;y<H;y++)for(let x=cx-R;x<W;x++){const d=Math.hypot(x-cx,y-cy);if(d>R)continue;px(x,y,d>R-1?'#2e3446':(x-cx)-(y-cy)*.3<-R*.35?(dith(x,y,.5)?'#0e111b':'#0a0c14'):'#0e111b')}}
+  // backdrop: the planet surface, same as the crash-site view
+  surfaceBackdrop(g,isDay()||isLight(),rnd);
+  // the beacon stands a little right of centre (clear of the sun) and down on the ground
+  const BX=16,BY=6;g.translate(BX,BY);
   const O='#0a0c10',FR=['#2e3640','#262d36'],TP=['#4a5460','#3e4752'],SD='#1c2229',RU=['#6e4c2a','#8e6634','#4e3822'];
   const x0=62,x1=170,yT=66,yF=74,yB=98,D=8;
+  // its shadow on the ground
+  for(let y=yB-4;y<=yB+8;y++)for(let x=x0-6;x<=x1+D+8;x++){const e=((x-(x0+x1+D)/2)/((x1-x0)/2+12))**2+((y-yB-2)/6)**2;if(e<=1&&dith(x,y,.75-e*.4))px(x,y,'#07060b')}
   // cables hanging under the hull (drawn first so the hull sits over them)
   const cable=(ax,ay,bx,by,sag,col,hi)=>{const n=Math.max(8,Math.abs(bx-ax));for(let i=0;i<=n;i++){const t=i/n,x=ax+(bx-ax)*t,y=ay+(by-ay)*t+Math.sin(Math.PI*t)*sag;px(x,y,col);px(x,y-1,hi)}};
   cable(x0+8,yB-2,x0+46,yB-2,10,'#3a2a1e','#5a4030');cable(x0+36,yB-1,x0+92,yB-3,13,'#2e2420','#4a3a2c');cable(x0+70,yB-2,x1+6,yB-6,8,'#3a2a1e','#5a4030');cable(x0+20,yB-1,x0+60,yB-1,6,'#2a2e34','#44505a');
@@ -2193,16 +2194,16 @@ function beaconImg(){if(BCN.src)return BCN;const W=BCN_W,H=BCN_H,c=document.crea
   for(let k=0;k<26;k++){px(72-k*.18,yT+2-k,'#6a7480')}px(67,yT-24,'#c8d0d8');
   // a cable looping from the housing back over the hull
   cable(hx0,hy1-2,x0+30,yT+3,-6,'#3a2a1e','#5a4030');cable(hx1+2,hy1-1,x1-10,yT+4,-4,'#2e2420','#4a3a2c');
-  BCN.src=c.toDataURL();
+  g.setTransform(1,0,0,1,0,0);BCN.src=c.toDataURL();
   // signal waves: separate layers so they can pulse outward
   BCN.waves=[];const arc=(cx,cy,r,a0,a1,col)=>{const c2=document.createElement('canvas');c2.width=W;c2.height=H;const q=c2.getContext('2d');q.fillStyle=col;
     for(let a=a0;a<=a1;a+=.6/r){q.fillRect(Math.round(cx+Math.cos(a)*r),Math.round(cy+Math.sin(a)*r),1,1)}return c2.toDataURL()};
-  [9,15,21,27].forEach(r=>BCN.waves.push(arc(x1+D+4,yF+8,r,-.75,.75,'#d07a3a')));
-  BCN.lamp=[arc(124,15,5,-.9,.9,'#e8a050'),arc(124,15,9,-.8,.8,'#c87a3a')];
+  [9,15,21,27].forEach(r=>BCN.waves.push(arc(x1+D+4+BX,yF+8+BY,r,-.75,.75,'#d07a3a')));
+  BCN.lamp=[arc(124+BX,15+BY,5,-.9,.9,'#e8a050'),arc(124+BX,15+BY,9,-.8,.8,'#c87a3a')];BCN.lx=120.5+BX;BCN.ly=15+BY;
   return BCN}
 function beaconHTML(off){const b=beaconImg();return`<div class="beacon ${off?'off':''}"><img class="pix" src="${b.src}" alt="낡은 SOS 신호기">
   ${b.waves.map((w,i)=>`<img class="pix bwave" src="${w}" alt="" style="animation-delay:${i*.35}s">`).join('')}${b.lamp.map((w,i)=>`<img class="pix bwave lamp" src="${w}" alt="" style="animation-delay:${i*.3}s">`).join('')}
-  <span class="bglow" style="left:${120.5/BCN_W*100}%;top:${15/BCN_H*100}%"></span><span class="bcap">${off?'신호기가 꺼져 있습니다.':'우주 저편으로 신호를 보냅니다.'}</span></div>`}
+  <span class="bglow" style="left:${b.lx/BCN_W*100}%;top:${b.ly/BCN_H*100}%"></span><span class="bcap">${off?'신호기가 꺼져 있습니다.':'우주 저편으로 신호를 보냅니다.'}</span></div>`}
 function bossMainHTML(){const b=BOSS;
   // just put down: the fallen invader's stage dims for 10 minutes before you head back out to space
   if(bossRetLeft(b)>0)return`<div class="bossstage bossdim"><div class="bosssprite">${bossSpr(b,10)}</div>
@@ -2665,10 +2666,8 @@ const SHIP_GLOW=new Set(['#4f9a92','#8fd0c4','#6a4a30','#523826','#4a6488']);
 const SHIPV={S:4.1,Q:.5,PH:-.72,X:116,Y:80,CX:214,CY:108,LX:30,LY:108};
 /* day from 06:00 to 18:00 Korea time (UTC+9, no DST), night otherwise — the same for every player */
 const isDay=()=>{const h=(new Date().getUTCHours()+9)%24;return h>=6&&h<18};
-function shipSceneBuild(st){
-  const day=isDay()||isLight();
-  const c=document.createElement('canvas');c.width=SW;c.height=SH;const g=c.getContext('2d');
-  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+/* the planet's surface as seen from the crash site: sky, stars or sun, the big moon-planet, ridges, ground (240x120) */
+function surfaceBackdrop(g,day,rnd){
   const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
   const dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
   const HZ=92,SKY=day?['#4a6a9a','#5a7aa8','#6e8cb6','#86a0c4','#a2b4cf','#c4c6d2']:['#06061a','#0f0c28','#1d1440','#33205a','#4e2c66','#6b3a6c'];
@@ -2693,6 +2692,14 @@ function shipSceneBuild(st){
   // ground
   for(let y=HZ;y<SH;y++)for(let x=0;x<SW;x++)px(x,y,dith(x,y,(y-HZ)/(SH-HZ)*.6)?(day?'#4e423e':'#0e0b14'):(day?'#625450':'#1a1524'));
   for(let k=0;k<60;k++){const x=rnd()*SW|0,y=HZ+3+rnd()*(SH-HZ-3)|0;px(x,y,day?'#7a6a62':'#2a2236');if(rnd()<.4)px(x+1,y,day?'#463a36':'#221c2c')}
+}
+function shipSceneBuild(st){
+  const day=isDay()||isLight();
+  const c=document.createElement('canvas');c.width=SW;c.height=SH;const g=c.getContext('2d');
+  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
+  const dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
+  const HZ=92;surfaceBackdrop(g,day,rnd);
   // lantern glow on the ground
   const LX=SHIPV.LX,LY=SHIPV.LY;if(st.hull)for(let y=HZ;y<SH;y++)for(let x=0;x<160;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
   // the ship: the starfighter belly-down on the ground, nose to the upper right; key light from the planet (upper left), warm fill from the camp lantern
