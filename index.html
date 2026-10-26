@@ -1970,7 +1970,7 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
     const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}`};
     if(boss)raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5);L.cr+=crs(200)});return r}
-  if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 정거장으로 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);L.it={}}r.m[u].hp=1});return r}
+  if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 정거장으로 돌아가고, 모두 기절합니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
 const raidMyTurn=()=>{const r=MYRAID,c=r&&r.b&&r.b.cur;return!!(r&&r.phase==='battle'&&c&&c.k==='p'&&c.id===uid)};
@@ -1990,7 +1990,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
       hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def,m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?'의 광역 공격':''} → ${me.nick} ${d} 피해${tag}${me.hp<=0?' · 쓰러졌다!':''}`)})}
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
-  const all=raidUp(r).every(u=>r.b.flee[u]);if(all){const boss=r.b.mons.some(m=>m.kind==='boss');raidLog(r.b,'모두 동의해 전투에서 빠져나왔다.');if(boss){r.phase='end';r.result='fled';r.ev={n:'보스에게서 도망쳤다',res:'지금까지 모은 보상만 가지고 돌아갑니다.'}}else{r.phase='won';r.ev={n:'도망쳤다!',res:'이 전투의 보상은 없습니다.'}}}return r}).catch(()=>{})}
+  const all=raidUp(r).every(u=>r.b.flee[u]);if(all){const boss=r.b.mons.some(m=>m.kind==='boss');raidUp(r).forEach(u=>{r.m[u].hp=Math.max(1,Math.round(r.m[u].hp/2))});raidLog(r.b,'모두 동의해 전투에서 빠져나왔다. 도망치느라 모두 체력이 절반으로 줄었다.');if(boss){r.phase='end';r.result='fled';r.ev={n:'보스에게서 도망쳤다',res:'지금까지 모은 보상만 가지고 돌아갑니다. 모두 체력이 절반으로 줄었습니다.'}}else{r.phase='won';r.ev={n:'도망쳤다!',res:'이 전투의 보상은 없고, 모두 체력이 절반으로 줄었습니다.'}}}return r}).catch(()=>{})}
 function raidNext(){const r0=MYRAID;if(!r0||(r0.phase!=='event'&&r0.phase!=='won'))return;const st=r0.step;raidTx(r0.id,r=>{if(!r||r.step!==st||(r.phase!=='event'&&r.phase!=='won'))return null;r.seq++;r.step++;return raidStep(r)}).catch(()=>{})}
 /* ---- the driver plays monsters and timeouts; everyone keeps a heartbeat ---- */
 let raidHbAt=0;
@@ -2000,7 +2000,7 @@ function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidN
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
   if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
 function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(P.raidDone||[]).slice(-30),r.id];const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
-  if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));stat('raid');if(r.result==='clear')stat('raidclear');
+  if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));if(r.result==='wipe'){P.hp=0;log('원정에 실패해 쓰러졌다.','bad')}stat('raid');if(r.result==='clear')stat('raidclear');
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
 let raidWid=null;
 function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();raidUnsub=null}if(!id){MYRAID=null;return}
@@ -2019,7 +2019,7 @@ function raidJoin(id){const L=RAIDS.find(x=>x.id===id);if(!L||MYRAID)return;cons
   raidTx(id,r=>{if(!r||r.state!=='lobby'||r.ids.length>=RAID_MAX||r.ids.includes(uid))return null;r.ids.push(uid);r.m[uid]=me;r.hb=Object.assign({},r.hb,{[uid]:raidNow()});return r}).then(nx=>{if(nx){raidWatch(id);commit()}else{heal(0,RAID_EN);toast('참여할 수 없습니다. 이미 출발했거나 자리가 찼습니다.')}}).catch(()=>{heal(0,RAID_EN);toast('참여하지 못했습니다.')})}
 function raidLeave(){const r0=MYRAID;if(!r0)return;
   if(r0.state==='lobby'){if(r0.host===uid){raidRef(r0.id).delete().catch(()=>{})}else raidTx(r0.id,r=>{if(!r||r.state!=='lobby')return null;r.ids=r.ids.filter(u=>u!==uid);delete r.m[uid];return r}).catch(()=>{});heal(0,RAID_EN);raidWatch(null);commit();renderPanel();return}
-  if(r0.state==='run'&&r0.phase!=='end'){raidTx(r0.id,r=>{if(!r)return null;r.left=Object.assign({},r.left,{[uid]:1});r.seq++;if(r.phase==='battle'){if(!raidIn(r).length){r.phase='end';r.result='wipe';r.ev={n:'원정 중단',res:''};return r}if(r.b.cur&&r.b.cur.k==='p'&&r.b.cur.id===uid)raidNextTurn(r)}return r}).catch(()=>{});P.raidDone=[...(P.raidDone||[]),r0.id];log('원정에서 먼저 돌아왔다. 이번 원정의 보상은 받지 못한다.');raidWatch(null);commit();renderPanel();return}
+  if(r0.state==='run'&&r0.phase!=='end'){raidTx(r0.id,r=>{if(!r)return null;r.left=Object.assign({},r.left,{[uid]:1});r.seq++;if(r.phase==='battle'){if(!raidIn(r).length){r.phase='end';r.result='wipe';r.ev={n:'원정 중단',res:''};return r}if(r.b.cur&&r.b.cur.k==='p'&&r.b.cur.id===uid)raidNextTurn(r)}return r}).catch(()=>{});P.raidDone=[...(P.raidDone||[]),r0.id];{const me=r0.m&&r0.m[uid],cur=me?Math.min(maxHp(),me.hp):P.hp;P.hp=Math.max(1,Math.round(cur/2))}log('원정을 포기하고 돌아왔다. 체력이 절반으로 줄었고, 이번 원정의 보상은 받지 못한다.','bad');raidWatch(null);commit();renderPanel();return}
   raidWatch(null);renderPanel()}
 function raidStart(id){raidTx(id||MYRAID.id,r=>{if(!r||r.state!=='lobby'||r.host!==uid)return null;r.state='run';r.step=1;r.seq++;r.ids.forEach(u=>r.loot[u]={xp:0,cr:0,it:{}});return raidStep(r)}).catch(()=>toast('출발하지 못했습니다.'))}
 /* ---- views ---- */
