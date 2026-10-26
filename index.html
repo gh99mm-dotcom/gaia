@@ -160,9 +160,9 @@ header>.chip:not(.sugg){margin-left:0}
 .pilot{padding:12px;display:flex;flex-direction:column;gap:10px}
 .pilot-top{display:flex;gap:12px;align-items:center}
 .avatar{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px}
-.bagwin{position:fixed;z-index:40;width:min(620px,calc(100vw - 8px));max-height:min(80vh,760px);display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45),inset 0 0 0 1px var(--line)}
+.bagwin{position:fixed;z-index:40;box-sizing:border-box;width:min(620px,calc(100vw - 8px));height:min(80vh,760px);max-width:calc(100vw - 8px);max-height:calc(100vh - 8px);display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45),inset 0 0 0 1px var(--line)}
 .bw-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border-bottom:2px solid var(--ink);background:var(--deep);cursor:move;user-select:none;touch-action:none}.bw-head .hint{flex:1;font-size:11px}
-.bw-body{overflow:auto;padding:10px;overscroll-behavior:contain}.bw-body .two{grid-template-columns:minmax(0,1fr)}
+.bw-body{flex:1;min-height:0;overflow:auto;padding:10px 10px 16px;overscroll-behavior:contain}.bw-grip{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 0 50%,var(--ink) 50% 58%,transparent 58% 68%,var(--ink) 68% 76%,transparent 76% 86%,var(--ink) 86% 94%,transparent 94%)}.bw-body .two{grid-template-columns:minmax(0,1fr)}
 .bagbtn.has{border-color:var(--gold)}
 .mailbtn{position:relative;flex:none;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px 4px;cursor:pointer;line-height:0}
 .mailbtn:hover{background:var(--panel2)}.mailbtn.has{box-shadow:inset 0 0 0 1px var(--gold),0 0 6px rgba(191,174,128,.5)}
@@ -2994,14 +2994,19 @@ const adminShown=()=>adminView&&!!$('#adminBox');
 function holdScroll(y){const st=$('#stage');st.style.minHeight='';const need=y+innerHeight-document.documentElement.scrollHeight;if(need>0)st.style.minHeight=(st.offsetHeight+need)+'px';window.scrollTo(0,y)}
 /* the bag is a floating window you can drag anywhere on the page (position remembered on this device) */
 let bagOpen=false;const bagWin=document.createElement('div');bagWin.id='bagWin';bagWin.className='bagwin px';bagWin.hidden=true;bagWin.setAttribute('role','dialog');bagWin.setAttribute('aria-label','가방');
-bagWin.innerHTML='<div class="bw-head" id="bwHead"><span class="lbl">Bag · 가방</span><span class="hint">끌어서 옮기기</span><button class="qchip" type="button" data-act="bagtoggle" aria-label="가방 닫기">닫기</button></div><div class="bw-body" id="bwBody"></div>';document.body.appendChild(bagWin);
+bagWin.innerHTML='<div class="bw-head" id="bwHead"><span class="lbl">Bag · 가방</span><span class="hint">끌어서 옮기기</span><button class="qchip" type="button" data-act="bagtoggle" aria-label="가방 닫기">닫기</button></div><div class="bw-body" id="bwBody"></div><span class="bw-grip" id="bwGrip" title="끌어서 크기 바꾸기" aria-hidden="true"></span>';document.body.appendChild(bagWin);
 function bagPlace(x,y){const w=bagWin.offsetWidth,h=bagWin.offsetHeight;x=Math.max(4,Math.min(innerWidth-Math.min(w,innerWidth)-4,x));y=Math.max(4,Math.min(innerHeight-48,y));bagWin.style.left=x+'px';bagWin.style.top=y+'px';return[x,y]}
 function bagWinRender(){if(!bagOpen||!P)return;const b=$('#bwBody');if(!b)return;const st=b.scrollTop;b.innerHTML=bagInner();renderCook();b.scrollTop=st}
-function bagShow(on){bagOpen=on;bagWin.hidden=!on;if(on){bagWinRender();let pos=null;try{pos=JSON.parse(localStorage.getItem('gaia-bagpos')||'null')}catch(e){}bagPlace(pos?pos[0]:innerWidth-bagWin.offsetWidth-24,pos?pos[1]:90)}renderPilot()}
+function bagShow(on){bagOpen=on;bagWin.hidden=!on;if(on){bagWinRender();let pos=null;try{pos=JSON.parse(localStorage.getItem('gaia-bagpos')||'null')}catch(e){}let sz=null;try{sz=JSON.parse(localStorage.getItem('gaia-bagsize')||'null')}catch(e){}if(sz)bagSize(sz[0],sz[1]);bagPlace(pos?pos[0]:innerWidth-bagWin.offsetWidth-24,pos?pos[1]:90)}renderPilot()}
+function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Math.min(innerHeight-8,h));bagWin.style.width=w+'px';bagWin.style.height=h+'px';return[w,h]}
 {let drag=null;$('#bwHead').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=bagWin.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};$('#bwHead').setPointerCapture(e.pointerId);e.preventDefault()});
  $('#bwHead').addEventListener('pointermove',e=>{if(drag)bagPlace(e.clientX-drag.dx,e.clientY-drag.dy)});
  $('#bwHead').addEventListener('pointerup',()=>{if(!drag)return;drag=null;try{localStorage.setItem('gaia-bagpos',JSON.stringify([parseInt(bagWin.style.left),parseInt(bagWin.style.top)]))}catch(e){}});
- addEventListener('resize',()=>{if(bagOpen)bagPlace(parseInt(bagWin.style.left)||0,parseInt(bagWin.style.top)||0)})}
+ addEventListener('resize',()=>{if(bagOpen)bagPlace(parseInt(bagWin.style.left)||0,parseInt(bagWin.style.top)||0)})
+ // the corner grip resizes the window (works with mouse and touch); the size is remembered too
+ let rs=null;const g=$('#bwGrip');g.addEventListener('pointerdown',e=>{const r=bagWin.getBoundingClientRect();rs={x:e.clientX,y:e.clientY,w:r.width,h:r.height};g.setPointerCapture(e.pointerId);e.preventDefault()});
+ g.addEventListener('pointermove',e=>{if(rs)bagSize(rs.w+e.clientX-rs.x,rs.h+e.clientY-rs.y)});
+ g.addEventListener('pointerup',()=>{if(!rs)return;rs=null;try{localStorage.setItem('gaia-bagsize',JSON.stringify([bagWin.offsetWidth,bagWin.offsetHeight]))}catch(e){}})}
 function renderPanel(){bagWinRender();
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
