@@ -2994,7 +2994,6 @@ const FURN={
   M('d9','서재 책상',1300,[['relic6',1]],'책이 쌓인 묵직한 책상',{top:'#3a2a22',body:'#2a1e18',base:'drawers',mon:'none',chair:'office',cc:'#6a2f38',ext:'books'}),
   M('d10','홀로그램 데스크',3500,[['crystal',6],['dark',1]],'허공에 빛 화면이 떠요',{top:'#41444f',body:'#2a2e3a',base:'legs',mon:'holo',chair:'office',cc:'#2c2845'}),
   M('d11','이끼 덮인 책상',400,[['moss',6]],'습지에서 건진 낡은 책상',{top:'#3a2e25',body:'#2a211b',base:'drawers',mon:'lcd',chair:'office',cc:'#3e5545',ext:'moss'}),
-  M('d12','고물 상자 책상',150,[['ore',1]],'보급 상자를 엎어 만든 책상',{top:'#62563d',body:'#4d4337',base:'crate',mon:'laptop',chair:'stool',cc:'#5d6274'}),
  ]},
  wall:{n:'벽 장식',list:[
   M('w0','빈 벽',0,null,'아무것도 걸려 있지 않아요',{k:'none'}),
@@ -3008,7 +3007,6 @@ const FURN={
   M('w8','둥근 거울',400,[['crystal',1]],'희미하게 방이 비쳐요',{k:'mirror'}),
   M('w9','개척단 깃발',500,null,'별무리 개척단의 문장',{k:'banner'}),
   M('w10','물고기 박제',1000,null,'가장 귀한 물고기를 걸어 둬요',{k:'fishmount'}),
-  M('w11','보스 처치 사진',1500,[['dark',1]],'던전 보스와 찍은 기념사진',{k:'boss'}),
   M('w12','벽걸이 화분',350,[['moss',4]],'새싹이 자라는 작은 선반',{k:'plants'}),
   M('w13','오로라 디스플레이',1800,[['crystal',4]],'오로라 영상이 흐르는 화면',{k:'aurora'}),
  ]},
@@ -3019,7 +3017,6 @@ const FURN={
   M('f3','로봇 펫',2000,[['ore',8],['crystal',2]],'녹슨 7호의 작은 동생',{k:'robot'}),
   M('f4','행성 지구본',600,null,'손으로 돌리는 행성 모형',{k:'globe'}),
   M('f5','망원경',1100,[['crystal',2]],'창밖 행성을 겨눈 망원경',{k:'scope'}),
-  M('f6','보급 상자 더미',250,[['ore',2]],'아직 못 푼 짐',{k:'crates'}),
   M('f7','골렘 석상',1600,[['ore',12]],'던전에서 본 골렘을 깎았어요',{k:'statue'}),
   M('f8','네온베리 화분',450,[['seed_berry',1]],'열매가 은은하게 빛나요',{k:'berry'}),
   M('f9','월광호박',500,[['seed_pump',1]],'방 한구석의 커다란 호박',{k:'pump'}),
@@ -3418,7 +3415,12 @@ setInterval(()=>{if(!roomShown())return;const calm=matchMedia('(prefers-reduced-
   if(myEmote&&Date.now()-myEmote.at<3600)mv=true;else if(myEmote&&Date.now()-myEmote.at>=3600){myEmote=null;pushRoomPresence();mv=true}
   if(mv){drawRoomCv();roomLabels()}},70);
 Object.entries({alien:["................",".....a....a.....","......a..a......","....kkkkkkkk....","...kaaaaaaaak...","..kaaaaaaaaaak..","..kakkaaaakkak..","..kakkkaakkkak..","..kakkaaaakkak..","..kaaaaaaaaaak..","...kaaakkaaak...","....kaaaaaak....",".....kkkkkk.....","....kb.kk.bk....","...kb..kk..bk...","................"],golem:["................",".....kkkkkk.....","....kbaaaabk....","....kakrrkak....","....kaaaaaak....","..kkkbaaaabkkk..",".kbak.kaak.kabk.",".kaak.kaak.kaak.",".kaakkaaaakkaak.",".kbbkkabbakkbbk.","..kk.kaaaak.kk..",".....kak.kak....",".....kak.kak....","....kbbk.kbbk...","....kkkk.kkkk...","................"],jelly:["................",".....kkkkkk.....","....kahhaaak....","...kahaaaaaak...","...kaaawwaaak...","...kaaakkaaak...","...kbaaaaaabk...","...kkbkbbkbkk...","....kak.kak.....","....ka..ka......",".....ka..ka.....","....ka..ka......",".....k...k......","................","................","................"]}).forEach(([k,g])=>{if(!TPL[k])TPL[k]=g});
-function roomMigrate(){if(!P.roomWF){P.roomWF=1;const ids=new Set(['wallp','floorp'].flatMap(k=>FURN[k].list.filter(f=>f.price>0).map(f=>f.id))),had=(P.own||[]).filter(id=>ids.has(id));
+// pieces taken off the catalogue: refund the price and put the default back in their slot
+const ROOM_GONE={w11:['wall',1500,'보스 처치 사진'],d12:['desk',150,'고물 상자 책상'],f6:['floor',250,'보급 상자 더미']};
+function roomDropGone(){const had=(P.own||[]).filter(id=>ROOM_GONE[id]);const r=P.room||{};let placed=false;for(const [id,[slot]] of Object.entries(ROOM_GONE))if(r[slot]===id){placed=true;r[slot]=FURN[slot].list[0].id}
+  if(!had.length&&!placed)return;const cr=had.reduce((a,id)=>a+ROOM_GONE[id][1],0);P.own=(P.own||[]).filter(id=>!ROOM_GONE[id]);P.room=r;if(cr)P.cr=(P.cr||0)+cr;
+  log(`마이룸 가구 ${had.map(id=>'「'+ROOM_GONE[id][2]+'」').join(', ')||''}이(가) 목록에서 빠져${cr?` ${cr.toLocaleString()} CR을 돌려받았다.`:' 기본 가구로 바꿔 두었다.'}`,'good');save()}
+function roomMigrate(){roomDropGone();if(!P.roomWF){P.roomWF=1;const ids=new Set(['wallp','floorp'].flatMap(k=>FURN[k].list.filter(f=>f.price>0).map(f=>f.id))),had=(P.own||[]).filter(id=>ids.has(id));
     if(had.length){const cr=had.reduce((a,id)=>a+furnById(id).price,0);P.own=P.own.filter(id=>!ids.has(id));P.cr=(P.cr||0)+cr;log(`마이룸 벽지·바닥재가 테마로 합쳐져, 산 벽지·바닥재 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
   const r=P.room;if(!r||!Array.isArray(r.put))return;const FP={bed:900,sofa:800,desk:600,aqua:1000,chair:200,plant:150,trunk:250,lamp:300,rocket:400,robo:350,poster:150,clock:250,shelf:300,starmap:400,neon:500,monitor:650},WP={w1:300,w2:400,w3:500,w4:400},FL={f1:300,f2:400,f3:500};
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
