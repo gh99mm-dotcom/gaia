@@ -733,7 +733,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .rodcard{display:flex;gap:10px;align-items:center;padding:7px 10px}
 .shop{display:flex;flex-direction:column;gap:9px}
 .keeper{display:flex;gap:12px;align-items:center}
-.sellbag{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));margin-bottom:8px}.sellpick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sellpick .sinfo{flex:1;min-width:160px;display:flex;flex-direction:column;gap:3px}.sellctl{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.sellones{gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}.sellbag{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));margin-bottom:8px}.sellpick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sellpick .sinfo{flex:1;min-width:160px;display:flex;flex-direction:column;gap:3px}.sellctl{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .shoptop{display:grid;grid-template-columns:7fr 3fr;gap:10px;align-items:start}.shoptop>.card{margin:0}.shopmain{display:flex;flex-direction:column;gap:8px;min-width:0}.shopmain>.card{margin:0}.slotm{position:sticky;top:10px}
 @media (max-width:520px){.shoptop{grid-template-columns:1fr}}
 .slotm{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px}
@@ -1849,7 +1849,7 @@ function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge
       <div class="acts"><button class="btn sm alt" data-act="water" data-i="${i}" ${FARM.water>0?'':'disabled'}>물 주기 <small>EN 1</small></button>${pl.fert?'':`<button class="btn sm ghost" data-act="fert" data-i="${i}" ${(P.inv.moss||0)>=2?'':'disabled'}>비료 <small>이끼 2</small></button>`}</div>`}}
   return{tile:`<button class="ptile" data-dome="${cls}" style="background-image:url(${miniDome(cls,domeH)})" data-act="selpod" data-i="${i}" aria-pressed="${selPod===i}" aria-label="${title}" title="${title}">${pic}${badge}<span class="pn">${String(i+1).padStart(2,'0')}</span></button>`,title,body}}
 function storeLogAdd(k,id,n){const e={uid,nick:P.nick,id,n,k,at:Date.now()};if(mode==='online')db.collection('farmlog').add(e).catch(()=>{});else{FLOG.unshift(e);FLOG=FLOG.slice(0,30);farmSave()}}
-let fsSel=null,fpSel=null,sellSel=null,sellN=1;
+let fsSel=null,fpSel=null,sellSel=null,sellN=1,sellArm=false;
 // the shared store holds seeds and crops only; each list is split into a seed row and a crop row
 function storeGroups(ids,cnt,act,sel){const sd=ids.filter(id=>ITEMS[id].type==='seed'),cr=ids.filter(id=>isCropId(id)),ot=ids.filter(id=>!sd.includes(id)&&!cr.includes(id));
   const row=(lbl,list)=>list.length?`<div class="fsgrp"><span class="fsgl">${lbl}</span><div class="bag">${list.map(id=>`<button class="slot" data-act="${act}" data-id="${id}" aria-pressed="${id===sel}" aria-label="${ITEMS[id].n} ${cnt(id)}개" title="${ITEMS[id].n}">${iicon(id,2)}<em>${cnt(id)}</em></button>`).join('')}</div></div>`:'';
@@ -2950,7 +2950,9 @@ function renderShop(){
     const pick=it?`<div class="card sellpick">${iicon(sellSel,3)}<div class="sinfo"><b>${it.n} ×${have}</b><span class="hint">${esc(it.d||'')}</span><span class="hint">한 개 ${pr.toLocaleString()} CR</span></div>
       <div class="sellctl"><div class="row cookqty"><button class="btn sm ghost" data-act="sellq" data-k="-1" ${q>1?'':'disabled'} aria-label="하나 줄이기">−</button><b>${q}개</b><button class="btn sm ghost" data-act="sellq" data-k="1" ${q<have?'':'disabled'} aria-label="하나 늘리기">+</button><button class="btn sm ghost" data-act="sellq" data-k="max" ${have>1?'':'disabled'}>전부 ${have}</button></div>
       <button class="btn alt" data-act="sell" data-id="${sellSel}">판매 · +${(pr*q).toLocaleString()} CR</button></div></div>`:'<p class="hint">팔 물건을 누르십시오.</p>';
-    return back+(ids.length?`<div class="bag sellbag">${ids.map(id=>`<button class="slot" data-act="sellsel" data-id="${id}" aria-pressed="${id===sellSel}" aria-label="${ITEMS[id].n} ${P.inv[id]}개" title="${ITEMS[id].n} · 한 개 ${sellPrice(id)} CR">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>${pick}`:'<p class="hint" style="padding:10px">팔 물건이 없습니다.</p>')})();
+    const ones=ids.filter(id=>P.inv[id]===1),onesCr=ones.reduce((a,id)=>a+sellPrice(id),0);
+    const bulk=ones.length>1?`<div class="row sellones"><span class="hint" style="flex:1;min-width:160px">${sellArm?`1개짜리 ${ones.length}종: ${ones.map(id=>ITEMS[id].n).join(', ')}`:`1개만 있는 아이템 ${ones.length}종을 한 번에 팔 수 있습니다.`}</span>${sellArm?'<button class="btn sm ghost" data-act="sellones" data-k="no">취소</button>':''}<button class="btn sm ${sellArm?'gold':'alt'}" data-act="sellones">${sellArm?'정말 팔기':'1개짜리 모두 팔기'} · +${onesCr.toLocaleString()} CR</button></div>`:'';
+    return back+(ids.length?`${bulk}<div class="bag sellbag">${ids.map(id=>`<button class="slot" data-act="sellsel" data-id="${id}" aria-pressed="${id===sellSel}" aria-label="${ITEMS[id].n} ${P.inv[id]}개" title="${ITEMS[id].n} · 한 개 ${sellPrice(id)} CR">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>${pick}`:'<p class="hint" style="padding:10px">팔 물건이 없습니다.</p>')})();
   if(shopTab==='ward')rows=wardHTML();
   const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
   return head()+`<div class="shop">
@@ -3273,7 +3275,7 @@ const A={
  dextoggle(){dexOpen=!dexOpen;renderPanel()},
  dextab(d){dexTab=d.k;renderPanel()},
  slotspin(){slotSpin()},
- shoptab(d){shopTab=d.k;keeperLine=ri(0,KEEPER.length-1);renderPanel()},
+ shoptab(d){shopTab=d.k;sellArm=false;keeperLine=ri(0,KEEPER.length-1);renderPanel()},
  craft(d){const f=craftById(d.id);if(!f||(P.own||[]).includes(f.id))return;if((P.cr||0)<f.price){toast('크레딧이 부족합니다.');return}if(!hasMat(f.mat)){toast('재료가 부족합니다.');return}f.mat.forEach(([id,n])=>take(id,n));P.cr-=f.price;sfxCoin();P.own=[...(P.own||[]),f.id];P.gear=Object.assign({},P.gear,{[d.k]:f.id});log(`${f.n}을(를) 만들어 착용했다. (${f.d})`,'rare');commit()},
  cequip(d){if(!(P.own||[]).includes(d.id))return;P.gear=Object.assign({},P.gear,{[d.k]:d.id});commit()},
  cunequip(d){P.gear=Object.assign({},P.gear);delete P.gear[d.k];P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());commit()},
@@ -3282,7 +3284,8 @@ const A={
  buysuit(d){const lv=+d.k,u=SUITS[lv];if(!u||suitMax()>=lv)return;if((P.cr||0)<u.price){toast('크레딧이 부족합니다.');return}if(!hasMat(u.mat)){toast('재료가 부족합니다.');return}u.mat.forEach(([id,n])=>take(id,n));P.cr-=u.price;sfxCoin();P.suit=lv;P.suitMax=lv;log(`${u.n}을 입었다. 방어력 +${u.def}`,'rare');commit()},
  buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||rodMax()>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;P.rodMax=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
  buy(d){const row=BUY.find(r=>r[0]===d.id);if(!row)return;const n=+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
- sellsel(d){sellSel=sellSel===d.id?null:d.id;sellN=1;renderPanel()},
+ sellones(d){if(d.k==='no'){sellArm=false;renderPanel();return}const ones=ORDER.filter(id=>P.inv[id]===1);if(ones.length<2)return;if(!sellArm){sellArm=true;renderPanel();return}sellArm=false;let gain=0;ones.forEach(id=>{const pr=sellPrice(id);take(id,1);gain+=pr;const b=soldBack[id]||{n:0,pr};soldBack[id]={n:b.n+1,pr:b.pr}});if(ones.includes(sellSel))sellSel=null;P.cr=(P.cr||0)+gain;sfxSell(true);log(`1개짜리 아이템 ${ones.length}종을 한 번에 팔았다. (+${gain} CR)`,'good');commit()},
+ sellsel(d){sellArm=false;sellSel=sellSel===d.id?null:d.id;sellN=1;renderPanel()},
  sellq(d){const have=P.inv[sellSel]||0;sellN=d.k==='max'?have:Math.max(1,Math.min(have,sellN+(+d.k)));renderPanel()},
  sell(d){const have=P.inv[d.id]||0;if(!have)return;const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
  asigskip(){if(bossAlive(BOSS))return;if(!useAsig())return;lastAsig=null;log('구식 신호기: 잡힌 신호를 무시하고 흘려보냈다.');commit()},
