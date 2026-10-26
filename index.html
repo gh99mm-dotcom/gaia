@@ -1855,7 +1855,7 @@ const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 const raidRef=id=>db.doc('parties/'+id);
 const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:AS('agi')});
 const raidZone=r=>RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];
-const raidFits=z=>P.lvl>=z.min&&P.lvl<=z.max;
+const raidFits=z=>P.lvl>=z.min;
 const raidNow=()=>Date.now();
 function raidTx(id,fn){const r=raidRef(id);if(r.tx)return r.tx(fn);return r.get().then(s=>{const nx=fn(s.exists?JSON.parse(JSON.stringify(s.data())):null);return nx?r.set(nx).then(()=>nx):null})}
 function raidLog(b,t){b.log=[...(b.log||[]),t].slice(-7)}
@@ -1937,10 +1937,10 @@ function raidSubscribe(){db.collection('parties').where('state','==','lobby').on
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
   clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
 /* ---- lobby actions ---- */
-async function raidCreate(solo){const z=RAID_ZONES.find(x=>x.id===raidSel);if(!z||mode!=='online')return;if(!raidFits(z)){toast(`이 구역은 Lv.${z.min}~${z.max}만 들어갈 수 있습니다.`);return}if(MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!spend(RAID_EN))return;
+async function raidCreate(solo){const z=RAID_ZONES.find(x=>x.id===raidSel);if(!z||mode!=='online')return;if(!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!spend(RAID_EN))return;
   const id='p'+raidNow().toString(36)+Math.random().toString(36).slice(2,6),me=raidMe(),r={host:uid,hostN:P.nick,zone:z.id,ids:[uid],m:{[uid]:me},state:'lobby',at:raidNow(),seed:1+Math.floor(Math.random()*2e9),step:0,seq:0,loot:{},hb:{[uid]:raidNow()}};
   try{await raidRef(id).set(r);raidWatch(id);commit();if(solo)raidStart(id)}catch(e){heal(0,RAID_EN);toast('원정을 만들지 못했습니다.')}}
-function raidJoin(id){const L=RAIDS.find(x=>x.id===id);if(!L||MYRAID)return;const z=raidZone(L);if(!raidFits(z)){toast(`이 구역은 Lv.${z.min}~${z.max}만 들어갈 수 있습니다.`);return}if(!spend(RAID_EN))return;const me=raidMe();
+function raidJoin(id){const L=RAIDS.find(x=>x.id===id);if(!L||MYRAID)return;const z=raidZone(L);if(!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(!spend(RAID_EN))return;const me=raidMe();
   raidTx(id,r=>{if(!r||r.state!=='lobby'||r.ids.length>=RAID_MAX||r.ids.includes(uid))return null;r.ids.push(uid);r.m[uid]=me;r.hb=Object.assign({},r.hb,{[uid]:raidNow()});return r}).then(nx=>{if(nx){raidWatch(id);commit()}else{heal(0,RAID_EN);toast('참여할 수 없습니다. 이미 출발했거나 자리가 찼습니다.')}}).catch(()=>{heal(0,RAID_EN);toast('참여하지 못했습니다.')})}
 function raidLeave(){const r0=MYRAID;if(!r0)return;
   if(r0.state==='lobby'){if(r0.host===uid){raidRef(r0.id).delete().catch(()=>{})}else raidTx(r0.id,r=>{if(!r||r.state!=='lobby')return null;r.ids=r.ids.filter(u=>u!==uid);delete r.m[uid];return r}).catch(()=>{});heal(0,RAID_EN);raidWatch(null);commit();renderPanel();return}
@@ -1950,7 +1950,7 @@ function raidStart(id){raidTx(id||MYRAID.id,r=>{if(!r||r.state!=='lobby'||r.host
 /* ---- views ---- */
 const MON_SPR=["................","....kk....kk....","...kaak..kaak...","...kabbkkbbak...","....kaaaaaak.....","...kaawaawaak...","..kaaakaakaaak..","..kaaaaaaaaaak..","..kabaaaaaabak..","...kaabbbbaak...","....kaaaaaak....","...kak.kk.kak...","..kk..k..k..kk..","................","................","................"];
 function raidBar(v,max,col){return`<div class="bar"><i style="--c:${col};width:${Math.max(0,v/max*100)}%"></i></div>`}
-function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><span class="zcost" title="입장할 때만 에너지 ${RAID_EN}을 씁니다. 원정 안에서는 에너지를 쓰지 않습니다.">${img(IC.bolt,null,1)}-${RAID_EN}</span><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 맞지 않습니다</span>`}</button>`}).join('');
+function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><span class="zcost" title="입장할 때만 에너지 ${RAID_EN}을 씁니다. 원정 안에서는 에너지를 쓰지 않습니다.">${img(IC.bolt,null,1)}-${RAID_EN}</span><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 부족합니다</span>`}</button>`}).join('');
   const z=RAID_ZONES.find(x=>x.id===raidSel)||RAID_ZONES[0],list=RAIDS.filter(x=>x.ids.length<RAID_MAX);
   return`<p class="lead">혼자 또는 최대 ${RAID_MAX}명의 파티로 원정을 떠납니다. ${RAID_STEPS}단계를 지나며 몬스터나 사건을 만나고, 마지막에는 보스가 기다립니다. 전투는 민첩이 높은 순서로 턴이 돌아오며, 한 사람의 턴은 ${RAID_TURN/1000}초입니다. 출발한 뒤에는 새로 합류할 수 없습니다.</p>
   <div class="row" style="gap:6px;margin:8px 0"><button class="btn" data-act="raidnew" data-k="solo" ${raidFits(z)?'':'disabled'}>혼자 출발</button><button class="btn alt" data-act="raidnew" data-k="party" ${raidFits(z)?'':'disabled'}>파티 모집</button><span class="hint">선택 구역 · ${z.n}</span></div>
@@ -1958,7 +1958,7 @@ function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);ret
     return`<div class="pcard ${ok?'':'off'}"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">Lv.${zz.min}~${zz.id==='r6'?'':zz.max}${zz.id==='r6'?' 이상':''}</span></div>
      <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'단원')}</span>
       <div class="pcmem">${Array.from({length:RAID_MAX},(_,k)=>{const u=x.ids[k],m=u&&(x.m[u]||{});return u?`<span class="pcm${u===x.host?' host':''}" title="${esc(m.nick||'')}">${headImg(3,whoP(u))}<em>${esc(m.nick||'단원')}</em><small>Lv.${m.lvl||'?'}</small></span>`:`<span class="pcm empty"><i></i><em>빈 자리</em></span>`}).join('')}</div>
-      <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 불일치'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
+      <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 부족'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
   <span class="lbl" style="display:block;margin-top:10px">Zone · 원정 구역</span><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>`}
 function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='battle'&&b.cur&&b.cur.k==='p'&&b.cur.id===uid,curNick=b&&b.cur?(b.cur.k==='p'?(r.m[b.cur.id]||{}).nick:b.mons[b.cur.id].n):'';
   const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row" style="justify-content:space-between"><b>${esc(m.nick)}${u===uid?' (나)':''}</b><span class="hint">Lv.${m.lvl}${gone?' · 이탈':m.hp<=0?' · 쓰러짐':''}${b&&b.def[u]?' · 방어':''}${b&&b.flee[u]?' · 도망 찬성':''}</span></div>${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 민첩 ${m.agi}</span></div>`}).join('');
