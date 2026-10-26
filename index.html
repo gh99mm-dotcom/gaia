@@ -385,7 +385,7 @@ header>.chip:not(.sugg){margin-left:0}
 .raidz{position:relative}.raidz>b{padding-right:42px}.zcost{display:flex;align-items:center;gap:3px;line-height:1;position:absolute;top:6px;right:7px;font-family:var(--f-pix);font-size:10px;color:var(--gold);background:var(--deep);border:1px solid var(--line);padding:1px 5px}
 .scmap{position:relative;width:100%;max-width:600px;margin:8px auto 4px;border:2px solid var(--ink);line-height:0;overflow:hidden}.scmap>img{width:100%;height:auto;display:block;image-rendering:pixelated}
 .scn{position:absolute;width:18px;height:18px;transform:translate(-50%,-50%);padding:0;border:0;background:transparent;pointer-events:none}.scn.go{pointer-events:auto;z-index:2;cursor:pointer;outline:2px solid #f0c75a;outline-offset:-3px;animation:scpulse 1.2s ease-in-out infinite}
-.sclbl{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-pix);font-size:9px;line-height:1;color:#fff;background:rgba(5,6,11,.62);padding:2px 4px;white-space:nowrap;pointer-events:none;border-left:2px solid}
+.sclbl{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-pix);font-size:9px;line-height:1;color:#fff;background:rgba(5,6,11,.62);padding:2px 4px;white-space:nowrap;pointer-events:none}
 @media (max-width:480px){.sclbl{display:none}}
 @keyframes scpulse{50%{outline-color:rgba(240,199,90,.25)}}@media (prefers-reduced-motion:reduce){.scn.go{animation:none}}
 .sctrails{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}.sctr{display:flex;flex-direction:column;gap:4px;padding:8px 10px}.sctr .tn{display:flex;align-items:center;gap:6px;font-weight:700}.sctr .sw{width:10px;height:10px;border:1px solid var(--ink);flex:none}
@@ -1632,7 +1632,7 @@ function renderPilot(){
 }
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 function renderNav(){
-  migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw?1:0;const gx=expInfo(),gp=gx?gx.pending:0;
+  migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const gx=expInfo(),gp=gx?gx.pending:0;
   $('#nav').innerHTML=TABS.map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
 }
 function head(){const t=TABS.find(x=>x.id===tab);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
@@ -2454,44 +2454,65 @@ const scPt=(t,k)=>k<=0?[SC_CX,SC_CY]:SC_PTS[t][k-1];
 const SCMAP={};
 function scoutMapImg(){const sc=scoutSt(),key=sc.far.join('')+'|'+sc.t+'|'+sc.at+'|'+(isLight()?1:0);if(SCMAP[key])return SCMAP[key];
   const W=SC_W,H=SC_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
-  const px=(x,y,col)=>{if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};let sd=4271;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  const px=(x,y,col)=>{x|=0;y|=0;if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x,y,1,1)};let sd=4271;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
   const A=TRAILS.map(t=>t.a*Math.PI/180),dA=(p,q)=>{let d=Math.abs(p-q)%(2*Math.PI);return d>Math.PI?2*Math.PI-d:d};
-  const sector=(x,y)=>{const an=Math.atan2(y-SC_CY,(x-SC_CX)/1.5)+Math.sin(x*.11+y*.07)*.12;let bi=0,bd=9;A.forEach((q,i)=>{const d=dA(an,q);if(d<bd){bd=d;bi=i}});return bi};
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const T=TRAILS[sector(x,y)],t=(Math.sin(x*.21+y*.13)+Math.sin(x*.07-y*.29)+2)/4,r=Math.hypot((x-SC_CX)/1.5,y-SC_CY);
-    let col=t*16>BAYER[y&3][x&3]?T.g[1]:T.g[0];if(r<11)col=(r*1.4>BAYER[y&3][x&3]+2)?col:'#3a3a48';px(x,y,col)}
-  // terrain dressing per trail, kept off the paths
-  const onPath=(x,y)=>Math.hypot((x-SC_CX)/1.5,y-SC_CY)<13||SC_PTS.some((ps,i)=>ps.some((q,k)=>{const p0=scPt(i,k),dx=q[0]-p0[0],dy=q[1]-p0[1],l=dx*dx+dy*dy||1,u=Math.max(0,Math.min(1,((x-p0[0])*dx+(y-p0[1])*dy)/l));return Math.hypot(x-p0[0]-u*dx,y-p0[1]-u*dy)<5}));
-  for(let n=0;n<95;n++){const x=Math.floor(rnd()*W),y=Math.floor(rnd()*H);if(onPath(x,y))continue;const T=TRAILS[sector(x,y)],d0=T.c,d1='#ffffff22';
-    if(T.k==='crystal'){for(let h=0;h<4;h++)px(x,y-h,h>2?'#c0f4ff':d0);px(x+1,y-1,d0);px(x-1,y,'#0e1a26')}
-    else if(T.k==='reed'){px(x,y,d0);px(x,y-1,d0);px(x,y-2,'#9df0b0');px(x+2,y,d0);px(x+2,y-1,'#9df0b0');if(rnd()<.3){px(x-2,y+1,'#2a4a5a');px(x-1,y+1,'#2a4a5a')}}
-    else if(T.k==='wreck'){px(x,y,'#7a6a5a');px(x+1,y,'#7a6a5a');px(x+2,y,'#a8988a');px(x+1,y-1,'#7a6a5a');px(x+1,y+1,'#1e1812')}
-    else if(T.k==='ice'){px(x,y,'#ecf6ff');px(x-1,y,d0);px(x+1,y,d0);px(x,y-1,d0);px(x,y+1,d0)}
-    else{px(x,y,d0);px(x+1,y,'#ffb05a');px(x-1,y,'#7a2a1a');if(rnd()<.4)px(x,y-1,'#ffb05a')}}
+  const sector=(x,y)=>{const an=Math.atan2(y-SC_CY,(x-SC_CX)/1.5);let bi=0,bd=9;A.forEach((q,i)=>{const d=dA(an,q);if(d<bd){bd=d;bi=i}});return bi};
+  const segD=(x,y,i)=>Math.min(...SC_PTS[i].map((q,k)=>{const p0=scPt(i,k),dx=q[0]-p0[0],dy=q[1]-p0[1],l=dx*dx+dy*dy||1,u=Math.max(0,Math.min(1,((x-p0[0])*dx+(y-p0[1])*dy)/l));return Math.hypot(x-p0[0]-u*dx,y-p0[1]-u*dy)}));
+  const pathD=(x,y)=>Math.min(Math.hypot((x-SC_CX)/1.5,y-SC_CY)+0,...TRAILS.map((_,i)=>segD(x,y,i)));
+  // one plain dusty ground for everything; the trails tell themselves apart by what's drawn on them
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=(Math.sin(x*.19+y*.11)+Math.sin(x*.05-y*.23)+2)/4;px(x,y,t*16>BAYER[y&3][x&3]?'#38353a':'#2e2c31')}
+  for(let n=0;n<260;n++){const x=rnd()*W,y=rnd()*H;px(x,y,rnd()<.5?'#45414a':'#242228')}
+  // spots inside trail i's wedge, off the path
+  const spots=(i,n,dmin,dmax,gap)=>{const out=[];for(let k=0;k<n*30&&out.length<n;k++){const x=Math.floor(rnd()*W),y=Math.floor(rnd()*H);if(sector(x,y)!==i)continue;const d=segD(x,y,i);if(d<dmin||d>dmax||Math.hypot((x-SC_CX)/1.5,y-SC_CY)<16)continue;if(pathD(x,y)<dmin)continue;if(out.some(([a,b])=>Math.hypot(a-x,b-y)<gap))continue;out.push([x,y])}return out};
+  const ell=(cx,cy,rx,ry,f)=>{for(let y=-ry;y<=ry;y++)for(let x=-rx;x<=rx;x++){const e=(x*x)/(rx*rx)+(y*y)/(ry*ry);if(e<=1)f(cx+x,cy+y,e,x,y)}};
+  const draw=[
+   // 결정 능선: grey ridges with blue crystal clusters on them
+   i=>{spots(i,9,5,26,12).forEach(([x,y])=>{const h=5+Math.floor(rnd()*6),w=h+2;for(let r=0;r<h;r++){const half=Math.round(w*(r+1)/h/2);for(let a=-half;a<=half;a++)px(x+a,y-h+r+1,a<0?'#7a7686':a===0?'#9a96a6':'#4a4756')}px(x,y-h,'#d8e8f4');px(x-1,y-h+1,'#c8dcea');for(let a=-Math.round(w/2);a<=Math.round(w/2);a++)px(x+a,y+1,'#1e1c24')});
+     spots(i,12,4,24,7).forEach(([x,y])=>{[[0,4],[2,3],[-2,2]].forEach(([o,hh])=>{for(let r=0;r<hh;r++){px(x+o,y-r,r===hh-1?'#e0f8ff':'#4fc8f0');if(r<hh-1)px(x+o+1,y-r,'#2a7ea8')}});px(x-2,y+1,'#0e1a26');px(x+3,y+1,'#0e1a26')})},
+   // 녹슨 잔해길: hull plates, containers and a wrecked shuttle
+   i=>{spots(i,10,4,22,8).forEach(([x,y],n)=>{if(n%3===0){for(let b=0;b<4;b++)for(let a=0;a<8;a++)px(x+a,y+b,b===0?'#b07a52':a===7?'#4e3020':'#8a5634');px(x+2,y+1,'#5a3420');px(x+5,y+2,'#5a3420');for(let a=0;a<8;a++)px(x+a,y+4,'#1a1410')}
+       else{for(let b=0;b<3;b++)for(let a=0;a<5-b;a++)px(x+a+b,y+b,b?'#6e6a66':'#9a948c');px(x+1,y+1,'#8a4a2a');px(x+5,y+3,'#1a1410')}});
+     const [sx,sy]=SC_PTS[i][2],ar=A[i]+Math.PI/2,ox=Math.round(sx+Math.cos(ar)*13),oy=Math.round(sy+Math.sin(ar)*9);
+     for(let a=0;a<14;a++){const hh=a<3?2:a<10?4:3;for(let b=0;b<hh;b++)px(ox+a,oy-b,b===hh-1?'#c0bab0':a%4===0?'#6a6460':'#8e8880')}px(ox+10,oy-5,'#8e8880');px(ox+11,oy-6,'#8e8880');px(ox+11,oy-5,'#6a6460');px(ox+3,oy-2,'#4fc8f0');px(ox+5,oy-2,'#4fc8f0');for(let a=-1;a<15;a++)px(ox+a,oy+1,'#1a1410');px(ox-1,oy-1,'#e8803a');px(ox-2,oy-2,'#ffb05a')},
+   // 포자 습지: dark pools, reeds and glowing mushrooms
+   i=>{spots(i,7,7,26,15).forEach(([x,y])=>{const rx=6+Math.floor(rnd()*4),ry=3+Math.floor(rnd()*2);ell(x,y,rx,ry,(a,b,e,dx,dy)=>px(a,b,e>.72?'#3a5a48':dy<0&&e<.35?'#4a8a80':'#24504a'));px(x-rx+2,y-1,'#7ac0b0');px(x+rx,y-1,'#6aa070');px(x+rx,y-2,'#6aa070');px(x+rx+1,y-1,'#8ac080');px(x-rx,y,'#6aa070');px(x-rx,y-1,'#8ac080')});
+     spots(i,12,4,24,6).forEach(([x,y],n)=>{if(n%2){px(x,y,'#d8d0c0');px(x,y-1,'#d8d0c0');const cap=n%4===1?['#b07ad8','#e0b8ff']:['#5ab878','#c0ffd0'];for(let a=-2;a<=2;a++)px(x+a,y-2,cap[0]);for(let a=-1;a<=1;a++)px(x+a,y-3,cap[0]);px(x,y-3,cap[1]);px(x-1,y-2,cap[1])}else{px(x,y,'#5a8a5a');px(x,y-1,'#5a8a5a');px(x,y-2,'#8ac080');px(x+2,y,'#5a8a5a');px(x+2,y-1,'#8ac080')}})},
+   // 운석 분화구: pocked craters with lit rims, black glass, embers
+   i=>{spots(i,9,6,26,11).forEach(([x,y],n)=>{const r=2+Math.floor(rnd()*4);ell(x,y,r+1,Math.ceil((r+1)*.6),(a,b,e,dx,dy)=>px(a,b,e>.55?(dy<0?'#6a6460':'#56504c'):(dy<0?'#141216':'#221f24')));px(x-r,y-1,'#8a847c');if(n%3===0){px(x,y,'#e85a2a');px(x+1,y,'#ffb05a')}});
+     const [cx,cy]=SC_PTS[i][4];ell(cx,cy,9,6,(a,b,e,dx,dy)=>{if(e>.62)px(a,b,dy<0?'#7a7068':'#4a4440');else px(a,b,e<.2?'#3a1a14':'#18141a')});px(cx,cy,'#ff6a2a');px(cx-1,cy,'#ffb05a');
+     spots(i,8,4,20,6).forEach(([x,y])=>{px(x,y,'#0a0a10');px(x+1,y,'#0a0a10');px(x+1,y-1,'#5a5a78');px(x,y+1,'#0a0a10')})},
+   // 얼음 협곡: cliff walls along the trail with frosted edges and ice
+   i=>{const pts=[scPt(i,0),...SC_PTS[i]],ar=A[i]+Math.PI/2,nx=Math.cos(ar),ny=Math.sin(ar);
+     for(let k=1;k<pts.length;k++){const [x0,y0]=pts[k-1],[x1,y1]=pts[k],len=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let s2=0;s2<=len;s2++){const x=x0+(x1-x0)*s2/len,y=y0+(y1-y0)*s2/len;if(k===1&&s2<len*.6)continue;
+       [1,-1].forEach(sg=>{const w0=7+Math.sin((k*len+s2)*.4)*1.5;for(let w=0;w<6;w++){const qx=x+nx*sg*(w0+w)*1.5,qy=y+ny*sg*(w0+w);px(qx,qy,w===0?'#e8f4ff':w===1?'#a8c4d8':w<4?'#4a5a6a':'#2e3844')}})}}
+     spots(i,10,3,22,7).forEach(([x,y])=>{px(x,y,'#ecf6ff');px(x-1,y,'#b8d4ec');px(x+1,y,'#b8d4ec');px(x,y-1,'#b8d4ec');px(x,y+1,'#8aa8c0')})}];
+  TRAILS.forEach((_,i)=>draw[i](i));
   // paths: gold where you've walked, dim dirt beyond
   TRAILS.forEach((T,i)=>{for(let k=1;k<=5;k++){const [x0,y0]=scPt(i,k-1),[x1,y1]=scPt(i,k),len=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),lit=k<=sc.far[i];
     for(let s2=0;s2<=len;s2++){const x=Math.round(x0+(x1-x0)*s2/len),y=Math.round(y0+(y1-y0)*s2/len);px(x,y+1,'#14121a');px(x+1,y+1,'#14121a');if(!lit&&s2%4===3)continue;px(x,y,lit?'#f0d27a':'#9a8c74');px(x+1,y,lit?'#b8984c':'#6a6050')}}});
   // fog past the next unexplored stop on each trail
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=sector(x,y),k=Math.min(5,sc.far[i]+1),[fx,fy]=scPt(i,k),rf=Math.hypot((fx-SC_CX)/1.5,fy-SC_CY)+6,r=Math.hypot((x-SC_CX)/1.5,y-SC_CY);
-    if(r>rf){const t=Math.min(1,(r-rf)/10);if(t*16>BAYER[y&3][x&3]-2){g.fillStyle='rgba(6,6,14,.5)';g.fillRect(x,y,1,1)}}}
+    if(r>rf){const t=Math.min(1,(r-rf)/10);if(t*16>BAYER[y&3][x&3]-2){g.fillStyle='rgba(6,6,14,.34)';g.fillRect(x,y,1,1)}}}
   // stops
   TRAILS.forEach((T,i)=>SC_PTS[i].forEach(([x,y],k0)=>{const k=k0+1;
-    if(k<=sc.far[i]){px(x,y,'#2a2418');px(x,y-1,'#d6d0c0');px(x,y-2,'#d6d0c0');px(x,y-3,'#d6d0c0');px(x,y-4,'#d6d0c0');px(x+1,y-4,T.c);px(x+2,y-4,T.c);px(x+1,y-3,T.c);px(x+2,y-3,T.c)}
+    if(k<=sc.far[i]){px(x,y,'#2a2418');px(x,y-1,'#d6d0c0');px(x,y-2,'#d6d0c0');px(x,y-3,'#d6d0c0');px(x,y-4,'#d6d0c0');px(x+1,y-4,'#f0c75a');px(x+2,y-4,'#f0c75a');px(x+1,y-3,'#c8a040');px(x+2,y-3,'#f0c75a')}
     else{const nx=k===sc.far[i]+1,rc=nx?'#e8e4f4':'#6a6880';for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){const e=Math.max(Math.abs(a),Math.abs(b));if(e===2&&Math.abs(a)+Math.abs(b)<4)px(x+a,y+b,rc);else if(e<2)px(x+a,y+b,e?'#14121a':nx?'#f0c75a':'#3a3848')}}}));
   // the settlement dome
+  ell(SC_CX,SC_CY+1,10,5,(a,b,e)=>px(a,b,e>.75?'#3a3a46':'#45454f'));
   for(let b=-4;b<=0;b++)for(let a=-6;a<=6;a++)if(a*a/36+b*b/16<=1)px(SC_CX+a,SC_CY+b,b<-2?'#c8d0dc':'#8a94a6');
   for(let a=-7;a<=7;a++){px(SC_CX+a,SC_CY+1,'#4a5060');px(SC_CX+a,SC_CY+2,'#2a2e38')}px(SC_CX-2,SC_CY-2,'#ffe8a0');px(SC_CX+2,SC_CY-2,'#ffe8a0');px(SC_CX,SC_CY-5,'#f0c75a');px(SC_CX,SC_CY-6,'#ff6a5a');
   return SCMAP[key]={src:c.toDataURL()}}
 function scoutPos(){const sc=scoutSt();if(sc.mv){const m=sc.mv,f=Math.max(0,Math.min(1,(Date.now()-m.s)/(m.e-m.s))),[x0,y0]=scPt(m.t,m.from),[x1,y1]=scPt(m.t,m.to);return[x0+(x1-x0)*f,y0+(y1-y0)*f]}return sc.t<0?[SC_CX,SC_CY]:scPt(sc.t,sc.at)}
-const scNext=(sc,i)=>!sc.mv&&((sc.t<0&&true)||sc.t===i)&&(sc.t<0?0:sc.at)<5;
+const scNext=(sc,i)=>!sc.mv&&!sc.pend&&((sc.t<0&&true)||sc.t===i)&&(sc.t<0?0:sc.at)<5;
 function scoutMapHTML(){const sc=scoutSt(),m=scoutMapImg(),[mx,my]=scoutPos();
   const btns=TRAILS.map((T,i)=>SC_PTS[i].map(([x,y],k0)=>{const k=k0+1,go=scNext(sc,i)&&k===(sc.t<0?1:sc.at+1);return`<button type="button" class="scn ${go?'go':''}" style="left:${(x+.5)/SC_W*100}%;top:${(y+.5)/SC_H*100}%" ${go?`data-act="scgo" data-t="${i}"`:'tabindex="-1"'} title="${esc(T.n)} ${k}지점${k<=sc.far[i]?' · '+esc(T.nodes[k0]):''}${go?` · ${T.m[k0]}분`:''}"></button>`}).join('')).join('');
-  return`<div class="scmap"><img class="pix" src="${m.src}" alt="정착지 주변 다섯 갈래 길 지도">${btns}${TRAILS.map((T,i)=>{const [a,b]=SC_PTS[i][1],[c,d]=SC_PTS[i][2],ar=T.a*Math.PI/180,x=(a+c)/2-Math.sin(ar)*9,y=(b+d)/2+Math.cos(ar)*9;return`<span class="sclbl" style="left:${x/SC_W*100}%;top:${y/SC_H*100}%;border-color:${T.c}">${esc(T.n)}</span>`}).join('')}<span class="rmme" id="scMe" style="left:${(mx+.5)/SC_W*100}%;top:${(my-5)/SC_H*100}%">${headImg(2,P)}</span><span class="rmlbl">${sc.mv?'이동 중':sc.t<0?'정착지':`${TRAILS[sc.t].n} ${sc.at}지점`}</span></div>`}
+  return`<div class="scmap"><img class="pix" src="${m.src}" alt="정착지 주변 다섯 갈래 길 지도">${btns}${TRAILS.map((T,i)=>{const [a,b]=SC_PTS[i][1],[c,d]=SC_PTS[i][2],ar=T.a*Math.PI/180,x=(a+c)/2-Math.sin(ar)*9,y=(b+d)/2+Math.cos(ar)*9;return`<span class="sclbl" style="left:${x/SC_W*100}%;top:${y/SC_H*100}%">${esc(T.n)}</span>`}).join('')}<span class="rmme" id="scMe" style="left:${(mx+.5)/SC_W*100}%;top:${(my-5)/SC_H*100}%">${headImg(2,P)}</span><span class="rmlbl">${sc.mv?'이동 중':sc.t<0?'정착지':`${TRAILS[sc.t].n} ${sc.at}지점`}</span></div>`}
 function scoutLeft(){const m=scoutSt().mv;return m?Math.max(0,m.e-Date.now()):0}
 function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(renderNav,0)}const mv=sc.mv,T=sc.t>=0?TRAILS[sc.t]:null;
-  const status=mv?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(TRAILS[mv.t].n)} ${mv.to}지점으로 이동 중</b><div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 도착하면 주변을 조사합니다.</div></div><button class="btn sm alt" data-act="scstop">이동 취소</button></div>`
-   :T?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(T.n)} · ${esc(T.nodes[sc.at-1])}</b><div class="hint">${sc.at<5?`다음 지점까지 ${T.m[sc.at]}분 걸립니다.`:'이 길의 끝입니다. 더 나아갈 곳이 없습니다.'}</div></div>${sc.at<5?`<button class="btn" data-act="scgo" data-t="${sc.t}">더 깊이 <small>${T.m[sc.at]}분 · EN ${SCOUT_EN}</small></button>`:''}<button class="btn sm alt" data-act="scback">정착지로 귀환</button></div>`
+  const status=mv?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(TRAILS[mv.t].n)} ${mv.to}지점으로 이동 중</b><div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 도착하면 주변을 조사할 수 있습니다.</div></div><button class="btn sm alt" data-act="scstop">이동 취소</button></div>`
+   :T?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(T.n)} · ${esc(T.nodes[sc.at-1])}</b><div class="hint">${sc.pend?'도착했습니다. 주변을 조사한 뒤에 더 나아갈 수 있습니다.':sc.at<5?`다음 지점까지 ${T.m[sc.at]}분 걸립니다.`:'이 길의 끝입니다. 더 나아갈 곳이 없습니다.'}</div></div>${sc.pend?`<button class="btn gold" data-act="scsearch">이 지점 조사하기</button>`:sc.at<5?`<button class="btn" data-act="scgo" data-t="${sc.t}">더 깊이 <small>${T.m[sc.at]}분 · EN ${SCOUT_EN}</small></button>`:''}<button class="btn sm alt" data-act="scback">정착지로 귀환</button></div>`
    :`<div class="note">정착지에 있습니다. 지도에서 빛나는 지점을 누르거나 아래에서 길을 골라 출발하십시오.</div>`;
-  const cards=TRAILS.map((t,i)=>{const here=!mv&&sc.t===i,lock=mv||(sc.t>=0&&sc.t!==i),nk=sc.t===i?sc.at:0;
+  const cards=TRAILS.map((t,i)=>{const here=!mv&&sc.t===i,lock=mv||sc.pend||(sc.t>=0&&sc.t!==i),nk=sc.t===i?sc.at:0;
     return`<div class="card sctr"><div class="tn"><span class="sw" style="background:${t.c}"></span>${esc(t.n)} <small class="hint">${t.dir}쪽</small></div><div class="scdots">${t.m.map((_,k)=>`<i class="${here&&sc.at===k+1?'here':k<sc.far[i]?'on':''}" title="${k<sc.far[i]?esc(t.nodes[k]):'미탐색'}"></i>`).join('')}</div>
       <div class="hint">구간 ${t.m.map(x=>x+'분').join(' · ')}</div>${lock?'':nk<5?`<button class="btn sm" data-act="scgo" data-t="${i}">${nk?'더 깊이':'출발'} <small>${t.m[nk]}분 · EN ${SCOUT_EN}</small></button>`:''}</div>`}).join('');
   return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 멀리 갈수록 이동은 오래 걸리지만 더 귀한 것을 찾습니다. 한 번 이동할 때마다 에너지 ${SCOUT_EN}.</p>
@@ -2499,14 +2520,15 @@ function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(ren
   ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:''}
   <div class="sctrails">${cards}</div>`;
 }
-function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.t],k=m.to,first=k>sc.far[m.t];sc.mv=null;sc.t=m.t;sc.at=k;if(first)sc.far[m.t]=k;sc.nw=tab==='scan'?0:1;
+function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.t],k=m.to,first=k>sc.far[m.t];sc.mv=null;sc.t=m.t;sc.at=k;if(first)sc.far[m.t]=k;sc.pend=first?2:1;sc.nw=tab==='scan'?0:1;
+  log(`${T.nodes[k-1]}에 도착했다. 주변을 조사할 수 있다.`);save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
+function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;const T=TRAILS[sc.t],k=sc.at,first=sc.pend===2;sc.pend=0;
   const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();if(k>=2)got.push([T.it,ri(1,k-1)]);
   const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   const xp=(r.xp||0)+4+k*2+(first?k*5:0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
-  stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,got,extra};log(`조사: ${T.nodes[k-1]} 도착. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');
-  checkFaint();save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
+  stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,got,extra};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
 function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArrive();return}if(tab==='scan'&&sc.mv){const e=$('#scT');if(e)e.textContent=fmtClock(scoutLeft());const me=$('#scMe');if(me){const[x,y]=scoutPos();me.style.left=(x+.5)/SC_W*100+'%';me.style.top=(y-5)/SC_H*100+'%'}}}
 /* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
 // repaired strictly in this order: each section opens once the one before it is finished.
@@ -2919,10 +2941,11 @@ const A={
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=r.add||[];got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
- scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=5)return;if(!spend(SCOUT_EN))return;
+ scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=5)return;if(!spend(SCOUT_EN))return;
   const ms=TRAILS[i].m[from]*60e3;sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${TRAILS[i].m[from]}분 뒤 도착.`);commit()},
+ scsearch(){scoutSearch()},
  scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
- scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;log('정착지로 귀환했다.');commit()},
+ scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;sc.pend=0;log('정착지로 귀환했다.');commit()},
  sel(d){selItem=d.id;renderPanel()},
  use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){heal(it.hp,it.en);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${it.hp}, 에너지 +${it.en}`,'good')}else if(it.type==='relic'){gainXp(30);log('고대 신호를 해독했다. 경험치 +30','rare')}commit()},
  upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했습니다.`);commit()},
