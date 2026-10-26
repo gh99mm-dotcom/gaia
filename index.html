@@ -160,6 +160,10 @@ header>.chip:not(.sugg){margin-left:0}
 .pilot{padding:12px;display:flex;flex-direction:column;gap:10px}
 .pilot-top{display:flex;gap:12px;align-items:center}
 .avatar{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px}
+.bagwin{position:fixed;z-index:40;width:min(620px,calc(100vw - 8px));max-height:min(80vh,760px);display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45),inset 0 0 0 1px var(--line)}
+.bw-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border-bottom:2px solid var(--ink);background:var(--deep);cursor:move;user-select:none;touch-action:none}.bw-head .hint{flex:1;font-size:11px}
+.bw-body{overflow:auto;padding:10px;overscroll-behavior:contain}.bw-body .two{grid-template-columns:minmax(0,1fr)}
+.bagbtn.has{border-color:var(--gold)}
 .mailbtn{position:relative;flex:none;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px 4px;cursor:pointer;line-height:0}
 .mailbtn:hover{background:var(--panel2)}.mailbtn.has{box-shadow:inset 0 0 0 1px var(--gold),0 0 6px rgba(191,174,128,.5)}
 .mailbtn em{position:absolute;top:-7px;right:-8px;font-style:normal;font-family:var(--f-pix);font-size:11px;line-height:1;background:var(--pink);color:var(--ink);padding:2px 4px;border:2px solid var(--ink)}.mailbtn em:empty{display:none}
@@ -176,7 +180,7 @@ header>.chip:not(.sugg){margin-left:0}
 .mailitem.sys{box-shadow:inset 0 0 0 1px var(--gold)}.mailfrom{flex:none;width:44px;display:flex;justify-content:center}
 .mailsys{font-family:var(--f-pix);font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:3px 4px}
 .mailbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.mailmsg{margin:0;font-size:13.5px}
-.pilot-name{font-family:var(--f-display);font-size:17px;line-height:1.1;word-break:break-all}
+.pilot-name{font-family:var(--f-display);font-size:17px;line-height:1.1;word-break:keep-all;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.pnrow .pilot-name{margin-right:2px}.pnbtns{display:inline-flex;gap:4px;flex:none;align-items:center}
 .lv{font-family:var(--f-pix);font-size:11px;color:var(--gold);letter-spacing:.04em;word-break:keep-all}
 .stat{display:flex;flex-direction:column;gap:4px}
 .stat-row{display:flex;align-items:center;gap:6px;justify-content:space-between;font-family:var(--f-pix);font-size:10.5px;letter-spacing:.08em}
@@ -1688,7 +1692,7 @@ function renderPilot(){
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').innerHTML=`
   <div class="pilot-top"><div class="avatar">${meImg(3)}</div>
-   <div style="min-width:0"><div class="row" style="gap:6px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(BELL,null,2)}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
+   <div style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:wrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(IC.bag,null,1)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(BELL,null,2)}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
@@ -1699,7 +1703,7 @@ function renderPilot(){
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
-  $('#nav').innerHTML=TABS.map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
+  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');
 }
 function head(){const t=TABS.find(x=>x.id===tab);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
@@ -2968,12 +2972,13 @@ function sfxFanfare(big){if(!soundOn)return;const a=ac();if(!a)return;const t=a.
   if(big){[[784,.5],[880,.62],[1046,.74]].forEach(([f,d])=>tone(a,'square',f,0,t+d,.12,.05));[523,659,784,1046].forEach(f=>{tone(a,'square',f,0,t+.9,.9,.035);tone(a,'triangle',f/2,0,t+.9,1,.04)})}
   else tone(a,'square',1046,0,t+.46,.4,.05)}
 function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='engineer'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
-function renderBag(){
+function renderBag(){return head()+bagInner()}
+function bagInner(){
   const ids=ORDER.filter(id=>P.inv[id]);
   if(selItem&&!P.inv[selItem])selItem=null;
   const it=selItem&&ITEMS[selItem];
   const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c);
-  return head()+`<div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+  return`<div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
    ${ids.length?`<div class="bag">${ids.map(id=>`<button class="slot" data-act="sel" data-id="${id}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
    <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
@@ -2987,7 +2992,17 @@ let meView=false,adminView=false,meTab='me',mlTab='color';
 const adminShown=()=>adminView&&!!$('#adminBox');
 // switching to a shorter tab would shrink the page and snap the view upward; pad the stage just enough to stay put
 function holdScroll(y){const st=$('#stage');st.style.minHeight='';const need=y+innerHeight-document.documentElement.scrollHeight;if(need>0)st.style.minHeight=(st.offsetHeight+need)+'px';window.scrollTo(0,y)}
-function renderPanel(){
+/* the bag is a floating window you can drag anywhere on the page (position remembered on this device) */
+let bagOpen=false;const bagWin=document.createElement('div');bagWin.id='bagWin';bagWin.className='bagwin px';bagWin.hidden=true;bagWin.setAttribute('role','dialog');bagWin.setAttribute('aria-label','가방');
+bagWin.innerHTML='<div class="bw-head" id="bwHead"><span class="lbl">Bag · 가방</span><span class="hint">끌어서 옮기기</span><button class="qchip" type="button" data-act="bagtoggle" aria-label="가방 닫기">닫기</button></div><div class="bw-body" id="bwBody"></div>';document.body.appendChild(bagWin);
+function bagPlace(x,y){const w=bagWin.offsetWidth,h=bagWin.offsetHeight;x=Math.max(4,Math.min(innerWidth-Math.min(w,innerWidth)-4,x));y=Math.max(4,Math.min(innerHeight-48,y));bagWin.style.left=x+'px';bagWin.style.top=y+'px';return[x,y]}
+function bagWinRender(){if(!bagOpen||!P)return;const b=$('#bwBody');if(!b)return;const st=b.scrollTop;b.innerHTML=bagInner();renderCook();b.scrollTop=st}
+function bagShow(on){bagOpen=on;bagWin.hidden=!on;if(on){bagWinRender();let pos=null;try{pos=JSON.parse(localStorage.getItem('gaia-bagpos')||'null')}catch(e){}bagPlace(pos?pos[0]:innerWidth-bagWin.offsetWidth-24,pos?pos[1]:90)}renderPilot()}
+{let drag=null;$('#bwHead').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=bagWin.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};$('#bwHead').setPointerCapture(e.pointerId);e.preventDefault()});
+ $('#bwHead').addEventListener('pointermove',e=>{if(drag)bagPlace(e.clientX-drag.dx,e.clientY-drag.dy)});
+ $('#bwHead').addEventListener('pointerup',()=>{if(!drag)return;drag=null;try{localStorage.setItem('gaia-bagpos',JSON.stringify([parseInt(bagWin.style.left),parseInt(bagWin.style.top)]))}catch(e){}});
+ addEventListener('resize',()=>{if(bagOpen)bagPlace(parseInt(bagWin.style.left)||0,parseInt(bagWin.style.top)||0)})}
+function renderPanel(){bagWinRender();
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
@@ -3000,7 +3015,7 @@ function renderPanel(){
   if(tab==='fish')drawLake();
   if(tab==='ship')startShipScene();
   if(tab==='gather')startGatherScene();
-  if(tab==='bag')renderCook();
+  if(tab==='bag')renderCook();else if(bagOpen)renderCook();
   if(tab==='farm'){fitSide();fitBay()}
   if(tab==='adv'){const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
@@ -3219,6 +3234,7 @@ const A={
  scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
  scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;sc.pend=0;log('정착지로 귀환했다.');commit()},
  sel(d){selItem=d.id;renderPanel()},
+ bagtoggle(){bagShow(!bagOpen)},
  use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){heal(it.hp,it.en);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${it.hp}, 에너지 +${it.en}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
  upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했습니다.`);commit()},
 };
@@ -3282,7 +3298,7 @@ function duelCatch(tr,id){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id)P.
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['raidatk','raiddef','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
