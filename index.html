@@ -2082,6 +2082,7 @@ async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossR
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
   let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=Math.max(1,Math.round((10+b.lv*1.2)*bossKind(b).atk*(.85+Math.random()*.3)-def()*.6));heal(-hit,0);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
+  sfxBossHit(crit);if(kill)sfxBossKill();else sfxBossBack(bossLast&&bossLast.miss);
   log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
 function bossSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t)return;const m={uid,n:P.nick,t,at:Date.now()};
   return bossTx(bchatRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-BOSS_CHAT_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
@@ -2265,6 +2266,11 @@ function sfxWater(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curre
 function sfxHarvest(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.25,'highpass',2500,900,.22,1.5);tone(a,'sine',300,900,t+.06,.09,.22);noiseBurst(a,t+.1,.2,'lowpass',800,200,.3,3);tone(a,'triangle',1320,0,t+.22,.12,.06);tone(a,'triangle',1760,0,t+.3,.14,.05)}
 function sfxCoin(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'square',1976,0,t,.07,.05);tone(a,'sine',2637,0,t+.06,.35,.14);tone(a,'sine',3136,0,t+.06,.25,.06);tone(a,'triangle',2349,0,t+.13,.3,.08);noiseBurst(a,t,.12,'highpass',6000,4000,.08,1.5)}
 function sfxSell(many){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,k=many?5:3;for(let i=0;i<k;i++){const tt=t+i*.075,f=[2349,2637,2093,2794,2489][i%5];tone(a,'sine',f,0,tt,.22,.09);tone(a,'square',f*1.5,0,tt,.03,.03)}noiseBurst(a,t+k*.075,.1,'highpass',5000,3000,.06,1.5);tone(a,'triangle',1568,0,t+k*.075+.05,.4,.07)}
+// 탐사: my shot at the invader, its counterblow, and the killing blow
+function sfxBossHit(crit){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'square',1800,240,t,.16,.07);tone(a,'sawtooth',900,120,t+.01,.14,.05);noiseBurst(a,t+.1,.22,'lowpass',1400,180,.32,2);tone(a,'sine',110,48,t+.1,.25,.28);if(crit){tone(a,'square',2600,600,t+.05,.12,.05);noiseBurst(a,t+.16,.3,'highpass',3000,1200,.12)}}
+function sfxBossBack(miss){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.32;if(miss){noiseBurst(a,t,.25,'bandpass',900,2600,.18,1.5);tone(a,'sine',520,900,t+.05,.12,.06);return}
+  tone(a,'sawtooth',70,38,t,.55,.22);tone(a,'square',55,30,t+.02,.5,.12);noiseBurst(a,t,.5,'lowpass',500,80,.45,1.6);tone(a,'sine',180,60,t+.08,.3,.15)}
+function sfxBossKill(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.2;tone(a,'sawtooth',220,30,t,1.6,.18);noiseBurst(a,t,1.4,'lowpass',1200,60,.5,1.2);[523,659,784,1046].forEach((f,i)=>tone(a,'triangle',f,0,t+1+i*.12,.5,.08))}
 function sfxStop(){if(!soundOn)return;const a=ac();if(!a)return;tone(a,'square',140,0,a.currentTime,.03,.04)}
 /* ───────── look & wardrobe ───────── */
 const LOOKS={helmet:{n:'헬멧',opts:[['#b9bccb','흰색'],['#8a8da0','은색'],['#41444f','검정'],['#a8626b','붉은'],['#b0906f','주황'],['#a99a74','금색'],['#8ba790','연두'],['#7c97a8','하늘'],['#9a8fc0','보라'],['#93707f','장미']]},
@@ -3248,7 +3254,21 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
 const bgm=new Audio('bgm.mp3');bgm.loop=true;bgm.preload='auto';
 let bgmOn=true,bgmVol=35;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off';const v=localStorage.getItem('nebula-bgmv');if(v!=null)bgmVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-function syncBgm(){bgm.volume=bgmVol/100;if(bgmOn&&bgmVol>0){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
+function syncBgm(){bgm.volume=bgmVol/100;const boss=bossBgmWant();if(boss)bossBgmStart();else bossBgmStop();
+  if(bgmOn&&bgmVol>0&&!boss){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
+/* invader theme: a flat, droning loop made on the fly while an invader is up and you're on 탐사 */
+let BBGM=null;
+const bossBgmWant=()=>tab==='adv'&&bossAlive(BOSS)&&bgmOn&&bgmVol>0;
+function bossBgmStart(){const a=ac();if(!a)return;if(BBGM){BBGM.g.gain.setTargetAtTime(bgmVol/100*.55,a.currentTime,.1);return}
+  const g=a.createGain();g.gain.setValueAtTime(.0001,a.currentTime);g.gain.setTargetAtTime(bgmVol/100*.55,a.currentTime,.8);g.connect(a.destination);
+  const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=260;lp.Q.value=4;lp.connect(g);const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.07;lg.gain.value=120;lfo.connect(lg).connect(lp.frequency);
+  const dg=a.createGain();dg.gain.value=.16;dg.connect(lp);const osc=[[36.71,'sawtooth'],[36.9,'sawtooth'],[73.42,'square']].map(([f,ty])=>{const o=a.createOscillator();o.type=ty;o.frequency.value=f;o.connect(dg);o.start();return o});lfo.start();
+  const B=.8,MEL=[293.66,0,0,0,349.23,0,329.63,0,293.66,0,0,0,277.18,0,0,0];let step=0,next=a.currentTime+.4;
+  const hit=(f0,f1,at,dur,vol,type)=>{const o=a.createOscillator(),e=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,at);if(f1)o.frequency.exponentialRampToValueAtTime(f1,at+dur);e.gain.setValueAtTime(.0001,at);e.gain.exponentialRampToValueAtTime(vol,at+.02);e.gain.exponentialRampToValueAtTime(.0001,at+dur);o.connect(e).connect(g);o.start(at);o.stop(at+dur+.05)};
+  const iv=setInterval(()=>{while(next<a.currentTime+.5){const k=step%16;if(k%4===0){hit(64,38,next,.32,.5,'sine');hit(58,36,next+.24,.28,.32,'sine')}
+    if(MEL[k])hit(MEL[k],0,next,B*1.8,.05,'triangle');if(k===8)hit(MEL[0]/2,0,next,B*3,.04,'sine');step++;next+=B/2}},120);
+  BBGM={g,osc:[...osc,lfo],iv}}
+function bossBgmStop(){if(!BBGM)return;const m=BBGM,a=AC;BBGM=null;clearInterval(m.iv);try{m.g.gain.setTargetAtTime(.0001,a.currentTime,.25);setTimeout(()=>{m.osc.forEach(o=>{try{o.stop()}catch(e){}});m.g.disconnect()},1500)}catch(e){}}
 $('#suggBtn').innerHTML=img(ENV,null,1)+'건의함';
 /* sound panel: BGM and effects each get an on/off switch and a volume slider */
 const sndPop=document.createElement('div');sndPop.id='sndPop';sndPop.className='sndpop px';sndPop.hidden=true;sndPop.setAttribute('role','dialog');sndPop.setAttribute('aria-label','소리 설정');document.body.appendChild(sndPop);
@@ -3286,7 +3306,7 @@ setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.tex
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
 addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm'){fitSide();fitBay()}});
 setInterval(()=>{
-  scoutTick();
+  scoutTick();if(!!BBGM!==bossBgmWant())syncBgm();
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
