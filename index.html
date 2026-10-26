@@ -2670,7 +2670,7 @@ function renderShip(){
   const mine=SHIPDON.filter(d=>d.uid===uid).reduce((a,d)=>a+(+d.n||0),0);
   const canAny=open&&pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0),prevN=(SHIP[SHIP.indexOf(pt)-1]||{}).n;
   return head()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 별무리호 풍경"></canvas></div><div class="shiptop card">
-   <div class="sinfo"><b>${all>=1?'별무리호 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 별무리호'}</b><span class="hint">${all>=1?'모든 단원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 단원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 그 값만큼 크레딧과 경험치를 받습니다.'}</span>
+   <div class="sinfo"><b>${all>=1?'별무리호 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 별무리호'}</b><span class="hint">${all>=1?'모든 단원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 단원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
    <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
   <div class="card shipdet"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div><b>${pt.n}</b> <span class="hint">${shipDone(pt)?'수리 완료':Math.floor(shipPct(pt)*100)+'%'}</span><p class="hint" style="margin:4px 0 0">${pt.d}</p>${open?'':`<p class="shiplock">🔒 ${esc(prevN)}을(를) 먼저 고쳐야 이 구역을 수리할 수 있습니다.</p>`}</div>
@@ -2794,11 +2794,11 @@ function shipGive(partId,only){
   if(!list.length){toast('넣을 수 있는 재료가 없습니다.');return}
   const finish=pt.need.every(([id])=>shipLeft(pt,id)-((list.find(x=>x[0]===id)||[,0])[1])<=0);
   list.forEach(([id,n])=>take(id,n));
-  const cr=list.reduce((a,[id,n])=>a+sellPrice(id)*n,0),cnt=list.reduce((a,[,n])=>a+n,0);
-  P.cr=(P.cr||0)+cr;gainXp(cnt*2);commit();
+  const cnt=list.reduce((a,[,n])=>a+n,0);
+  gainXp(cnt*2);commit();
   const at=Date.now();
   Promise.all(list.map(([id,n])=>db.collection('shipdon').add({part:pt.id,id,n,uid,nick:P.nick,at}))).then(()=>{
-    sfxCoin();log(`별무리호 ${pt.n}에 ${list.map(([id,n])=>ITEMS[id].n+' '+n).join(', ')}을(를) 넣었다. 크레딧 +${cr}, 경험치 +${cnt*2}.`,'good');
+    sfxCoin();log(`별무리호 ${pt.n}에 ${list.map(([id,n])=>ITEMS[id].n+' '+n).join(', ')}을(를) 넣었다. 경험치 +${cnt*2}.`,'good');
     if(finish){sys(`${P.nick} 님의 손으로 별무리호 ${pt.n} 수리가 끝났습니다!`);if(SHIP.every(x=>x===pt||shipDone(x)))sys('별무리호의 모든 구역이 수리되었습니다. 개척선이 다시 날아오를 준비를 마쳤습니다!')}
     if(tab==='ship')renderPanel()
   }).catch(()=>{list.forEach(([id,n])=>add(id,n));P.cr-=cr;commit();toast('재료를 넣지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')})
