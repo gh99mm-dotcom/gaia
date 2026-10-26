@@ -3084,7 +3084,7 @@ const A={
  neonpick(d){neonPick=d.c||null;neonSlot=d.c?d.k:null;renderPanel()},
  neonbuy(){const c=neonPick;if(!c||!NEONSET.has(c)||ownsNeon(c))return;if((P.cr||0)<NEON_PRICE){toast('크레딧이 부족합니다.');return}P.cr-=NEON_PRICE;sfxCoin();P.own=[...(P.own||[]),'neon'+c];if(LOOKS[neonSlot])P.look=Object.assign({},lookOf(P),{[neonSlot]:c});neonPick=null;neonSlot=null;renderPilot();log(`${NEON.find(n=>n[0]===c)[1]} 색을 샀다.`,'good');commit()},
  setlook(d){if(!LOOKS[d.k]||!(LOOKS[d.k].opts.some(o=>o[0]===d.c)||(NEONSET.has(d.c)&&ownsNeon(d.c))))return;P.look=Object.assign({},lookOf(P),{[d.k]:d.c});save();renderPanel();renderPilot()},
- rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
+ rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');addAff(d.k,AFF.rescue,'구조함');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
  gift(d){openGift(d.k)},
  giftclose(){$('#giftModal').hidden=true},
  giftadd(d){if(!isDish(d.id))return;const have=P.inv[d.id]||0;if(giftCount()>=GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
@@ -3092,7 +3092,7 @@ const A={
  giftcr(d){giftCr=+d.k;renderGift()},
  giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&isDish(i)&&(P.inv[i]||0)>=n);if(items.reduce((a,[,n])=>a+n,0)>GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}const cr=Math.min(giftCr,P.cr||0),note=!items.length&&!cr;if(note&&!giftMsg.trim())return;if(!note&&giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 이미 선물했습니다. 쪽지는 언제든 보낼 수 있습니다.`);return}
   items.forEach(([i,n])=>take(i,n));P.cr-=cr;const msg=giftMsg.trim().slice(0,40);save();
-  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items:items.map(([id,n])=>({id,n})),cr,msg,at:Date.now()}).then(()=>{if(!note)P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
+  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items:items.map(([id,n])=>({id,n})),cr,msg,at:Date.now()}).then(()=>{if(!note){P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});const [dv,why]=giftAffDelta(items,t.likes,t.hates);addAff(gto,dv,why+'을 함')}sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
  duelstart(){if(mode!=='online'||duelOn())return;const now=Date.now();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)).catch(()=>toast('대결을 열지 못했습니다.'))},
  duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+crs(300);sfxCoin();log(`낚시 대결 우승! 상금 ${crs(300)} CR`,'rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
@@ -3169,12 +3169,10 @@ const giftGoOk=sel=>(sel.length||giftCr)?!giftedToday(giftTo):!!giftMsg.trim();
 /* ───────── mailbox: gifts and notes from crew, gifts from the admin; nothing is applied until opened ───────── */
 let MAILG=[],MAILA=[],mailView=false,mailNoted=new Set();
 // affinity from a gift is settled as soon as it arrives (not when the mailbox is opened), once per gift and once a day per giver
+const giftAffDelta=(items,likes,hates)=>{const gi=items.map(([i])=>i).filter(i=>ITEMS[i]),lk=gi.find(i=>(likes||[]).includes(i)),ht=gi.find(i=>(hates||[]).includes(i));return lk&&ht?[AFF.like+AFF.hate,'좋아하는·싫어하는 요리 선물']:lk?[AFF.like,`좋아하는 ${ITEMS[lk].n} 선물`]:ht?[AFF.hate,`싫어하는 ${ITEMS[ht].n} 선물`]:[AFF.gift,'선물']};
 function giftAff(g){if(!g||!g.from||g.sys||g.from===uid||!mailHasGift(g)||(P.affG||[]).includes(g.id))return false;P.affG=[...(P.affG||[]).slice(-80),g.id];
   if((P.affDay||{})[g.from]===dayKey())return true;P.affDay=Object.assign({},P.affDay,{[g.from]:dayKey()});
-  const gi=giftItems(g).map(([i])=>i).filter(i=>ITEMS[i]),lk=gi.filter(i=>(P.likes||[]).includes(i)),ht=gi.filter(i=>(P.hates||[]).includes(i));
-  if(lk.length)addAff(g.from,AFF.like,`좋아하는 ${ITEMS[lk[0]].n} 선물`);
-  if(ht.length)addAff(g.from,AFF.hate,`싫어하는 ${ITEMS[ht[0]].n} 선물`);
-  if(!lk.length&&!ht.length)addAff(g.from,AFF.gift,'선물');return true}
+  const [dv,why]=giftAffDelta(giftItems(g),P.likes,P.hates);addAff(g.from,dv,why);return true}
 function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>!got.includes(g.id));if(MAILG.map(giftAff).some(Boolean)){save();renderPilot()}
   MAILG.forEach(g=>{if(mailNoted.has(g.id))return;mailNoted.add(g.id);if((+g.at||0)>socBoot)toast(`${g.sys?'운영자':(g.nick||'누군가')} 님에게서 ${mailHasGift(g)?'선물':'쪽지'}이 왔습니다. 우편함을 확인하십시오.`)});mailRefresh()}
 function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0)||got.includes(d.id))return;
@@ -3301,6 +3299,7 @@ function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${hea
   ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
 /* ───────── affinity: how each player feels about the others ───────── */
+// every affinity change is two-way: both sides apply the same delta on their own record (greeting, gift, rescue)
 const AFF={rescue:2,like:3,hate:-3,gift:1},AFF_MIN=-100,AFF_MAX=100;
 const affOf=(p,id)=>((p&&p.aff)||{})[id]||0;
 const affLabel=v=>v<=-90?'혐오':v<=-60?'싫다':v<=-30?'불편':v<30?'아무 감정도 없다':v<60?'안면이 있다':v<90?'친구':'절친한 사이';
