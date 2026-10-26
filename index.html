@@ -1461,7 +1461,7 @@ const wpnById=id=>WPNS.find(w=>w.id===id);
 Object.assign(TPL,{wArmor:["................", "...kkk....kkk...", "..khhak..kahhk..", ".khaaakkkkaaahk.", ".kaaaabhhbaaaak.", ".kaaaabaabaaaak.", "..kkaabaabaakk..", "...kaabaabaak...", "...kaabhhbaak...", "...kaaabbaaak...", "...kaaaaaaaak...", "...kbaayyaabk...", "...kbbbbbbbbk...", "....kkkkkkkk....", "................", "................"],wRing:["................", "....kkkkkkkk....", "...kyk....kyk...", "..kyk......kyk..", "..kyk......kyk..", "...kyk....kyk...", "....kyk..kyk....", ".....kykkyk.....", "......kyyk......", ".....kkhhkk.....", "....khhaaabk....", "....khaaaabk....", "....kaaaabbk....", ".....kabbbk.....", "......kkkk......", "................"]});
 
 const GF=k=>{let v=0;const g=P.gear||{};for(const s2 in g){const f=craftById(g[s2]);if(f&&f.fx[k])v+=f.fx[k]}const w=P.wpn&&wpnById(P.wpn);if(w&&w.fx[k])v+=w.fx[k];return v};
-const maxHp=()=>60+P.lvl*12+(P.job==='guard'?20:0)+AS('vit')*8+GF('hp'), maxEn=()=>30+P.lvl*2+AS('end')*2+GF('en'), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='fighter'?1.15:1)), def=()=>Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='guard'?5:0)+GF('def')+BUFF('def'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
+const maxHp=()=>60+P.lvl*12+(P.job==='nav'?30:0)+AS('vit')*8+GF('hp'), maxEn=()=>30+P.lvl*2+AS('end')*2+GF('en'), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)), def=()=>Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='nav'?6:0)+GF('def')+BUFF('def'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
 function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났습니다. 음식을 먹거나 잠시 쉬십시오.');return false}if(P.en<n){toast(`에너지가 부족합니다 (필요 ${n})`);return false}P.en-=n;return true}
 function add(id,n=1){P.inv[id]=(P.inv[id]||0)+n}
@@ -1553,7 +1553,12 @@ function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.q
   if(admTab==='del'&&!box.querySelector('[data-adm="del"]'))box.insertAdjacentHTML('beforeend','<div class="info-sec" data-adm="del"><span class="hint">삭제된 단원이 없습니다.</span></div>')}
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
-const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 로봇이 재료를 더 자주 가져옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
+/* three crew roles: 기관사 fights and fixes, 항해사 scouts and takes hits, 의무원 heals and backs the party up */
+const JOBS={mech:{n:'기관사',r:'전투 · 엔지니어',d:'공격력 +15% · 무기 강화 재료 30% 절약 · 물 채우기 대기 30분'},
+ nav:{n:'항해사',r:'탐사 · 탱커',d:'방어력 +6 · 최대 체력 +30 · 채집 로봇이 재료를 더 자주 가져옴 · 조사 이동 시간 25% 단축'},
+ medic:{n:'의무원',r:'힐러 · 서포터',d:'음식 회복량 +50% (원정에서 동료에게 써도 적용) · 원정 전투에서 이길 때마다 파티 전원 체력 10% 회복 · 구조에 에너지가 들지 않고 구조한 단원은 체력 70%로 깨어남'}};
+const jobOf=p=>p&&p.job?JOBS[p.job]||JOBS[OLDJOB[p.job]]||null:null;
+const OLDJOB={fighter:'mech',engineer:'mech',guard:'nav',scout:'nav',angler:'nav',farmer:'medic'};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan]];
 /* life levels cap at 30 (25*29^2 = 21,025 life XP). Gains are scaled per activity so a 6-hours-a-day player reaches 30 in about 10 days
    in each, assuming a mixed day of roughly 60 harvests, 50 robot pickups, 150 catches and 40 trail stops + 10 receiver scans. */
@@ -1647,7 +1652,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
-   <section class="mecard"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n}</b><span>${j.d}</span></button>`).join('')}</div></section>
+   <section class="mecard"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n} <small class="hint">${j.r}</small></b><span>${j.d}</span></button>`).join('')}</div></section>
    <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${t[1]}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</section>`;
 }
 const LOG=[];
@@ -1686,7 +1691,7 @@ async function connect(){
   renderNet();renderAll();
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;if(adminShown())renderAdminAll();if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},()=>{});
   db.collection('grants').onSnapshot(receiveGrants,()=>{});
-  db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)&&(r.adm||rescueCd(P)<=0)){if(!r.adm){P.rescuedAt=Date.now();if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조')}wake(r.nick||'누군가')}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
+  db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();if(isFaint()&&r.at>=(P.faintAt||0)&&(r.adm||rescueCd(P)<=0)){if(!r.adm){P.rescuedAt=Date.now();if(r.by&&r.by!==uid)addAff(r.by,AFF.rescue,'구조')}wake(r.nick||'누군가',r.med)}db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   farmLoad();
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
@@ -1779,7 +1784,7 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
     if(col){x.fillStyle=kind!=='empty'&&!dim&&soilC.includes(col)?col:lift(col);x.fillRect(i,j,1,1)}}
   if(!dim){x.fillStyle='#bfae80';x.fillRect(9,gap-1,2,1)}
   return MD[key]=c.toDataURL()}
-function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.inv&&P.inv.relic>0){P.inv.relic6=(P.inv.relic6||0)+P.inv.relic;delete P.inv.relic}
+function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.job&&OLDJOB[P.job])P.job=OLDJOB[P.job];if(P.inv&&P.inv.relic>0){P.inv.relic6=(P.inv.relic6||0)+P.inv.relic;delete P.inv.relic}
   if(P.joined&&P.tv!==2){const dish=ORDER.filter(id=>ITEMS[id].dish),keep=a=>(a||[]).filter(id=>ITEMS[id]&&ITEMS[id].dish).slice(0,2);let L=keep(P.likes),H=keep(P.hates).filter(id=>!L.includes(id));
     const fill=(A,B)=>{while(A.length<2){const c=dish.filter(id=>!A.includes(id)&&!B.includes(id));if(!c.length)break;A.push(c[ri(0,c.length-1)])}};fill(L,H);fill(H,L);P.likes=L;P.hates=H;P.tv=2}if(P.as&&ABIL.some(([k])=>(P.as[k]||0)<2)){P.as=Object.assign({},P.as);ABIL.forEach(([k])=>{if((P.as[k]||0)<2)P.as[k]=2})}if(ptsLeft()<0)P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
   if(!Array.isArray(P.field))P.field=[];
@@ -1869,7 +1874,7 @@ function renderFarm(){
   <div class="card tank tcard">${tankInner(Date.now()<FARM.refCd)}</div>${grow}</div>
   </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
-function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(P.job==='farmer'?1:0)+(lb?1:0),back=Math.random()<.45;
+function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(lb?1:0),back=Math.random()<.45;
   farmPut(i,{til:1,wet:pl.wet&&isWet(pl)?pl.wet:0});storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
   log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
 const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌습니다.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있습니다.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
@@ -1949,7 +1954,7 @@ const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=
 // once the party has set out, the expedition holds the screen until you return to the station
 const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 const raidRef=id=>db.doc('parties/'+id);
-const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:AS('agi')});
+const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,job:P.job||'',atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:AS('agi')});
 const raidZone=r=>RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];
 const raidFits=z=>P.lvl>=z.min;
 const raidNow=()=>Date.now();
@@ -1988,7 +1993,7 @@ function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.ord
 function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
 // after any action: victory, wipe, or the next turn
 function raidSettle(r){const b=r.b,z=raidZone(r);
-  if(b.mons.every(m=>m.hp<=0)){let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});cr=crs(cr);
+  if(b.mons.every(m=>m.hp<=0)){if(raidIn(r).some(u=>r.m[u].job==='medic'&&r.m[u].hp>0)){raidIn(r).forEach(u=>{const m=r.m[u];if(m.hp>0)m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.1))});raidLog(b,'의무원이 전투가 끝난 동료들을 치료했다. 모두 체력 +10%')}let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});cr=crs(cr);
     raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0);if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
     const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}`};
@@ -2006,7 +2011,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
     if(!a||(['atk','def','item'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;
     if(a.k==='p'){const me=r.m[a.id];
       if(kind==='def'){b.def[a.id]=1;raidLog(b,`${me.nick} 님이 방어 태세를 취했다.`)}
-      else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:(it.hp||0);if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
+      else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:Math.round((it.hp||0)*(me.job==='medic'?1.5:1));if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
       else{const live=b.mons.map((m,i)=>m.hp>0?i:-1).filter(i=>i>=0),ti=live.includes(arg)?arg:live[0],m=b.mons[ti];const [d,c]=raidHit(me.atk,m.def,me.crit||0);m.hp=Math.max(0,m.hp-d);raidLog(b,`${me.nick}${kind==='auto'?'(자동)':''} → ${m.n} ${d} 피해${c?' · 치명타!':''}${m.hp<=0?' · 쓰러뜨렸다!':''}`)}}
     else{const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
       const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),hits=aoe?tg:[tg[Math.floor(Math.random()*tg.length)]];
@@ -2423,7 +2428,7 @@ function renderGather(){
   <div><span class="lbl">Site · 채집 장소</span><div class="sites" role="radiogroup" aria-label="채집 장소" style="margin-top:6px">${SITES.map(st=>`<button class="site" role="radio" aria-checked="${st.id===gSite}" data-act="gsite" data-id="${st.id}"><b>${st.n} <span class="lv">${st.temp}</span></b><span class="hint">${st.d}</span><span class="chips">${st.t.filter(([id])=>!/^seed_/.test(id)).slice(0,6).map(([id])=>`<span class="ichip">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</span><span class="chips">${(st.ex||[]).map(id=>`<span class="ichip exc">${iicon(id,1)}전용 · ${ITEMS[id].n.replace(' 씨앗','')}</span>`).join('')}</span></button>`).join('')}</div></div>
   ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`;
 }
-function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='scout'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}{const rl=relicRoll(P.lvl);if(rl)got[rl]=(got[rl]||0)+1}}
+function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='nav'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}{const rl=relicRoll(P.lvl);if(rl)got[rl]=(got[rl]||0)+1}}
   Object.entries(got).forEach(([id,n])=>add(id,n));gainXp(3*x.pending);stat('gather',x.pending);lxp('gather',4*x.pending);P.exp=Object.assign({},x.e,{tg:x.tg+x.pending});
   if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 로봇이 땅속에서 무기를 찾아왔다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
   lastGather={t:`채집 로봇이 ${x.site.n}에서 ${x.pending}회분 채집물을 가져왔다.${wf?` 희귀 무기 「${wf.n}」도 찾아왔다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
@@ -2990,7 +2995,7 @@ function sfxFanfare(big){if(!soundOn)return;const a=ac();if(!a)return;const t=a.
   N.forEach((f,i)=>{tone(a,'square',f,0,t+i*.11,.16,.06);tone(a,'triangle',f/2,0,t+i*.11,.18,.05)});
   if(big){[[784,.5],[880,.62],[1046,.74]].forEach(([f,d])=>tone(a,'square',f,0,t+d,.12,.05));[523,659,784,1046].forEach(f=>{tone(a,'square',f,0,t+.9,.9,.035);tone(a,'triangle',f/2,0,t+.9,1,.04)})}
   else tone(a,'square',1046,0,t+.46,.4,.05)}
-function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='engineer'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
+function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
 function renderBag(){return head()+bagInner()}
 function bagInner(){
   const ids=ORDER.filter(id=>P.inv[id]);
@@ -3055,7 +3060,7 @@ function renderCrew(){
   const list=Object.entries(PLAYERS).map(([id,p])=>({id,rcd:rescueCd(id===uid?P:p),faint:id===uid?isFaint():(p.faint&&Date.now()<p.faint),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
    .sort((a,b)=>(b.on-a.on)||(b.lvl-a.lvl));
   if(!list.find(x=>x.id===uid))list.unshift({id:uid,nick:P.nick,lvl:P.lvl,on:true,act:''});
-  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${colorOf(x.id)}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button><span class="lvt">LV.${x.lvl}</span>${x.id!==uid&&affOf(P,x.id)?`<span class="lvt" style="color:${affColor(affOf(P,x.id))}" title="내 호감도 ${affLabel(affOf(P,x.id))}">♥${affOf(P,x.id)}</span>`:''}<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?(x.rcd>0?`<button class="btn sm ghost rescue" disabled title="구조를 받은 지 30분이 지나야 다시 구조할 수 있습니다">구조 <small>${Math.ceil(x.rcd/60e3)}분</small></button>`:`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN 3</small></button>`):''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
+  ul.innerHTML=list.map(x=>`<li><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${colorOf(x.id)}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button><span class="lvt">LV.${x.lvl}</span>${x.id!==uid&&affOf(P,x.id)?`<span class="lvt" style="color:${affColor(affOf(P,x.id))}" title="내 호감도 ${affLabel(affOf(P,x.id))}">♥${affOf(P,x.id)}</span>`:''}<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>${x.faint&&x.id!==uid?(x.rcd>0?`<button class="btn sm ghost rescue" disabled title="구조를 받은 지 30분이 지나야 다시 구조할 수 있습니다">구조 <small>${Math.ceil(x.rcd/60e3)}분</small></button>`:`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN ${P.job==='medic'?0:3}</small></button>`):''}${x.id!==uid?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`).join('');
 }
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
 const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
@@ -3088,7 +3093,7 @@ const isFaint=()=>P.faint&&Date.now()<P.faint;
 function checkFaint(){if(isFaint())return;if(P.hp<=0||P.en<=0){const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했습니다! 개척단원 목록에서 구조할 수 있습니다.`)}}
 // rescue cooldown: once someone is rescued they can't be rescued again for 30 minutes
 const RESCUE_CD=30*60e3,rescueCd=p=>Math.max(0,(+(p&&p.rescuedAt)||0)+RESCUE_CD-Date.now());
-function wake(by){P.faint=0;P.faintAt=0;const k=by?.4:.25;P.hp=Math.max(P.hp,Math.round(maxHp()*k));P.en=Math.max(P.en,Math.round(maxEn()*k));P.t=Date.now();log(by?`${by} 님이 구조해 줬다. 정신이 돌아왔다.`:'겨우 정신을 차렸다.','good');commit()}
+function wake(by,med){P.faint=0;P.faintAt=0;const k=med?.7:by?.4:.25;P.hp=Math.max(P.hp,Math.round(maxHp()*k));P.en=Math.max(P.en,Math.round(maxEn()*k));P.t=Date.now();log(by?`${by} 님이 구조해 줬다. 정신이 돌아왔다.`:'겨우 정신을 차렸다.','good');commit()}
 function commit(){checkFaint();save();renderPilot();renderNav();renderPanel();renderCrew()}
 let soldBack={};
 const A={
@@ -3131,7 +3136,7 @@ const A={
  fsput(d){const have=P.inv[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-bag')||{}).value)||1)));if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);storeLogAdd('put',d.id,n);log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
  shipsel(d){shipSel=d.k;renderPanel()},
  shipgive(d){shipGive(d.k,d.i)},
- refill(){if(FARM.water>=FARM.cap)return;if(Date.now()<FARM.refCd){toast(`아직 물을 채울 수 없습니다. ${fmtClock(FARM.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}const eng=P.job==='engineer';FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+(eng?1800e3:3600e3);sfxWater();
+ refill(){if(FARM.water>=FARM.cap)return;if(Date.now()<FARM.refCd){toast(`아직 물을 채울 수 없습니다. ${fmtClock(FARM.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}const eng=P.job==='mech';FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+(eng?1800e3:3600e3);sfxWater();
   if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:FARM.refCd}).catch(()=>{});else farmSave();log(`공용 물탱크를 가득 채웠다. ${eng?'30분':'1시간'} 뒤에 다시 채울 수 있다.`,'good');commit()},
  raidzone(d){raidSel=d.k;renderPanel()},
  raidnew(d){raidCreate(d.k==='solo')},
@@ -3170,7 +3175,7 @@ const A={
   fish.t1=setTimeout(()=>{fish.ph='bite';fish.at=Date.now();sfxBite();if(tab==='fish')renderPanel();fish.t2=setTimeout(()=>{if(fish.ph==='bite'){fish.ph='miss';fish.bonus=null;log('물고기가 미끼만 먹고 달아났다.','bad');if(tab==='fish')renderPanel()}},1300)},ri(1800,5200))},
  pull(){if(fish.ph==='wait'){clearTimeout(fish.t1);fish={ph:'early',bonus:fish.bonus,a:fish.a};log('너무 일찍 당겨서 물고기가 놀라 도망쳤다.','bad');renderPanel();return}
   if(fish.ph!=='bite')return;clearTimeout(fish.t2);const ms=Date.now()-fish.at;sfxSplash();
-  const bo=!!fish.bonus,fast=ms<450,rod=P.rod||0,wr=30+(bo?3:0)+(P.job==='angler'?3:0)+AS('luk')*.3+GF('luck')+lifePct('fish'),wu=rod>=1?8+(bo?2:0):0,wl=rod>=2?.5+(bo?.5:0)+(fast?.5:0):0;const tr=pick([['c',100-wr-wu-wl],['r',wr],['u',wu],['l',wl]]);
+  const bo=!!fish.bonus,fast=ms<450,rod=P.rod||0,wr=30+(bo?3:0)+AS('luk')*.3+GF('luck')+lifePct('fish'),wu=rod>=1?8+(bo?2:0):0,wl=rod>=2?.5+(bo?.5:0)+(fast?.5:0):0;const tr=pick([['c',100-wr-wu-wl],['r',wr],['u',wu],['l',wl]]);
   // the basic rod snags a seed one cast in ten instead of a fish
   if(rod===0&&Math.random()<.1){const seeds=Object.keys(ITEMS).filter(k=>ITEMS[k].type==='seed'),sid=seeds[ri(0,seeds.length-1)],sxp=3;add(sid);gainXp(sxp);lxp('fish',4);lastFish={id:sid,ms,xp:sxp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
     log(`물고기 대신 ${ITEMS[sid].n}이(가) 낚싯바늘에 걸려 올라왔다!`,'good');commit();return}
@@ -3193,7 +3198,7 @@ const A={
  neonpick(d){neonPick=d.c||null;neonSlot=d.c?d.k:null;renderPanel()},
  neonbuy(){const c=neonPick;if(!c||!NEONSET.has(c)||ownsNeon(c))return;if((P.cr||0)<NEON_PRICE){toast('크레딧이 부족합니다.');return}P.cr-=NEON_PRICE;sfxCoin();P.own=[...(P.own||[]),'neon'+c];if(LOOKS[neonSlot])P.look=Object.assign({},lookOf(P),{[neonSlot]:c});neonPick=null;neonSlot=null;renderPilot();log(`${NEON.find(n=>n[0]===c)[1]} 색을 샀다.`,'good');commit()},
  setlook(d){if(!LOOKS[d.k]||!(LOOKS[d.k].opts.some(o=>o[0]===d.c)||(NEONSET.has(d.c)&&ownsNeon(d.c))))return;P.look=Object.assign({},lookOf(P),{[d.k]:d.c});save();renderPanel();renderPilot()},
- rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(rescueCd(t)>0){toast(`${t.nick} 님은 구조를 받은 지 30분이 지나지 않았습니다. ${Math.ceil(rescueCd(t)/60e3)}분 뒤에 다시 구조할 수 있습니다.`);return}if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');addAff(d.k,AFF.rescue,'구조함');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
+ rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(rescueCd(t)>0){toast(`${t.nick} 님은 구조를 받은 지 30분이 지나지 않았습니다. ${Math.ceil(rescueCd(t)/60e3)}분 뒤에 다시 구조할 수 있습니다.`);return}if(!spend(P.job==='medic'?0:3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now(),med:P.job==='medic'}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');addAff(d.k,AFF.rescue,'구조함');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
  gift(d){openGift(d.k)},
  giftclose(){$('#giftModal').hidden=true},
  giftadd(d){if(!isDish(d.id))return;const have=P.inv[d.id]||0;if(giftCount()>=GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
@@ -3253,13 +3258,13 @@ const A={
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
  scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=5)return;if(!spend(SCOUT_EN))return;
-  const ms=TRAILS[i].m[from]*60e3;sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${TRAILS[i].m[from]}분 뒤 도착.`);commit()},
+  const ms=TRAILS[i].m[from]*60e3*(P.job==='nav'?.75:1);sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${TRAILS[i].m[from]}분 뒤 도착.`);commit()},
  scsearch(){scoutSearch()},
  scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
  scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;sc.pend=0;log('정착지로 귀환했다.');commit()},
  sel(d){selItem=d.id;renderPanel()},
  bagtoggle(){bagShow(!bagOpen)},
- use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){heal(it.hp,it.en);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${it.hp}, 에너지 +${it.en}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
+ use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){const mk=P.job==='medic'?1.5:1,hh=Math.round(it.hp*mk),ee=Math.round(it.en*mk);heal(hh,ee);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${hh}, 에너지 +${ee}${mk>1?' (의무원)':''}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
  upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했습니다.`);commit()},
 };
 
@@ -3458,7 +3463,7 @@ document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classL
 let profId=null,profBio=false;
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
-  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',p.job&&JOBS[p.job]?JOBS[p.job].n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
+  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',jobOf(p)?jobOf(p).n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
   if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up at 30
     const af=affOf(p,uid),open=af>=30,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 30 이상이면 보입니다</span>';
@@ -3466,7 +3471,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
      <div class="meid"><span class="lv">${esc(orgRole(id))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
       <div class="stat"><div class="stat-row"><span>나에 대한 호감도</span><b style="color:${affColor(af)}">${af} · ${affLabel(af)}</b></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div></div>
       <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${open?chips(p.likes,'var(--pink)'):lock}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${open?chips(p.hates,'var(--red)'):lock}</div></div></div></div>
-     <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${p.job&&JOBS[p.job]?esc(JOBS[p.job].n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div>
+     <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${jobOf(p)?esc(jobOf(p).n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div>
       <button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
      <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
      <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
