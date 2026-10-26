@@ -733,6 +733,14 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .rodcard{display:flex;gap:10px;align-items:center;padding:7px 10px}
 .shop{display:flex;flex-direction:column;gap:9px}
 .keeper{display:flex;gap:12px;align-items:center}
+.posters{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px;padding:8px 4px}
+.poster{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:18px 10px 12px;background:#e9dfc6;color:#3a2e22;border:2px solid #8a7656;box-shadow:3px 4px 0 rgba(0,0,0,.35);transform:rotate(var(--tilt));text-align:center;background-image:repeating-linear-gradient(0deg,rgba(120,90,50,.06) 0 2px,transparent 2px 5px)}
+.poster:hover{transform:rotate(0) translateY(-2px)}.poster .pin{position:absolute;top:-6px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#c8343c;box-shadow:inset -2px -2px 0 #8a2028,0 2px 0 rgba(0,0,0,.4)}
+.poster .pt{font-family:var(--f-display);font-size:18px;letter-spacing:.06em;color:#8a2a22;border-bottom:2px solid #8a2a22;padding-bottom:2px}
+.poster .pimg{background:#f6efdc;border:2px dashed #a08a62;padding:6px;line-height:0}.poster .pname{font-size:14px}.poster .pwho{font-size:11px;color:#6a5a44}
+.poster .preward{display:flex;align-items:center;gap:5px;font-family:var(--f-pix);font-size:16px;color:#6a4a10}.poster .phave{font-size:11px;color:#9a4a3a}.poster .phave.ok{color:#3a6a3a}
+.poster .btn{margin-top:2px}.poster.done{filter:saturate(.5) brightness(.92)}.poster .pstamp{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);font-family:var(--f-display);font-size:26px;color:rgba(178,40,40,.8);border:3px solid rgba(178,40,40,.8);padding:2px 10px;letter-spacing:.1em}
+.keeper.broker .say{color:var(--pink)}.slist.reqlist{max-height:none;overflow:visible}
 .sellones{gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}.sellbag{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));margin-bottom:8px}.sellpick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sellpick .sinfo{flex:1;min-width:160px;display:flex;flex-direction:column;gap:3px}.sellctl{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .shoptop{display:grid;grid-template-columns:7fr 3fr;gap:10px;align-items:start}.shoptop>.card{margin:0}.shopmain{display:flex;flex-direction:column;gap:8px;min-width:0}.shopmain>.card{margin:0}.slotm{position:sticky;top:10px}
 @media (max-width:520px){.shoptop{grid-template-columns:1fr}}
@@ -2954,11 +2962,12 @@ function renderShop(){
     const bulk=ones.length>1?`<div class="row sellones"><span class="hint" style="flex:1;min-width:160px">${sellArm?`1개짜리 ${ones.length}종: ${ones.map(id=>ITEMS[id].n).join(', ')}`:`1개만 있는 아이템 ${ones.length}종을 한 번에 팔 수 있습니다.`}</span>${sellArm?'<button class="btn sm ghost" data-act="sellones" data-k="no">취소</button>':''}<button class="btn sm ${sellArm?'gold':'alt'}" data-act="sellones">${sellArm?'정말 팔기':'1개짜리 모두 팔기'} · +${onesCr.toLocaleString()} CR</button></div>`:'';
     return back+(ids.length?`${bulk}<div class="bag sellbag">${ids.map(id=>`<button class="slot" data-act="sellsel" data-id="${id}" aria-pressed="${id===sellSel}" aria-label="${ITEMS[id].n} ${P.inv[id]}개" title="${ITEMS[id].n} · 한 개 ${sellPrice(id)} CR">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>${pick}`:'<p class="hint" style="padding:10px">팔 물건이 없습니다.</p>')})();
   if(shopTab==='ward')rows=wardHTML();
-  const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
+  if(shopTab==='req')rows=reqHTML();
+  const tabs=[['req','의뢰'],['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
   return head()+`<div class="shop">
-   <div class="shoptop"><div class="shopmain"><div class="card keeper"><span class="bot">${img(IC.robot,null,4)}<i class="botlight"></i></span><div class="sinfo"><b>고물상 로봇 · 녹슨 7호</b><p class="say">“${KEEPER[keeperLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${cr.toLocaleString()} CR</b></div></div></div>
+   <div class="shoptop"><div class="shopmain"><div class="card keeper ${shopTab==='req'?'broker':''}"><span class="bot">${shopTab==='req'?img(WIGBOT,null,4,'',WIGPO):img(IC.robot,null,4)}${shopTab==='req'?'':'<i class="botlight"></i>'}</span><div class="sinfo"><b>${shopTab==='req'?'의뢰 중개인 · 마담 로자 <small class="hint">(고물상 로봇 아님)</small>':'고물상 로봇 · 녹슨 7호'}</b><p class="say">“${shopTab==='req'?BROKER[keeperLine%BROKER.length]:KEEPER[keeperLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${cr.toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${shopTab===k}" data-act="shoptab" data-k="${k}"${k==='sell'?' style="margin-left:auto"':''}>${n}</button>`).join('')}</div>
-   <div class="slist">${rows}</div></div>${slotHTML()}</div></div>`;
+   <div class="slist ${shopTab==='req'?'reqlist':''}">${rows}</div></div>${slotHTML()}</div></div>`;
 }
 /* ───────── slot machine beside the junk robot: 100 CR a pull; every pull pays something ───────── */
 const SLOT_BET=100,SLOT_SYM=['seven','star','bell','cherry'],SLOT_W=[1,2,3,4];
@@ -3028,6 +3037,27 @@ function sfxFanfare(big){if(!soundOn)return;const a=ac();if(!a)return;const t=a.
   N.forEach((f,i)=>{tone(a,'square',f,0,t+i*.11,.16,.06);tone(a,'triangle',f/2,0,t+i*.11,.18,.05)});
   if(big){[[784,.5],[880,.62],[1046,.74]].forEach(([f,d])=>tone(a,'square',f,0,t+d,.12,.05));[523,659,784,1046].forEach(f=>{tone(a,'square',f,0,t+.9,.9,.035);tone(a,'triangle',f/2,0,t+.9,1,.04)})}
   else tone(a,'square',1046,0,t+.46,.4,.05)}
+/* ───────── 의뢰: the junk robot puts on a wig and swears it is someone else. Five posters a day (per crew member), paid far above the shop's buying price ───────── */
+const WIGBOT=['...kAAAkAAAk....','..kABBAAABBAk...','.kAAAAAAAAAAAkk.','kAAkkkkkkkkAADDk','kABkSSSSSSSSkABk','kBAkSkkSSkkSkBAk','kABkSkcSSkcSkABk','kBAkSSSSSSSSkBAk','kABkSskDDDDSkABk','.kA.kkkkkkkk.Bk.','..kkSSSSSSSSkk..','.kSkSsSSSSsSkSk.','.kSkSSSyySSSkSk.','.kk.SSSSSSSS.kk.','....kSk..kSk....','....kkk..kkk....'];
+const WIGPO={A:'#e07aa8',B:'#ffb4d2',D:'#d8343c'};
+const BROKER=['녹슨 7호요? 처음 듣는 이름이네요. 저는 의뢰 중개인 마담 로자랍니다.','어머, 그 고물상 로봇이랑 닮았다고요? 자주 듣는 말이에요. 호호.','이 머리카락은 진짜예요. 만지지 마세요. 정전기가 나거든요.','의뢰는 확실해요. 돈은 제가… 아니, 의뢰인이 꼭 드려요.','고물상이요? 아, 거기 주인은 오늘 쉬는 날이래요. 아마도요.','삐… 아니, 콜록. 감기 기운이 좀 있어서요.','포스터가 다섯 장뿐이냐고요? 좋은 일은 원래 귀한 법이죠.'];
+// [item, min, max, CR per piece, client]
+const REQ_POOL=[['pot',10,20,15,'배고픈 기관실 3교대 팀'],['berry',8,15,22,'잼 가게를 꿈꾸는 조종사'],['carrot',6,12,30,'시력 검사를 앞둔 항해사'],['corn',6,10,36,'팝콘이 그리운 통신사'],['pump',4,8,50,'호박 축제 준비 위원회'],['melon',2,4,80,'더위에 지친 화물칸 담당'],
+ ['fish:c',5,10,25,'정거장 식당 주방장'],['fish:r',1,3,120,'희귀 어종 수집가'],['ore',15,30,10,'선체 보수 작업반'],['crystal',5,10,40,'동력로 정비사'],['moss',10,20,8,'온실 관리인'],['dark',2,4,90,'수상한 연구원'],
+ ['d_potRoast',2,4,60,'야근하는 관제사'],['d_hoe',1,3,90,'회가 먹고 싶은 선장'],['d_grill',1,2,110,'생선구이 마니아']];
+function reqRng(seed){let x=seed%2147483647||1;return()=>(x=(x*16807)%2147483647)/2147483647}
+function reqList(){const day=dayKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list))return P.req;
+  let h=0;for(const c of day+uid)h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+7),pool=REQ_POOL.slice(),list=[],mul=1+Math.min(60,P.lvl)/30;
+  for(let k=0;k<5&&pool.length;k++){const [id,a,b,per,who]=pool.splice(Math.floor(rnd()*pool.length),1)[0],n=a+Math.floor(rnd()*(b-a+1));list.push({id,n,cr:Math.round(n*per*mul/10)*10,who})}
+  P.req={day,list,done:[]};save();return P.req}
+const reqName=id=>id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id);
+const reqIcon=(id,sc)=>id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],sc):iicon(id,sc);
+function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q,i)=>{const done=R.done.includes(i),have=ingHave(q.id),ok=have>=q.n;
+  return`<div class="poster ${done?'done':''}" style="--tilt:${[-2,1.5,-1,2,-1.5][i]}deg"><i class="pin"></i><span class="pt">구합니다!</span>
+   <div class="pimg">${reqIcon(q.id,3)}</div><b class="pname">${esc(reqName(q.id))} ×${q.n}</b><span class="pwho">의뢰인 · ${esc(q.who)}</span>
+   <span class="preward">${img(IC.coin,null,2)}${q.cr.toLocaleString()} CR</span><span class="phave ${ok?'ok':''}">가진 것 ${Math.min(have,999)}/${q.n}</span>
+   ${done?'<span class="pstamp">완료</span>':`<button class="btn sm ${ok?'gold':''}" data-act="reqgo" data-k="${i}" ${ok?'':'disabled'}>납품하기</button>`}</div>`}).join('')}</div>
+  <p class="hint">포스터는 매일 새로 붙습니다. 오늘 남은 의뢰 ${R.list.length-R.done.length}개.</p>`}
 function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
 function renderBag(){return head()+bagInner()}
 function bagInner(){
@@ -3285,6 +3315,7 @@ const A={
  buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||rodMax()>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;P.rodMax=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
  buy(d){const row=BUY.find(r=>r[0]===d.id);if(!row)return;const n=+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
  sellones(d){if(d.k==='no'){sellArm=false;renderPanel();return}const ones=ORDER.filter(id=>P.inv[id]===1);if(ones.length<2)return;if(!sellArm){sellArm=true;renderPanel();return}sellArm=false;let gain=0;ones.forEach(id=>{const pr=sellPrice(id);take(id,1);gain+=pr;const b=soldBack[id]||{n:0,pr};soldBack[id]={n:b.n+1,pr:b.pr}});if(ones.includes(sellSel))sellSel=null;P.cr=(P.cr||0)+gain;sfxSell(true);log(`1개짜리 아이템 ${ones.length}종을 한 번에 팔았다. (+${gain} CR)`,'good');commit()},
+ reqgo(d){const R=reqList(),i=+d.k,q=R.list[i];if(!q||R.done.includes(i))return;if(ingHave(q.id)<q.n){toast('물건이 모자랍니다.');return}ingTake(q.id,q.n);R.done=[...R.done,i];P.cr=(P.cr||0)+q.cr;stat('req');sfxFanfare(false);log(`의뢰 완료 · ${q.who}에게 ${reqName(q.id)} ${q.n}개를 납품했다. (+${q.cr.toLocaleString()} CR)`,'rare');commit()},
  sellsel(d){sellArm=false;sellSel=sellSel===d.id?null:d.id;sellN=1;renderPanel()},
  sellq(d){const have=P.inv[sellSel]||0;sellN=d.k==='max'?have:Math.max(1,Math.min(have,sellN+(+d.k)));renderPanel()},
  sell(d){const have=P.inv[d.id]||0;if(!have)return;const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
