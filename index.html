@@ -2221,7 +2221,7 @@ function bossHi(K){if(BOSS_HR.has(K))return BOSS_HR.get(K);const g=K.g,h=g.lengt
   const r={body,eyes,po};BOSS_HR.set(K,r);return r}
 const bossSpr=(b,sc)=>{const K=bossKind(b),hi=bossHi(K),s2=sc/2;return`<span class="bossart" style="--eye:${K.po.E}">${img(hi.body,null,s2,'',hi.po)}${img(hi.eyes,null,s2,'beye',hi.po)}</span>`};
 const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
-const BOSS_RET=10*60e3,bossRetLeft=b=>bossKilled(b)&&b.killedAt?Math.max(0,b.killedAt+BOSS_RET-Date.now()):0;
+const BOSS_RET=30e3,bossRetLeft=b=>bossKilled(b)&&b.killedAt?Math.max(0,b.killedAt+BOSS_RET-Date.now()):0;
 /* 탐사 idle scene: the old SOS beacon drifting against the station's starfield and dark planet */
 const BCN_W=240,BCN_H=120,BCN={};
 function beaconImg(){const dk=(isDay()||isLight())?'d':'n';if(BCN.src&&BCN.k===dk)return BCN;BCN.k=dk;const W=BCN_W,H=BCN_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
@@ -2288,7 +2288,7 @@ function bossMainHTML(){const b=BOSS;
   // just put down: the fallen invader's stage dims for 10 minutes before you head back out to space
   if(bossRetLeft(b)>0)return`<div class="bossstage bossdim"><div class="bosssprite">${bossSpr(b,10)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 토벌 성공</span>${raidBar(0,b.max,'var(--red)')}<span class="bosshp">0 / ${b.max.toLocaleString()}</span></div>
-    <div class="bossretov"><p>10분 뒤에 우주로 돌아갑니다.</p><span class="bossretT" id="bossRet">${fmtClock(bossRetLeft(b))}</span></div></div>`;
+    <div class="bossretov"><p>30초 뒤에 우주로 돌아갑니다.</p><span class="bossretT" id="bossRet">${fmtClock(bossRetLeft(b))}</span></div></div>`;
   // no live invader (none yet, put down, failed or sent back): just the old receiver, no ranking
   if(!bossAlive(b))return beaconHTML(asigState().off)+asigHTML();
   const alive=true,rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
