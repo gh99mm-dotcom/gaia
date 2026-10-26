@@ -532,6 +532,8 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .rshop{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
 .rcard{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;border:1px solid var(--line);background:var(--panel2);text-align:center;color:inherit;font:inherit}
 .rcard img{height:44px;width:auto;image-rendering:pixelated}button.rcard{cursor:pointer}.rcard[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.room .rf.ghost{z-index:25!important;pointer-events:none;outline:2px dashed var(--gold);outline-offset:-2px;background:color-mix(in srgb,var(--gold) 12%,transparent)}.room .rf.ghost img{opacity:.75;animation:rghost 1.2s ease-in-out infinite!important}@keyframes rghost{0%,100%{opacity:.55}50%{opacity:.9}}
+.rcbtns{gap:4px;justify-content:center;flex-wrap:wrap}
 .rswatch{display:block;width:100%;height:40px;border:1px solid var(--line)}
 .rvisit{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}.rvrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);background:var(--panel2);color:inherit;font:inherit;text-align:left;cursor:pointer}.rvrow.on{border-color:var(--gold)}.rvrow>span{display:flex;flex-direction:column;min-width:0}
 .bossfx{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.bfxt{font-style:normal}.bossfxsum{color:var(--gold);font-size:13px}.bosshp{font-family:var(--f-pix);font-size:11px;color:var(--mute);text-align:right}.bosspct{color:var(--red);font-size:14px;font-weight:700;margin-right:2px}
@@ -2953,21 +2955,24 @@ const roomComfort=r=>r.put.reduce((a,q)=>a+((FURN[q.k]||{}).c||0),0)+((RWALL[r.w
 const roomFree=(r,k)=>Math.max(0,((r.own||{})[k]||0)-r.put.filter(q=>q.k===k).length);
 function roomFits(r,k,x,y){const F=FURN[k];if(!F||x<0||x+F.w>RCOLS)return false;const z=F.z==='w'?'w':'f';if(z==='w'&&y!==0)return false;if(z==='f'&&(y<0||y>=RROWS))return false;
   return!r.put.some(q=>{const G=FURN[q.k];if(!G)return false;const qz=G.z==='w'?'w':'f';return qz===z&&(z==='w'||q.y===y)&&q.x<x+F.w&&x<q.x+G.w})}
-let shipView='ship',roomTab='bag',roomSel=null,roomVisit=null;
+// roomTry previews a shop piece before buying: {k} while picking a spot, then {k,x,y} once a spot is chosen
+let shipView='ship',roomTab='bag',roomSel=null,roomVisit=null,roomTry=null;
 function roomSceneHTML(r,edit){const W=100/RCOLS,top=40,rh=(100-top)/RROWS;
-  const piece=(q,i)=>{const F=FURN[q.k];if(!F)return'';const wall=F.z==='w',left=q.x*W,bt=wall?100-top+2:100-top-(q.y+1)*rh,pw=F.g[0].length/(16*F.w)*100;
-    return`<${edit?'button type="button" data-act="roomlift" data-k="'+i+'"':'div'} class="rf ${wall?'rw':''} ${F.h?'holo':''} ${F.fl?'hover':''}" style="left:${left}%;width:${W*F.w}%;${wall?`top:4%;height:${top-6}%`:`bottom:${(RROWS-1-q.y)*rh}%;height:${rh+8}%`};z-index:${wall?1:2+q.y}" title="${esc(F.n)}">${img(F.g,null,4,'',F.po)}</${edit?'button':'div'}>`.replace('<img ',`<img style="width:${pw}%" `)};
-  let spots='';if(edit&&roomSel&&FURN[roomSel]){const F=FURN[roomSel],ys=F.z==='w'?[0]:[0,1,2];// one spot per cell; a two-cell piece snaps to start here or one cell to the left
-    ys.forEach(y=>{for(let x=0;x<RCOLS;x++){const sx=roomFits(r,roomSel,x,y)?x:roomFits(r,roomSel,x-1,y)?x-1:null;if(sx!=null)spots+=`<button type="button" class="rspot" data-act="roomput" data-k="${sx},${y}" aria-label="여기에 놓기" style="left:${x*W}%;width:${W}%;${F.z==='w'?`top:4%;height:${top-6}%`:`bottom:${(RROWS-1-y)*rh}%;height:${rh}%`}"></button>`}})}
-  return`<div class="room" style="--wall:${(RWALL[r.w]||RWALL.w0).css};--floor:${(RFLOOR[r.f]||RFLOOR.f0).css}"><div class="rwall"></div><div class="rfloor"></div>${r.put.map(piece).join('')}${spots}</div>`}
+  const piece=(q,i,ghost)=>{const F=FURN[q.k];if(!F)return'';const ed=edit&&!ghost;const wall=F.z==='w',left=q.x*W,bt=wall?100-top+2:100-top-(q.y+1)*rh,pw=F.g[0].length/(16*F.w)*100;
+    return`<${ed?'button type="button" data-act="roomlift" data-k="'+i+'"':'div'} class="rf ${wall?'rw':''} ${F.h?'holo':''} ${F.fl?'hover':''} ${ghost?'ghost':''}" style="left:${left}%;width:${W*F.w}%;${wall?`top:4%;height:${top-6}%`:`bottom:${(RROWS-1-q.y)*rh}%;height:${rh+8}%`};z-index:${wall?1:2+q.y}" title="${esc(F.n)}">${img(F.g,null,4,'',F.po)}</${ed?'button':'div'}>`.replace('<img ',`<img style="width:${pw}%" `)};
+  const pk=roomSel||(roomTry&&roomTry.k),act=roomSel?'roomput':'roomtry';
+  let spots='';if(edit&&pk&&FURN[pk]){const F=FURN[pk],ys=F.z==='w'?[0]:[0,1,2];// one spot per cell; a two-cell piece snaps to start here or one cell to the left
+    ys.forEach(y=>{for(let x=0;x<RCOLS;x++){const sx=roomFits(r,pk,x,y)?x:roomFits(r,pk,x-1,y)?x-1:null;if(sx!=null)spots+=`<button type="button" class="rspot" data-act="${act}" data-k="${sx},${y}" aria-label="여기에 놓기" style="left:${x*W}%;width:${W}%;${F.z==='w'?`top:4%;height:${top-6}%`:`bottom:${(RROWS-1-y)*rh}%;height:${rh}%`}"></button>`}})}
+  return`<div class="room" style="--wall:${(RWALL[r.w]||RWALL.w0).css};--floor:${(RFLOOR[r.f]||RFLOOR.f0).css}"><div class="rwall"></div><div class="rfloor"></div>${r.put.map((q,i)=>piece(q,i)).join('')}${edit&&roomTry&&roomTry.x!=null?piece({k:roomTry.k,x:roomTry.x,y:roomTry.y},0,true):''}${spots}</div>`}
 function roomHTML(){const visiting=roomVisit&&roomVisit!==uid&&PLAYERS[roomVisit],r=visiting?roomOf(PLAYERS[roomVisit]):myRoom(),who=visiting?(PLAYERS[roomVisit].nick||'단원'):P.nick;
-  if(roomSel&&(visiting||!roomFree(r,roomSel)))roomSel=null;
-  const head2=`<div class="roomhead"><div><b>${esc(who)} 님의 선실 <span class="rtag">CABIN · ${[...String(visiting?roomVisit:uid)].reduce((a,c)=>(a*31+c.charCodeAt(0))%900,7)+100}</span></b><span class="hint">편안함 ${roomComfort(r)}</span></div>${visiting?'<button class="btn sm" data-act="roomhome">내 방으로</button>':roomSel?`<span class="hint roomhint">「${esc(FURN[roomSel].n)}」을(를) 놓을 자리를 누르십시오. <button class="qchip" data-act="roomsel" data-k="">취소</button></span>`:'<span class="hint">놓인 가구를 누르면 들어 올려 옮기거나 보관함에 넣을 수 있습니다.</span>'}</div>`;
+  if(roomSel&&(visiting||!roomFree(r,roomSel)))roomSel=null;if(visiting||roomSel)roomTry=null;
+  const T=roomTry&&FURN[roomTry.k],tryBar=T?`<span class="hint roomhint">${roomTry.x==null?`「${esc(T.n)}」 미리보기 · 놓아볼 자리를 누르십시오.`:`「${esc(T.n)}」 미리보기 · 다른 자리를 눌러 옮겨 볼 수 있습니다.`}${roomTry.x!=null?`<button class="btn sm ${(P.cr||0)>=T.cr?'gold':''}" data-act="roomtrybuy" ${(P.cr||0)>=T.cr?'':'disabled'}>${(P.cr||0)>=T.cr?`여기에 사서 놓기 · ${T.cr.toLocaleString()} CR`:'크레딧 부족'}</button>`:''}<button class="qchip" data-act="roomtryend">그만 보기</button></span>`:'';
+  const head2=`<div class="roomhead"><div><b>${esc(who)} 님의 선실 <span class="rtag">CABIN · ${[...String(visiting?roomVisit:uid)].reduce((a,c)=>(a*31+c.charCodeAt(0))%900,7)+100}</span></b><span class="hint">편안함 ${roomComfort(r)}</span></div>${visiting?'<button class="btn sm" data-act="roomhome">내 방으로</button>':tryBar?tryBar:roomSel?`<span class="hint roomhint">「${esc(FURN[roomSel].n)}」을(를) 놓을 자리를 누르십시오. <button class="qchip" data-act="roomsel" data-k="">취소</button></span>`:'<span class="hint">놓인 가구를 누르면 들어 올려 옮기거나 보관함에 넣을 수 있습니다.</span>'}</div>`;
   if(visiting)return head2+roomSceneHTML(r,false)+roomVisitList();
   const tabs=[['bag','보관함'],['shop','가구 상점'],['deco','벽지·바닥'],['visit','놀러 가기']];
   let body='';
   if(roomTab==='bag'){const ks=Object.keys(FURN).filter(k=>roomFree(r,k)>0);body=ks.length?`<div class="rshop">${ks.map(k=>`<button class="rcard" data-act="roomsel" data-k="${k}" aria-pressed="${roomSel===k}">${img(FURN[k].g,null,2,'',FURN[k].po)}<b>${FURN[k].n}</b><span class="hint">${roomFree(r,k)}개 · ${FURN[k].z==='w'?'벽':'바닥'} · ${FURN[k].w}칸</span></button>`).join('')}</div>`:'<p class="hint">보관함이 비어 있습니다. 가구 상점에서 가구를 사거나, 방에 놓인 가구를 눌러 보관함에 넣을 수 있습니다.</p>'}
-  else if(roomTab==='shop')body=`<div class="rshop">${Object.entries(FURN).filter(([,F])=>F.cr>0).map(([k,F])=>`<div class="rcard">${img(F.g,null,2,'',F.po)}<b>${F.n}</b><span class="hint">${F.z==='w'?'벽':'바닥'} · ${F.w}칸 · 편안함 +${F.c}${(r.own||{})[k]?` · ${r.own[k]}개 있음`:''}</span><button class="btn sm ${(P.cr||0)>=F.cr?'gold':''}" data-act="roombuy" data-k="${k}" ${(P.cr||0)>=F.cr?'':'disabled'}>${F.cr.toLocaleString()} CR</button></div>`).join('')}</div>`;
+  else if(roomTab==='shop')body=`<div class="rshop">${Object.entries(FURN).filter(([,F])=>F.cr>0).map(([k,F])=>`<div class="rcard">${img(F.g,null,2,'',F.po)}<b>${F.n}</b><span class="hint">${F.z==='w'?'벽':'바닥'} · ${F.w}칸 · 편안함 +${F.c}${(r.own||{})[k]?` · ${r.own[k]}개 있음`:''}</span><div class="row rcbtns"><button class="btn sm alt" data-act="roomtrystart" data-k="${k}" aria-pressed="${!!roomTry&&roomTry.k===k}">미리 놓기</button><button class="btn sm ${(P.cr||0)>=F.cr?'gold':''}" data-act="roombuy" data-k="${k}" ${(P.cr||0)>=F.cr?'':'disabled'}>${F.cr.toLocaleString()} CR</button></div></div>`).join('')}</div>`;
   else if(roomTab==='deco'){const row=(lbl,T,cur,have,act)=>`<span class="lbl">${lbl}</span><div class="rshop">${Object.entries(T).map(([k,t])=>{const own=have.includes(k);return`<div class="rcard"><i class="rswatch" style="background:${t.css}"></i><b>${t.n}</b><span class="hint">편안함 +${t.c}</span>${cur===k?'<span class="smok">사용 중</span>':own?`<button class="btn sm" data-act="${act}" data-k="${k}">바꾸기</button>`:`<button class="btn sm ${(P.cr||0)>=t.cr?'gold':''}" data-act="${act}" data-k="${k}" ${(P.cr||0)>=t.cr?'':'disabled'}>${t.cr.toLocaleString()} CR</button>`}</div>`}).join('')}</div>`;
     body=row('벽지',RWALL,r.w,r.ws||['w0'],'roomwall')+row('바닥',RFLOOR,r.f,r.fs||['f0'],'roomfloor')}
   else body=roomVisitList(true);
@@ -3440,13 +3445,21 @@ const A={
  raidto(d){raidItemTo=d.k;renderPanel()},
  bosshit(){bossHit()},
  shipview(d){shipView=d.k==='room'?'room':'ship';if(shipView==='ship')roomVisit=null;renderPanel()},
- roomtab(d){roomTab=d.k;renderPanel()},
- roomsel(d){roomSel=d.k&&FURN[d.k]?d.k:null;renderPanel()},
+ roomtab(d){roomTab=d.k;if(d.k!=='shop')roomTry=null;renderPanel()},
+ roomsel(d){roomSel=d.k&&FURN[d.k]?d.k:null;roomTry=null;renderPanel()},
  roomput(d){const r=myRoom(),[x,y]=String(d.k).split(',').map(Number);if(!roomSel||!roomFree(r,roomSel)||!roomFits(r,roomSel,x,y))return;const F=FURN[roomSel];r.put.push(F.z==='w'?{k:roomSel,x,y:0,z:'w'}:{k:roomSel,x,y});sfxPlace();if(!roomFree(r,roomSel))roomSel=null;commit()},
  roomlift(d){const r=myRoom(),i=+d.k,q=r.put[i];if(!q)return;r.put.splice(i,1);roomSel=q.k;roomTab='bag';toast(`「${FURN[q.k].n}」을(를) 들었습니다. 놓을 자리를 누르거나 취소하면 보관함에 들어갑니다.`);commit()},
  roombuy(d){const F=FURN[d.k],r=myRoom();if(!F||!F.cr)return;if((P.cr||0)<F.cr){toast('크레딧이 모자랍니다.');return}P.cr-=F.cr;r.own=Object.assign({},r.own,{[d.k]:((r.own||{})[d.k]||0)+1});sfxCoin();log(`마이룸 가구 「${F.n}」을(를) ${F.cr.toLocaleString()} CR에 샀다. 보관함에서 꺼내 놓을 수 있다.`,'good');roomSel=d.k;roomTab='bag';commit()},
  roomwall(d){const t=RWALL[d.k],r=myRoom();if(!t)return;r.ws=r.ws||['w0'];if(!r.ws.includes(d.k)){if((P.cr||0)<t.cr){toast('크레딧이 모자랍니다.');return}P.cr-=t.cr;r.ws=[...r.ws,d.k];sfxCoin();log(`마이룸 벽지 「${t.n}」을(를) 샀다.`,'good')}r.w=d.k;commit()},
  roomfloor(d){const t=RFLOOR[d.k],r=myRoom();if(!t)return;r.fs=r.fs||['f0'];if(!r.fs.includes(d.k)){if((P.cr||0)<t.cr){toast('크레딧이 모자랍니다.');return}P.cr-=t.cr;r.fs=[...r.fs,d.k];sfxCoin();log(`마이룸 바닥 「${t.n}」을(를) 샀다.`,'good')}r.f=d.k;commit()},
+ roomtrystart(d){if(!FURN[d.k])return;roomSel=null;roomTry={k:d.k};const R=myRoom(),F=FURN[d.k],ys=F.z==='w'?[0]:[2,1,0];
+   // drop the ghost straight into the first free spot so the look shows at once
+   for(const y of ys){for(let x=0;x+F.w<=RCOLS;x++)if(roomFits(R,d.k,x,y)){roomTry={k:d.k,x,y};break}if(roomTry.x!=null)break}
+   if(roomTry.x==null)toast(F.z==='w'?'벽에 빈자리가 없습니다. 벽 장식을 먼저 치워 보십시오.':'바닥에 빈자리가 없습니다.');renderPanel();const rm=$('.room');if(rm)rm.scrollIntoView({block:'nearest',behavior:'smooth'})},
+ roomtry(d){if(!roomTry)return;const [x,y]=String(d.k).split(',').map(Number);if(!roomFits(myRoom(),roomTry.k,x,y))return;roomTry={k:roomTry.k,x,y};sfxPlace();renderPanel()},
+ roomtryend(){roomTry=null;renderPanel()},
+ roomtrybuy(){const t=roomTry,F=t&&FURN[t.k],r=myRoom();if(!F||t.x==null)return;if((P.cr||0)<F.cr){toast('크레딧이 모자랍니다.');return}if(!roomFits(r,t.k,t.x,t.y)){toast('그 자리는 이제 비어 있지 않습니다.');return}
+   P.cr-=F.cr;r.own=Object.assign({},r.own,{[t.k]:((r.own||{})[t.k]||0)+1});r.put.push(F.z==='w'?{k:t.k,x:t.x,y:0,z:'w'}:{k:t.k,x:t.x,y:t.y});roomTry=null;sfxCoin();log(`마이룸 가구 「${F.n}」을(를) ${F.cr.toLocaleString()} CR에 사서 방에 놓았다.`,'good');commit()},
  roomvisit(d){if(!PLAYERS[d.k])return;roomVisit=d.k;renderPanel()},
  roomhome(){roomVisit=null;renderPanel()},
  bossskill(){bossSkill()},
