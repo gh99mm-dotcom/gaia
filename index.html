@@ -513,7 +513,22 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bossstage.down .bosssprite{filter:grayscale(1) brightness(.6);animation:none}.bossstage.down .bosssprite::before{display:none}.bossstage.down .beye{animation:none;filter:none}
 @keyframes bossbob{50%{transform:translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.bosssprite{animation:none}}
-.bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.admpick{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px;border:1px solid var(--gold);margin:4px 0}.admbig{align-self:flex-start;padding:10px 22px;font-size:15px}.admfaint{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}.admfrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line)}.admfrow.down{border-color:var(--red);background:color-mix(in srgb,var(--red) 8%,transparent)}.admfn{flex:1;min-width:0;display:flex;flex-direction:column}.admfn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bossfx{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.bfxt{font-style:normal}.bossfxsum{color:var(--gold);font-size:13px}.bosshp{font-family:var(--f-pix);font-size:11px;color:var(--mute);text-align:right}.bosspct{color:var(--red);font-size:14px;font-weight:700;margin-right:2px}
+.bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.admpick{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px;border:1px solid var(--gold);margin:4px 0}.admbig{align-self:flex-start;padding:10px 22px;font-size:15px}.admfaint{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}.admfrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line)}.admfrow.down{border-color:var(--red);background:color-mix(in srgb,var(--red) 8%,transparent)}.admfn{flex:1;min-width:0;display:flex;flex-direction:column}.admfn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.shiptabs{margin:0 0 10px}
+.roomhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}.roomhead>div{display:flex;flex-direction:column}.roomhint{display:flex;align-items:center;gap:6px}
+.room{position:relative;width:100%;max-width:760px;margin:0 auto;aspect-ratio:16/9;overflow:hidden;border:2px solid var(--line);background:#111}
+.room .rwall{position:absolute;left:0;right:0;top:0;height:40%;background:var(--wall);box-shadow:inset 0 -6px 0 #0006}
+.room .rfloor{position:absolute;left:0;right:0;bottom:0;height:60%;background:var(--floor);box-shadow:inset 0 10px 18px #0008}
+.room .rf{position:absolute;display:flex;align-items:flex-end;justify-content:center;padding:0;margin:0;background:none;border:0;cursor:default}
+.room .rf.rw{align-items:center}.room .rf img{image-rendering:pixelated;height:auto;max-height:100%;object-fit:contain;filter:drop-shadow(0 3px 0 #0007)}
+.room button.rf{cursor:pointer}.room button.rf:hover img,.room button.rf:focus-visible img{filter:drop-shadow(0 0 4px var(--gold))}
+.room .rspot{position:absolute;z-index:20;background:color-mix(in srgb,var(--gold) 18%,transparent);border:1px dashed var(--gold);padding:0;cursor:pointer}.room .rspot:hover{background:color-mix(in srgb,var(--gold) 40%,transparent)}
+.roompanel{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.rshop{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.rcard{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;border:1px solid var(--line);background:var(--panel2);text-align:center;color:inherit;font:inherit}
+.rcard img{height:44px;width:auto;image-rendering:pixelated}button.rcard{cursor:pointer}.rcard[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.rswatch{display:block;width:100%;height:40px;border:1px solid var(--line)}
+.rvisit{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}.rvrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);background:var(--panel2);color:inherit;font:inherit;text-align:left;cursor:pointer}.rvrow.on{border-color:var(--gold)}.rvrow>span{display:flex;flex-direction:column;min-width:0}
+.bossfx{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.bfxt{font-style:normal}.bossfxsum{color:var(--gold);font-size:13px}.bosshp{font-family:var(--f-pix);font-size:11px;color:var(--mute);text-align:right}.bosspct{color:var(--red);font-size:14px;font-weight:700;margin-right:2px}
 .bossclock{font-family:var(--f-pix);font-size:11px;color:var(--gold)}.bossclock.urgent{color:var(--red);animation:blink 1s steps(2) infinite}
 .asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossdim{padding-bottom:64px}.bossdim::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.38);pointer-events:none}.bossdim .bosssprite{filter:brightness(.8)}
 .bossretov{position:absolute;left:0;right:0;bottom:12px;z-index:1;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center;color:#e8e8f0;text-shadow:0 2px 4px #000}.bossretov p{margin:0;font-weight:700}.bossretT{font-family:var(--f-pix);font-size:30px;line-height:1;color:#fff;letter-spacing:.08em}
@@ -2889,14 +2904,73 @@ const shipPct=pt=>{const g=shipGot(pt.id);let a=0,b=0;pt.need.forEach(([id,n])=>
 const shipDone=pt=>shipPct(pt)>=1;
 const shipOpen=pt=>SHIP.slice(0,SHIP.indexOf(pt)).every(shipDone);
 const shipAll=()=>SHIP.reduce((a,pt)=>a+shipPct(pt),0)/SHIP.length;
-function renderShip(){
-  if(mode!=='online')return head()+`<div class="note">우주선 수리는 단원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
+/* ═════════ 마이룸: each crew member's cabin aboard the ship — 8 wall slots over an 8×3 floor, furniture bought with credits ═════════ */
+// sprites are drawn from filled rectangles and get a dark outline, so every piece shares the game's pixel look
+function rmk(w,h,rects){const g=Array.from({length:h},()=>Array(w).fill('.'));rects.forEach(([x,y,ww,hh,c])=>{for(let j=y;j<y+hh;j++)for(let i=x;i<x+ww;i++)if(g[j]&&i>=0&&i<w)g[j][i]=c});
+  const o=g.map(r=>r.slice());for(let j=0;j<h;j++)for(let i=0;i<w;i++)if(g[j][i]==='.'&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>g[j+b]&&g[j+b][i+a]&&g[j+b][i+a]!=='.'))o[j][i]='k';return o.map(r=>r.join(''))}
+const FURN={
+ cot:{n:'간이침대',z:'f',w:2,cr:0,c:1,g:rmk(32,12,[[2,9,2,2,'S'],[28,9,2,2,'S'],[1,6,30,3,'s'],[2,4,28,2,'u'],[12,3,18,3,'c'],[3,3,6,2,'w']])},
+ bed:{n:'아늑한 침대',z:'f',w:2,cr:900,c:6,g:rmk(32,13,[[1,1,4,10,'o'],[2,2,2,7,'d'],[1,7,30,3,'o'],[5,5,25,2,'u'],[13,4,17,3,'r'],[13,7,17,1,'R'],[5,3,6,2,'w'],[2,10,2,2,'d'],[28,10,2,2,'d']])},
+ sofa:{n:'푹신한 소파',z:'f',w:2,cr:800,c:5,g:rmk(32,12,[[3,2,26,5,'p'],[1,4,3,6,'P'],[28,4,3,6,'P'],[3,7,26,3,'p'],[4,7,11,1,'w'],[17,7,11,1,'w'],[3,10,2,1,'d'],[27,10,2,1,'d']])},
+ desk:{n:'작업 책상',z:'f',w:2,cr:600,c:3,g:rmk(32,13,[[1,5,30,2,'o'],[2,7,2,5,'d'],[28,7,2,5,'d'],[19,7,9,4,'o'],[23,8,1,1,'q'],[9,2,4,3,'r'],[13,3,4,2,'c'],[4,1,2,4,'S'],[3,1,4,1,'q']])},
+ aqua:{n:'수조',z:'f',w:2,cr:1000,c:5,g:rmk(32,14,[[2,10,28,3,'d'],[2,1,28,9,'m'],[3,2,26,7,'c'],[3,8,26,1,'y'],[8,4,3,2,'q'],[18,6,3,2,'r'],[24,3,1,5,'g'],[25,5,1,3,'G']])},
+ chair:{n:'의자',z:'f',w:1,cr:200,c:1,g:rmk(16,15,[[4,1,8,6,'v'],[5,2,6,4,'V'],[3,7,10,2,'v'],[4,9,1,5,'S'],[11,9,1,5,'S']])},
+ plant:{n:'화분',z:'f',w:1,cr:150,c:2,g:rmk(16,15,[[5,10,6,4,'o'],[4,9,8,1,'d'],[7,2,2,7,'G'],[3,4,4,3,'g'],[9,3,4,3,'g'],[5,1,3,3,'g'],[9,6,3,2,'G']])},
+ trunk:{n:'보관 상자',z:'f',w:1,cr:250,c:1,g:rmk(16,14,[[2,6,12,7,'o'],[2,5,12,2,'d'],[7,6,2,7,'q']])},
+ lamp:{n:'스탠드 조명',z:'f',w:1,cr:300,c:2,g:rmk(16,15,[[4,1,8,4,'q'],[5,2,6,2,'y'],[7,5,2,8,'S'],[5,13,6,1,'S']])},
+ rocket:{n:'장난감 로켓',z:'f',w:1,cr:400,c:2,g:rmk(16,14,[[6,2,4,9,'w'],[7,1,2,1,'r'],[7,4,2,2,'m'],[4,8,2,3,'r'],[10,8,2,3,'r'],[7,11,2,2,'q']])},
+ robo:{n:'청소 로봇',z:'f',w:1,cr:350,c:2,g:rmk(16,14,[[3,9,10,4,'s'],[4,8,8,1,'S'],[7,10,2,1,'m']])},
+ win:{n:'둥근 창',z:'w',w:2,cr:0,c:2,g:rmk(32,14,[[11,1,10,1,'s'],[10,2,12,1,'s'],[9,3,14,8,'s'],[10,11,12,1,'s'],[11,12,10,1,'s'],[11,3,10,8,'V'],[10,4,12,6,'V'],[13,5,1,1,'q'],[19,8,1,1,'q'],[16,4,1,1,'w'],[14,7,3,2,'r']])},
+ poster:{n:'행성 포스터',z:'w',w:1,cr:150,c:1,g:rmk(16,14,[[3,1,10,12,'q'],[4,2,8,10,'V'],[6,5,4,4,'c'],[5,7,6,1,'q']])},
+ clock:{n:'벽시계',z:'w',w:1,cr:250,c:1,g:rmk(16,12,[[5,2,6,1,'w'],[4,3,8,6,'w'],[5,9,6,1,'w'],[7,4,1,3,'k'],[8,6,2,1,'k']])},
+ shelf:{n:'벽 선반',z:'w',w:1,cr:300,c:2,g:rmk(16,12,[[1,9,14,2,'o'],[3,4,2,5,'r'],[5,5,2,4,'c'],[10,6,3,2,'g'],[10,8,3,1,'o']])},
+ starmap:{n:'별자리 지도',z:'w',w:1,cr:400,c:2,g:rmk(16,14,[[2,1,12,12,'o'],[3,2,10,10,'V'],[5,4,1,1,'q'],[9,3,1,1,'q'],[11,7,1,1,'q'],[6,9,1,1,'q'],[6,5,3,1,'m'],[9,4,1,3,'m']])},
+ neon:{n:'네온사인',z:'w',w:2,cr:500,c:3,g:rmk(32,13,[[2,3,28,8,'V'],[5,6,10,1,'N'],[8,4,4,5,'N'],[20,4,1,5,'M'],[18,6,5,1,'M'],[25,5,2,3,'N']]),po:{N:'#ff5fb0',M:'#6fe8ff'}},
+ monitor:{n:'관제 모니터',z:'w',w:2,cr:650,c:3,g:rmk(32,13,[[3,1,26,11,'S'],[4,2,24,9,'C'],[6,8,3,1,'m'],[9,6,3,1,'m'],[12,7,3,1,'m'],[15,4,3,1,'m'],[18,5,3,1,'m'],[22,3,4,1,'q'],[22,5,4,1,'q']])}};
+const RWALL={w0:{n:'금속 강판',cr:0,c:0,css:'repeating-linear-gradient(90deg,#3a3f52 0 46px,#2c3040 46px 48px),#3a3f52'},w1:{n:'보라 성운',cr:300,c:1,css:'radial-gradient(circle at 25% 40%,#7a4fa8 0,transparent 40%),radial-gradient(circle at 75% 60%,#3f5fa8 0,transparent 45%),#241a3a'},
+  w2:{n:'나무 판넬',cr:400,c:2,css:'repeating-linear-gradient(90deg,#7a5536 0 30px,#6a4a2e 30px 32px),#7a5536'},w3:{n:'별무늬',cr:500,c:2,css:'radial-gradient(#e2d39a 1px,transparent 1.5px) 0 0/22px 22px,radial-gradient(#b9bccb 1px,transparent 1.5px) 11px 11px/22px 22px,#1b2236'},
+  w4:{n:'민트 타일',cr:400,c:1,css:'repeating-linear-gradient(0deg,#5f9a92 0 22px,#4a7d76 22px 24px),repeating-linear-gradient(90deg,transparent 0 22px,#4a7d76 22px 24px),#5f9a92'}};
+const RFLOOR={f0:{n:'금속 격자',cr:0,c:0,css:'repeating-linear-gradient(90deg,#2a2d38 0 38px,#1f222b 38px 40px),repeating-linear-gradient(0deg,#2a2d38 0 18px,#1f222b 18px 20px)'},f1:{n:'카펫',cr:300,c:2,css:'repeating-linear-gradient(45deg,#7d3a4a 0 6px,#6c3140 6px 12px)'},
+  f2:{n:'나무 마루',cr:400,c:2,css:'repeating-linear-gradient(0deg,#8a6240 0 16px,#6f4e33 16px 18px)'},f3:{n:'체크무늬',cr:500,c:1,css:'repeating-conic-gradient(#d6d8e0 0 25%,#41444f 0 50%) 0 0/36px 36px'}};
+const RCOLS=8,RROWS=3;
+function sfxPlace(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'triangle',220,110,t,.12,.18);noiseBurst(a,t,.08,'lowpass',800,200,.2)}
+function roomOf(p){const r=p&&p.room;if(r&&Array.isArray(r.put))return r;return{w:'w0',f:'f0',ws:['w0'],fs:['f0'],own:{cot:1,win:1},put:[{k:'cot',x:0,y:2},{k:'win',x:3,y:0,z:'w'}]}}
+const myRoom=()=>{if(!P.room||!Array.isArray(P.room.put))P.room=roomOf(null);return P.room};
+const roomComfort=r=>r.put.reduce((a,q)=>a+((FURN[q.k]||{}).c||0),0)+((RWALL[r.w]||{}).c||0)+((RFLOOR[r.f]||{}).c||0);
+const roomFree=(r,k)=>Math.max(0,((r.own||{})[k]||0)-r.put.filter(q=>q.k===k).length);
+function roomFits(r,k,x,y){const F=FURN[k];if(!F||x<0||x+F.w>RCOLS)return false;const z=F.z==='w'?'w':'f';if(z==='w'&&y!==0)return false;if(z==='f'&&(y<0||y>=RROWS))return false;
+  return!r.put.some(q=>{const G=FURN[q.k];if(!G)return false;const qz=G.z==='w'?'w':'f';return qz===z&&(z==='w'||q.y===y)&&q.x<x+F.w&&x<q.x+G.w})}
+let shipView='ship',roomTab='bag',roomSel=null,roomVisit=null;
+function roomSceneHTML(r,edit){const W=100/RCOLS,top=40,rh=(100-top)/RROWS;
+  const piece=(q,i)=>{const F=FURN[q.k];if(!F)return'';const wall=F.z==='w',left=q.x*W,bt=wall?100-top+2:100-top-(q.y+1)*rh,pw=F.g[0].length/(16*F.w)*100;
+    return`<${edit?'button type="button" data-act="roomlift" data-k="'+i+'"':'div'} class="rf ${wall?'rw':''}" style="left:${left}%;width:${W*F.w}%;${wall?`top:4%;height:${top-6}%`:`bottom:${(RROWS-1-q.y)*rh}%;height:${rh+8}%`};z-index:${wall?1:2+q.y}" title="${esc(F.n)}">${img(F.g,null,4,'',F.po)}</${edit?'button':'div'}>`.replace('<img ',`<img style="width:${pw}%" `)};
+  let spots='';if(edit&&roomSel&&FURN[roomSel]){const F=FURN[roomSel],ys=F.z==='w'?[0]:[0,1,2];// one spot per cell; a two-cell piece snaps to start here or one cell to the left
+    ys.forEach(y=>{for(let x=0;x<RCOLS;x++){const sx=roomFits(r,roomSel,x,y)?x:roomFits(r,roomSel,x-1,y)?x-1:null;if(sx!=null)spots+=`<button type="button" class="rspot" data-act="roomput" data-k="${sx},${y}" aria-label="여기에 놓기" style="left:${x*W}%;width:${W}%;${F.z==='w'?`top:4%;height:${top-6}%`:`bottom:${(RROWS-1-y)*rh}%;height:${rh}%`}"></button>`}})}
+  return`<div class="room" style="--wall:${(RWALL[r.w]||RWALL.w0).css};--floor:${(RFLOOR[r.f]||RFLOOR.f0).css}"><div class="rwall"></div><div class="rfloor"></div>${r.put.map(piece).join('')}${spots}</div>`}
+function roomHTML(){const visiting=roomVisit&&roomVisit!==uid&&PLAYERS[roomVisit],r=visiting?roomOf(PLAYERS[roomVisit]):myRoom(),who=visiting?(PLAYERS[roomVisit].nick||'단원'):P.nick;
+  if(roomSel&&(visiting||!roomFree(r,roomSel)))roomSel=null;
+  const head2=`<div class="roomhead"><div><b>${esc(who)} 님의 선실</b><span class="hint">편안함 ${roomComfort(r)}</span></div>${visiting?'<button class="btn sm" data-act="roomhome">내 방으로</button>':roomSel?`<span class="hint roomhint">「${esc(FURN[roomSel].n)}」을(를) 놓을 자리를 누르십시오. <button class="qchip" data-act="roomsel" data-k="">취소</button></span>`:'<span class="hint">놓인 가구를 누르면 들어 올려 옮기거나 보관함에 넣을 수 있습니다.</span>'}</div>`;
+  if(visiting)return head2+roomSceneHTML(r,false)+roomVisitList();
+  const tabs=[['bag','보관함'],['shop','가구 상점'],['deco','벽지·바닥'],['visit','놀러 가기']];
+  let body='';
+  if(roomTab==='bag'){const ks=Object.keys(FURN).filter(k=>roomFree(r,k)>0);body=ks.length?`<div class="rshop">${ks.map(k=>`<button class="rcard" data-act="roomsel" data-k="${k}" aria-pressed="${roomSel===k}">${img(FURN[k].g,null,2,'',FURN[k].po)}<b>${FURN[k].n}</b><span class="hint">${roomFree(r,k)}개 · ${FURN[k].z==='w'?'벽':'바닥'} · ${FURN[k].w}칸</span></button>`).join('')}</div>`:'<p class="hint">보관함이 비어 있습니다. 가구 상점에서 가구를 사거나, 방에 놓인 가구를 눌러 보관함에 넣을 수 있습니다.</p>'}
+  else if(roomTab==='shop')body=`<div class="rshop">${Object.entries(FURN).filter(([,F])=>F.cr>0).map(([k,F])=>`<div class="rcard">${img(F.g,null,2,'',F.po)}<b>${F.n}</b><span class="hint">${F.z==='w'?'벽':'바닥'} · ${F.w}칸 · 편안함 +${F.c}${(r.own||{})[k]?` · ${r.own[k]}개 있음`:''}</span><button class="btn sm ${(P.cr||0)>=F.cr?'gold':''}" data-act="roombuy" data-k="${k}" ${(P.cr||0)>=F.cr?'':'disabled'}>${F.cr.toLocaleString()} CR</button></div>`).join('')}</div>`;
+  else if(roomTab==='deco'){const row=(lbl,T,cur,have,act)=>`<span class="lbl">${lbl}</span><div class="rshop">${Object.entries(T).map(([k,t])=>{const own=have.includes(k);return`<div class="rcard"><i class="rswatch" style="background:${t.css}"></i><b>${t.n}</b><span class="hint">편안함 +${t.c}</span>${cur===k?'<span class="smok">사용 중</span>':own?`<button class="btn sm" data-act="${act}" data-k="${k}">바꾸기</button>`:`<button class="btn sm ${(P.cr||0)>=t.cr?'gold':''}" data-act="${act}" data-k="${k}" ${(P.cr||0)>=t.cr?'':'disabled'}>${t.cr.toLocaleString()} CR</button>`}</div>`}).join('')}</div>`;
+    body=row('벽지',RWALL,r.w,r.ws||['w0'],'roomwall')+row('바닥',RFLOOR,r.f,r.fs||['f0'],'roomfloor')}
+  else body=roomVisitList(true);
+  return head2+roomSceneHTML(r,true)+`<div class="card roompanel"><div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${roomTab===k}" data-act="roomtab" data-k="${k}">${n}</button>`).join('')}</div>${body}</div>`}
+function roomVisitList(inner){const L=Object.entries(PLAYERS).filter(([id,p])=>id!==uid&&p&&p.nick).sort((a,b)=>roomComfort(roomOf(b[1]))-roomComfort(roomOf(a[1])));
+  const h=L.length?`<div class="rvisit">${L.map(([id,p])=>`<button class="rvrow ${roomVisit===id?'on':''}" data-act="roomvisit" data-k="${esc(id)}">${headImg(3,p)}<span><b>${esc(p.nick)}</b><span class="hint">편안함 ${roomComfort(roomOf(p))}</span></span></button>`).join('')}</div>`:`<p class="hint">${mode==='online'?'아직 다른 단원이 없습니다.':'온라인에 접속하면 다른 단원의 방에 놀러 갈 수 있습니다.'}</p>`;
+  return inner?h:`<div class="card roompanel"><span class="lbl">다른 선실 둘러보기</span>${h}</div>`}
+function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">마이룸</button></div>`}
+function renderShip(){if(shipView==='room')return head()+shipSubTabs()+roomHTML();
+  if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 단원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
   const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP.find(x=>!shipDone(x))||SHIP[SHIP.length-1],open=shipOpen(pt),g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
   const rank={};SHIPDON.forEach(d=>{if(!d.uid)return;const r=rank[d.uid]||(rank[d.uid]={nick:d.nick,n:0});r.n+=+d.n||0});
   const top=Object.entries(rank).sort((a,b)=>b[1].n-a[1].n).slice(0,8);
   const mine=SHIPDON.filter(d=>d.uid===uid).reduce((a,d)=>a+(+d.n||0),0);
   const canAny=open&&pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0),prevN=(SHIP[SHIP.indexOf(pt)-1]||{}).n;
-  return head()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 별무리호 풍경"></canvas></div><div class="shiptop card">
+  return head()+shipSubTabs()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 별무리호 풍경"></canvas></div><div class="shiptop card">
    <div class="sinfo"><b>${all>=1?'별무리호 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 별무리호'}</b><span class="hint">${all>=1?'모든 단원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 단원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
    <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
@@ -3352,6 +3426,16 @@ const A={
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
  bosshit(){bossHit()},
+ shipview(d){shipView=d.k==='room'?'room':'ship';if(shipView==='ship')roomVisit=null;renderPanel()},
+ roomtab(d){roomTab=d.k;renderPanel()},
+ roomsel(d){roomSel=d.k&&FURN[d.k]?d.k:null;renderPanel()},
+ roomput(d){const r=myRoom(),[x,y]=String(d.k).split(',').map(Number);if(!roomSel||!roomFree(r,roomSel)||!roomFits(r,roomSel,x,y))return;const F=FURN[roomSel];r.put.push(F.z==='w'?{k:roomSel,x,y:0,z:'w'}:{k:roomSel,x,y});sfxPlace();if(!roomFree(r,roomSel))roomSel=null;commit()},
+ roomlift(d){const r=myRoom(),i=+d.k,q=r.put[i];if(!q)return;r.put.splice(i,1);roomSel=q.k;roomTab='bag';toast(`「${FURN[q.k].n}」을(를) 들었습니다. 놓을 자리를 누르거나 취소하면 보관함에 들어갑니다.`);commit()},
+ roombuy(d){const F=FURN[d.k],r=myRoom();if(!F||!F.cr)return;if((P.cr||0)<F.cr){toast('크레딧이 모자랍니다.');return}P.cr-=F.cr;r.own=Object.assign({},r.own,{[d.k]:((r.own||{})[d.k]||0)+1});sfxCoin();log(`마이룸 가구 「${F.n}」을(를) ${F.cr.toLocaleString()} CR에 샀다. 보관함에서 꺼내 놓을 수 있다.`,'good');roomSel=d.k;roomTab='bag';commit()},
+ roomwall(d){const t=RWALL[d.k],r=myRoom();if(!t)return;r.ws=r.ws||['w0'];if(!r.ws.includes(d.k)){if((P.cr||0)<t.cr){toast('크레딧이 모자랍니다.');return}P.cr-=t.cr;r.ws=[...r.ws,d.k];sfxCoin();log(`마이룸 벽지 「${t.n}」을(를) 샀다.`,'good')}r.w=d.k;commit()},
+ roomfloor(d){const t=RFLOOR[d.k],r=myRoom();if(!t)return;r.fs=r.fs||['f0'];if(!r.fs.includes(d.k)){if((P.cr||0)<t.cr){toast('크레딧이 모자랍니다.');return}P.cr-=t.cr;r.fs=[...r.fs,d.k];sfxCoin();log(`마이룸 바닥 「${t.n}」을(를) 샀다.`,'good')}r.f=d.k;commit()},
+ roomvisit(d){if(!PLAYERS[d.k])return;roomVisit=d.k;renderPanel()},
+ roomhome(){roomVisit=null;renderPanel()},
  bossskill(){bossSkill()},
  chestopen(){openChest()},
  chestok(){chestOpen=null;renderPanel()},
