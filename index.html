@@ -2744,7 +2744,7 @@ function suitMax(){return Math.max(P.suitMax||0,P.suit||0)}
 function rodMax(){return Math.max(P.rodMax||0,P.rod||0)}
 function myLookHTML(){const lk=lookOf(P),of=outfitOf(P),tabs=[['color','색상'],...Object.entries(WARD).map(([k,g])=>[k,g.n]),['gear','장비']];
   let body='';
-  if(mlTab==='color')body=Object.entries(LOOKS).map(([k,g])=>{const mine=[...g.opts,...NEON.filter(([c])=>ownsNeon(c))];return`<div class="mlsec"><span class="lbl">${g.n}</span><div class="swatches">${mine.map(([col,nm])=>`<button class="sw ${NEONSET.has(col)?'neonsw':''}" style="background:${col};--g:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${esc(nm)}" aria-label="${g.n} ${esc(nm)}"></button>`).join('')}</div></div>`}).join('')+`<span class="hint">가지고 있는 네온 색도 여기에 함께 나옵니다. 새 네온 색은 상점의 옷장에서 살 수 있습니다.</span>`;
+  if(mlTab==='color')body=Object.entries(LOOKS).map(([k,g])=>{const mine=[...g.opts,...NEON.filter(([c])=>ownsNeon(c))];return`<div class="mlsec"><span class="lbl">${g.n}</span><div class="swatches">${mine.map(([col,nm])=>`<button class="sw ${NEONSET.has(col)?'neonsw':''}" style="background:${col};--g:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${esc(nm)}" aria-label="${g.n} ${esc(nm)}"></button>`).join('')}</div></div>`}).join('')+`<span class="hint">가지고 있는 네온 색도 여기에 함께 나옵니다. 새 네온 색은 마이룸의 옷장에서 살 수 있습니다.</span>`;
   else if(mlTab==='gear'){const card=(ic,n,d,on,act,k,id)=>`<div class="eqitem ${on?'on':''}" ${on?'':`data-act="${act}" data-k="${k}"${id?` data-id="${id}"`:''} role="button" tabindex="0"`} aria-pressed="${on}">${ic}<div><b>${esc(n)}</b><span class="hint">${esc(d)}</span></div><span class="eqst">${on?'착용 중':'착용'}</span></div>`;
     body=`<div class="mlsec"><span class="lbl">무기</span><div class="eqitem on static">${img(IC.raygun,null,2)}<div><b>${esc(WEAPONS[P.wlv])} +${P.wlv}</b><span class="hint">무기는 하나를 계속 강화합니다. 가방에서 강화할 수 있습니다.</span></div></div></div>
      <div class="mlsec"><span class="lbl">우주복</span><div class="eqlist">${SUITS.slice(0,suitMax()+1).map((u,lv)=>card(img(IC.suit,u.t,2),u.n,u.d,(P.suit||0)===lv,'eqsuit',lv)).join('')}</div></div>
@@ -2753,7 +2753,7 @@ function myLookHTML(){const lk=lookOf(P),of=outfitOf(P),tabs=[['color','색상']
   else{const g=WARD[mlTab],mine=g.list.filter(it=>ownsW(it.id));body=`<div class="wgrid">${mine.map(it=>{const on=of[mlTab]===it.id;return`<div class="witem ${on?'on':''}" data-act="wwear" data-k="${mlTab}" data-id="${it.id}" role="button" tabindex="0" aria-pressed="${on}" title="${esc(it.n)} 착용">${meImg(2,P,{[mlTab]:it.id})}<b>${esc(it.n)}</b><span class="hint">${on?'착용 중':'눌러서 착용'}</span></div>`}).join('')}</div>${mine.length<=1?`<p class="hint">아직 가진 ${g.n} 아이템이 없습니다.</p>`:''}`}
   return`<div class="mecard mylook"><div class="mlprev">${meImg(8)}<span class="hint">지금 내 모습</span></div>
    <div class="mlbody"><div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${mlTab===k}" data-act="mltab" data-k="${k}">${n}${WARD[k]?`<em class="wcur">${WARD[k].list.filter(it=>ownsW(it.id)).length-1}</em>`:''}</button>`).join('')}</div>${body}
-    <div class="row" style="justify-content:flex-end"><button class="qchip" data-act="mlshop">${mlTab==='gear'?'상점에서 장비 더 보기 →':'옷장에서 더 사기 →'}</button></div></div></div>`}
+    <div class="row" style="justify-content:flex-end"><button class="qchip" data-act="mlshop">${mlTab==='gear'?'상점에서 장비 더 보기 →':'마이룸 옷장에서 더 사기 →'}</button></div></div></div>`}
 const headImg=(sc,p)=>{let g=avatarGrid(p).slice(0,25);while(g.length>16&&![...g[0]].some(c=>c!=='.'))g=g.slice(1);const h=img(g,null,sc/2,'',lookPal(p)),gl=lookGlow(p);return gl?h.replace('<img ',`<img style="filter:drop-shadow(0 0 ${Math.max(2,sc)}px ${gl})" `):h};
 let lakePh=0,LAKE=null;
 function lakeBase(W,H,hz){let r=7;const rnd=()=>((r=(r*9301+49297)%233280)/233280);
@@ -3560,8 +3560,7 @@ function renderShop(){
     const ones=ids.filter(id=>P.inv[id]===1),onesCr=ones.reduce((a,id)=>a+sellPrice(id),0);
     const bulk=ones.length>1?`<div class="row sellones"><span class="hint" style="flex:1;min-width:160px">${sellArm?`1개짜리 ${ones.length}종: ${ones.map(id=>ITEMS[id].n).join(', ')}`:`1개만 있는 아이템 ${ones.length}종을 한 번에 팔 수 있습니다.`}</span>${sellArm?'<button class="btn sm ghost" data-act="sellones" data-k="no">취소</button>':''}<button class="btn sm ${sellArm?'gold':'alt'}" data-act="sellones">${sellArm?'정말 팔기':'1개짜리 모두 팔기'} · +${onesCr.toLocaleString()} CR</button></div>`:'';
     return back+(ids.length?`${bulk}<div class="bag sellbag">${ids.map(id=>`<button class="slot" data-act="sellsel" data-id="${id}" aria-pressed="${id===sellSel}" aria-label="${ITEMS[id].n} ${P.inv[id]}개" title="${ITEMS[id].n} · 한 개 ${sellPrice(id)} CR">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>${pick}`:'<p class="hint" style="padding:10px">팔 물건이 없습니다.</p>')})();
-  if(shopTab==='ward')rows=wardHTML();
-  const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['ward','옷장'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
+  const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
   return head()+`<div class="shop">
    <div class="shoptop"><div class="shopmain"><div class="card keeper"><span class="bot">${img(IC.robot,null,4)}<i class="botlight"></i></span><div class="sinfo"><b>고물상 로봇 · 녹슨 7호</b><p class="say">“${KEEPER[keeperLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${cr.toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${shopTab===k}" data-act="shoptab" data-k="${k}"${k==='sell'?' style="margin-left:auto"':''}>${n}</button>`).join('')}</div>
@@ -3908,7 +3907,7 @@ const A={
  wtab(d){wardTab=d.k;renderPanel()},
  metab(d){meTab=d.k==='look'?'look':'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
- mlshop(){if(raidLocked())return;meView=false;tab='shop';shopTab=mlTab==='gear'?'gear':'ward';renderNav();renderPanel();setPresence()},
+ mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='shop';shopTab='gear'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
  wprev(d){if(!wardById(d.id))return;if(wPrev[d.k]===d.id)delete wPrev[d.k];else wPrev[d.k]=d.id;renderPanel()},
  wprevclr(){wPrev={};neonPick=null;neonSlot=null;renderPanel()},
  wwear(d){if(!ownsW(d.id))return;delete wPrev[d.k];P.outfit=Object.assign({},outfitOf(P),{[d.k]:d.id});save();renderPanel();renderPilot()},
