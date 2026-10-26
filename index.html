@@ -1983,14 +1983,16 @@ const RODS=[
 ];
 const SLOT=30*60e3;
 const SITES=[
- {id:'crater',n:'크레이터 평원',d:'얼어붙은 표토. 광석이 흔하고 가끔 씨앗이 섞여 나옵니다.',temp:'-64℃',t:[['ore',40],['moss',20],['crystal',15],['seed_pot',10],['seed_berry',8],['seed_pump',3],['dark',4]]},
- {id:'cave',n:'결정 동굴',d:'빛이 들지 않는 동굴. 결정과 암흑물질이 잘 나옵니다.',temp:'-112℃',t:[['crystal',42],['ore',35],['dark',12],['moss',11]]},
- {id:'marsh',n:'이끼 습지',d:'메탄 안개가 낀 습지. 이끼와 씨앗이 많습니다.',temp:'-31℃',t:[['moss',45],['seed_pot',18],['seed_berry',16],['seed_pump',8],['crystal',13]]},
- {id:'wreck',n:'잔해 지대',d:'추락한 수송선의 무덤. 보급품과 부품이 묻혀 있습니다.',temp:'-48℃',t:[['ore',40],['crystal',14],['kit',5],['seed_pump',6],['moss',27]]},
- {id:'geyser',n:'얼음 간헐천',d:'얼음이 뿜어져 나오는 들판. 결정과 이끼가 고르게 나옵니다.',temp:'-140℃',t:[['crystal',32],['moss',30],['seed_berry',14],['ore',18],['dark',6]]},
- {id:'canyon',n:'붉은 협곡',d:'철분이 녹슨 깊은 협곡. 광석과 암흑물질이 많습니다.',temp:'-22℃',t:[['ore',48],['dark',14],['crystal',20],['seed_pot',18]]},
+ {id:'crater',n:'크레이터 평원',d:'얼어붙은 표토. 광석이 흔하고 가끔 씨앗이 섞여 나옵니다.',temp:'-64℃',t:[['ore',26],['moss',13],['crystal',10],['seed_pot',10],['seed_berry',8],['seed_pump',3],['dark',6]]},
+ {id:'cave',n:'결정 동굴',d:'빛이 들지 않는 동굴. 결정과 암흑물질이 잘 나옵니다.',temp:'-112℃',t:[['crystal',27],['ore',23],['dark',18],['moss',7]]},
+ {id:'marsh',n:'이끼 습지',d:'메탄 안개가 낀 습지. 이끼와 씨앗이 많습니다.',temp:'-31℃',t:[['moss',29],['seed_pot',18],['seed_berry',16],['seed_pump',8],['crystal',8]]},
+ {id:'wreck',n:'잔해 지대',d:'추락한 수송선의 무덤. 보급품과 부품이 묻혀 있습니다.',temp:'-48℃',t:[['ore',26],['crystal',9],['kit',5],['seed_pump',6],['moss',18]]},
+ {id:'geyser',n:'얼음 간헐천',d:'얼음이 뿜어져 나오는 들판. 결정과 이끼가 고르게 나옵니다.',temp:'-140℃',t:[['crystal',21],['moss',20],['seed_berry',14],['ore',12],['dark',9]]},
+ {id:'canyon',n:'붉은 협곡',d:'철분이 녹슨 깊은 협곡. 광석과 암흑물질이 많습니다.',temp:'-22℃',t:[['ore',31],['dark',21],['crystal',13],['seed_pot',18]]},
 ];
-SITES.forEach(st=>{const g=GX[st.id];if(!g)return;g.mats.forEach(([id],k)=>st.t.push([id,[14,10,5][k]]));g.crops.forEach(([id])=>st.t.push(['seed_'+id,4]));st.ex=g.crops.map(([id])=>'seed_'+id)});
+// regional materials the ship repair needs come up about twice as often as the ones it doesn't
+const GX_SHIP=new Set(['geyserSalt','frostCrystal','marshReed','glowStal','echoQuartz','craterIron','rustBolt','sandSlate','redIron','volcAsh','oldBoard','brokenLens','impactGlass','iceShell','marshFossil']);
+SITES.forEach(st=>{const g=GX[st.id];if(!g)return;g.mats.forEach(([id],k)=>st.t.push([id,(GX_SHIP.has(id)?[26,20,12]:[14,10,5])[k]]));g.crops.forEach(([id])=>st.t.push(['seed_'+id,4]));st.ex=g.crops.map(([id])=>'seed_'+id)});
 let gSite='crater',gDur=4;
 const GDUR={1:2,2:3,4:7,8:12,16:20,24:28};
 // trip lengths offered: a quick 10-minute run (one pickup) plus the 30-minute-slot trips above
