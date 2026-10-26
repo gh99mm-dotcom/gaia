@@ -3992,7 +3992,8 @@ function renderPanel(){const ae=document.activeElement;if(imeOn&&ae&&ae.id==='rc
   renderPanel0();
   Object.entries(logs).forEach(([id,v])=>{const l=document.getElementById(id);if(l)l.scrollTop=v.end?l.scrollHeight:v.t});
   {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}if(pos!=null){const i=$('#rcIn');if(i){i.focus({preventScroll:true});try{i.setSelectionRange(pos,pos)}catch(e){}}}}
-function renderPanel0(){bagWinRender();
+let barWas=false;
+function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView;syncBgm()}
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox'))$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
@@ -4703,9 +4704,12 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
 
 /* ───────── bgm ───────── */
 const bgm=new Audio('bgm.mp3');bgm.loop=true;bgm.preload='auto';
+// the secret bar has its own record on (Tony Balluff - Block Party); loaded only when someone walks in
+let barBgm=null;const barMusic=()=>{if(!barBgm){barBgm=new Audio('bar.mp3');barBgm.loop=true}return barBgm};
 let bgmOn=true,bgmVol=35;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off';const v=localStorage.getItem('nebula-bgmv');if(v!=null)bgmVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-function syncBgm(){bgm.volume=bgmVol/100;const boss=bossBgmWant();if(boss)bossBgmStart();else bossBgmStop();
+function syncBgm(){bgm.volume=bgmVol/100;const bar=secretView&&bgmOn&&bgmVol>0,boss=!bar&&bossBgmWant();if(boss)bossBgmStart();else bossBgmStop();
+  if(bar){const m=barMusic();m.volume=bgmVol/100;bgm.pause();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(barBgm)barBgm.pause();
   if(bgmOn&&bgmVol>0&&!boss){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
 /* invader theme: a flat, droning loop made on the fly while an invader is up and you're on 탐사 */
 let BBGM=null;
@@ -4767,7 +4771,7 @@ setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.tex
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
 addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm'){fitSide();fitBay()}});
 setInterval(()=>{
-  scoutTick();if(!!BBGM!==bossBgmWant())syncBgm();if(tab==='req'){const sk=(spresNow()||{}).id||'';if((P.req&&P.req.day!==reqKey())||sk!==(window.__spk||'')){window.__spk=sk;renderPanel()}else{const e=$('#reqT');if(e)e.textContent=fmtClock(reqLeft());const t=$('#spresT'),x=spresNow();if(t&&x)t.textContent=fmtClock(x.end-Date.now())}}{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
+  scoutTick();if(!!BBGM!==(bossBgmWant()&&!secretView))syncBgm();if(tab==='req'){const sk=(spresNow()||{}).id||'';if((P.req&&P.req.day!==reqKey())||sk!==(window.__spk||'')){window.__spk=sk;renderPanel()}else{const e=$('#reqT');if(e)e.textContent=fmtClock(reqLeft());const t=$('#spresT'),x=spresNow();if(t&&x)t.textContent=fmtClock(x.end-Date.now())}}{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
