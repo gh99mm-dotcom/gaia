@@ -3180,18 +3180,20 @@ const FURN={
  ]},
  lamp:{n:'조명',list:[
   M('l0','천장 조명',0,null,'희미한 기본 조명',{rgb:'196,199,212',a:.12,fx:'#9ea3b8'}),
-  M('l1','오로라 램프',1000,[['crystal',3]],'청록빛 오로라',{rgb:'127,184,164',a:.24,fx:'#7fb8a4'}),
-  M('l2','붉은 비상등',1000,[['ore',4]],'고요하고 붉은 빛',{rgb:'168,98,107',a:.26,fx:'#a8626b'}),
-  M('l3','촛불 랜턴',1000,[['moss',2]],'따뜻하게 흔들리는 주황빛',{rgb:'230,170,110',a:.22,fx:'#c9a06a'}),
-  M('l4','청색 네온',1000,[['crystal',1]],'차가운 파란 빛',{rgb:'95,140,220',a:.22,fx:'#6f8fd0'}),
-  M('l5','보랏빛 성운등',1000,[['crystal',2]],'성운처럼 번지는 보라',{rgb:'155,120,220',a:.24,fx:'#9a8fc0'}),
-  M('l6','초록 형광등',1000,[['ore',2]],'공장 같은 연둣빛',{rgb:'140,200,120',a:.18,fx:'#8ba790'}),
-  M('l7','달빛 스탠드',1000,[['crystal',1]],'창백한 은빛',{rgb:'215,220,240',a:.2,fx:'#d6d8e0'}),
-  M('l8','분홍 라바램프',1000,[['moss',3]],'느릿느릿 일렁이는 분홍',{rgb:'220,130,170',a:.22,fx:'#b38a9b'}),
-  M('l9','노을빛 조명',1000,[['ore',3]],'저녁 무렵의 주황빛',{rgb:'230,150,100',a:.24,fx:'#b0906f'}),
-  M('l10','심해 조명',1000,[['crystal',2]],'깊은 바닷속 같은 청록',{rgb:'60,120,150',a:.28,fx:'#4f7a96'}),
+  M('l1','오로라 램프',1000,[['crystal',3]],'벽을 따라 오로라 띠가 일렁여요',{rgb:'127,184,164',a:.24,fx:'#7fb8a4'}),
+  M('l2','붉은 비상등',1000,[['ore',4]],'빙글빙글 도는 붉은 경광등',{rgb:'168,98,107',a:.26,fx:'#a8626b'}),
+  M('l3','촛불 랜턴',1000,[['moss',2]],'촛불처럼 크게 일렁이는 주황빛',{rgb:'230,170,110',a:.22,fx:'#c9a06a'}),
+  M('l4','청색 네온',1000,[['crystal',1]],'지직거리는 푸른 네온이 방을 물들여요',{rgb:'95,140,220',a:.22,fx:'#6f8fd0'}),
+  M('l5','보랏빛 성운등',1000,[['crystal',2]],'보랏빛 성운 구름이 방을 떠다녀요',{rgb:'155,120,220',a:.24,fx:'#9a8fc0'}),
+  M('l6','초록 형광등',1000,[['ore',2]],'가끔 깜빡이는 연둣빛 형광등',{rgb:'140,200,120',a:.18,fx:'#8ba790'}),
+  M('l7','달빛 스탠드',1000,[['crystal',1]],'창문 모양 달빛이 바닥에 떨어져요',{rgb:'215,220,240',a:.2,fx:'#d6d8e0'}),
+  M('l8','분홍 라바램프',1000,[['moss',3]],'분홍 방울빛이 느릿느릿 떠다녀요',{rgb:'220,130,170',a:.22,fx:'#b38a9b'}),
+  M('l9','노을빛 조명',1000,[['ore',3]],'주황에서 보라로 물드는 노을',{rgb:'230,150,100',a:.24,fx:'#b0906f'}),
+  M('l10','심해 조명',1000,[['crystal',2]],'물결무늬 빛이 일렁이는 깊은 바다',{rgb:'60,120,150',a:.28,fx:'#4f7a96'}),
   M('l11','꺼져 가는 전구',1000,null,'거의 꺼진 희미한 빛',{rgb:'150,150,160',a:.05,fx:'#4a4f60'}),
-  M('l12','무지개 프리즘',2000,[['crystal',5]],'방 곳곳에 무지개가 번져요',{rgb:'prism',a:.2,fx:'#c4c7d4'}),
+  M('l13','디스코 미러볼',2000,[['crystal',4]],'색색의 빛 조각이 방 안을 빙글빙글 돌아요',{rgb:'255,120,210',a:.2,fx:'#ff8fd0'}),
+  M('l14','별빛 프로젝터',2000,[['crystal',3]],'천장과 벽에 별무늬가 가득 떠요',{rgb:'120,140,255',a:.2,fx:'#9ab0ff'}),
+  M('l12','무지개 프리즘',2000,[['crystal',5]],'빙글빙글 도는 무지개 빛줄기',{rgb:'prism',a:.2,fx:'#c4c7d4'}),
  ]},
 };
 /* scan-only room items */
@@ -3340,6 +3342,34 @@ function themeDecorFront(x,R,TH,rm,W,H,FY){const th=rm.theme||'space';
   if(th==='sf'){R(64,76,10,10,'#05060b');R(64.5,76.5,9,9,'#2a3038');R(65,77,8,2,'#3a4552');R(66,80,2,1,'#7fd0d0');R(69,80,2,1,'#a8626b');R(66,83,6,.5,'#5d6274')}}
 
 
+// each lamp paints its own moving light over the whole room: tints, beams, spots and patterns
+let lampAnim=false;
+function lampFx(x,LP,TH,W,H,FY){const still=matchMedia('(prefers-reduced-motion: reduce)').matches,T=still?3:Date.now()/1000,id=LP.id;lampAnim=id!=='l0'&&!still;
+  const glow=(rgb,a,cx,cy,r0,r1)=>{const g=x.createRadialGradient(cx,cy,r0,cx,cy,r1);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=g;x.fillRect(0,0,W,H)};
+  const tint=(rgb,a,op)=>{x.save();x.globalCompositeOperation=op||'soft-light';x.fillStyle=`rgba(${rgb},${a})`;x.fillRect(0,0,W,H);x.restore()};
+  const add=f=>{x.save();x.globalCompositeOperation='lighter';f();x.restore()};
+  const beam=(cx,cy,ang,wid,len,col)=>{x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.cos(ang-wid)*len,cy+Math.sin(ang-wid)*len);x.lineTo(cx+Math.cos(ang+wid)*len,cy+Math.sin(ang+wid)*len);x.closePath();x.fillStyle=col;x.fill()};
+  const hash=n=>{const v=Math.sin(n*127.1)*43758.5;return v-Math.floor(v)};
+  if(id==='l0'){glow(TH.light,.16,96,4,2,110);return}
+  if(id==='l1'){tint('90,220,180',.55);add(()=>{for(let i=0;i<3;i++)for(let X=0;X<W;X+=2){const y=14+i*9+Math.sin(X/17+T*.9+i*1.7)*6,h=(150+i*45+Math.sin(T*.4+X/60)*40)|0;x.fillStyle=`hsla(${h},90%,60%,.16)`;x.fillRect(X,y,2,9)}})}
+  else if(id==='l2'){const pulse=Math.max(0,Math.sin(T*7));tint('255,40,40',.35+pulse*.2);add(()=>{for(const o of [0,Math.PI]){const g=x.createLinearGradient(96,4,96,96);g.addColorStop(0,'rgba(255,60,60,.38)');g.addColorStop(1,'rgba(255,60,60,0)');beam(96,4,T*3.2+o,.22,220,g)}});glow('255,50,50',.3+pulse*.3,96,4,1,40)}
+  else if(id==='l3'){const f=.65+.2*Math.sin(T*9)+.15*Math.sin(T*23+1);tint('255,150,60',.45);glow('255,170,90',.42*f,96,42,4,120)}
+  else if(id==='l4'){const buzz=hash(Math.floor(T*12))<.06?.3:1;tint('40,100,255',.55*buzz);add(()=>{x.fillStyle=`rgba(90,160,255,${.55*buzz})`;x.fillRect(8,9,176,1);glow('80,150,255',.28*buzz,96,10,2,80);for(let y=(T*14)%6;y<H;y+=6){x.fillStyle='rgba(120,180,255,.06)';x.fillRect(0,y|0,W,1)}})}
+  else if(id==='l5'){tint('150,90,230',.5);add(()=>{for(let i=0;i<5;i++){const cx=96+Math.sin(T*.25+i*1.9)*80,cy=30+Math.cos(T*.2+i*2.3)*22,h=260+i*14;const g=x.createRadialGradient(cx,cy,2,cx,cy,34);g.addColorStop(0,`hsla(${h},80%,62%,.24)`);g.addColorStop(1,`hsla(${h},80%,62%,0)`);x.fillStyle=g;x.fillRect(0,0,W,H)}})}
+  else if(id==='l6'){const off=hash(Math.floor(T*6))<.12;if(off){x.fillStyle='rgba(0,0,0,.45)';x.fillRect(0,0,W,H)}else{tint('120,240,110',.5);glow('160,255,140',.24,96,6,2,100)}}
+  else if(id==='l7'){tint('190,205,255',.4);add(()=>{const sway=Math.sin(T*.3)*3;x.beginPath();x.moveTo(66,50);x.lineTo(128,50);x.lineTo(152+sway,94);x.lineTo(84+sway,94);x.closePath();x.fillStyle='rgba(215,225,255,.16)';x.fill()});x.fillStyle='rgba(10,12,30,.35)';x.fillRect(116+Math.sin(T*.3)*1.5|0,66,2,28);x.fillRect(74,79,72,2)}
+  else if(id==='l8'){tint('255,110,180',.45);add(()=>{for(let i=0;i<4;i++){const cx=30+i*44+Math.sin(T*.5+i)*10,cy=50+Math.sin(T*.35+i*1.6)*36;const g=x.createRadialGradient(cx,cy,3,cx,cy,26);g.addColorStop(0,`hsla(${330+i*10},90%,65%,.3)`);g.addColorStop(1,'hsla(330,90%,65%,0)');x.fillStyle=g;x.fillRect(0,0,W,H)}})}
+  else if(id==='l9'){const k=(Math.sin(T*.25)+1)/2,g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,`rgba(255,${120+k*50|0},60,.75)`);g.addColorStop(.55,`rgba(240,80,110,.55)`);g.addColorStop(1,`rgba(110,50,180,.65)`);x.save();x.globalCompositeOperation='soft-light';x.fillStyle=g;x.fillRect(0,0,W,H);x.restore();x.save();x.globalCompositeOperation='lighter';glow('255,140,70',.22+k*.08,150+Math.sin(T*.25)*20,24,2,90);x.restore()}
+  else if(id==='l10'){tint('30,140,170',.6);x.fillStyle='rgba(0,20,40,.25)';x.fillRect(0,0,W,H);add(()=>{for(let y=0;y<H;y+=2)for(let X=0;X<W;X+=2){const v=Math.abs(Math.sin(X/9+T*.9+Math.sin(y/7+T*.6)*1.4)+Math.sin(y/6-T*1.1+Math.sin(X/11-T*.5)*1.2));if(v<.1){x.fillStyle='rgba(150,235,255,.3)';x.fillRect(X,y,2,2)}else if(v<.2){x.fillStyle='rgba(150,235,255,.1)';x.fillRect(X,y,2,2)}}
+    for(let i=0;i<8;i++){const bx=20+i*22+Math.sin(T+i)*3,by=H-((T*12+i*29)%H);x.fillStyle='rgba(200,245,255,.5)';x.fillRect(bx|0,by|0,1,1)}})}
+  else if(id==='l11'){x.fillStyle='rgba(0,0,0,.25)';x.fillRect(0,0,W,H);if(hash(Math.floor(T*5))<.18){x.fillStyle='rgba(0,0,0,.5)';x.fillRect(0,0,W,H)}else glow('150,150,160',.08,96,4,1,60)}
+  else if(id==='l12'){add(()=>{for(let i=0;i<7;i++){const h=(i*51+T*40)%360;beam(96,4,T*.8+i*Math.PI*2/7,.13,230,`hsla(${h},95%,60%,.16)`)}});tint('255,255,255',.12)}
+  else if(id==='l13'){x.fillStyle='rgba(10,0,30,.35)';x.fillRect(0,0,W,H);add(()=>{for(let i=0;i<30;i++){const a=i*2.399+T*.7,rr=22+hash(i)*80,sx=96+Math.cos(a)*rr*1.3,sy=40+Math.sin(a)*rr*.55,h=(i*37+T*90)%360;x.fillStyle=`hsla(${h},95%,62%,.55)`;x.fillRect(sx|0,sy|0,3,2);x.fillStyle=`hsla(${h},95%,62%,.18)`;x.fillRect((sx|0)-1,(sy|0)-1,5,4)}
+     for(let i=0;i<4;i++)beam(96,9,T*1.4+i*Math.PI/2,.05,200,`hsla(${(i*90+T*90)%360},95%,65%,.12)`)});
+    for(let j=-4;j<=4;j++)for(let i=-4;i<=4;i++){if(i*i+j*j>17)continue;x.fillStyle=((i+j+Math.floor(T*6))%2)?'#e8eaf0':'#8a8ea6';x.fillRect(96+i,9+j,1,1)}x.fillStyle='#2a2e3a';x.fillRect(96,2,1,3)}
+  else if(id==='l14'){x.fillStyle='rgba(5,8,30,.45)';x.fillRect(0,0,W,H);add(()=>{for(let i=0;i<46;i++){const a=hash(i)*6.283+T*.06,rr=10+hash(i+50)*120,sx=96+Math.cos(a)*rr,sy=8+Math.abs(Math.sin(a))*rr*.6;if(sx<0||sx>W||sy>H)continue;const tw=.45+.55*Math.abs(Math.sin(T*2+i)),c=i%5?`rgba(220,230,255,${tw})`:`rgba(255,230,140,${tw})`;x.fillStyle=c;x.fillRect(sx|0,sy|0,1,1);if(i%3===0){x.fillRect((sx|0)-1,sy|0,3,1);x.fillRect(sx|0,(sy|0)-1,1,3)}if(i%9===0){x.fillRect((sx|0)-2,sy|0,5,1);x.fillRect(sx|0,(sy|0)-2,1,5)}}glow('120,140,255',.18,96,4,1,70)})}
+  else if(id==='lx1'){tint('150,230,120',.4);add(()=>{for(let i=0;i<22;i++){const fx=(hash(i)*W+Math.sin(T*.6+i)*14+W)%W,fy=20+hash(i+9)*64+Math.sin(T*.9+i*2)*6,b=Math.max(0,Math.sin(T*1.7+i*1.3));if(b<.1)continue;x.fillStyle=`rgba(200,255,140,${b})`;x.fillRect(fx|0,fy|0,1,1);x.fillStyle=`rgba(170,255,120,${b*.25})`;x.fillRect((fx|0)-1,(fy|0)-1,3,3)}})}
+  else glow(LP.rgb,LP.a,96,4,2,110)}
 function themeAnim(x,rm,W,H,FY){const th=rm.theme||'space',t=Date.now()/1000,R=(a,b,c,d,col)=>{x.fillStyle=col;x.fillRect(a,b,c,d)};
   if(th==='ruin'){if(Math.sin(t*17)>.93||Math.sin(t*2.3)>.985){x.fillStyle='rgba(0,0,0,.32)';x.fillRect(0,0,W,H)}
     const sp=t%3.4;if(sp<.25){const ex=144,ey=33;for(let k=0;k<5;k++){const a=k*1.3+t*20,d=sp*14;R(ex+Math.cos(a)*d,ey+Math.abs(Math.sin(a))*d,.5,.5,k%2?'#ffd27a':'#fff2c8')}const sg=x.createRadialGradient(ex,ey+2,0,ex,ey+2,9);sg.addColorStop(0,'rgba(255,210,122,.16)');sg.addColorStop(1,'rgba(255,210,122,0)');x.fillStyle=sg;x.beginPath();x.arc(ex,ey+2,9,0,Math.PI*2);x.fill()}}
@@ -3542,8 +3572,7 @@ function drawRoomCv(){const cv=$('#roomCv');if(!cv)return;const W=192,H=96,FY=66
   drawAvatars(x);drawPets(x);roomDetail(x,cv,rm,W,H,FY);themeAnim(x,rm,W,H,FY);
   /* lamp */
   R(88,2,16,2,'#2a2e3a');R(90,4,12,1,LP.fx);
-  if(LP.rgb==='prism'){[['220,130,170',40],['127,184,164',96],['95,140,220',152]].forEach(([rgb,cx2])=>{const g=x.createRadialGradient(cx2,10,2,cx2,40,80);g.addColorStop(0,`rgba(${rgb},.16)`);g.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=g;x.fillRect(0,0,W,H)})}
-  else{const lrgb=LP.id==='l0'?TH.light:LP.rgb,la=LP.id==='l0'?.16:LP.a;const g=x.createRadialGradient(96,4,2,96,30,110);g.addColorStop(0,`rgba(${lrgb},${la})`);g.addColorStop(1,`rgba(${lrgb},0)`);x.fillStyle=g;x.fillRect(0,0,W,H)}
+  lampFx(x,LP,TH,W,H,FY);
   const v=x.createRadialGradient(96,48,40,96,48,120);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,`rgba(0,0,0,${LP.id==='l11'?.5:.35})`);x.fillStyle=v;x.fillRect(0,0,W,H)}
 function pvPending(){const buy=[],mats={};let cost=0,lock=0;for(const [slot,id] of Object.entries(preview)){const f=furnById(id);if(!f||ownsF(id))continue;if(f.scan){lock++;continue}buy.push(f);cost+=f.price;(f.mat||[]).forEach(([m,n])=>mats[m]=(mats[m]||0)+n)}const matList=Object.entries(mats);return{buy,cost,lock,mats:matList,ok:!lock&&(P.cr||0)>=cost&&matList.every(([m,n])=>(P.inv[m]||0)>=n)}}
 function pvBar(){const ks=Object.entries(preview);if(!ks.length)return'';const pd=pvPending();
@@ -3593,7 +3622,7 @@ function petStep(){let mv=false;const now=Date.now();roomPets().forEach(({w})=>{
 function drawPets(x){const t=Date.now()/1000;roomPets().sort((a,b)=>a.w.y-b.w.y).forEach(({pt,w})=>{const im=petPic(pt.id);if(!im.complete)return;const fly=PET_FLY.has(pt.id),moving=Math.abs(w.tx-w.x)>.3,
     hop=fly?Math.round(Math.sin(t*2.2+w.x*.1)*1.5)-6:(moving&&(w.step>>2)%2?-1:0),X=Math.round(w.x),Y=Math.round(w.y);
   x.fillStyle='rgba(0,0,0,.35)';x.fillRect(X-4,Y,9,1);x.save();x.imageSmoothingEnabled=false;x.translate(X,Y-12+hop);if(w.dir>0)x.scale(-1,1);x.drawImage(im,-6,0,12,12);x.restore()})}
-setInterval(()=>{if(!roomShown())return;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;let mv=!calm&&(Date.now()%240<75);if(!calm&&petStep())mv=true;if(!calm&&Date.now()>wanderAt){wanderAt=Date.now()+4000+Math.random()*5000;if(Math.abs(myTX-myRX)<.5){myTX=Math.max(80,Math.min(116,96+(Math.random()*2-1)*14));pushRoomPresence()}}if(Math.abs(myTX-myRX)>.5){myRX+=Math.sign(myTX-myRX)*Math.min(.5,Math.abs(myTX-myRX));mv=true}
+setInterval(()=>{if(!roomShown())return;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;let mv=!calm&&(lampAnim||Date.now()%240<75);if(!calm&&petStep())mv=true;if(!calm&&Date.now()>wanderAt){wanderAt=Date.now()+4000+Math.random()*5000;if(Math.abs(myTX-myRX)<.5){myTX=Math.max(80,Math.min(116,96+(Math.random()*2-1)*14));pushRoomPresence()}}if(Math.abs(myTX-myRX)>.5){myRX+=Math.sign(myTX-myRX)*Math.min(.5,Math.abs(myTX-myRX));mv=true}
   rsPeers.forEach(p=>{const pr=p.presence;if(!pr||!pr.uid||p.isMe)return;const tx=pr.x||96;if(peerX[pr.uid]==null)peerX[pr.uid]=tx;if(Math.abs(tx-peerX[pr.uid])>.5){peerX[pr.uid]+=Math.sign(tx-peerX[pr.uid])*Math.min(1.5,Math.abs(tx-peerX[pr.uid]));mv=true}if(pr.emote&&Date.now()-(pr.ea||0)<3600)mv=true});
   if(myEmote&&Date.now()-myEmote.at<3600)mv=true;else if(myEmote&&Date.now()-myEmote.at>=3600){myEmote=null;pushRoomPresence();mv=true}
   if(mv){drawRoomCv();roomLabels()}},70);
