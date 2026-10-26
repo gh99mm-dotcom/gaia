@@ -2239,13 +2239,13 @@ function chestHTML(){const n=(P.chests||[]).length,c=(P.chests||[])[0];
 const bossReady=()=>Math.max(0,(P.bossAt||0)+BOSS_CD-Date.now());
 // the invader's counterblow: a same-level crew member goes down in about 3 of these
 const bossBlow=b=>Math.max(1,Math.round((20+b.lv*6.5)*bossKind(b).atk*(.85+Math.random()*.3)-def()*.4));
-// every 20% of its health lost, the invader lashes out at everyone who has fought it
+// every 30% of its health lost, the invader lashes out at everyone who has fought it
 function bossQuake(){const b=BOSS;if(!b||!bossAlive(b)||!(b.aoe>0)||!(b.dmg&&b.dmg[uid]))return;const seen=(P.bossAoe&&P.bossAoe.gen===b.gen)?P.bossAoe.n:0;if(b.aoe<=seen)return;
   const k=b.aoe-seen;P.bossAoe={gen:b.gen,n:b.aoe};let tot=0;for(let i=0;i<k;i++)tot+=bossBlow(b);heal(-tot,0);
   bossLast={t:Date.now(),miss:false,txt:`${b.name}의 광역 반격! 모든 토벌대 체력 -${tot}`};log(`${b.name}이(가) 체력을 잃고 날뛰었다! 광역 반격으로 체력 -${tot}`,'bad');toast(`${b.name}의 광역 반격! 체력 -${tot}`);commit()}
 async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossReady()>0||isFaint()||bossBusy)return;bossBusy=true;if(!(P.bossAoe&&P.bossAoe.gen===b.gen))P.bossAoe={gen:b.gen,n:b.aoe||0};
   const crit=Math.random()*100<AS('agi'),d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(crit?1.5:1)));let dealt=0,kill=false;
-  try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,d);{const st=Math.max(1,cur.max*.2),q0=Math.floor((cur.max-cur.hp)/st);cur.hp-=dealt;const q1=Math.floor((cur.max-cur.hp)/st);if(cur.hp>0&&q1>q0){cur.aoe=(cur.aoe||0)+(q1-q0);cur.aoeAt=Date.now()}}cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
+  try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,d);{const st=Math.max(1,cur.max*.3),q0=Math.floor((cur.max-cur.hp)/st);cur.hp-=dealt;const q1=Math.floor((cur.max-cur.hp)/st);if(cur.hp>0&&q1>q0){cur.aoe=(cur.aoe||0)+(q1-q0);cur.aoeAt=Date.now()}}cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
   P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
@@ -2364,7 +2364,7 @@ function bossMainHTML(){const b=BOSS;
   return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,10)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
     ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp"><b class="bosspct">${bossPct(b)}%</b> · ${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span>${alive?`<span class="bossclock ${urgent?'urgent':''}" id="bossClock">${bossClock(b)}</span>`:''}</div></div>
-   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div><p class="hint">공격하면 침략자가 반격합니다(방어력만큼 줄고, 민첩이 높으면 피할 수 있음). 체력이 20% 줄 때마다 공격에 참여한 모든 단원에게 광역 반격을 합니다. 체력이 0이 되면 기절하니 음식으로 체력을 채우십시오. <b style="color:var(--red)">2시간 안에 토벌하지 못하면 모든 단원의 체력과 에너지가 1이 됩니다.</b></p>`
+   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div><p class="hint">공격하면 침략자가 반격합니다(방어력만큼 줄고, 민첩이 높으면 피할 수 있음). 체력이 30% 줄 때마다 공격에 참여한 모든 단원에게 광역 반격을 합니다. 체력이 0이 되면 기절하니 음식으로 체력을 채우십시오. <b style="color:var(--red)">2시간 안에 토벌하지 못하면 모든 단원의 체력과 에너지가 1이 됩니다.</b></p>`
     :b.failed?`<div class="card"><b style="color:var(--red)">토벌 실패…</b><p class="hint">${esc(b.name)}이(가) 2시간을 버티고 심연으로 돌아갔습니다. 저주로 모든 단원의 체력과 에너지가 1이 되었습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`
     :b.gone?`<div class="card"><b>침략자가 물러났습니다</b><p class="hint">운영자가 ${esc(b.name)}을(를) 심연으로 돌려보냈습니다. 다음 침략자를 기다리십시오.</p></div>`
     :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
