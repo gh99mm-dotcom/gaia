@@ -3348,7 +3348,7 @@ function renderSocial(){
 function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
-    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];gainXp(2);log(`${g.nick||'단원'} 님이 인사를 건넸다. 경험치 +2`,'good');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸습니다!`);ch=true}});
+    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'단원'} 님이 인사를 건넸다.`,'good');addAff(g.from,1,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit()}
 /* PAD alerts: replies to my posts, reposts of my posts and mentions of me, newest first; the bell shows what came in since I last opened it */
 function padNotis(){if(mode!=='online'||!P)return[];const me='@'+P.nick;return POSTS.filter(p=>p.uid!==uid&&(p.reUid===uid||(p.rt&&p.rto&&p.rto.uid===uid)||(!p.rt&&String(p.text||'').includes(me)))).sort((a,b)=>b.at-a.at).slice(0,30)}
@@ -3397,7 +3397,7 @@ const SA={
   try{await db.collection('dm').add({users:[uid,to],from:uid,to,nick:P.nick,text:v,at:Date.now()})}catch(e){dmDraft=v;if(i)i.value=v;socErr(e);return}stat('dm');save()},
  async hi(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||(P.greet||{})[d.k]===dayKey())return;
   try{await db.collection('guest').add({to:d.k,from:uid,nick:P.nick,kind:'hi',text:'',at:Date.now()})}catch(e){socErr(e);return}
-  P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});gainXp(5);stat('hi');sfxCoin();log(`${t.nick||'단원'} 님에게 인사를 건넸다. 경험치 +5`,'good');commit()},
+  P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});stat('hi');sfxCoin();log(`${t.nick||'단원'} 님에게 인사를 건넸다.`,'good');addAff(d.k,1,'인사');commit()},
  bioedit(){editBio=true;bioDraft=P.bio||'';renderPanel();setTimeout(()=>{const i=$('#bioIn');if(i)i.focus()},30)},
  biosave(){P.bio=bioDraft.trim().slice(0,40);editBio=false;log(P.bio?'한 줄 소개를 바꿨다.':'한 줄 소개를 지웠다.');save();renderPanel()},
  biocancel(){editBio=false;renderPanel()},
