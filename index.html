@@ -1180,7 +1180,13 @@ const ITEMS={
  dark:{n:'암흑물질 조각',ic:'gem',t:'#7a4ff0',type:'mat',d:'무게가 느껴지지 않는 검은 조각. 상급 강화 재료.'},
  drink:{n:'성운 에너지 음료',ic:'bottle',t:'#8aa9bd',type:'food',hp:0,en:20},
  kit:{n:'응급 수리 키트',ic:'kit',t:'#a8626b',type:'food',hp:40,en:0},
- relic:{n:'고대 신호 기록',ic:'scroll',t:'#ffd65f',type:'relic',d:'해독하면 경험치 +30.'},
+ relic:{n:'고대 신호 기록',ic:'scroll',t:'#ffd65f',type:'relic',xp:100,d:'오래된 기록. 해독하면 경험치 +100.'},
+ relic6:{n:'고대 신호 기록 6급',ic:'scroll',t:'#a8a49a',type:'relic',xp:100,sv:20,d:'Lv.1~9에서 발견되는 기록. 해독하면 경험치 +100.'},
+ relic5:{n:'고대 신호 기록 5급',ic:'scroll',t:'#8fc0a0',type:'relic',xp:300,sv:40,d:'Lv.10~19에서 발견되는 기록. 해독하면 경험치 +300.'},
+ relic4:{n:'고대 신호 기록 4급',ic:'scroll',t:'#7fb0d8',type:'relic',xp:1000,sv:80,d:'Lv.20~29에서 발견되는 기록. 해독하면 경험치 +1,000.'},
+ relic3:{n:'고대 신호 기록 3급',ic:'scroll',t:'#b090e0',type:'relic',xp:2500,sv:150,d:'Lv.30~39에서 발견되는 기록. 해독하면 경험치 +2,500.'},
+ relic2:{n:'고대 신호 기록 2급',ic:'scroll',t:'#ffd65f',type:'relic',xp:6000,sv:300,d:'Lv.40~49에서 발견되는 기록. 해독하면 경험치 +6,000.'},
+ relic1:{n:'고대 신호 기록 1급',ic:'scroll',t:'#ff8a5a',type:'relic',xp:12000,sv:600,d:'Lv.50~60에서 발견되는 기록. 해독하면 경험치 +12,000.'},
 };
 /* gather-only materials & crops */
 const GX={
@@ -1329,6 +1335,10 @@ const COOK=[
 COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}});
 COOK.forEach(c=>{const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf}});
 const ORDER=Object.keys(ITEMS);
+/* ancient signal records: one roll at 3% wherever they can turn up; the grade follows the finder's level (6급 lowest) */
+const RELIC_P=.03,relicFor=L=>'relic'+(L>=50?1:L>=40?2:L>=30?3:L>=20?4:L>=10?5:6),relicRoll=L=>Math.random()<RELIC_P?relicFor(L):null;
+// credits: everything that pays out CR (except invader chests and admin gifts) is scaled by this
+const CR_RATE=.3,crs=n=>Math.max(1,Math.round(n*CR_RATE));
 const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자'];
 const BOSS_IC=['................','.....kkkkkk.....','...kkuuuuuukk...','..kuuuurruuuwk..','.kuruukkkkuuuwk.','.kuuukmmmmkuuwk.','kuuukmzkkzmkuuwk','kurukmkkhkmkruwk','kuuukmkkkkmkuuwk','kuuukmzkkzmkuwwk','.kuuukmmmmkuuwk.','.kwruukkkkuurwk.','..kwwuuuuuuwwk..','...kkwwwwwwkk...','.....kkkkkk.....','................'];
 const TABS=[
@@ -1345,7 +1355,6 @@ const TABS=[
 ];
 const SCANS=[
  {t:'버려진 탐사선 잔해를 찾았다. 화물칸 구석에 보급품이 남아 있다.',fx:p=>({add:[['pot',2],[pickSeed(),1]]})},
- {t:'지표 아래에서 규칙적인 신호가 울린다. 신호원을 파내 기록 장치를 회수했다.',fx:()=>({add:[['relic',1]]})},
  {t:'결정 동굴 입구. 벽면 가득 은하 결정이 박혀 있다.',fx:()=>({add:[['crystal',ri(2,3)]]})},
  {t:'중력 이상 지대. 몸이 2.4G로 짓눌리지만 중심부에서 검은 조각을 주웠다.',fx:()=>({hp:-10,add:[['dark',1]]})},
  {t:'고요한 분화구. 별빛만 내려앉아 있다. 잠시 숨을 고르니 기운이 돌아온다.',fx:()=>({en:6})},
@@ -1717,7 +1726,7 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
     if(col){x.fillStyle=kind!=='empty'&&!dim&&soilC.includes(col)?col:lift(col);x.fillRect(i,j,1,1)}}
   if(!dim){x.fillStyle='#bfae80';x.fillRect(9,gap-1,2,1)}
   return MD[key]=c.toDataURL()}
-function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}
+function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.inv&&P.inv.relic>0){P.inv.relic6=(P.inv.relic6||0)+P.inv.relic;delete P.inv.relic}
   if(P.joined&&P.tv!==2){const dish=ORDER.filter(id=>ITEMS[id].dish),keep=a=>(a||[]).filter(id=>ITEMS[id]&&ITEMS[id].dish).slice(0,2);let L=keep(P.likes),H=keep(P.hates).filter(id=>!L.includes(id));
     const fill=(A,B)=>{while(A.length<2){const c=dish.filter(id=>!A.includes(id)&&!B.includes(id));if(!c.length)break;A.push(c[ri(0,c.length-1)])}};fill(L,H);fill(H,L);P.likes=L;P.hates=H;P.tv=2}if(P.as&&ABIL.some(([k])=>(P.as[k]||0)<2)){P.as=Object.assign({},P.as);ABIL.forEach(([k])=>{if((P.as[k]||0)<2)P.as[k]=2})}if(ptsLeft()<0)P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));if(P.look&&typeof NEONSET!=='undefined'){const def={helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'};let ch=false;const l=Object.assign({},P.look);for(const k in def)if(NEONSET.has(l[k])&&!(P.own||[]).includes('neon'+l[k])){l[k]=def[k];ch=true}if(ch)P.look=l}if(P.cr==null)P.cr=50;if(P.suit==null)P.suit=0;if(P.tk==null)P.tk=0;if(P.rod==null)P.rod=0;{const M={f1:'fc0',f2:'fc1',f3:'fr0',f4:'fu0',f5:'fl0'};for(const [o,n] of Object.entries(M)){if(P.inv[o]){P.inv[n]=(P.inv[n]||0)+P.inv[o];delete P.inv[o]}if(P.dex&&P.dex[o]){P.dex[n]=(P.dex[n]||0)+P.dex[o];delete P.dex[o]}}}
   if(!Array.isArray(P.field))P.field=[];
@@ -1823,7 +1832,7 @@ const SITES=[
  {id:'crater',n:'크레이터 평원',d:'얼어붙은 표토. 광석이 흔하고 가끔 씨앗이 섞여 나옵니다.',temp:'-64℃',t:[['ore',40],['moss',20],['crystal',15],['seed_pot',10],['seed_berry',8],['seed_pump',3],['dark',4]]},
  {id:'cave',n:'결정 동굴',d:'빛이 들지 않는 동굴. 결정과 암흑물질이 잘 나옵니다.',temp:'-112℃',t:[['crystal',42],['ore',35],['dark',12],['moss',11]]},
  {id:'marsh',n:'이끼 습지',d:'메탄 안개가 낀 습지. 이끼와 씨앗이 많습니다.',temp:'-31℃',t:[['moss',45],['seed_pot',18],['seed_berry',16],['seed_pump',8],['crystal',13]]},
- {id:'wreck',n:'잔해 지대',d:'추락한 수송선의 무덤. 고대 기록과 보급품이 묻혀 있습니다.',temp:'-48℃',t:[['ore',40],['relic',8],['crystal',14],['kit',5],['seed_pump',6],['moss',27]]},
+ {id:'wreck',n:'잔해 지대',d:'추락한 수송선의 무덤. 보급품과 부품이 묻혀 있습니다.',temp:'-48℃',t:[['ore',40],['crystal',14],['kit',5],['seed_pump',6],['moss',27]]},
  {id:'geyser',n:'얼음 간헐천',d:'얼음이 뿜어져 나오는 들판. 결정과 이끼가 고르게 나옵니다.',temp:'-140℃',t:[['crystal',32],['moss',30],['seed_berry',14],['ore',18],['dark',6]]},
  {id:'canyon',n:'붉은 협곡',d:'철분이 녹슨 깊은 협곡. 광석과 암흑물질이 많습니다.',temp:'-22℃',t:[['ore',48],['dark',14],['crystal',20],['seed_pot',18]]},
 ];
@@ -1863,7 +1872,7 @@ const RAID_EVENTS=[
  {k:'acid',n:'산성비',t:'갑자기 내린 산성비에 우주복이 그을렸다.',dmg:.12},
  {k:'merchant',n:'상인의 잔해',t:'부서진 행상 수레에서 크레딧 칩을 주웠다.',cr:[40,90]},
  {k:'armory',n:'낡은 무기고',t:'먼지 쌓인 무기고에서 쓸 만한 부품을 챙겼다.',item:['ore','dark'],cr:[10,20]},
- {k:'record',n:'고대 기록',t:'봉인된 기록 장치를 회수했다.',item:['relic']},
+ {k:'record',n:'고대 기록',t:'봉인된 기록 장치를 열어 앞선 개척단의 기록을 읽었다.',xp:1},
  {k:'moss',n:'이끼 군락',t:'빛나는 이끼를 한 아름 걷었다.',item:['moss','moss','moss']},
  {k:'gravity',n:'중력 이상 지대',t:'몸이 짓눌리는 중력장을 버텨 냈다. 몸은 아프지만 깨달은 것이 있다.',dmg:.1,xp:1.5},
  {k:'trace',n:'동료의 흔적',t:'앞서 간 단원이 남긴 보급품으로 기운을 차렸다.',heal:.2,item:['drink']},
@@ -1906,7 +1915,7 @@ function raidStep(r){const z=raidZone(r),rnd=raidRoll(r,(r.seed+r.step*7919)%214
     if(ev.dmg&&me.hp>0){const d=Math.max(1,Math.round(me.maxHp*ev.dmg));me.hp=Math.max(1,me.hp-d)}
     if(ev.heal&&me.hp>0)me.hp=Math.min(me.maxHp,me.hp+Math.round(me.maxHp*ev.heal));
     if(ev.xp)L.xp+=Math.round(raidMonXp(avg)*ev.xp);
-    if(ev.cr)L.cr+=ev.cr[0]+Math.floor(rnd()*(ev.cr[1]-ev.cr[0]+1));
+    if(ev.cr)L.cr+=crs(ev.cr[0]+Math.floor(rnd()*(ev.cr[1]-ev.cr[0]+1)));
     (ev.item||[]).forEach(id=>L.it[id]=(L.it[id]||0)+1)});
   if(ev.dmg)res.push(`모두 최대 체력의 ${Math.round(ev.dmg*100)}% 피해`);if(ev.heal)res.push(`모두 체력 ${Math.round(ev.heal*100)}% 회복`);if(ev.xp)res.push('경험치 획득');if(ev.cr)res.push('크레딧 획득');if(ev.item)res.push(ev.item.map(i=>ITEMS[i]?ITEMS[i].n:i).filter((v,i,a)=>a.indexOf(v)===i).join('·')+' 획득');
   if(ev.skip)r.step=Math.min(RAID_STEPS-1,r.step+1);
@@ -1919,11 +1928,11 @@ function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.ord
 function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
 // after any action: victory, wipe, or the next turn
 function raidSettle(r){const b=r.b,z=raidZone(r);
-  if(b.mons.every(m=>m.hp<=0)){let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});
-    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid'))L.it.relic=(L.it.relic||0)+1;if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0);if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
+  if(b.mons.every(m=>m.hp<=0)){let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});cr=crs(cr);
+    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0);if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
     const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}`};
-    if(boss)raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5);L.cr+=200});return r}
+    if(boss)raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5);L.cr+=crs(200)});return r}
   if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 정거장으로 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
@@ -2097,23 +2106,23 @@ function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b
   // the reward waits in a chest on the 탐사 screen; what is inside is fixed now, the 1% wardrobe roll happens when it is opened
   // base = 1.5x a same-level raid boss (kill + clear bonus); contribution adds up to another 100% (full at 20% of the damage)
   const xp=Math.round(raidMonXp(src.lv||P.lvl,'boss')*1.5*1.5*(1+Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
-  P.chests=[...(P.chests||[]),{gen:src.gen,name:src.name,share,xp,cr,relic:1,crystal:src.killer===uid?2:0}].slice(-5);
+  P.chests=[...(P.chests||[]),{gen:src.gen,name:src.name,share,xp,cr,relic:relicRoll(P.lvl),crystal:src.killer===uid?2:0}].slice(-5);
   log(`${src.name}을(를) 쓰러뜨렸다! 탐사 화면에 보상 상자가 도착했다.`,'rare');sys(`[공지] ${src.name} 토벌 성공! 참여한 단원은 탐사 화면에서 보상 상자를 여십시오.`);commit()}
 // 탐사-only wardrobe drop: 3% base, rising with contribution to 10% at 20%+ of the damage
 const CHEST_EX=.03,CHEST_EX_MAX=.1,chestEx=c=>CHEST_EX+(CHEST_EX_MAX-CHEST_EX)*Math.min(1,(c&&c.share||0)*5);let chestOpen=null,chestAnim=0;
 const CHEST=["..kkkkkkkkkkkkkk..", ".k%@@@@@@@@@@@@%k.", "k%@||||||||||||@%k", "k@|////////////|@k", "k@|////////////|@k", "kkkkkkkkkkkkkkkkkk", "k%@@@@@kkkk@@@@@%k", "k@|////k**k////|@k", "k@|////k%%k////|@k", "k@|/////kk/////|@k", "k@|////////////|@k", "k%@@@@@@@@@@@@@@%k", ".kkkkkkkkkkkkkkkk."],CHEST_OPEN=["..kkkkkkkkkkkkkk..", ".k%@@@@@@@@@@@@%k.", "k%@||||||||||||@%k", "kkkkkkkkkkkkkkkkkk", "..*..*..**..*..*..", "k@**@*@****@*@**@k", "k%@@@@@kkkk@@@@@%k", "k@|////k**k////|@k", "k@|////k%%k////|@k", "k@|/////kk/////|@k", "k@|////////////|@k", "k%@@@@@@@@@@@@@@%k", ".kkkkkkkkkkkkkkkk."];
 // open the oldest waiting chest: grant what it holds and roll for a 탐사-only wardrobe item
 function openChest(){const c=(P.chests||[])[0];if(!c||chestAnim)return;chestAnim=1;renderPanel();
-  setTimeout(()=>{chestAnim=0;P.chests=(P.chests||[]).slice(1);gainXp(c.xp);P.cr=(P.cr||0)+c.cr;add('relic',c.relic||1);if(c.crystal)add('crystal',c.crystal);
+  setTimeout(()=>{chestAnim=0;P.chests=(P.chests||[]).slice(1);gainXp(c.xp);P.cr=(P.cr||0)+c.cr;const rl=typeof c.relic==='string'?c.relic:c.relic?relicFor(P.lvl):null;if(rl)add(rl,1);if(c.crystal)add('crystal',c.crystal);
     let ex=null;const pool=Object.values(WARD).flatMap(g=>g.list.filter(it=>it.ex&&!(P.own||[]).includes(it.id)));if(pool.length&&Math.random()<chestEx(c)){ex=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),ex.id]}
     chestOpen=Object.assign({},c,{ex:ex&&ex.id});
-    log(`보상 상자를 열었다! 경험치 +${c.xp.toLocaleString()} · ${c.cr} CR · 고대 신호 기록×${c.relic||1}${c.crystal?` · 은하 결정×${c.crystal}`:''}${ex?` · 탐사 전용 옷장 아이템 「${ex.n}」!`:''}`,'rare');
+    log(`보상 상자를 열었다! 경험치 +${c.xp.toLocaleString()} · ${c.cr} CR ${rl?` · ${ITEMS[rl].n}`:''}${c.crystal?` · 은하 결정×${c.crystal}`:''}${ex?` · 탐사 전용 옷장 아이템 「${ex.n}」!`:''}`,'rare');
     if(ex)sys(`[공지] ${P.nick} 님이 보상 상자에서 탐사 전용 아이템 「${ex.n}」을(를) 얻었습니다!`);sfxCoin();commit()},900)}
 function chestHTML(){const n=(P.chests||[]).length,c=(P.chests||[])[0];
   if(chestOpen){const o=chestOpen,ex=o.ex&&wardById(o.ex),slot=ex&&Object.keys(WARD).find(k=>WARD[k].list.includes(ex));
     return`<div class="chestcard open"><div class="chestspr">${img(CHEST_OPEN,null,4,"",WPAL)}</div><div class="chestbody"><b>보상 상자 · ${esc(o.name)}</b><span class="hint">기여도 ${(o.share*100).toFixed(1)}%</span>
-     <ul class="chestloot"><li>경험치 <b>+${o.xp.toLocaleString()}</b></li><li>크레딧 <b>+${o.cr.toLocaleString()} CR</b></li><li>${iicon('relic',1)}고대 신호 기록 <b>×${o.relic||1}</b></li>${o.crystal?`<li>${iicon('crystal',1)}은하 결정 <b>×${o.crystal}</b> <span class="hint">마지막 일격</span></li>`:''}</ul>
-     ${ex?`<div class="chestex">${meImg(3,P,{[slot]:ex.id})}<div><span class="lbl">탐사 전용 · 5%</span><b>${esc(ex.n)}</b><span class="hint">내 모습에서 바로 착용할 수 있습니다.</span></div></div>`:''}
+     <ul class="chestloot"><li>경험치 <b>+${o.xp.toLocaleString()}</b></li><li>크레딧 <b>+${o.cr.toLocaleString()} CR</b></li>${typeof o.relic==='string'&&ITEMS[o.relic]?`<li>${iicon(o.relic,1)}${ITEMS[o.relic].n} <b>×1</b></li>`:''}${o.crystal?`<li>${iicon('crystal',1)}은하 결정 <b>×${o.crystal}</b> <span class="hint">마지막 일격</span></li>`:''}</ul>
+     ${ex?`<div class="chestex">${meImg(3,P,{[slot]:ex.id})}<div><span class="lbl">탐사 전용</span><b>${esc(ex.n)}</b><span class="hint">내 모습에서 바로 착용할 수 있습니다.</span></div></div>`:''}
      <button class="btn sm ghost" data-act="chestok">확인${n?` · 남은 상자 ${n}개`:''}</button></div></div>`}
   if(!c)return'';
   return`<div class="chestcard ${chestAnim?'shake':''}"><div class="chestspr">${img(CHEST,null,4,"",WPAL)}</div><div class="chestbody"><b>보상 상자가 도착했습니다${n>1?` ×${n}`:''}</b><span class="hint">${esc(c.name)} 토벌 보상 · 무엇이 들어 있을까요? 기여도에 따라 ${(chestEx(c)*100).toFixed(1)}% 확률로 탐사 전용 옷장 아이템이 나옵니다.</span><button class="btn gold" data-act="chestopen" ${chestAnim?'disabled':''}>${chestAnim?'여는 중…':'상자 열기'}</button></div></div>`}
@@ -2232,7 +2241,7 @@ function bossMainHTML(){const b=BOSS;
     :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
-    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기본은 같은 레벨 원정 보스의 1.5배, 기여도에 따라 최대 2배까지), 크레딧(기여도만큼 더), 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
+    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기본은 같은 레벨 원정 보스의 1.5배, 기여도에 따라 최대 2배까지)와 크레딧(기여도만큼 더)을 받고, 3% 확률로 레벨에 맞는 등급의 고대 신호 기록을 얻습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
 // admin page: pick one of the 14 invaders and a level, then summon it
 let bossPick=0;
 function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
@@ -2334,7 +2343,7 @@ function renderGather(){
   <div><span class="lbl">Site · 채집 장소</span><div class="sites" role="radiogroup" aria-label="채집 장소" style="margin-top:6px">${SITES.map(st=>`<button class="site" role="radio" aria-checked="${st.id===gSite}" data-act="gsite" data-id="${st.id}"><b>${st.n} <span class="lv">${st.temp}</span></b><span class="hint">${st.d}</span><span class="chips">${st.t.filter(([id])=>!/^seed_/.test(id)).slice(0,6).map(([id])=>`<span class="ichip">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</span><span class="chips">${(st.ex||[]).map(id=>`<span class="ichip exc">${iicon(id,1)}전용 · ${ITEMS[id].n.replace(' 씨앗','')}</span>`).join('')}</span></button>`).join('')}</div></div>
   ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`;
 }
-function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='scout'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}}
+function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='scout'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}{const rl=relicRoll(P.lvl);if(rl)got[rl]=(got[rl]||0)+1}}
   Object.entries(got).forEach(([id,n])=>add(id,n));gainXp(3*x.pending);stat('gather',x.pending);lxp('gather',4*x.pending);P.exp=Object.assign({},x.e,{tg:x.tg+x.pending});
   if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 로봇이 땅속에서 무기를 찾아왔다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
   lastGather={t:`채집 로봇이 ${x.site.n}에서 ${x.pending}회분 채집물을 가져왔다.${wf?` 희귀 무기 「${wf.n}」도 찾아왔다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
@@ -2629,7 +2638,7 @@ function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.
   log(`${T.nodes[k-1]}에 도착했다. 주변을 조사할 수 있다.`);save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
 function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;const T=TRAILS[sc.t],k=sc.at,first=sc.pend===2;sc.pend=0;
   const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();if(k>=2)got.push([T.it,ri(1,k-1)]);
-  const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
+  {const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   const xp=(r.xp||0)+4+k*2+(first?k*5:0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
@@ -2797,7 +2806,7 @@ function shipGive(partId,only){
 const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['moss',10],['ore',12],['crystal',40],['drink',45],['kit',50]];
 const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,relic:25,drink:15,kit:18};
 const FSELL={c:6,r:20,u:60,l:250};
-const sellPrice=id=>ITEMS[id].fish?FSELL[ITEMS[id].fish]:(ITEMS[id].sv||SELLP[id]||1);
+const sellPrice=id=>crs(ITEMS[id].fish?FSELL[ITEMS[id].fish]:(ITEMS[id].sv||SELLP[id]||1));
 const KEEPER=['어서 와. 오늘도 손님은 너 하나뿐이네.','오, 또 왔구나. 기다리고 있었다고는 안 할게.','어제는 별이 하나 꺼졌어. 너도 봤니?','내 부품도 하나씩 녹슬고 있어. 그래도 장사는 해야지.','크레딧은 충분해? 없으면 구경만 해도 돼.','저 낚싯대, 나도 한번 잡아보고 싶었어.','조용한 게 좋아. 그런데 너무 조용하면 조금 슬퍼.','오늘 입고된 물건? 어제랑 똑같아. 항상 똑같아.','먼지 털어 둔 거야. 거의.','이 궤도엔 신호가 잘 안 잡혀. 그래도 물건은 있어.','팔 거 있으면 줘. 뭐든 언젠가는 쓸모가 있으니까.','예전엔 여기도 붐볐지. 다들 어디로 갔을까.','물고기는 신선할 때 팔아. 냄새가 오래 남거든.','내 이름은 7호야. 1호부터 6호는 본 적 없어.','밤이 길어. 여기선 늘 밤이지만.','창밖 행성은 오늘도 그대로야. 나처럼.','가끔 내 회로에서 옛날 노래가 흘러나와. 가사는 기억 안 나.','손님이 오면 전원을 아껴 둔 보람이 있어.','고장 난 건 고치면 돼. 잊힌 건… 잘 모르겠어.','이 상자는 누가 맡기고 간 거야. 아직 안 찾아갔어.','네가 마지막으로 웃은 게 언제야? 난 웃는 법을 몰라서.','별빛은 아주 오래전에 출발한 거래. 우리가 받는 건 늘 늦은 인사야.','재고 조사를 했어. 세 번. 할 일이 없었거든.','오늘은 운석이 안 떨어졌으면 좋겠다.','기름칠을 좀 해야 하는데. 다음에, 다음에.','나도 언젠가 저 창밖으로 날아가 보고 싶어.','거래 기록을 보면 네 이름이 제일 많아. 고마워.','이 가게 문은 닫힌 적이 없어. 열 사람이 없었거든.','메탄 비가 그치면 조금 덜 외로워져.','네 우주복에 흠집이 늘었네. 조심해.','방금 한 말, 저장해 둘게. 오래 기억하려고.','누군가 여기 있다는 게 좋아. 그게 너라서 더 좋아.','전원이 깜빡여도 놀라지 마. 원래 그래.','지구는 어떤 곳이었을까. 사진으로만 봤어.','싸게 해 줄 수는 없어. 대신 오래 이야기해 줄게.','너무 무리하지 마. 쓰러지면 내가 구해 줄 수가 없어.','오늘 하늘 색은 회색 37번. 어제는 38번이었어.','가끔 빈 선반을 정리해. 정리할 게 없어도.','물건은 많은데, 이야기할 상대는 적어.','다녀와. 기다리는 건 내가 제일 잘하니까.','또 와 줄 거지? 대답 안 해도 알아.','나는 꿈을 꾸지 않아. 대신 대기 모드에서 너를 기다려.','신호가 하나 잡혔다 사라졌어. 누구였을까.','이 볼트, 내 몸에서 빠진 거야. 팔지는 않을 거야.','모든 게 천천히 식어 가. 이 가게도, 저 별도.','네가 산 물건이 네 방을 따뜻하게 해 주면 좋겠어.','한때는 이 궤도에 불빛이 가득했대. 지금은 우리 둘이야.','좋은 하루 보내. 하루라는 게 여기에도 있다면.','안녕, 또 보자. 아마 내일도 여기 있을 거야.'];
 let shopTab='sup',keeperLine=0;
 function itemDesc(id){const it=ITEMS[id];return it.type==='food'?[it.hp?`체력 +${it.hp}`:'',it.en?`에너지 +${it.en}`:''].filter(Boolean).join(' · ')+(it.tier?` · ${it.tier}`:''):(it.d||'')}
@@ -3005,7 +3014,7 @@ const A={
   items.forEach(([i,n])=>take(i,n));P.cr-=cr;const msg=giftMsg.trim().slice(0,40);save();
   const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items,cr,msg,at:Date.now()}).then(()=>{if(!note)P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
  duelstart(){if(mode!=='online'||duelOn())return;const now=Date.now();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)).catch(()=>toast('대결을 열지 못했습니다.'))},
- duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+300;sfxCoin();log('낚시 대결 우승! 상금 300 CR','rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
+ duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+crs(300);sfxCoin();log(`낚시 대결 우승! 상금 ${crs(300)} CR`,'rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
  renamecancel(){renaming=false;renderInfo()},
  adminopen(){if(!isAdmin)return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}adminView=true;meView=false;mailView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'});const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()},
@@ -3050,7 +3059,7 @@ const A={
  sell(d){const have=P.inv[d.id]||0;if(!have)return;const n=d.n==='all'?have:1,gain=sellPrice(d.id)*n;take(d.id,n);{const b=soldBack[d.id]||{n:0,pr:sellPrice(d.id)};soldBack[d.id]={n:b.n+n,pr:b.pr}}P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
  asigskip(){if(bossAlive(BOSS))return;if(!useAsig())return;lastAsig=null;log('구식 신호기: 잡힌 신호를 무시하고 흘려보냈다.');commit()},
  asigpow(){if(bossAlive(BOSS))return;const sg=asigState();P.asig=sg.off?{n:sg.n,t:Date.now()}:{n:sg.n,t:Date.now(),off:1};log(sg.off?'구식 신호기를 다시 켰다. SOS 신호를 보내기 시작한다.':'구식 신호기를 껐다.');commit()},
- asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=r.add||[];got.forEach(([id,n])=>add(id,n));let extra='';
+ asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
  scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=5)return;if(!spend(SCOUT_EN))return;
@@ -3059,7 +3068,7 @@ const A={
  scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
  scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;sc.pend=0;log('정착지로 귀환했다.');commit()},
  sel(d){selItem=d.id;renderPanel()},
- use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){heal(it.hp,it.en);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${it.hp}, 에너지 +${it.en}`,'good')}else if(it.type==='relic'){gainXp(30);log('고대 신호를 해독했다. 경험치 +30','rare')}commit()},
+ use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){heal(it.hp,it.en);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${it.hp}, 에너지 +${it.en}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
  upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했습니다.`);commit()},
 };
 
