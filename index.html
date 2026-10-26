@@ -496,7 +496,8 @@ header>.chip:not(.sugg){margin-left:0}
 @media (prefers-reduced-motion:reduce){.bosssprite{animation:none}}
 .bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.bosshp{font-family:var(--f-pix);font-size:10px;color:var(--mute);text-align:right}
 .bossclock{font-family:var(--f-pix);font-size:10px;color:var(--gold)}.bossclock.urgent{color:var(--red);animation:blink 1s steps(2) infinite}
-.asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossret{background:#000;color:#d8d8e4;border:2px solid var(--ink);padding:56px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}.bossret b{font-size:18px;letter-spacing:.04em}.bossret p{margin:0;color:#9a9ab0}.bossretT{font-family:var(--f-pix);font-size:34px;line-height:1;color:#fff;letter-spacing:.08em}
+.asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossdim{padding-bottom:64px}.bossdim::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.38);pointer-events:none}.bossdim .bosssprite{filter:brightness(.8)}
+.bossretov{position:absolute;left:0;right:0;bottom:12px;z-index:1;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center;color:#e8e8f0;text-shadow:0 2px 4px #000}.bossretov p{margin:0;font-weight:700}.bossretT{font-family:var(--f-pix);font-size:30px;line-height:1;color:#fff;letter-spacing:.08em}
 .bossidle{padding:28px 16px;text-align:center}
 .bosspicks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px;margin:4px 0 8px}.bosspick{justify-content:flex-start;gap:6px;text-align:left;font-size:11px;padding:3px 6px}.bosspick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chestcard{display:flex;gap:14px;align-items:center;padding:12px 14px;border:2px solid var(--gold);background:linear-gradient(135deg,rgba(191,174,128,.16),var(--deep) 60%)}
@@ -2109,8 +2110,10 @@ const bossSpr=(b,sc)=>{const K=bossKind(b),hi=bossHi(K),s2=sc/2;return`<span cla
 const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
 const BOSS_RET=10*60e3,bossRetLeft=b=>bossKilled(b)&&b.killedAt?Math.max(0,b.killedAt+BOSS_RET-Date.now()):0;
 function bossMainHTML(){const b=BOSS;
-  // just put down: the screen goes black for 10 minutes before you head back out to space
-  if(bossRetLeft(b)>0)return`<div class="bossret"><b>${esc(b.name)} 토벌 성공</b><p>10분 뒤에 우주로 돌아갑니다.</p><span class="bossretT" id="bossRet">${fmtClock(bossRetLeft(b))}</span></div>`;
+  // just put down: the fallen invader's stage dims for 10 minutes before you head back out to space
+  if(bossRetLeft(b)>0)return`<div class="bossstage bossdim"><div class="bosssprite">${bossSpr(b,10)}</div>
+    <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 토벌 성공</span>${raidBar(0,b.max,'var(--red)')}<span class="bosshp">0 / ${b.max.toLocaleString()}</span></div>
+    <div class="bossretov"><p>10분 뒤에 우주로 돌아갑니다.</p><span class="bossretT" id="bossRet">${fmtClock(bossRetLeft(b))}</span></div></div>`;
   // no live invader (none yet, put down, failed or sent back): just the old receiver, no ranking
   if(!bossAlive(b))return`<div class="card bossidle"><b>우주 저편으로 신호를 보냅니다.</b></div>${asigHTML()}`;
   const alive=true,rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
