@@ -2965,7 +2965,9 @@ function renderCrew(){
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
 const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
 let tickI=0,tickOpen=false,tickTop=0;
-const tickList=()=>CHAT.filter(m=>m.sys&&TICK_RE.test(m.text||'')).slice().reverse().slice(0,10);
+// notices older than 2 hours drop off the ticker; a minute timer keeps it fresh even with no new chat
+const TICK_TTL=2*3600e3,tickList=()=>CHAT.filter(m=>m.sys&&TICK_RE.test(m.text||'')&&Date.now()-(+m.at||0)<TICK_TTL).slice().reverse().slice(0,10);
+setInterval(()=>{if(CHAT.some(m=>m.sys&&Date.now()-(+m.at||0)>=TICK_TTL&&Date.now()-(+m.at||0)<TICK_TTL+65e3))renderChat()},60e3);
 const tickKind=t=>t.startsWith('[공지]')?'n':t.startsWith('새 단원')?'j':'c';
 // the admin can strike any notice off the ticker
 const tickDel=x=>isAdmin&&mode==='online'&&x&&x.id?`<button type="button" class="tk-x" data-act="tickdel" data-k="${esc(x.id)}" title="이 알림 삭제" aria-label="이 알림 삭제">×</button>`:'';
