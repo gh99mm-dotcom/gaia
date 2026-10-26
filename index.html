@@ -1656,7 +1656,7 @@ async function connect(){
 }
 
 /* ───────── render: frame ───────── */
-let tab='farm';
+let tab='social';
 function renderNet(){
   const c=$('#netChip');
   if(mode==='online'){const n=new Set(PEERS.map(p=>p.presence&&p.presence.uid).filter(Boolean)).size||1;c.innerHTML=`<span class="dot on"></span><span>ONLINE · 접속 ${n}명</span>`}
