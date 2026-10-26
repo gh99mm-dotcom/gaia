@@ -2985,7 +2985,7 @@ const FURN={
   M('d6','레트로 터미널 책상',1200,[['ore',5]],'볼록한 브라운관 모니터',{top:'#5d5348',body:'#4d4337',base:'drawers',mon:'crt',chair:'office',cc:'#4d4337'}),
   M('d7','연구실 실험대',1500,[['crystal',3],['moss',3]],'플라스크와 시약병',{top:'#8a8da0',body:'#41444f',base:'legs',mon:'none',chair:'stool',cc:'#7e8193',ext:'lab'}),
   M('d8','낮은 좌식 테이블',700,[['moss',4]],'방석과 노트북 하나',{top:'#4a3a2e',body:'#3a2e25',base:'low',mon:'laptop',chair:'cushion',cc:'#93707f'}),
-  M('d9','서재 책상',1300,[['relic',1]],'책이 쌓인 묵직한 책상',{top:'#3a2a22',body:'#2a1e18',base:'drawers',mon:'none',chair:'office',cc:'#6a2f38',ext:'books'}),
+  M('d9','서재 책상',1300,[['relic6',1]],'책이 쌓인 묵직한 책상',{top:'#3a2a22',body:'#2a1e18',base:'drawers',mon:'none',chair:'office',cc:'#6a2f38',ext:'books'}),
   M('d10','홀로그램 데스크',3500,[['crystal',6],['dark',1]],'허공에 빛 화면이 떠요',{top:'#41444f',body:'#2a2e3a',base:'legs',mon:'holo',chair:'office',cc:'#2c2845'}),
   M('d11','이끼 덮인 책상',400,[['moss',6]],'습지에서 건진 낡은 책상',{top:'#3a2e25',body:'#2a211b',base:'drawers',mon:'lcd',chair:'office',cc:'#3e5545',ext:'moss'}),
   M('d12','고물 상자 책상',150,[['ore',1]],'보급 상자를 엎어 만든 책상',{top:'#62563d',body:'#4d4337',base:'crate',mon:'laptop',chair:'stool',cc:'#5d6274'}),
@@ -2993,12 +2993,12 @@ const FURN={
  wall:{n:'벽 장식',list:[
   M('w0','빈 벽',0,null,'아무것도 걸려 있지 않아요',{k:'none'}),
   M('w1','성운 포스터',200,null,'바랜 보랏빛 성운 그림',{k:'nebula'}),
-  M('w2','고향 행성 사진',800,[['relic',1]],'떠나온 푸른 행성의 사진',{k:'photo'}),
+  M('w2','고향 행성 사진',800,[['relic6',1]],'떠나온 푸른 행성의 사진',{k:'photo'}),
   M('w3','별자리 지도',500,null,'손으로 이은 별자리 판',{k:'starmap'}),
   M('w4','멈춘 벽시계',300,[['ore',2]],'지구 시간에 멈춘 시계',{k:'clock'}),
   M('w5','네온 간판',900,[['crystal',2]],'분홍·청록 네온이 깜빡여요',{k:'neon'}),
   M('w6','외계 가면',700,[['moss',3]],'잔해 지대에서 주운 가면',{k:'mask'}),
-  M('w7','항로 지도',600,[['relic',1]],'누렇게 바랜 옛 항로',{k:'map'}),
+  M('w7','항로 지도',600,[['relic6',1]],'누렇게 바랜 옛 항로',{k:'map'}),
   M('w8','둥근 거울',400,[['crystal',1]],'희미하게 방이 비쳐요',{k:'mirror'}),
   M('w9','개척단 깃발',500,null,'별무리 개척단의 문장',{k:'banner'}),
   M('w10','물고기 박제',1000,null,'가장 귀한 물고기를 걸어 둬요',{k:'fishmount'}),
@@ -3063,12 +3063,12 @@ function gridOn(x,grid,ox,oy,tint,po){const pal=Object.assign({},PAL,po||{});if(
 function trophies(dex){const out=[];for(const tr of ['l','u','r','c'])for(const id of FISHES[tr])if(dex&&dex[id]&&out.length<4)out.push(id);return out}
 const THEMES={
  space:{n:'우주 정거장',d:'별빛 패널과 커다란 현창이 있는 기본 거주실',price:0,wall:{pat:'starpanel',c:['#161c30','#0d1122','#3a4466']},floor:{pat:'plate',c:['#1d2130','#151824','#2e3448']},trim:'#3a4258',slab:'#0e1018',view:'space',light:'150,140,220',acc:'#8a86a8'},
- sf:{n:'SF 연구실',d:'배관과 서버랙이 늘어선 차가운 실험실',price:1500,mat:[['ore',8]],wall:{pat:'panel',c:['#1a2028','#10151b','#3a4552']},floor:{pat:'hazard',c:['#20252c','#171b21','#bfae80']},trim:'#4a5562',slab:'#0c0f13',view:'station',light:'127,208,208',acc:'#7fd0d0'},
- neon:{n:'네온 시티',d:'보랏빛 밤거리와 분홍·청록 네온사인',price:2500,mat:[['crystal',4]],wall:{pat:'neonwall',c:['#251838','#170f26','#ff4fd8']},floor:{pat:'checks',c:['#1c1430','#120c22']},trim:'#5a2f7a',slab:'#0e0818',view:'city',light:'255,79,216',acc:'#2ff5ff'},
- japan:{n:'다다미 방',d:'장지문과 다다미, 종이 등불이 있는 일본식 방',price:2000,mat:[['moss',6]],wall:{pat:'shoji',c:['#d9cfb4','#6b4a32','#b8ab8c']},floor:{pat:'tatami',c:['#9a9a5e','#7f8050','#4a3a28']},trim:'#5a3f2a',slab:'#3a2a1e',view:'bamboo',light:'255,214,150',acc:'#e8d7a8'},
- aqua:{n:'수족관 방',d:'벽 하나가 통째로 수조인 푸른 방',price:3000,mat:[['crystal',5]],wall:{pat:'aquawall',c:['#10324a','#0a2234','#3fa0c8']},floor:{pat:'sand',c:['#2a4a5a','#1f3a48','#6f9aa8']},trim:'#2b5a72',slab:'#0a1a24',view:'deep',light:'90,180,230',acc:'#7fd0d0'},
- nature:{n:'숲속 온실',d:'덩굴과 화분이 가득한 따뜻한 나무 방',price:1800,mat:[['moss',10]],wall:{pat:'woodvine',c:['#3a2c20','#2a2018','#5f8f5a']},floor:{pat:'planks',c:['#4a3828','#3e2f22','#2a1f16']},trim:'#5a4430',slab:'#2a1f16',view:'forest',light:'190,230,150',acc:'#8bc98a'},
- china:{n:'중국풍 서재',d:'붉은 기둥과 원형 격자창, 홍등이 걸린 서재',price:2800,mat:[['ore',6],['relic',1]],wall:{pat:'china',c:['#e6d3b0','#8a2a22','#c9b28a']},floor:{pat:'redwood',c:['#7a3a24','#6a321f','#4a2216']},trim:'#8a2a22',slab:'#4a2216',view:'mountain',light:'255,170,110',acc:'#c9302c'},
+ sf:{n:'SF 연구실',d:'배관과 서버랙이 늘어선 차가운 실험실',price:3500,mat:[['ore',8]],wall:{pat:'panel',c:['#1a2028','#10151b','#3a4552']},floor:{pat:'hazard',c:['#20252c','#171b21','#bfae80']},trim:'#4a5562',slab:'#0c0f13',view:'station',light:'127,208,208',acc:'#7fd0d0'},
+ neon:{n:'네온 시티',d:'보랏빛 밤거리와 분홍·청록 네온사인',price:4500,mat:[['crystal',4]],wall:{pat:'neonwall',c:['#251838','#170f26','#ff4fd8']},floor:{pat:'checks',c:['#1c1430','#120c22']},trim:'#5a2f7a',slab:'#0e0818',view:'city',light:'255,79,216',acc:'#2ff5ff'},
+ japan:{n:'다다미 방',d:'장지문과 다다미, 종이 등불이 있는 일본식 방',price:4000,mat:[['moss',6]],wall:{pat:'shoji',c:['#d9cfb4','#6b4a32','#b8ab8c']},floor:{pat:'tatami',c:['#9a9a5e','#7f8050','#4a3a28']},trim:'#5a3f2a',slab:'#3a2a1e',view:'bamboo',light:'255,214,150',acc:'#e8d7a8'},
+ aqua:{n:'수족관 방',d:'벽 하나가 통째로 수조인 푸른 방',price:5000,mat:[['crystal',5]],wall:{pat:'aquawall',c:['#10324a','#0a2234','#3fa0c8']},floor:{pat:'sand',c:['#2a4a5a','#1f3a48','#6f9aa8']},trim:'#2b5a72',slab:'#0a1a24',view:'deep',light:'90,180,230',acc:'#7fd0d0'},
+ nature:{n:'숲속 온실',d:'덩굴과 화분이 가득한 따뜻한 나무 방',price:3800,mat:[['moss',10]],wall:{pat:'woodvine',c:['#3a2c20','#2a2018','#5f8f5a']},floor:{pat:'planks',c:['#4a3828','#3e2f22','#2a1f16']},trim:'#5a4430',slab:'#2a1f16',view:'forest',light:'190,230,150',acc:'#8bc98a'},
+ china:{n:'중국풍 서재',d:'붉은 기둥과 원형 격자창, 홍등이 걸린 서재',price:4800,mat:[['ore',6],['relic6',1]],wall:{pat:'china',c:['#e6d3b0','#8a2a22','#c9b28a']},floor:{pat:'redwood',c:['#7a3a24','#6a321f','#4a2216']},trim:'#8a2a22',slab:'#4a2216',view:'mountain',light:'255,170,110',acc:'#c9302c'},
 };
 const THEME_IDS=Object.keys(THEMES);
 /* surface patterns: (a,b) are local coords along the surface, returns colour */
@@ -3118,7 +3118,7 @@ function viewColor(view,s,t,T){const h=((Math.floor(s*97)*73856093)^(Math.floor(
   }return '#000'}
 
 /* ───────── front-view room themes ───────── */
-{const keys=Object.keys(FURN).filter(k=>k!=='theme');FURN.theme={n:'테마',list:THEME_IDS.map(k=>{const T=THEMES[k];return M(k,T.n,T.price,T.mat||null,T.d,{})})};for(const k of keys){const v=FURN[k];delete FURN[k];FURN[k]=v}}
+{const keys=Object.keys(FURN).filter(k=>k!=='theme');FURN.theme={n:'테마',list:THEME_IDS.map(k=>{const T=THEMES[k];return M(k,T.n,T.price,T.mat||null,T.d,{})}).sort((a,b)=>a.price-b.price)};for(const k of keys){const v=FURN[k];delete FURN[k];FURN[k]=v}}
 const RUGC={space:['#2c2845','#3a3358','#5f5a80'],sf:['#0f2228','#17323a','#7fd0d0'],neon:['#24123a','#341a52','#ff4fd8'],japan:['#5a3f2a','#b8ab8c','#9a8a68'],aqua:['#123040','#1b4252','#7fd0d0'],nature:['#33473a','#43584a','#8bc98a'],china:['#5a1614','#7a2420','#c9a06a']};
 const TBASE={};
 function themeBase(TH,rm,W,H,FY){const key=rm.theme+'|'+rm.wallp+'|'+rm.floorp;if(TBASE[key])return TBASE[key];const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
