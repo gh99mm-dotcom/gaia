@@ -3616,11 +3616,12 @@ function benchRows(k){const cr=P.cr||0;
   const ownBtn=(own,act,k2,pr,cur,mat)=>`<div class="sbtns">${own?`<span class="hint">${cur?'장착 중':'보유 중'}</span>`:`<button class="btn sm gold" data-act="${act}" data-k="${k2}" ${cr>=pr&&hasMat(mat)?'':'disabled'}>구매</button>`}</div>`;
   let rows;
   if(k==='wpn')rows=`<p class="hint" style="margin:0 0 4px">무기를 사서 장착하면 공격력이 바로 올라갑니다. 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 무기들은 채집 로봇이 아주 드물게(3%) 찾아옵니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
-  else if(k==='craft')rows='<p class="hint" style="margin:0 0 4px">채집에서 모은 재료로 장비를 만듭니다. 부위마다 하나씩 착용할 수 있습니다.</p>'+Object.entries(CRAFT).map(([slot,c])=>`<span class="lbl" style="margin-top:6px">${c.n} 장비</span>`+c.list.map(f=>{const own=(P.own||[]).includes(f.id),on=(P.gear||{})[slot]===f.id,can=cr>=f.price&&hasMat(f.mat);return`<div class="srow">${img(TPL[c.ic],f.t,3)}<div class="sinfo"><b>${f.n}</b><span class="hint">${f.d}</span>${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${on?`<button class="btn sm ghost" data-act="cunequip" data-k="${slot}">벗기</button>`:own?`<button class="btn sm" data-act="cequip" data-k="${slot}" data-id="${f.id}">착용</button>`:`<button class="btn sm gold" data-act="craft" data-k="${slot}" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`}</div></div>`}).join('')).join('');
-  else rows='<span class="lbl">Suits · 우주복</span>'+SUITS.slice(1).map((u,k)=>{const lv=k+1;return`<div class="srow">${img(IC.suit,u.t,2)}<div class="sinfo"><b>${u.n}</b><span class="hint">${u.d}</span>${suitMax()>=lv?'':matHTML(u.mat)}</div>${price(u.price)}${ownBtn(suitMax()>=lv,'buysuit',lv,u.price,(P.suit||0)===lv,u.mat)}</div>`}).join('');
+  else{rows='<p class="hint" style="margin:0 0 4px">채집에서 모은 재료로 장비를 만듭니다. 부위마다 하나씩 착용할 수 있습니다.</p>'+Object.entries(CRAFT).map(([slot,c])=>`<span class="lbl" style="margin-top:6px">${c.n} 장비</span>`+c.list.map(f=>{const own=(P.own||[]).includes(f.id),on=(P.gear||{})[slot]===f.id,can=cr>=f.price&&hasMat(f.mat);return`<div class="srow">${img(TPL[c.ic],f.t,3)}<div class="sinfo"><b>${f.n}</b><span class="hint">${f.d}</span>${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${on?`<button class="btn sm ghost" data-act="cunequip" data-k="${slot}">벗기</button>`:own?`<button class="btn sm" data-act="cequip" data-k="${slot}" data-id="${f.id}">착용</button>`:`<button class="btn sm gold" data-act="craft" data-k="${slot}" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`}</div></div>`}).join('')).join('');
+    rows=('<span class="lbl">Suits · 우주복</span>'+SUITS.slice(1).map((u,k)=>{const lv=k+1;return`<div class="srow">${img(IC.suit,u.t,2)}<div class="sinfo"><b>${u.n}</b><span class="hint">${u.d}</span>${suitMax()>=lv?'':matHTML(u.mat)}</div>${price(u.price)}${ownBtn(suitMax()>=lv,'buysuit',lv,u.price,(P.suit||0)===lv,u.mat)}</div>`}).join(''))+'<span class="lbl" style="display:block;margin-top:10px">Crafted gear · 제작 장비</span>'+rows}
+;
   return rows}
-function benchHTML(){const tabs=[['wpn','무기'],['gear','장비'],['craft','제작 장비']];
-  return head()+shipSubTabs()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot">${img(IC.ship,null,4)}</span><div class="sinfo"><b>제작대 · 별무리호 정비실</b><p class="say">무기와 우주복을 사고, 채집 재료로 장비를 만드는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
+function benchHTML(){const tabs=[['wpn','무기'],['craft','제작 장비']];
+  return head()+shipSubTabs()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot">${img(IC.ship,null,4)}</span><div class="sinfo"><b>제작대 · 별무리호 정비실</b><p class="say">무기를 사고, 우주복과 채집 재료로 만드는 장비를 마련하는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${benchTab===k}" data-act="benchtab" data-k="${k}">${n}</button>`).join('')}</div>
    <div class="slist">${benchRows(benchTab)}</div></div>`}
 function renderShop(){
@@ -3952,7 +3953,7 @@ const A={
  roomhome(){visit=null;renderPanel()},
  emote(d){if(!EMOTES[d.k])return;myEmote={k:d.k,at:Date.now()};pushRoomPresence();drawRoomCv()},
  bossskill(){bossSkill()},
- benchtab(d){benchTab=['wpn','gear','craft'].includes(d.k)?d.k:'wpn';renderPanel()},
+ benchtab(d){benchTab=d.k==='craft'?'craft':'wpn';renderPanel()},
  chestopen(){openChest()},
  chestok(){chestOpen=null;renderPanel()},
  raidbag(){raidBag=!raidBag;renderPanel()},
@@ -3994,7 +3995,7 @@ const A={
  wtab(d){wardTab=d.k;renderPanel()},
  metab(d){meTab=d.k==='look'?'look':'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
- mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='ship';shipView='bench';benchTab='gear'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
+ mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='ship';shipView='bench';benchTab='craft'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
  wprev(d){if(!wardById(d.id))return;if(wPrev[d.k]===d.id)delete wPrev[d.k];else wPrev[d.k]=d.id;renderPanel()},
  wprevclr(){wPrev={};neonPick=null;neonSlot=null;renderPanel()},
  wwear(d){if(!ownsW(d.id))return;delete wPrev[d.k];P.outfit=Object.assign({},outfitOf(P),{[d.k]:d.id});save();renderPanel();renderPilot()},
