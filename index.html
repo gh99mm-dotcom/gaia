@@ -39,6 +39,8 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:100px;
 .logo h1{font-family:"Gugi",var(--f-display);font-weight:400;letter-spacing:.02em;font-size:28px;line-height:1;color:var(--text);text-shadow:2px 2px 0 var(--ink)}
 .logo .lbl{margin-top:8px;display:block}
 header>.chip:not(.sugg){margin-left:0}
+/* top-right header items: no frames, set a little closer together */
+header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10px}header:not(.joinhead)>.chip,:root[data-skin="light"] header:not(.joinhead)>.chip{border:0;box-shadow:none;background:transparent;padding:4px 7px}header:not(.joinhead)>button.chip:hover{background:var(--panel2)}
 @media (max-width:620px){header{min-height:90px;justify-content:flex-end;gap:8px}.logo{flex-basis:100%}.logo h1{font-size:24px}header>.sugg{margin-left:0}}
 .adminchip{cursor:pointer;color:var(--gold);border-color:var(--ink)}
 .adminchip+.chip{margin-left:0}
