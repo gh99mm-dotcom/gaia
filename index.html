@@ -1923,10 +1923,10 @@ function raidDriver(r){const now=raidNow(),hb=r.hb||{};return raidIn(r).find(u=>
 /* ---- building a step ---- */
 function raidRoll(r,seed){let x=seed;const rnd=()=>(x=(x*16807)%2147483647)/2147483647;return rnd}
 function raidStep(r){const z=raidZone(r),rnd=raidRoll(r,(r.seed+r.step*7919)%2147483646+1),n=raidIn(r).length,avg=Math.round(raidIn(r).reduce((a,u)=>a+r.m[u].lvl,0)/n);
-  // monsters ramp up the deeper you go: from about party level -3 at the entrance to +3 near the end (kept inside the zone's range), boss at the top
+  // monsters ramp up the deeper you go: from about party level -3 at the entrance to +3 near the end (kept inside the zone range); the boss is the zone top level +3
   const cl=v=>Math.max(z.min,Math.min(z.max,v)),lo=cl(avg-3),hi=cl(avg+3),f=(Math.min(r.step,RAID_STEPS-1)-1)/(RAID_STEPS-2);
   const lvl=d=>cl(Math.round(lo+(hi-lo)*f)+d+Math.floor(rnd()*3)-1);
-  if(r.step>=RAID_STEPS){const b=raidMon(z,cl(Math.max(hi,z.min+3)),'boss',z.boss,n);return raidBattle(r,[b],`보스 출현! ${b.n} (Lv.${b.L})`)}
+  if(r.step>=RAID_STEPS){const b=raidMon(z,z.max+3,'boss',z.boss,n);return raidBattle(r,[b],`보스 출현! ${b.n} (Lv.${b.L})`)}
   const roll=rnd();
   if(roll<.09&&!r.midDone){r.midDone=1;const m=raidMon(z,lvl(1),'mid',z.mid,n);return raidBattle(r,n>1?[m,raidMon(z,lvl(-1),'',z.mons[Math.floor(rnd()*5)],n)]:[m],`강한 기운! 중간 보스 ${m.n} (Lv.${m.L})이(가) 나타났다.`)}
   if(roll<.58){const k=roll<.16?'elite':'',cnt=k?1:2+Math.floor(rnd()*2);const ms=Array.from({length:cnt},()=>raidMon(z,lvl(k?1:0),k,(k?'흉포한 ':'')+z.mons[Math.floor(rnd()*5)],n));
