@@ -2033,7 +2033,7 @@ function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.ord
 // job skills: each is ready at the start of a battle, then waits 3 (first) or 4 (second) of its user's own turns
 const RSK={medic:[{n:'응급 처치',d:'동료 한 명의 체력을 전부 회복 (쓰러진 동료도 일으킴)',cd:3},{n:'전체 치료',d:'살아 있는 파티 전원 최대 체력의 50% 회복',cd:4}],
   mech:[{n:'연속 타격',d:'고른 적을 두 번 공격',cd:3},{n:'과부하 방전',d:'모든 적을 공격 (공격력 80%)',cd:4}],
-  nav:[{n:'약점 분석',d:'고른 적을 공격하고 그 적의 방어력을 이 전투 동안 10% 깎음',cd:3},{n:'방패 전개',d:'다음 내 턴까지 적의 단일 공격을 대신 맞고, 그동안 방어력 +100%',cd:4}]};
+  nav:[{n:'약점 분석',d:'고른 적을 공격하고 그 적의 방어력을 이 전투 동안 10% 깎음',cd:3},{n:'방패 전개',d:'다음 내 턴까지 광역 공격까지 모든 공격을 혼자 대신 맞고, 그동안 방어력 +100%',cd:4}]};
 const rJob=m=>m?(OLDJOB[m.job]||m.job||''):'';
 const rskLeft=(b,u,i)=>((b.cd||{})[u]||{})['s'+i]||0;
 function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
@@ -2069,7 +2069,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
       else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:Math.round((it.hp||0)*(me.job==='medic'?1.5:1));if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
       else{const live=b.mons.map((m,i)=>m.hp>0?i:-1).filter(i=>i>=0),ti=live.includes(arg)?arg:live[0],m=b.mons[ti];const [d,c]=raidHit(me.atk,m.def,me.crit||0);m.hp=Math.max(0,m.hp-d);raidLog(b,`${me.nick}${kind==='auto'?'(자동)':''} → ${m.n} ${d} 피해${c?' · 치명타!':''}${m.hp<=0?' · 쓰러뜨렸다!':''}`)}}
     else{const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
-      const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=aoe?tg:[tz||tg[Math.floor(Math.random()*tg.length)]];
+      const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=tz?[tz]:aoe?tg:[tg[Math.floor(Math.random()*tg.length)]];
       hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?'의 광역 공격':''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)})}
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
