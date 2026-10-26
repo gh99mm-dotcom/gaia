@@ -142,6 +142,9 @@ header>.chip:not(.sugg){margin-left:0}
 .farmcook .rtiles{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
 .farmcook .dlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 10px}
 @media (max-width:560px){.farmcook{grid-template-columns:minmax(0,1fr)}}
+/* inside the (resizable) bag window the cooker follows the window's width: when narrow, the recipe card sits on top and the dish tiles flow below */
+.bw-body{container-type:inline-size}
+@container (max-width:540px){.farmcook{grid-template-columns:minmax(0,1fr)}.farmcook>.cook-h{order:-3}.farmcook>.cbuff{order:-2}.farmcook>.csel{order:-1}}
 .cook-h{display:flex;align-items:center;gap:8px}.cook-h .lbl{display:block;margin-top:2px}.cook-t{font-family:var(--f-display);font-size:15px}
 .cookpot{display:inline-flex}.cookpot.on img{animation:cpot .5s steps(2) infinite}
 @keyframes cpot{50%{transform:translateY(-1px)}}
@@ -162,7 +165,7 @@ header>.chip:not(.sugg){margin-left:0}
 .avatar{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px}
 .bagwin{position:fixed;z-index:40;box-sizing:border-box;width:min(620px,calc(100vw - 8px));height:min(80vh,760px);max-width:calc(100vw - 8px);max-height:calc(100vh - 8px);display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45),inset 0 0 0 1px var(--line)}
 .bw-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border-bottom:2px solid var(--ink);background:var(--deep);cursor:move;user-select:none;touch-action:none}.bw-head .hint{flex:1;font-size:11px}
-.bw-body{flex:1;min-height:0;overflow:auto;padding:10px 10px 16px;overscroll-behavior:contain}.bw-grip{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 0 50%,var(--ink) 50% 58%,transparent 58% 68%,var(--ink) 68% 76%,transparent 76% 86%,var(--ink) 86% 94%,transparent 94%)}.bw-body .two{grid-template-columns:minmax(0,1fr)}
+.bw-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:10px 10px 16px;overscroll-behavior:contain}.bw-grip{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 0 50%,var(--ink) 50% 58%,transparent 58% 68%,var(--ink) 68% 76%,transparent 76% 86%,var(--ink) 86% 94%,transparent 94%)}.bw-body .two{grid-template-columns:minmax(0,1fr)}
 .bagbtn.has{filter:drop-shadow(0 0 3px rgba(191,174,128,.8))}
 .mailbtn{position:relative;flex:none;background:none;border:0;box-shadow:none;padding:3px 4px;cursor:pointer;line-height:0}
 .mailbtn:hover{background:var(--panel2)}.mailbtn.has{filter:drop-shadow(0 0 3px rgba(191,174,128,.8))}
