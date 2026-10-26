@@ -3422,7 +3422,7 @@ const duelOn=()=>DUEL&&Date.now()>=DUEL.start&&Date.now()<DUEL.end;
 function duelBoard(){if(!DUEL)return[];const rows=[];for(const [id,p] of Object.entries(PLAYERS)){const d=id===uid?P.duel:p.duel;if(d&&d.id===DUEL.id)rows.push({id,nick:id===uid?P.nick:p.nick,score:d.score||0,best:d.best||''})}if(mode!=='online'&&P.duel&&P.duel.id===DUEL.id)rows.push({id:'me',nick:P.nick,score:P.duel.score,best:P.duel.best});return rows.sort((a,b)=>b.score-a.score)}
 function duelHTML(){if(mode!=='online')return'';const now=Date.now();
   if(duelOn()){const rk=duelBoard();return`<div class="card duel"><div class="row" style="justify-content:space-between"><b class="dfloor">낚시 대결 진행 중</b><span class="hint" id="duelT">남은 시간 ${fmtClock(DUEL.end-now)}</span></div><span class="hint">일반 1점 · 레어 3점 · 유니크 8점 · 레전더리 25점. 지금 낚으면 바로 점수가 올라갑니다.</span><div class="ranks">${rk.length?rk.map((r,i)=>`<div style="${r.id===uid||r.id==='me'?'border-color:var(--pink)':''}"><span>${i+1}. ${esc(r.nick)}${r.best?' · '+esc(ITEMS[r.best]?.n||''):''}</span><b>${r.score}점</b></div>`).join(''):'<div><span class="hint">아직 아무도 낚지 못했습니다.</span></div>'}</div></div>`}
-  if(DUEL&&now<DUEL.start)return`<div class="card duel"><b class="dfloor">낚시 대결이 곧 시작됩니다 · ${fmtClock(DUEL.start-now)}</b></div>`;
+  if(DUEL&&now<DUEL.start)return`<div class="card duel"><b class="dfloor">낚시 대결이 곧 시작됩니다 · <span id="duelS">${fmtClock(DUEL.start-now)}</span></b></div>`;
   if(DUEL&&now-DUEL.end<15*60e3){const rk=duelBoard(),top=rk[0];const win=top&&rk.filter(r=>r.score===top.score&&top.score>0).map(r=>r.id);const iWon=win&&win.includes(uid);const claimed=P.duel&&P.duel.claimed===DUEL.id;
     return`<div class="card duel"><div class="row" style="justify-content:space-between"><b class="dfloor">지난 낚시 대결 결과</b><button class="btn sm" data-act="duelstart">새 대결 열기 <small>3분</small></button></div><div class="ranks">${rk.length?rk.slice(0,5).map((r,i)=>`<div><span>${i+1}. ${esc(r.nick)}</span><b>${r.score}점</b></div>`).join(''):'<div><span class="hint">참가한 사람이 없었습니다.</span></div>'}</div>${iWon&&!claimed?'<button class="btn sm gold" data-act="duelclaim">우승 상금 받기 · 300 CR</button>':''}</div>`}
   return`<div class="card duel row" style="justify-content:space-between"><span class="hint">친구와 3분 동안 누가 더 귀한 물고기를 낚는지 겨뤄 보십시오.</span><button class="btn sm" data-act="duelstart">낚시 대결 열기 <small>3분</small></button></div>`}
@@ -3771,7 +3771,7 @@ sizeStars();addEventListener('resize',sizeStars);
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{for(let i=0;i<3;i++){const s=stars[ri(0,stars.length-1)];if(s)s.b=Math.random()*.7}drawStars()},1400);
 
 /* ───────── loop ───────── */
-setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.textContent='남은 시간 '+fmtClock(DUEL.end-Date.now());const k='d'+(duelOn()?1:0)+(Date.now()<DUEL.start?1:0);if(k!==window.__dk){window.__dk=k;renderPanel()}}},200);
+setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.textContent='남은 시간 '+fmtClock(DUEL.end-Date.now());const s=$('#duelS');if(s&&Date.now()<DUEL.start)s.textContent=fmtClock(DUEL.start-Date.now());const k='d'+(duelOn()?1:0)+(Date.now()<DUEL.start?1:0);if(k!==window.__dk){window.__dk=k;renderPanel()}}},200);
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
 addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm'){fitSide();fitBay()}});
 setInterval(()=>{
