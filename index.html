@@ -169,9 +169,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .dlist{display:flex;flex-direction:column;gap:3px}.drow{display:flex;align-items:center;gap:5px;font-size:12px}.drow span{flex:1;min-width:0}.drow .btn{padding:2px 7px;font-size:12px}
 .pilot{padding:12px;display:flex;flex-direction:column;gap:10px}
 .pilot-top{display:flex;gap:12px;align-items:center}
-.withpet{display:inline-flex;align-items:flex-end;gap:0}.withpet .petside{image-rendering:pixelated;margin-right:-2px}
-/* the small pilot card has no room to widen: the pet peeks out from the avatar's lower-left corner instead */
-.avatar.haspet{position:relative;margin-left:14px}.avatar.haspet .withpet{display:block;line-height:0}.avatar.haspet .petside{position:absolute;left:-18px;bottom:-2px;z-index:1}
+.withpet{position:relative;display:inline-block;line-height:0}.withpet .petside{position:absolute;left:0;bottom:0;z-index:1;image-rendering:pixelated}
 .avatar{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px}
 .bagwin{position:fixed;z-index:40;box-sizing:border-box;width:min(620px,calc(100vw - 8px));height:min(80vh,760px);max-width:calc(100vw - 8px);max-height:calc(100vh - 8px);display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45),inset 0 0 0 1px var(--line)}
 .bw-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border-bottom:2px solid var(--ink);background:var(--deep);cursor:move;user-select:none;touch-action:none}.bw-head .hint{flex:1;font-size:11px}
@@ -1637,7 +1635,8 @@ const NEST_PNG={"back": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAPC
 // a pet sitting in its twig nest: the back rim, then the pet, then the front of the bowl over its feet
 const petNest=id=>`<span class="nest"><img class="nb" src="${NEST_PNG.back}" alt=""><img class="np" src="${PET_PNG[id]||''}" alt=""><img class="nf" src="${NEST_PNG.front}" alt=""></span>`;
 // my character with my pet standing at its left, scaled to the same pixel size as the character (sc = character scale)
-const withPet=(html,p,sc)=>{const pt=p&&p.pet&&petById(p.pet.id);return pt?`<span class="withpet">${`<img class="pix petside" src="${PET_PNG[pt.id]}" width="${Math.round(24*sc*.75)}" height="${Math.round(24*sc*.75)}" alt="${esc(pt.n)}" title="${esc(pt.n)}">`}${html}</span>`:html};
+// the pet stands over the lower-left of my picture (it may cover me); the picture keeps its size, the pet keeps the same proportion everywhere
+const withPet=(html,p,sc)=>{const pt=p&&p.pet&&petById(p.pet.id),z=Math.round(sc*10.5);return pt?`<span class="withpet">${html}<img class="pix petside" src="${PET_PNG[pt.id]}" width="${z}" height="${z}" alt="${esc(pt.n)}" title="${esc(pt.n)}"></span>`:html};
 const PET_PRICE=5000,petById=id=>PETS.find(p=>p.id===id)||null,myPet=()=>P&&P.pet&&petById(P.pet.id),PF=k=>{const p=myPet();return p&&p.fx[k]||0};
 const petImg=(id,sc=2)=>PET_PNG[id]?`<img class="pix" src="${PET_PNG[id]}" width="${24*sc}" height="${24*sc}" alt="">`:'';
 const PET_FX={atk:'공격력',hp:'최대 체력',crit:'치명타',def:'방어력',en:'최대 에너지',gather:'채집 +1 확률'};
@@ -1935,7 +1934,7 @@ function renderPilot(){
   regen();queueMicrotask(renderCook);queueMicrotask(crWatch);
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').innerHTML=`
-  <div class="pilot-top"><div class="avatar ${myPet()?'haspet':''}">${withPet(meImg(3),P,1.75)}</div>
+  <div class="pilot-top"><div class="avatar">${withPet(meImg(3),P,3)}</div>
    <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
