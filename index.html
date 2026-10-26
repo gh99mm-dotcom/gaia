@@ -3070,7 +3070,7 @@ function gridOn(x,grid,ox,oy,tint,po){const pal=Object.assign({},PAL,po||{});if(
 function trophies(dex){const out=[];for(const tr of ['l','u','r','c'])for(const id of FISHES[tr])if(dex&&dex[id]&&out.length<4)out.push(id);return out}
 const THEMES={
  ruin:{n:'폐허 선실',d:'추락 뒤 버려진 채 남은 빈 선실. 녹슨 벽에 금이 가 있고 창문만 멀쩡해요',price:0,wall:{pat:'ruinwall',c:['#24221f','#121110','#6a4a32']},floor:{pat:'ruinfloor',c:['#201e1b','#100f0e','#3a342c']},trim:'#3a3530',slab:'#0e0d0c',view:'space',light:'150,128,104',acc:'#7a6a58'},
- space:{n:'우주 정거장',d:'별빛 패널과 커다란 현창이 있는 거주실',price:3000,wall:{pat:'starpanel',c:['#161c30','#0d1122','#3a4466']},floor:{pat:'plate',c:['#1d2130','#151824','#2e3448']},trim:'#3a4258',slab:'#0e1018',view:'space',light:'150,140,220',acc:'#8a86a8'},
+ space:{n:'우주 정거장',d:'별빛 패널과 커다란 현창이 있는 거주실',price:1500,wall:{pat:'starpanel',c:['#161c30','#0d1122','#3a4466']},floor:{pat:'plate',c:['#1d2130','#151824','#2e3448']},trim:'#3a4258',slab:'#0e1018',view:'space',light:'150,140,220',acc:'#8a86a8'},
  sf:{n:'SF 연구실',d:'배관과 서버랙이 늘어선 차가운 실험실',price:3500,mat:[['ore',8]],wall:{pat:'panel',c:['#1a2028','#10151b','#3a4552']},floor:{pat:'hazard',c:['#20252c','#171b21','#bfae80']},trim:'#4a5562',slab:'#0c0f13',view:'station',light:'127,208,208',acc:'#7fd0d0'},
  neon:{n:'네온 시티',d:'보랏빛 밤거리와 분홍·청록 네온사인',price:4500,mat:[['crystal',4]],wall:{pat:'neonwall',c:['#251838','#170f26','#ff4fd8']},floor:{pat:'checks',c:['#1c1430','#120c22']},trim:'#5a2f7a',slab:'#0e0818',view:'city',light:'255,79,216',acc:'#2ff5ff'},
  japan:{n:'다다미 방',d:'장지문과 다다미, 종이 등불이 있는 일본식 방',price:4000,mat:[['moss',6]],wall:{pat:'shoji',c:['#d9cfb4','#6b4a32','#b8ab8c']},floor:{pat:'tatami',c:['#9a9a5e','#7f8050','#4a3a28']},trim:'#5a3f2a',slab:'#3a2a1e',view:'bamboo',light:'255,214,150',acc:'#e8d7a8'},
@@ -3190,7 +3190,7 @@ function themeDecorFront(x,R,TH,rm,W,H,FY){const th=rm.theme||'space';
 
 function themeAnim(x,rm,W,H,FY){const th=rm.theme||'space',t=Date.now()/1000,R=(a,b,c,d,col)=>{x.fillStyle=col;x.fillRect(a,b,c,d)};
   if(th==='ruin'){if(Math.sin(t*17)>.93||Math.sin(t*2.3)>.985){x.fillStyle='rgba(0,0,0,.32)';x.fillRect(0,0,W,H)}
-    const sp=t%3.4;if(sp<.25){const ex=144,ey=33;for(let k=0;k<5;k++){const a=k*1.3+t*20,d=sp*14;R(ex+Math.cos(a)*d,ey+Math.abs(Math.sin(a))*d,.5,.5,k%2?'#ffd27a':'#fff2c8')}x.fillStyle='rgba(255,210,122,.08)';x.fillRect(ex-10,ey-8,20,18)}}
+    const sp=t%3.4;if(sp<.25){const ex=144,ey=33;for(let k=0;k<5;k++){const a=k*1.3+t*20,d=sp*14;R(ex+Math.cos(a)*d,ey+Math.abs(Math.sin(a))*d,.5,.5,k%2?'#ffd27a':'#fff2c8')}const sg=x.createRadialGradient(ex,ey+2,0,ex,ey+2,9);sg.addColorStop(0,'rgba(255,210,122,.16)');sg.addColorStop(1,'rgba(255,210,122,0)');x.fillStyle=sg;x.beginPath();x.arc(ex,ey+2,9,0,Math.PI*2);x.fill()}}
   if(th==='aqua'){for(let k=0;k<3;k++){const px=96+Math.sin(t*.4+k*2.1)*14,py=16+k*8+Math.sin(t*.9+k)*2,dir=Math.cos(t*.4+k*2.1)>0?1:-1,col=['#e0a060','#7fd0d0','#c48aa4'][k];R(px-1.5,py,3,1.5,col);R(px-1.5-dir*1.5,py+.25,1,1,col);R(px+dir*1,py+.25,.5,.5,'#05060b')}
     for(let k=0;k<8;k++){const ph=(t*.25+k*.13)%1;R(8+k*23+Math.sin(t+k)*1.5,FY-2-ph*(FY-6),.5+(k%2)*.5,.5+(k%2)*.5,`rgba(190,230,240,${.5*(1-ph)})`)}}
   if(th==='nature'){for(let k=0;k<7;k++){const a=Math.sin(t*1.7+k*3)*.5+.5;R(20+k*25+Math.sin(t*.5+k)*6,30+Math.cos(t*.7+k*2)*10+k%3*6,1,1,`rgba(220,240,140,${.25+a*.6})`)}}
