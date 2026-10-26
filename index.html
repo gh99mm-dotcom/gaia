@@ -3212,7 +3212,7 @@ function roomDetail(x,cv,rm,W,H,FY){const t=Date.now()/1000,still=matchMedia('(p
   /* hairline highlights on edges */
   F(64,8,64,.5,'rgba(196,199,212,.30)');F(62,51,68,.5,'rgba(196,199,212,.25)');F(136,26,52,.5,'rgba(196,199,212,.30)');F(136,60,52,.5,'rgba(196,199,212,.28)');F(6,58,.5,23,'rgba(196,199,212,.18)');
   /* monitor glow pulse */
-  const mg=x.createRadialGradient(165,50,2,165,50,30);mg.addColorStop(0,`rgba(127,184,164,${(still?.08:.06+.04*Math.sin(t*2.3)).toFixed(3)})`);mg.addColorStop(1,'rgba(127,184,164,0)');x.fillStyle=mg;x.fillRect(130,24,62,50)}
+  const mg=x.createRadialGradient(155,50,2,155,50,30);mg.addColorStop(0,`rgba(127,184,164,${(still?.08:.06+.04*Math.sin(t*2.3)).toFixed(3)})`);mg.addColorStop(1,'rgba(127,184,164,0)');x.fillStyle=mg;x.fillRect(120,24,62,50)}
 function drawRoomCv(){const cv=$('#roomCv');if(!cv)return;const W=192,H=96,FY=66;if(cv.width!==W*2){cv.width=W*2;cv.height=H*2}const x=cv.getContext('2d');x.setTransform(2,0,0,2,0,0);x.globalAlpha=1;
   const R=(a,b,c,d,col)=>{x.fillStyle=col;x.fillRect(a,b,c,d)};
   const who=visit&&PLAYERS[visit]?PLAYERS[visit]:P,rm=Object.assign(roomOf(who),!visit?preview:{});let r=11;const rnd=()=>((r=(r*9301+49297)%233280)/233280);const TH=THEMES[rm.theme]||THEMES.space;x.imageSmoothingEnabled=false;const {OL,Bx,In,Sd,Wm,Gr,Gl,Cyl}=mkFx(x,R);
@@ -3280,7 +3280,8 @@ function drawRoomCv(){const cv=$('#roomCv');if(!cv)return;const W=192,H=96,FY=66
    R(175.5,19,2,7,OL('#6a2f38'));Cyl(176,19.5,1.5,6.5,'#6a2f38');R(176,21,1.5,.5,'#c9a06a');R(177.5,20.5,2,5.5,OL('#2b4252'));Cyl(178,21,1.5,5,'#2b4252');R(178,22.5,1.5,.5,'#a99a74')}
   trophies(who.dex).forEach((id,k)=>{const it=ITEMS[id],tx=138+k*12;Bx(tx+.5,24,9,2,'#2a2e3a');R(tx+3,24.75,4,.5,'#a99a74');R(tx+3,24.75,1,.5,'#e2d39a');gridOn(x,TPL[it.ic],tx,16,it.t)});
   if((who.deep||0)>=5){R(182,18,5,7,'#a99a74');R(181,17,7,2,'#c2ad78');R(183,25,3,1,'#62563d')}
-  /* desk */
+  /* desk — drawn 10px nearer the window */
+  x.save();x.translate(-10,0);
   {const DS=furnById(rm.desk)||FURN.desk.list[0];const glass=DS.top==='glass';const tc=glass?'#4f6a80':DS.top,tl=glass?'#8aa9bd':mix(tc,'#c4c7d4',.2),td=mix(tc,'#07080e',.4),bc=DS.body,bl=mix(bc,'#c4c7d4',.12),bd=mix(bc,'#07080e',.3);
    const low=DS.base==='low',ty=low?74:62;
    R(136,86,52,2,'rgba(0,0,0,.35)');
@@ -3319,6 +3320,7 @@ function drawRoomCv(){const cv=$('#roomCv');if(!cv)return;const W=192,H=96,FY=66
    if(DS.chair==='stool'){R(158,72,14,3,'#05060b');Bx(158.5,72,13,2,cc,{ol:false,g:.3});R(160,75,2,10,'#05060b');R(168,75,2,10,'#05060b');R(161,75,1,9,'#5d6274');R(169,75,1,9,'#5d6274');R(161,80,8,1,'#41444f')}
    if(DS.chair==='cushion'){Sd(164,87,11,1.2,.4);R(154,82,20,5,'#05060b');for(let j=0;j<4;j+=.5){const e=j<.5||j>=3.5?1:0;R(155+e,82+j,18-2*e,.5,shade(cc,.25-j*.1))}R(164,82.5,.5,3,shade(cc,-.25));R(155,82,18,.5,shade(cc,.4));R(158,84,1,1,mix(cc,'#07080e',.3));R(169,84,1,1,mix(cc,'#07080e',.3))}
   }
+  x.restore();
   /* floor item (area ~120..148 x 54..88) */
   const sh=(a,b,w2)=>Sd(a+w2/2,b+.8,w2/2+1.5,1.4,.42);
   const pot=(cx,top,pc)=>{for(let j=0;j<10;j+=.5){const w2=10-j*.35;R(cx-w2/2-.5,top+2+j,w2+1,.5,OL(pc));R(cx-w2/2,top+2+j,w2,.5,shade(pc,.05-j*.025))}R(cx-w2h(10)+.5,top+3,.5,8,shade(pc,.32));R(cx+3,top+3,.5,7,shade(pc,-.25));R(cx-6.5,top-.5,13,3,OL(pc));Bx(cx-6,top,12,2,shade(pc,.08),{ol:false,g:.3});R(cx-5,top+.25,10,.75,'#2a211b');R(cx-2,top+6,4,2,shade(pc,.2));R(cx-1.5,top+6.5,3,1,shade(pc,-.1))};const w2h=w=>w/2;
@@ -3402,13 +3404,14 @@ function roomAvatars(){const owner=visit||uid,out=[];const others=rsPeers.filter
   const mk=p=>{const pr=p.presence,id=pr.uid;if(peerX[id]==null)peerX[id]=pr.x||96;const em=pr.emote&&Date.now()-(pr.ea||0)<3500?pr.emote:null;return{id,x:peerX[id],tx:pr.x||96,p:{look:pr.look,outfit:pr.outfit},nick:pr.nick,emote:em}};
   if(visit&&!others.find(p=>p.presence.uid===owner))out.push({id:owner,x:110,tx:110,p:PLAYERS[owner]||{},nick:(PLAYERS[owner]||{}).nick,emote:null,away:true});
   others.forEach(p=>out.push(mk(p)));out.push({id:uid||'me',x:myRX,p:P,nick:P.nick,emote:myEmote&&Date.now()-myEmote.at<3500?myEmote.k:null,me:true});out.sort((a,b)=>a.x-b.x||(a.id<b.id?-1:1));
-  // keep everyone at least a body apart inside the floor, so crew never stack on one spot
-  const GAP=28,L0=24,L1=170;for(let i=1;i<out.length;i++)if(out[i].x<out[i-1].x+GAP)out[i].x=out[i-1].x+GAP;
-  const over=out.length?out[out.length-1].x-L1:0;if(over>0)out.forEach(a=>a.x-=over);if(out.length&&out[0].x<L0){const span=(L1-L0)/Math.max(1,out.length-1);out.forEach((a,i)=>a.x=out.length>1?L0+i*span:96)}
+  // stand on the open floor between the bed and the desk; up to three side by side, a bigger crowd in two staggered rows
+  const L0=74,L1=116,n=out.length;out.forEach(a=>a.dy=0);
+  if(n<=3){out.forEach(a=>a.x=Math.max(L0,Math.min(L1,a.x)));for(let i=1;i<n;i++)if(out[i].x<out[i-1].x+21)out[i].x=out[i-1].x+21;const over=n?out[n-1].x-L1:0;if(over>0)out.forEach(a=>a.x-=over)}
+  else{const a0=L0-2,a1=L1+2,step=(a1-a0)/(n-1);out.forEach((a,i)=>{a.x=a0+i*step;a.dy=i%2?-6:0})}
   return out}
-function drawAvatars(x){roomAvatars().forEach(a=>{const ax=Math.round(a.x);x.fillStyle='rgba(0,0,0,.4)';x.fillRect(ax-7,78,14,2);const gl=lookGlow(a.p);if(gl){const n=parseInt(gl.slice(1),16),rgb=`${n>>16&255},${n>>8&255},${n&255}`,gg=x.createRadialGradient(ax,69,2,ax,69,18);gg.addColorStop(0,`rgba(${rgb},.45)`);gg.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=gg;x.fillRect(ax-20,48,40,40);x.fillStyle=`rgba(${rgb},.25)`;x.fillRect(ax-9,79,18,2)}const ph=(a.id||'').length*1.7+(a.me?0:2.3),tt=Date.now()/1000,still=matchMedia('(prefers-reduced-motion: reduce)').matches,bob=still?0:(Math.sin(tt*2.4+ph)>.3?-.5:0)+(Math.sin(tt*.9+ph)>.85?-.5:0);x.save();if(!still&&Math.sin(tt*.5+ph)>.92){x.translate(ax,80);x.rotate(Math.sin(tt*6)*.05);x.translate(-ax,-80)}gridOnS(x,avatarGrid(a.p),ax-10,60+bob,.5,lookPal(a.p));x.restore();
-  if(a.emote&&EMOTES[a.emote]){const g=EMOTES[a.emote],bx=ax+2,by=46;x.fillStyle='#05060b';x.fillRect(bx-1,by-1,11,10);x.fillStyle='#d6d8e0';x.fillRect(bx,by,9,8);x.fillRect(bx+1,by+8,2,2);gridOn(x,g,bx+1+(g[0].length<6?1:0),by+1,null)}})}
-function roomLabels(){const el=$('#roomNames');if(!el)return;el.innerHTML=roomAvatars().map(a=>`<span class="rname ${a.me?'me':''} ${a.away?'away':''}" title="${a.away?'자리 비움':''}" style="left:${a.x/192*100}%">${a.me?'나':esc(a.nick||'단원')}</span>`).join('')}
+function drawAvatars(x){roomAvatars().slice().sort((a,b)=>a.dy-b.dy).forEach(a=>{const ax=Math.round(a.x),dy=a.dy||0;x.save();x.translate(0,dy);x.fillStyle='rgba(0,0,0,.4)';x.fillRect(ax-7,78,14,2);const gl=lookGlow(a.p);if(gl){const n=parseInt(gl.slice(1),16),rgb=`${n>>16&255},${n>>8&255},${n&255}`,gg=x.createRadialGradient(ax,70,1,ax,70,12);gg.addColorStop(0,`rgba(${rgb},.38)`);gg.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=gg;x.beginPath();x.arc(ax,70,12,0,Math.PI*2);x.fill();x.fillStyle=`rgba(${rgb},.25)`;x.fillRect(ax-9,79,18,2)}const ph=(a.id||'').length*1.7+(a.me?0:2.3),tt=Date.now()/1000,still=matchMedia('(prefers-reduced-motion: reduce)').matches,bob=still?0:(Math.sin(tt*2.4+ph)>.3?-.5:0)+(Math.sin(tt*.9+ph)>.85?-.5:0);x.save();if(!still&&Math.sin(tt*.5+ph)>.92){x.translate(ax,80);x.rotate(Math.sin(tt*6)*.05);x.translate(-ax,-80)}gridOnS(x,avatarGrid(a.p),ax-10,60+bob,.5,lookPal(a.p));x.restore();
+  if(a.emote&&EMOTES[a.emote]){const g=EMOTES[a.emote],bx=ax+2,by=46;x.fillStyle='#05060b';x.fillRect(bx-1,by-1,11,10);x.fillStyle='#d6d8e0';x.fillRect(bx,by,9,8);x.fillRect(bx+1,by+8,2,2);gridOn(x,g,bx+1+(g[0].length<6?1:0),by+1,null)}x.restore()})}
+function roomLabels(){const el=$('#roomNames');if(!el)return;el.innerHTML=roomAvatars().map(a=>`<span class="rname ${a.me?'me':''} ${a.away?'away':''}" title="${a.away?'자리 비움':''}" style="left:${a.x/192*100}%;top:${(61.5+(a.dy||0))/96*100}%">${a.me?'나':esc(a.nick||'단원')}</span>`).join('')}
 let wanderAt=0;
 setInterval(()=>{if(!roomShown())return;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;let mv=!calm&&(Date.now()%240<75);if(!calm&&Date.now()>wanderAt){wanderAt=Date.now()+4000+Math.random()*5000;if(Math.abs(myTX-myRX)<.5){myTX=Math.max(80,Math.min(116,96+(Math.random()*2-1)*14));pushRoomPresence()}}if(Math.abs(myTX-myRX)>.5){myRX+=Math.sign(myTX-myRX)*Math.min(.5,Math.abs(myTX-myRX));mv=true}
   rsPeers.forEach(p=>{const pr=p.presence;if(!pr||!pr.uid||p.isMe)return;const tx=pr.x||96;if(peerX[pr.uid]==null)peerX[pr.uid]=tx;if(Math.abs(tx-peerX[pr.uid])>.5){peerX[pr.uid]+=Math.sign(tx-peerX[pr.uid])*Math.min(1.5,Math.abs(tx-peerX[pr.uid]));mv=true}if(pr.emote&&Date.now()-(pr.ea||0)<3600)mv=true});
