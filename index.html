@@ -3087,12 +3087,12 @@ const A={
  rescue(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||!(t.faint&&Date.now()<t.faint))return;if(!spend(3))return;db.doc('rescues/'+d.k).set({by:uid,nick:P.nick,at:Date.now()}).then(()=>{log(`${t.nick} 님을 구조했다.`,'good');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()}).catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
  gift(d){openGift(d.k)},
  giftclose(){$('#giftModal').hidden=true},
- giftadd(d){const have=P.inv[d.id]||0;giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
+ giftadd(d){if(!isDish(d.id))return;const have=P.inv[d.id]||0;if(giftCount()>=GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
  giftreset(){giftSel={};renderGift()},
  giftcr(d){giftCr=+d.k;renderGift()},
- giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&(P.inv[i]||0)>=n);const cr=Math.min(giftCr,P.cr||0),note=!items.length&&!cr;if(note&&!giftMsg.trim())return;if(!note&&giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 이미 선물했습니다. 쪽지는 언제든 보낼 수 있습니다.`);return}
+ giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&isDish(i)&&(P.inv[i]||0)>=n);if(items.reduce((a,[,n])=>a+n,0)>GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}const cr=Math.min(giftCr,P.cr||0),note=!items.length&&!cr;if(note&&!giftMsg.trim())return;if(!note&&giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 이미 선물했습니다. 쪽지는 언제든 보낼 수 있습니다.`);return}
   items.forEach(([i,n])=>take(i,n));P.cr-=cr;const msg=giftMsg.trim().slice(0,40);save();
-  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items,cr,msg,at:Date.now()}).then(()=>{if(!note)P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
+  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items:items.map(([id,n])=>({id,n})),cr,msg,at:Date.now()}).then(()=>{if(!note)P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
  duelstart(){if(mode!=='online'||duelOn())return;const now=Date.now();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)).catch(()=>toast('대결을 열지 못했습니다.'))},
  duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+crs(300);sfxCoin();log(`낚시 대결 우승! 상금 ${crs(300)} CR`,'rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
@@ -3111,7 +3111,7 @@ const A={
  admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
  admgive(){if(!isAdmin)return;const id=$('#admItem').value,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
-  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[[id,n]],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
+  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[{id,n}],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
@@ -3157,10 +3157,11 @@ const A={
 /* ---- gifts ---- */
 let giftTo=null,giftSel={},giftCr=0,giftMsg='';
 function openGift(id){if(!PLAYERS[id])return;giftTo=id;giftSel={};giftCr=0;giftMsg='';renderGift();$('#giftModal').hidden=false}
-function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]);const sel=Object.entries(giftSel);
+const GIFT_MAX=2,isDish=i=>COOK.some(c=>c.id===i),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
+function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]&&isDish(i));const sel=Object.entries(giftSel);
   $('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2><span class="hint">${esc(t.nick)} 님의 나에 대한 호감도 ${affBadge(affOf(t,uid))}</span></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
   ${tasteHTML(t)||'<span class="hint">이 단원은 아직 취향을 정하지 않았습니다.</span>'}
-  <div class="info-sec"><span class="lbl">Items · 누를 때마다 1개씩 담깁니다</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,3)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">보낼 아이템이 없습니다.</p>'}</div></div>
+  <div class="info-sec"><span class="lbl">Dishes · 요리만, 한 사람에게 하루 ${GIFT_MAX}개까지 (${giftCount()}/${GIFT_MAX})</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,3)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">선물할 요리가 없습니다. 가방에서 요리를 만들어 보십시오.</p>'}</div></div>
   <div class="info-sec"><span class="lbl">Credits · 크레딧</span><div class="row" style="gap:5px">${[0,50,100,500,1000,5000].map(v=>`<button class="qchip" data-act="giftcr" data-k="${v}" aria-pressed="${giftCr===v}" ${v>(P.cr||0)?'disabled':''}>${v?v.toLocaleString()+' CR':'없음'}</button>`).join('')}</div></div>
   <div class="info-sec"><span class="lbl">Message · 쪽지 (아이템 없이 쪽지만 보내도 됩니다)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
   <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}${giftedToday(giftTo)&&(sel.length||giftCr)?'<span class="hint" style="color:var(--red)">오늘은 이미 선물했습니다</span>':''}<button class="btn sm gold" id="giftGo" data-act="giftsend" ${giftGoOk(sel)?'':'disabled'}>${sel.length||giftCr?'선물 보내기':'쪽지 보내기'}</button></div>`}
@@ -3171,15 +3172,17 @@ function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assig
   MAILG.forEach(g=>{if(mailNoted.has(g.id))return;mailNoted.add(g.id);if((+g.at||0)>socBoot)toast(`${g.sys?'운영자':(g.nick||'누군가')} 님에게서 ${mailHasGift(g)?'선물':'쪽지'}이 왔습니다. 우편함을 확인하십시오.`)});mailRefresh()}
 function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0)||got.includes(d.id))return;
   if((+g.at||0)<(P.joined||0)){P.gr=[...(P.gr||[]),d.id].slice(-80);ch=true;return}MAILA.push(Object.assign({id:d.id,grant:1},g))});if(ch)save();mailRefresh()}
-const mailHasGift=g=>(g.items||[]).some(([i,n])=>ITEMS[i]&&n>0)||(+g.cr||0)>0;
+// gift items are stored as [{id,n}] (Firestore refuses nested arrays); older docs may still hold [[id,n]]
+const giftItems=g=>(g.items||[]).map(x=>Array.isArray(x)?x:[x&&x.id,x&&+x.n]);
+const mailHasGift=g=>giftItems(g).some(([i,n])=>ITEMS[i]&&n>0)||(+g.cr||0)>0;
 const mailList=()=>[...MAILA,...MAILG].sort((a,b)=>(+b.at||0)-(+a.at||0));
 function mailRefresh(){const b=$('#mailBtn');if(b){const n=mailList().length;b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n)}if(mailView)renderPanel()}
 function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
   if(a){const cr=Math.min(100000,Math.floor(+a.cr));P.gr=[...(P.gr||[]),id].slice(-80);P.cr=(P.cr||0)+cr;MAILA=MAILA.filter(x=>x.id!==id);log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');sfxCoin();return true}
   const g=MAILG.find(x=>x.id===id);if(!g)return false;P.gotG=[...(P.gotG||[]).slice(-60),id];MAILG=MAILG.filter(x=>x.id!==id);
-  const parts=[];(g.items||[]).forEach(([i,n])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
+  const parts=[];giftItems(g).forEach(([i,n])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
   if(parts.length&&g.from&&!g.sys&&PLAYERS[g.from]&&(P.affDay||{})[g.from]!==dayKey()){P.affDay=Object.assign({},P.affDay,{[g.from]:dayKey()});
-    const gi=(g.items||[]).map(([i])=>i).filter(i=>ITEMS[i]),lk=gi.filter(i=>(P.likes||[]).includes(i)),ht=gi.filter(i=>(P.hates||[]).includes(i));
+    const gi=giftItems(g).map(([i])=>i).filter(i=>ITEMS[i]),lk=gi.filter(i=>(P.likes||[]).includes(i)),ht=gi.filter(i=>(P.hates||[]).includes(i));
     if(lk.length)addAff(g.from,AFF.like,`좋아하는 ${ITEMS[lk[0]].n} 선물`);
     if(ht.length)addAff(g.from,AFF.hate,`싫어하는 ${ITEMS[ht[0]].n} 선물`);
     if(!lk.length&&!ht.length)addAff(g.from,AFF.gift,'선물')}
@@ -3189,7 +3192,7 @@ function mailHTML(){const L=mailList();
   return`<div class="stage-head mehead"><button class="qchip" data-act="mailclose">← 돌아가기</button><h2>우편함</h2><span class="loc">${L.length?L.length+'통 도착':'비어 있음'}</span></div>
   ${L.length?`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">선물은 받기를 눌러야 가방에 들어옵니다. 쪽지는 확인하면 사라집니다.</span><button class="btn sm gold" data-act="mailall">모두 받기</button></div>
   <div class="maillist">${L.map(m=>{const sysm=m.grant||m.sys,gift=m.grant||mailHasGift(m),who=sysm?'운영자':(m.nick||'단원');
-    const chips=m.grant?`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`:[...(m.items||[]).filter(([i,n])=>ITEMS[i]&&n>0).map(([i,n])=>`<span class="ichip">${iicon(i,1)}${ITEMS[i].n} ×${n}</span>`),...((+m.cr||0)>0?[`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`]:[])].join('');
+    const chips=m.grant?`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`:[...giftItems(m).filter(([i,n])=>ITEMS[i]&&n>0).map(([i,n])=>`<span class="ichip">${iicon(i,1)}${ITEMS[i].n} ×${n}</span>`),...((+m.cr||0)>0?[`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`]:[])].join('');
     return`<div class="mailitem ${sysm?'sys':''}"><div class="mailfrom">${sysm?`<span class="mailsys">운영자</span>`:headImg(3,whoP(m.from))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">· ${gift?'선물':'쪽지'}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(String(m.msg).slice(0,80))}”</p>`:''}${chips?`<div class="chips">${chips}</div>`:''}</div><button class="btn sm ${gift?'gold':'ghost'}" data-act="mailone" data-k="${esc(m.id)}">${gift?'받기':'확인'}</button></div>`}).join('')}</div>`
   :'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 단원이나 운영자가 보낸 선물과 쪽지가 여기에 도착합니다.</p>'}`}
 
