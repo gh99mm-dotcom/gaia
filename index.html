@@ -3270,11 +3270,21 @@ const bossBgmWant=()=>tab==='adv'&&bossAlive(BOSS)&&bgmOn&&bgmVol>0;
 function bossBgmStart(){const a=ac();if(!a)return;if(BBGM){BBGM.g.gain.setTargetAtTime(bgmVol/100*.55,a.currentTime,.1);return}
   const g=a.createGain();g.gain.setValueAtTime(.0001,a.currentTime);g.gain.setTargetAtTime(bgmVol/100*.55,a.currentTime,.8);g.connect(a.destination);
   const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=260;lp.Q.value=4;lp.connect(g);const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.07;lg.gain.value=120;lfo.connect(lg).connect(lp.frequency);
-  const dg=a.createGain();dg.gain.value=.16;dg.connect(lp);const osc=[[36.71,'sawtooth'],[36.9,'sawtooth'],[73.42,'square']].map(([f,ty])=>{const o=a.createOscillator();o.type=ty;o.frequency.value=f;o.connect(dg);o.start();return o});lfo.start();
-  const B=.8,MEL=[293.66,0,0,0,349.23,0,329.63,0,293.66,0,0,0,277.18,0,0,0];let step=0,next=a.currentTime+.4;
-  const hit=(f0,f1,at,dur,vol,type)=>{const o=a.createOscillator(),e=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,at);if(f1)o.frequency.exponentialRampToValueAtTime(f1,at+dur);e.gain.setValueAtTime(.0001,at);e.gain.exponentialRampToValueAtTime(vol,at+.02);e.gain.exponentialRampToValueAtTime(.0001,at+dur);o.connect(e).connect(g);o.start(at);o.stop(at+dur+.05)};
-  const iv=setInterval(()=>{while(next<a.currentTime+.5){const k=step%16;if(k%4===0){hit(64,38,next,.32,.5,'sine');hit(58,36,next+.24,.28,.32,'sine')}
-    if(MEL[k])hit(MEL[k],0,next,B*1.8,.05,'triangle');if(k===8)hit(MEL[0]/2,0,next,B*3,.04,'sine');step++;next+=B/2}},120);
+  const dg=a.createGain();dg.gain.value=.1;dg.connect(lp);const osc=[[36.71,'sawtooth'],[36.9,'sawtooth'],[73.42,'square']].map(([f,ty])=>{const o=a.createOscillator();o.type=ty;o.frequency.value=f;o.connect(dg);o.start();return o});lfo.start();
+  // creepy lead in D phrygian-ish with a tritone, echoed through a feedback delay; bass walks D-Bb-G-A under it
+  const dl=a.createDelay(2),fb=a.createGain(),wet=a.createGain();dl.delayTime.value=.6;fb.gain.value=.38;wet.gain.value=.5;dl.connect(fb).connect(dl);dl.connect(wet).connect(g);
+  const S=.4,D4=293.66,N=st=>D4*Math.pow(2,st/12);
+  const MEL=[[0,0,3],[3,3,1],[4,1,4],[8,0,2],[10,-2,2],[12,-4,4],[16,0,3],[19,3,1],[20,8,4],[24,7,2],[26,6,2],[28,3,4],
+    [32,12,3],[35,10,1],[36,8,2],[38,7,2],[40,6,4],[44,3,4],[48,1,4],[52,0,4],[56,-1,4],[60,0,4]],BASS=[73.42,58.27,49,55];
+  let step=0,next=a.currentTime+.4;
+  const hit=(f0,f1,at,dur,vol,type,out=g)=>{const o=a.createOscillator(),e=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,at);if(f1)o.frequency.exponentialRampToValueAtTime(f1,at+dur);e.gain.setValueAtTime(.0001,at);e.gain.exponentialRampToValueAtTime(vol,at+.03);e.gain.exponentialRampToValueAtTime(.0001,at+dur);o.connect(e);e.connect(out);if(out!==g)e.connect(g);o.start(at);o.stop(at+dur+.05)};
+  const lead=(f,at,dur)=>{hit(f,0,at,dur,.07,'triangle',dl);hit(f*2.003,0,at,dur*.6,.018,'sine',dl);const v=a.createOscillator(),vg=a.createGain();v.frequency.value=5.2;vg.gain.value=f*.006;v.connect(vg);v.start(at);v.stop(at+dur)};
+  const iv=setInterval(()=>{while(next<a.currentTime+.5){const k=step%64;
+    if(k%8===0){hit(60,36,next,.32,.38,'sine');hit(55,34,next+.24,.28,.24,'sine')}
+    if(k%16===0){const f=BASS[k/16];hit(f,0,next,S*15,.09,'sawtooth');hit(f/2,0,next,S*15,.12,'sine')}
+    MEL.filter(m=>m[0]===k).forEach(([,st,len])=>lead(N(st),next,S*len*1.4));
+    if(k===30||k===62)hit(N(18),0,next,2.4,.025,'sine',dl);
+    step++;next+=S}},120);
   BBGM={g,osc:[...osc,lfo],iv}}
 function bossBgmStop(){if(!BBGM)return;const m=BBGM,a=AC;BBGM=null;clearInterval(m.iv);try{m.g.gain.setTargetAtTime(.0001,a.currentTime,.25);setTimeout(()=>{m.osc.forEach(o=>{try{o.stop()}catch(e){}});m.g.disconnect()},1500)}catch(e){}}
 $('#suggBtn').innerHTML=img(ENV,null,1)+'건의함';
