@@ -850,6 +850,9 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @keyframes bottilt{0%,70%{transform:rotate(0)}80%{transform:rotate(-4deg)}90%{transform:rotate(3deg)}}
 .keeper .say{margin:2px 0 6px;color:var(--mute);font-size:13px}
 .spcrow{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold) 55%,transparent)}.spcico{flex:none;display:grid;place-items:center;width:56px;height:56px;border:1px solid color-mix(in srgb,var(--gold) 60%,transparent);background:radial-gradient(circle,color-mix(in srgb,var(--gold) 22%,transparent),transparent 70%),var(--deep)}
+.secret{display:flex;flex-direction:column;gap:12px}.barcv{width:100%;max-width:720px;margin:0 auto;display:block;image-rendering:pixelated;border:2px solid #3a2418;box-shadow:0 0 24px #ff4fd822}
+.barkeep{background:linear-gradient(180deg,#1c1220,#140c16);border-color:#5a2f4a}.barkeep .say{color:#e8c8a0}.barkeep b{color:#ffb8f0}.barmenu{border-style:dashed}
+:root[data-skin="light"] .barkeep{background:linear-gradient(180deg,#3a2838,#2a1c28)}:root[data-skin="light"] .barkeep .hint{color:#c8b8c0}
 .spctag{font-family:var(--f-pix);font-size:10px;padding:0 4px;border:1px solid currentColor;color:var(--gold);vertical-align:middle}.spctag.bound{color:var(--pink)}
 .keeper .bal{font-family:var(--f-pix);font-weight:400;font-size:13px;color:var(--gold)}
 .slist{display:flex;flex-direction:column;gap:5px;max-height:420px;overflow:auto}
@@ -1195,6 +1198,7 @@ sack:["................","......kkkk......",".......kk.......","......kYYk......
 fert:["................",".....kkkkkk.....","......kSSk......",".....kssssk.....","....kggggggk....","....kgGgggGk....","....kggGgggk....","....kGgggGgk....","....kGGGGGGk....",".....kkkkkk.....","................","................"],
 sickle:["................",".....kkkk.......","....kssssk......","...ks....sk.....","...k......sk....","...........sk...","...........sk...","..........ksk...",".........kYk....","........kYk.....",".......kYk......","......kk........"],
 shop:["................","..kkkkkkkkkkkk..",".kpwpwpwpwpwpwk.",".kpwpwpwpwpwpwk.","..kkkkkkkkkkkk..","...kS......Sk...","...kS..yy..Sk...","...kS.yYYy.Sk...","...kS..yy..Sk...","..kkkkkkkkkkkk..","..kYYYYYYYYYYk..","..kYyyyyyyyyYk..","..kYYYYYYYYYYk..","..kkkkkkkkkkkk..","................","................"],
+robotBar:[".......y........",".....kkkkkk.....",".....kffffk.....","...kkkffffkkk...","...kSSSSSSSSk...","...kSkkSSkkSk...","...kSkcSSkcSk...","...kSnnnnnnSk...","...knnSSSSnnk...","....kkkkkkkk....","..kkVhhrrhhVkk..",".kSkVhrrrrhVkSk.",".kSkVVhhhhVVkSk.",".kk.VVVyyVVV.kk.","....kVk..kVk....","....kkk..kkk...."],
 robot:["................",".......k........",".......y........","....kkkkkkkk....","...kSSSSSSSSk...","...kSkkSSkkSk...","...kSkcSSkcSk...","...kSSSSSSSSk...","...kSskkkksSk...","....kkkkkkkk....","..kkSSSSSSSSkk..",".kSkSsSSSSsSkSk.",".kSkSSSyySSSkSk.",".kk.SSSSSSSS.kk.","....kSk..kSk....","....kkk..kkk...."],
 rod:["..............k.",".............ka.","............ka..","...........ka...","..........ka....",".........ka.....","........ka......",".......ka.......","......ka........",".....ka.........","....kaa.........","..kkSSk.........",".kSsSSk.........",".kSSSk..........","..kkk...........","................"],
 suit:["................",".....kkkkkk.....","....kahhaaak....","...kakkkkkkak...","...kakCCCCkak...","...kakkkkkkak...","....kaaaaaak....","..kkkaaaaaakkk..",".kaakaabbaakaak.",".kaakaaaaaakaak.",".kbbkaaaaaakbbk.","..kk.kaaaak.kk..",".....kakkak.....",".....kak.kak....","....kbbk.kbbk...","....kkkk.kkkk..."],
@@ -2262,7 +2266,7 @@ function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();rai
   if(mode==='online')rcUnsub=rcRef(id).onSnapshot(sn=>{const prev=RCHAT.length;RCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='raid'){const l=$('#rcLog');if(l){l.innerHTML=rcLogHTML();if(RCHAT.length>prev)l.scrollTop=l.scrollHeight}}},()=>{});
   raidUnsub=raidRef(id).onSnapshot(s=>{if(raidWid!==id)return;if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
     if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
-    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same)raidSfx(MYRAID,r);MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel()}},()=>{})}
+    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same)raidSfx(MYRAID,r);MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel()}},()=>{})}
 function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS.length=0;sn.docs.forEach(d=>{const v=d.data();if(raidNow()-(v.at||0)<30*60e3)RAIDS.push(Object.assign({id:d.id},v))});if(tab==='raid')renderPanel()},()=>{});
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
@@ -3907,6 +3911,38 @@ function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q
   <p class="hint">포스터는 매일 오전 8시와 오후 8시에 새로 붙습니다. 다음 교체까지 <b id="reqT">${fmtClock(reqLeft())}</b> · 남은 의뢰 ${R.list.length-R.done.length}개.</p>`}
 function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
 function renderBag(){return head()+bagInner()}
+/* ───────── 비밀상점: right-click (or long-press) the handmade invitation and the junk robot, now a bartender, lets you in ───────── */
+const BAR_LINES=['어서 오세요, 손님. …아니, 처음 보는 로봇이라고 해 두죠.','초대장을 가진 분만 들어올 수 있는 곳입니다. 고물상이요? 무슨 말씀이신지.','이 콧수염은 진짜입니다. 정말로요.','오늘 밤은 조용하네요. 비밀 이야기 하기 딱 좋은 날입니다.','메뉴는 곧 준비됩니다. 좋은 물건은 원래 늦게 오는 법이죠.'];
+let barLine=0,secretTimer=null;
+const BARPAL={S:'#8a8ea6',s:'#c4c7d4',c:'#7fe8ff',r:'#e0404a',h:'#f2eee6',V:'#6a2f50',n:'#8a5a32',f:'#1a1418',y:'#ffd65f'};
+// "BAR" in a 5x7 pixel font for the neon sign
+const BAR_SIGN=['1110 0110 1110','1001 1001 1001','1001 1001 1001','1110 1111 1110','1001 1001 1010','1001 1001 1001','1110 1001 1001'];
+function secretHTML(){return`<div class="stage-head mehead"><button class="qchip" data-act="secretclose">← 나가기</button><h2>비밀상점</h2><span class="loc">어느 골목 끝 · 간판 없는 바</span></div>
+  <div class="secret"><canvas id="barCv" class="barcv" width="240" height="110" aria-label="어두운 바 카운터 뒤에 중절모와 가짜 콧수염, 나비넥타이로 변장한 고물상 로봇이 서 있다"></canvas>
+   <div class="card keeper barkeep"><span class="bot">${img(IC.robotBar,null,4,'',BARPAL)}</span><div class="sinfo"><b>바텐더 · 정체불명의 로봇</b><p class="say">“${BAR_LINES[barLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b><button class="qchip" data-act="bartalk">말 걸기</button></div></div></div>
+   <div class="card barmenu"><span class="lbl">Tonight · 오늘의 메뉴</span><p class="hint">아직 진열된 물건이 없습니다. 바텐더가 무언가를 준비하고 있는 것 같습니다…</p></div></div>`}
+function startSecretScene(){clearInterval(secretTimer);const cv=$('#barCv');if(!cv)return;const x=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const draw=t=>{if(!cv.isConnected){clearInterval(secretTimer);return}
+    x.fillStyle='#140c16';x.fillRect(0,0,W,H);
+    for(let i=0;i<W;i+=12){x.fillStyle=i%24?'#1c1220':'#20152a';x.fillRect(i,0,12,70)}           // panelled back wall
+    const on=Math.sin(t/900)>-.85||((t/90)|0)%3;                                                   // the neon sign stutters now and then
+    x.fillStyle=on?'rgba(255,79,216,.18)':'rgba(255,79,216,.05)';x.fillRect(150,6,70,26);
+    x.strokeStyle=on?'#ff7fe0':'#5a2a50';x.lineWidth=1;x.strokeRect(156.5,11.5,58,15);
+    x.fillStyle=on?'#ffb8f0':'#6a3a60';BAR_SIGN.forEach((row,j)=>[...row].forEach((ch,i)=>{if(ch==='1')x.fillRect(168+i*2.5|0,12+j*2,2,2)}));
+    for(const sy of [30,50]){x.fillStyle='#3a2418';x.fillRect(8,sy+12,130,3);                       // two shelves of bottles
+      for(let i=0;i<11;i++){const bx=12+i*11,h=7+((i*7+sy)%5),c=['#5fd8ff','#ffd65f','#7dff9b','#ff8a5a','#c88aff','#ff5f6a'][(i+sy)%6];
+        x.fillStyle='#0c0a10';x.fillRect(bx,sy+12-h,6,h);x.fillStyle=c;x.globalAlpha=.75;x.fillRect(bx+1,sy+13-h+2,4,h-3);x.globalAlpha=1;x.fillRect(bx+2,sy+12-h-2,2,2);
+        if(((t/400+i*3)|0)%17===0){x.fillStyle='#ffffff';x.fillRect(bx+1,sy+14-h,1,2)}}}
+    const lamp=x.createRadialGradient(120,46,2,120,46,56);lamp.addColorStop(0,'rgba(255,200,120,.22)');lamp.addColorStop(1,'rgba(255,200,120,0)');x.fillStyle=lamp;x.fillRect(60,0,120,110);
+    x.fillStyle='#2a2d36';x.fillRect(119,0,1,14);x.fillStyle='#ffd65f';x.fillRect(116,14,7,3);x.fillStyle='rgba(255,214,95,.35)';x.fillRect(114,17,11,2);   // hanging lamp
+    const bob=((t/700)|0)%2;x.save();x.translate(96,34+bob);x.scale(3,3);gridOn(x,IC.robotBar,0,0,null,BARPAL);x.restore();   // the bartender, legs hidden behind the counter
+    x.fillStyle='#4a2c1c';x.fillRect(0,78,W,8);x.fillStyle='#6e4228';x.fillRect(0,78,W,2);x.fillStyle='#24140e';x.fillRect(0,86,W,24);   // counter
+    x.fillStyle='rgba(255,214,95,.5)';x.fillRect(0,79,W,1);
+    x.fillStyle='#c8ccd8';x.globalAlpha=.6;x.fillRect(66,70,5,8);x.fillRect(67,69,3,1);x.globalAlpha=1;x.fillStyle='#ffd65f';x.fillRect(67,73,3,4);   // a glass on the bar
+    x.fillStyle='#9aa0b4';x.fillRect(190,68,6,10);x.fillStyle='#c4c7d4';x.fillRect(191,66,4,2)};               // cocktail shaker
+  draw(performance.now());secretTimer=setInterval(()=>draw(performance.now()),200)}
+document.addEventListener('contextmenu',e=>{const s=e.target.closest('.slot[data-id="invite"]');if(!s||!P||!(P.inv.invite>0))return;e.preventDefault();A.secretopen()});
+{let lp=null;document.addEventListener('touchstart',e=>{const s=e.target.closest('.slot[data-id="invite"]');if(!s)return;clearTimeout(lp);lp=setTimeout(()=>{if(P&&P.inv.invite>0)A.secretopen()},650)},{passive:true});['touchend','touchmove','touchcancel'].forEach(k=>document.addEventListener(k,()=>clearTimeout(lp),{passive:true}))}
 // bag slot frame colour by kind: dishes, crops & seeds, fish, ship repair materials, everything else
 const BAGCAT=[['dish','요리'],['farm','작물·씨앗'],['fish','물고기'],['ship','수리 재료'],['etc','그 외']];
 function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(shipMatIds().includes(id))return'ship';return'etc'}
@@ -3925,7 +3961,7 @@ function bagInner(){
    ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
   </div></div><section class="card cook farmcook" id="cook" aria-label="요리"></section>`;
 }
-let meView=false,adminView=false,meTab='me',mlTab='color';
+let meView=false,adminView=false,meTab='me',mlTab='color',secretView=false;
 const adminShown=()=>adminView&&!!$('#adminBox');
 // switching to a shorter tab would shrink the page and snap the view upward; pad the stage just enough to stay put
 function holdScroll(y){const st=$('#stage');st.style.minHeight='';const need=y+innerHeight-document.documentElement.scrollHeight;if(need>0)st.style.minHeight=(st.offsetHeight+need)+'px';window.scrollTo(0,y)}
@@ -3959,6 +3995,7 @@ function renderPanel0(){bagWinRender();
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox'))$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
+  if(secretView){$('#stage').innerHTML=secretHTML();startSecretScene();return}
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0,ps=document.querySelector('#stage .pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
@@ -4159,7 +4196,7 @@ const A={
  duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+DUEL_PRIZE;sfxCoin();log(`낚시 대결 우승! 상금 ${DUEL_PRIZE} CR`,'rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
  renamecancel(){renaming=false;renderInfo()},
- adminopen(){if(!isAdmin)return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}adminView=true;meView=false;mailView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'});const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()},
+ adminopen(){if(!isAdmin)return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}adminView=true;meView=false;mailView=false;secretView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'});const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()},
  adminclose(){adminView=false;renderPanel()},
  adm(d){if(!isAdmin)return;const k=d.k;
   if(k==='heal'){P.hp=maxHp();P.en=maxEn();P.t=Date.now()}else if(k==='wake'){P.faint=0;P.faintAt=0;if(P.hp<=0)P.hp=maxHp();if(P.en<=0)P.en=maxEn()}
@@ -4180,10 +4217,13 @@ const A={
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now(),adm:true}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
- profile(){meView=true;mailView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ profile(){meView=true;mailView=false;secretView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
- mailopen(){mailView=true;meView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
- mailclose(){mailView=false;renderPanel()},
+ mailopen(){mailView=true;secretView=false;meView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ mailclose(){mailView=false;secretView=false;renderPanel()},
+ secretopen(){if(!(P.inv.invite>0))return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}secretView=true;meView=false;mailView=false;adminView=false;barLine=0;if(bagOpen)bagShow(false);sfxCoin();renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ secretclose(){secretView=false;renderPanel()},
+ bartalk(){barLine=(barLine+1)%BAR_LINES.length;renderPanel()},
  mailtab(d){mailTab=['in','write','trade'].includes(d.k)?d.k:'in';renderPanel()},
  mlatt(d){const o=mlAtt;if(o[d.id]){delete o[d.id]}else{if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=Math.min(ML_EACH,P.inv[d.id]||0,1)}renderPanel()},
  trgive(d){const o=trGive;if(o[d.id]){delete o[d.id]}else{if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=1}renderPanel()},
@@ -4377,7 +4417,7 @@ const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raidsk','raiditem
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}if(t.dataset.tab==='req')brokerSeen=false;meView=false;mailView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}if(t.dataset.tab==='req')brokerSeen=false;meView=false;mailView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')soldBack={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
@@ -4569,10 +4609,10 @@ const SA={
  sotab(d){socTab=d.k;pdelArm=null;profId=null;profBio=false;if(d.k!=='pad'&&padThread)openThread(null);renderPanel();if(d.k==='dm'&&dmPeer)setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
  padview(d){padView=d.k;padTag='';renderPanel()},
  padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
- notigo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;adminView=false;socTab='pad';if(tab!=='social'){tab='social';renderNav();setPresence()}openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
+ notigo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;secretView=false;adminView=false;socTab='pad';if(tab!=='social'){tab='social';renderNav();setPresence()}openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padback(){openThread(null);renderPanel()},
- profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;mailView=false;adminView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
+ profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;meView=false;mailView=false;secretView=false;adminView=false;profId=d.k;profBio=false;socTab='crew';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  relopen(){meView=false;socTab='rel';if(tab!=='social'){tab='social';renderNav();setPresence()}renderPanel()},
  profclose(){profId=null;profBio=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
