@@ -1409,10 +1409,10 @@ function take(id,n=1){if((P.inv[id]||0)<n)return false;P.inv[id]-=n;if(!P.inv[id
 // level 60 is the cap. With ~2,000 XP a day for an active player: level 20 takes a little over 3 days (~6.5k XP),
 // level 60 about two weeks (~30.8k XP). The first few levels ramp up quickly so new crew still feel progress.
 const MAX_LV=60;
-/* level curve: paced so ~8 hours of play is ~10 levels. Model hour = 3 raids at your level (boss one above) + ~150 XP of
-   fishing/farming/scanning, and one level costs 0.8 of those hours. Raid rewards are scaled off xpBase, not need. */
+/* level curve: Lv.1-4 keep the quick old pace (xpBase); from Lv.10 a level costs 4 raids at your level (boss one above);
+   Lv.5-9 ramp geometrically between the two. Raid rewards are scaled off xpBase, not need. */
 const raidXpAt=L=>xpBase(L)*.74+xpBase(L+1)*.54*(1+Math.pow((L+1)/15,1.5));
-const NEED=Array.from({length:61},(_,l)=>l?Math.round((3*raidXpAt(l)+150)*.8/10)*10:0),need=l=>NEED[Math.max(1,Math.min(60,l))];
+const NEED=Array.from({length:61},(_,l)=>{if(!l)return 0;if(l<5)return xpBase(l);const hi=4*raidXpAt(10);if(l>=10)return Math.round(4*raidXpAt(l)/10)*10;return Math.round(xpBase(4)*Math.pow(hi/xpBase(4),(l-4)/6)/10)*10}),need=l=>NEED[Math.max(1,Math.min(60,l))];
 function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
 function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.min(maxEn(),Math.max(0,P.en+(en||0)))}
 
@@ -2048,11 +2048,12 @@ const BOSS_KINDS=[
 let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='',bossLast=null;
 const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
 const bossKind=b=>BOSS_KINDS[(b&&b.kind)|0]||BOSS_KINDS[0];
-const bossHpFor=(lv,k)=>Math.round((400*lv+12*lv*lv)*BOSS_KINDS[k].hp);
+// invader HP = 20 crew of its level each landing 10 typical hits (typical ATK 12 at Lv.1, +5.2/level incl. weapon and gear), never below the old curve
+const typAtk=lv=>12+5.2*(lv-1),bossHpFor=(lv,k)=>Math.round(Math.max(200*typAtk(lv),400*lv+12*lv*lv)*BOSS_KINDS[k].hp);
 const bossAlive=b=>!!b&&b.hp>0&&!b.failed&&!b.gone;
 const bossKilled=b=>!!b&&b.hp<=0&&!!b.killer;
 function bossTx(ref,fn){if(ref.tx)return ref.tx(fn);return ref.get().then(sn=>{const nx=fn(sn.exists?JSON.parse(JSON.stringify(sn.data())):null);return nx?ref.set(nx).then(()=>nx):null})}
-const bossSum=b=>b?{gen:b.gen,name:b.name,dmg:b.dmg||{},killer:b.killer||'',failed:!!b.failed,failedAt:b.failedAt||0}:null;
+const bossSum=b=>b?{gen:b.gen,name:b.name,lv:b.lv||0,dmg:b.dmg||{},killer:b.killer||'',failed:!!b.failed,failedAt:b.failedAt||0}:null;
 // admin: summon a chosen invader at a chosen level (replaces nothing while one is still loose)
 function bossSummon(k,lv){return bossTx(bossRef(),cur=>{if(bossAlive(cur))return null;const K=BOSS_KINDS[k],mx=bossHpFor(lv,k),now=Date.now();
   return{gen:((cur&&cur.gen)||0)+1,kind:k,lv,name:K.n,hp:mx,max:mx,at:now,end:now+BOSS_LIMIT,dmg:{},hits:0,by:P.nick,prev:cur&&(cur.dmg||cur.failed)?bossSum(cur):(cur&&cur.prev)||null}})}
@@ -2070,7 +2071,7 @@ function bossSubscribe(){
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
   if(!src||(P.bossGot||0)>=src.gen)return;const tot=Object.values(src.dmg).reduce((a,v)=>a+(v.d||0),0)||1,mine=src.dmg[uid].d||0,share=mine/tot;
   // the reward waits in a chest on the 탐사 screen; what is inside is fixed now, the 1% wardrobe roll happens when it is opened
-  const xp=Math.round(need(P.lvl)*(.25+.5*Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
+  const xp=Math.round(raidMonXp(src.lv||P.lvl,'boss')*1.5*1.5),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
   P.chests=[...(P.chests||[]),{gen:src.gen,name:src.name,share,xp,cr,relic:1,crystal:src.killer===uid?2:0}].slice(-5);
   log(`${src.name}을(를) 쓰러뜨렸다! 탐사 화면에 보상 상자가 도착했다.`,'rare');sys(`[공지] ${src.name} 토벌 성공! 참여한 단원은 탐사 화면에서 보상 상자를 여십시오.`);commit()}
 const CHEST_EX=.05;let chestOpen=null,chestAnim=0;
@@ -2096,7 +2097,7 @@ async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossR
   try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,d);cur.hp-=dealt;cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
-  P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(need(P.lvl)*.006));gainXp(xp);
+  P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
   let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=Math.max(1,Math.round((10+b.lv*1.2)*bossKind(b).atk*(.85+Math.random()*.3)-def()*.6));heal(-hit,0);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
@@ -2143,7 +2144,7 @@ function bossMainHTML(){const b=BOSS;
     :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
-    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기여도만큼 더), 크레딧, 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
+    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(같은 레벨 원정 보스의 1.5배), 크레딧(기여도만큼 더), 고대 신호 기록을 받습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
 // admin page: pick one of the 14 invaders and a level, then summon it
 let bossPick=0;
 function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
