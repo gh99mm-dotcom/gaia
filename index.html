@@ -3776,10 +3776,14 @@ const REQ_POOL=[['pot',10,20,15,'배고픈 기관실 3교대 팀'],['berry',8,15
 function reqRng(seed){let x=seed%2147483647||1;return()=>(x=(x*16807)%2147483647)/2147483647}
 // posters change twice a day, at 08:00 and 20:00 Korea time (UTC+9): one 12-hour window per key
 const REQ_WIN=12*3600e3,reqKey=()=>'r'+Math.floor((Date.now()+3600e3)/REQ_WIN),reqLeft=()=>REQ_WIN-((Date.now()+3600e3)%REQ_WIN);
-function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list))return P.req;
-  let h=0;for(const c of day+uid)h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+7),pool=REQ_POOL.slice(),list=[],mul=1+Math.min(60,P.lvl)/30;
-  for(let k=0;k<5&&pool.length;k++){const [id,a,b,per,who]=pool.splice(Math.floor(rnd()*pool.length),1)[0],n=a+Math.floor(rnd()*(b-a+1));list.push({id,n,cr:Math.round(n*per*mul/10)*10,who})}
-  P.req={day,list,done:[]};save();return P.req}
+// request pay is a fixed multiple of what the shop pays for the same goods, at any level: posters 2.5×, the special request 4×
+const REQ_X=2.5,REQ_SP_X=4;
+const reqUnit=id=>id.startsWith('fish:')?crs(FSELL[id.slice(5)]||1):ITEMS[id]?sellPrice(id):1;
+const reqPay=(id,n,x)=>Math.max(1,Math.round(reqUnit(id)*n*x));
+function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list)){if(P.req.v!==2){P.req.v=2;P.req.list.forEach(q=>q.cr=reqPay(q.id,q.n,REQ_X));if(P.req.sp)P.req.sp.cr=reqPay(P.req.sp.id,P.req.sp.n,REQ_SP_X);save()}return P.req}
+  let h=0;for(const c of day+uid)h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+7),pool=REQ_POOL.slice(),list=[];
+  for(let k=0;k<5&&pool.length;k++){const [id,a,b,per,who]=pool.splice(Math.floor(rnd()*pool.length),1)[0],n=a+Math.floor(rnd()*(b-a+1));list.push({id,n,cr:reqPay(id,n,REQ_X),who})}
+  P.req={day,list,done:[],v:2};save();return P.req}
 const reqName=id=>id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id);
 const reqIcon=(id,sc)=>id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],sc):iicon(id,sc);
 let brokerLine=0,brokerSeen=false;
@@ -3789,8 +3793,8 @@ function renderReq(){if(!brokerSeen){brokerLine=ri(0,BROKER.length-1);brokerSeen
 const NOIRBOT=['......kkkkkkkk......','.....kHHHHHHHHk.....','.....kHHHHHHHHk.....','.....kBBBBBBBBk.....','..kkkkHHHHHHHHkkkk..','.kHHHHHHHHHHHHHHHHk.','..kkkkkkkkkkkkkkkk..','....kSSSSSSSSSSk....','....kSkkSSSSkkSk....','....kSkcSSSSkcSk....','..kCCkSSSSSSSSkCCk..','.kCCCCkkkkkkkkCCCCk.','.kCCCCCCdCCdCCCCCCk.','kCCCCCCCdCCdCCCCCCCk','kCCCCCCCCddCCCCCCCCk','kCCCCCCCCCCCCCCCCCCk','kCCCkCCCCCCCCCCkCCCk','kkkkkkkkkkkkkkkkkkkk'],NOIRPO={H:'#2a2a32',B:'#6a2a2a',C:'#7a6a50',d:'#4a3e2e'};
 const NOIRLINE=['도시는 비를 맞고 있었다. 그리고 나는 요리를 찾고 있었지.','고물상? 모르는 이름이군. 난 그저 지나가는 탐정일 뿐이야.','질문은 짧게, 대답은 더 짧게. 물건을 가져와.','이 의뢰엔 이름이 없어. 보수만 있을 뿐.','녹슨 7호? …그 녀석은 오늘 비번이야. 아마도.','배고픈 자는 거짓말을 하지 않지. 접시는 더더욱.','코트 깃을 세운 건 추워서가 아니야. 이 바닥이 원래 그래.','비가 그친 줄 알았지. 하지만 이 도시엔 늘 무언가가 떨어지고 있어. 오늘은 내 배터리였지.','코트 주머니엔 사진 한 장뿐이야. 맛있게 구운 생선 사진.','누구냐고? 그냥 이름 없는 남자야. 고물상이랑은 아무 상관 없는.','정보원은 늘 배가 고파. 그래서 나는 늘 요리를 찾지.','이 바닥에서 믿을 건 두 가지뿐이야. 크레딧, 그리고 갓 만든 요리.','모자를 눌러쓴 이유? 네모난 눈을 들키면 곤란하거든. 아니, 피곤해 보여서지.','오늘 밤도 정거장은 조용해. 너무 조용해. 마치 누가 상점 셔터를 일찍 내린 것처럼.','의뢰인은 얼굴을 보여 주지 않았어. 남긴 건 쪽지 하나. 「배고프다」.','난 질문하지 않아. 질문은 대답을 부르고, 대답은 문제를 부르니까.','마담 로자? 들어 본 적은 있지. 우아한 여자라더군. …더는 묻지 마.','차가운 바람이 코트 깃을 파고들어. 따뜻한 요리가 필요한 밤이야.','이 일을 오래 하다 보면 알게 돼. 모든 사건 뒤엔 배고픈 누군가가 있다는 걸.','내 과거? 녹이 좀 슬었을 뿐이야. 다들 그렇잖아.','약속 장소는 여기, 시간은 지금. 접시는 따뜻하게.','이 의뢰를 끝내면 넌 아무것도 보지 못한 거야. 나도, 이 코트도.','도시의 불빛이 하나둘 꺼질 때, 나는 일을 시작하지.','증거는 단 하나. 접시에 남은 소금 한 톨이었어.','누군가 내 뒤를 밟고 있어. 아마 고물상 단골이겠지. 신경 쓰지 마.','돈은 거짓말을 하지 않아. 하지만 요리는 가끔 거짓말을 하지. 덜 익었을 때.','내 이름을 부르지 마. 정확히는, 녹슨 7호라고 부르지 마.','이 동네에선 말이 적은 놈이 오래 살아. 그리고 밥을 잘 먹는 놈이.','오늘 밤 거래는 단 한 번. 놓치면 다음 사이렌까지 기다려야 할 거야.','레인코트는 비를 막아 주지만, 허기는 못 막지. 그래서 네가 필요해.'];
 const SP_POOL=[['d_potRoast',2,4,60],['d_hoe',1,3,90],['d_grill',1,2,110],['d_sushi',1,3,95],['d_braise',1,2,120],['d_rice',1,2,130]];
-function reqSpecial(R){if(R.sp)return R.sp;let h=7;for(const c of R.day+uid+'sp')h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+11),mul=1+Math.min(60,P.lvl)/30;
-  const [id,a,b,per]=SP_POOL[Math.floor(rnd()*SP_POOL.length)],nb=a+Math.floor(rnd()*(b-a+1));R.sp={id,n:Math.ceil(nb*2.5),cr:Math.round(nb*per*mul*2.5/10)*10,line:Math.floor(rnd()*NOIRLINE.length)};save();return R.sp}
+function reqSpecial(R){if(R.sp)return R.sp;let h=7;for(const c of R.day+uid+'sp')h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+11);
+  const [id,a,b,per]=SP_POOL[Math.floor(rnd()*SP_POOL.length)],nb=a+Math.floor(rnd()*(b-a+1));R.sp={id,n:Math.ceil(nb*2.5),cr:reqPay(id,Math.ceil(nb*2.5),REQ_SP_X),line:Math.floor(rnd()*NOIRLINE.length)};save();return R.sp}
 /* admin-booked special requests: for a set window the trench-coat broker sells ship materials for credits instead of asking for food */
 const SPRES_MAX=20,spresRef=()=>db.doc('boss/spres');let SPRES=[];
 const shipMatIds=()=>[...new Set(SHIP.flatMap(pt=>pt.need.map(([id])=>id)))].filter(id=>ITEMS[id]&&ITEMS[id].type!=='relic');
