@@ -2128,6 +2128,9 @@ const rJob=m=>m?(OLDJOB[m.job]||m.job||''):'';
 const rskLeft=(b,u,i)=>((b.cd||{})[u]||{})['s'+i]||0;
 // log line colours: skills gold, crew hitting monsters cyan, monsters hitting crew red, healing green
 function raidLogKind(r,l){if(l[0]==='[')return'sk';if(/회복|치료/.test(l))return'heal';const i=l.indexOf(' → ');if(i<0)return'';const who=l.slice(0,i);return Object.values(r.m||{}).some(m=>m&&m.nick&&who.startsWith(m.nick))?'atk':'hurt'}
+// monsters single out the tank: a navigator (항해사) is twice as likely as anyone else to be the target
+const RAID_TANK_W=2;
+function raidAggro(r,tg){const w=tg.map(u=>rJob(r.m[u])==='nav'?RAID_TANK_W:1),sum=w.reduce((a,b)=>a+b,0);let x=Math.random()*sum;for(let i=0;i<tg.length;i++){x-=w[i];if(x<0)return tg[i]}return tg[tg.length-1]}
 function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
 // after any action: victory, wipe, or the next turn
 function raidSettle(r){const b=r.b,z=raidZone(r);
@@ -2161,7 +2164,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
       else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:Math.round((it.hp||0)*(me.job==='medic'?1.5:1));if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
       else{const live=b.mons.map((m,i)=>m.hp>0?i:-1).filter(i=>i>=0),ti=live.includes(arg)?arg:live[0],m=b.mons[ti];const [d,c]=raidHit(me.atk,m.def,me.crit||0);m.hp=Math.max(0,m.hp-d);raidLog(b,`${me.nick}${kind==='auto'?'(자동)':''} → ${m.n} ${d} 피해${c?' · 치명타!':''}${m.hp<=0?' · 쓰러뜨렸다!':''}`)}}
     else{const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
-      const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=tz?[tz]:aoe?tg:[tg[Math.floor(Math.random()*tg.length)]];
+      const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=tz?[tz]:aoe?tg:[raidAggro(r,tg)];
       hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?'의 광역 공격':''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)})}
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
