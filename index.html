@@ -1555,7 +1555,10 @@ function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.q
 /* ───────── profile: titles, jobs, life levels ───────── */
 const JOBS={fighter:{n:'전투원',d:'공격력 +15%'},guard:{n:'수호자',d:'방어력 +5 · 최대 체력 +20'},farmer:{n:'농부',d:'수확할 때 작물 +1'},angler:{n:'낚시꾼',d:'레어 어종 확률 +3%'},scout:{n:'탐사가',d:'채집 로봇이 재료를 더 자주 가져옵니다'},engineer:{n:'기술자',d:'무기 강화 재료 30% 절약 · 물 채우기 대기 30분'}};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan]];
-const LIFE_MAX=20,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
+/* life levels cap at 30 (25*29^2 = 21,025 life XP). Gains are scaled per activity so a 6-hours-a-day player reaches 30 in about 10 days
+   in each, assuming a mixed day of roughly 60 harvests, 50 robot pickups, 150 catches and 40 trail stops + 10 receiver scans. */
+const LX_RATE={farm:3.5,gather:10.5,fish:1.4,scan:3.75};
+const LIFE_MAX=30,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
 // each life level adds 0.5% to that activity's bonus chance; wearing the 황금손 title (all four maxed) adds a further 1% to every one
 const goldHand=()=>LIFE.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
 const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(P.title==='gold'&&goldHand()?1:0);
@@ -1563,7 +1566,7 @@ const lifeHit=k=>Math.random()*100<lifePct(k);
 const LIFE_FX={farm:'수확 +1 확률',gather:'로봇 채집 재료 추가 확률',fish:'레어 이상 어종 확률 +',scan:'조사 보상 2배 확률'};
 const lifeNext=l=>25*l*l;
 function stat(k,n=1){P.st=P.st||{};P.st[k]=(P.st[k]||0)+n}
-function lxp(k,n){P.lx=P.lx||{};const before=lifeLv(P.lx[k]);P.lx[k]=(P.lx[k]||0)+n;const after=lifeLv(P.lx[k]);if(after>before){const nm=LIFE.find(l=>l[0]===k)[1];log(`${nm} 생활 레벨 ${after} 달성!`,'rare')}}
+function lxp(k,n){P.lx=P.lx||{};n=Math.round(n*(LX_RATE[k]||1));const before=lifeLv(P.lx[k]);P.lx[k]=(P.lx[k]||0)+n;const after=lifeLv(P.lx[k]);if(after>before){const nm=LIFE.find(l=>l[0]===k)[1];log(`${nm} 생활 레벨 ${after} 달성!`,'rare')}}
 const TITLES=[
  ['rookie','새내기 개척자','처음부터 가진 칭호',()=>true],
  ['farm1','흙 묻은 손','작물 10번 수확',()=>(P.st?.harvest||0)>=10],
@@ -1597,11 +1600,11 @@ const TITLES=[
  ['adv2','심연을 닫은 자','침략자 처치에 3번 참여',()=>st('bosskill')>=3],
  ['dm1','속삭이는 별','귓속말 30번 보내기',()=>st('dm')>=30],
  ['all5','만능 개척자','생활 레벨 네 가지 모두 10 이상',()=>LIFE.every(([k])=>lifeLv(P.lx?.[k])>=10)],
- ['farmmax','풍요의 지배자','농사 생활 레벨 20',()=>lifeLv(P.lx?.farm)>=20],
- ['gathermax','행성의 발굴자','채집 생활 레벨 20',()=>lifeLv(P.lx?.gather)>=20],
- ['fishmax','심연의 낚시꾼','낚시 생활 레벨 20',()=>lifeLv(P.lx?.fish)>=20],
- ['scanmax','별의 해독자','조사 생활 레벨 20',()=>lifeLv(P.lx?.scan)>=20],
- ['gold','황금손','생활 레벨 네 가지 모두 20 · 착용하면 모든 확률 +1%',()=>goldHand()],
+ ['farmmax','풍요의 지배자','농사 생활 레벨 30',()=>lifeLv(P.lx?.farm)>=30],
+ ['gathermax','행성의 발굴자','채집 생활 레벨 30',()=>lifeLv(P.lx?.gather)>=30],
+ ['fishmax','심연의 낚시꾼','낚시 생활 레벨 30',()=>lifeLv(P.lx?.fish)>=30],
+ ['scanmax','별의 해독자','조사 생활 레벨 30',()=>lifeLv(P.lx?.scan)>=30],
+ ['gold','황금손','생활 레벨 네 가지 모두 30 · 착용하면 모든 확률 +1%',()=>goldHand()],
 ];
 const st=k=>(P.st&&P.st[k])||0;
 let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
