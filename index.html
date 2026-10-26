@@ -1846,7 +1846,8 @@ const RAID_EVENTS=[
  {k:'silence',n:'정적',t:'아무 일도 일어나지 않았다. 고요함 속에서 마음을 가다듬었다.',xp:.5},
  {k:'cache',n:'숨겨진 보급고',t:'벽 뒤에 숨겨진 보급고를 발견했다!',cr:[60,120],item:['kit']}];
 // a full clear in your own zone is worth about half a level, so expeditions lead the XP race without breaking the 60-level curve
-const raidMonXp=(L,kind)=>Math.round(need(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1));
+// bosses pay out far more the higher they are: ×(1+(L/15)^1.5) on top of the base share
+const raidMonXp=(L,kind)=>Math.round(need(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1)*(kind==='boss'?1+Math.pow(L/15,1.5):1));
 function raidMon(zone,L,kind,name,n){const s={elite:[1.5,1.1,1.1],mid:[2.2,1.15,1.15],boss:[3,1.15,1.2]}[kind]||[1,1,1],pm=kind==='mid'||kind==='boss'?1+.7*(n-1):1;
   const hp=Math.round((14+L*5+L*L*.06)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3.5+L*1.4+L*L*.018)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
