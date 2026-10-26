@@ -3050,11 +3050,13 @@ SX('wall','wx2','고대 석판','읽을 수 없는 문자가 새겨진 돌',{k:'
 SX('floor','fx1','추락한 위성 조각','태양전지판이 반쯤 남은 위성',{k:'satellite'});
 SX('floor','fx2','정체불명의 알','가끔 안에서 무언가 움직여요',{k:'egg'});
 SX('lamp','lx1','반딧불 포자등','습지 포자가 은은하게 빛나요',{rgb:'170,220,140',a:.22,fx:'#a9c98a'});
-const SCAN_ITEMS=()=>Object.values(FURN).flatMap(c=>c.list.filter(f=>f.scan));
+const SCAN_ITEMS=()=>Object.entries(FURN).filter(([k])=>!ROOM_HIDE.has(k)).flatMap(([,c])=>c.list.filter(f=>f.scan));
 const REST_CD=2*3600e3;
-let roomSlot='wallp',visit=null,preview={};
+// wallpaper and flooring now come only from the room theme
+const ROOM_HIDE=new Set(['wallp','floorp']);
+let roomSlot='theme',visit=null,preview={};
 const furnById=id=>{for(const k in FURN){const f=FURN[k].list.find(x=>x.id===id);if(f)return f}return null};
-const roomOf=p=>Object.assign({theme:'space',wallp:'wp0',floorp:'fl0',desk:'d0',bed:'bed0',wall:'w0',floor:'f0',lamp:'l0'},p&&p.room);
+const roomOf=p=>Object.assign({theme:'space',desk:'d0',bed:'bed0',wall:'w0',floor:'f0',lamp:'l0'},p&&p.room,{wallp:'wp0',floorp:'fl0'});
 const ownsF=id=>{const f=furnById(id);return !!f&&(f.price===0||(P.own||[]).includes(id))};
 const scanLocked=f=>f&&f.scan&&!(P.own||[]).includes(f.id);
 function gridOn(x,grid,ox,oy,tint,po){const pal=Object.assign({},PAL,po||{});if(tint){tint=mix(tint,'#5d6274',.55);pal.a=tint;pal.b=mix(tint,'#07080e',.5);pal.h=mix(tint,'#c4c7d4',.35)}for(let j=0;j<grid.length;j++)for(let i=0;i<grid[j].length;i++){const c=pal[grid[j][i]];if(!c)continue;x.fillStyle=c;x.fillRect(ox+i,oy+j,1,1)}}
@@ -3381,7 +3383,7 @@ function renderRoom(){
   return head()+shipSubTabs()+scene+`
   <div class="row"><button class="btn sm alt" data-act="rest" ${left?'disabled':''}>${bed.n}에서 쉬기</button><span class="hint" id="restT">${left?'다시 쉴 수 있을 때까지 '+fmtClock(left):bed.d+' · 2시간마다 한 번'}</span></div>
   ${visitHTML(others)}
-  <div><div class="dtabs" role="tablist"><button role="tab" aria-selected="${roomSlot==='ward'||roomSlot==='look'}" data-act="rslot" data-k="ward">옷장</button>${Object.entries(FURN).map(([k,v])=>`<button role="tab" aria-selected="${roomSlot===k}" data-act="rslot" data-k="${k}">${v.n}</button>`).join('')}</div>
+  <div><div class="dtabs" role="tablist"><button role="tab" aria-selected="${roomSlot==='ward'||roomSlot==='look'}" data-act="rslot" data-k="ward">옷장</button>${Object.entries(FURN).filter(([k])=>!ROOM_HIDE.has(k)).map(([k,v])=>`<button role="tab" aria-selected="${roomSlot===k}" data-act="rslot" data-k="${k}">${v.n}</button>`).join('')}</div>
   ${roomSlot==='ward'||roomSlot==='look'?wardHTML():false?`<div class="lookbox"><div class="lookprev">${meImg(6)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button class="sw" style="background:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">모습은 언제든 무료로 바꿀 수 있어요. 친구에게도 이 모습으로 보여요.</span></div></div>`:`<div class="slist" style="margin-top:6px">${sl.list.map(f=>{const own=ownsF(f.id),on=rm[roomSlot]===f.id,can=(P.cr||0)>=f.price&&hasMat(f.mat);return`<div class="srow"><span class="fsw ${on?'on':''}"></span><div class="sinfo"><b>${f.n}${f.scan?' <span class="scantag">조사 전용</span>':''}</b><span class="hint">${f.d}</span>${own||f.scan?'':matHTML(f.mat)}</div>${own?'<span></span>':f.scan?'<span class="hint">조사 중 발견</span>':`<span class="price">${img(IC.coin,null,2)}${f.price.toLocaleString()}</span>`}<div class="sbtns">${on?'':`<button class="btn sm ghost" data-act="pv" data-k="${f.id}" aria-pressed="${preview[roomSlot]===f.id}">${preview[roomSlot]===f.id?'보는 중':'미리보기'}</button>`}${on?'<span class="hint">배치 중</span>':own?`<button class="btn sm" data-act="fplace" data-k="${f.id}">배치</button>`:f.scan?'<span class="hint">미발견</span>':`<button class="btn sm gold" data-act="fbuy" data-k="${f.id}" ${can?'':'disabled'}>구매</button>`}</div></div>`}).join('')}</div>`}</div>`;
 }
 let rs=null,rsOwner=null,rsPeers=[],myRX=96,myTX=96,myEmote=null;const peerX={};
@@ -3402,7 +3404,9 @@ setInterval(()=>{if(!roomShown())return;const calm=matchMedia('(prefers-reduced-
   if(myEmote&&Date.now()-myEmote.at<3600)mv=true;else if(myEmote&&Date.now()-myEmote.at>=3600){myEmote=null;pushRoomPresence();mv=true}
   if(mv){drawRoomCv();roomLabels()}},70);
 Object.entries({alien:["................",".....a....a.....","......a..a......","....kkkkkkkk....","...kaaaaaaaak...","..kaaaaaaaaaak..","..kakkaaaakkak..","..kakkkaakkkak..","..kakkaaaakkak..","..kaaaaaaaaaak..","...kaaakkaaak...","....kaaaaaak....",".....kkkkkk.....","....kb.kk.bk....","...kb..kk..bk...","................"],golem:["................",".....kkkkkk.....","....kbaaaabk....","....kakrrkak....","....kaaaaaak....","..kkkbaaaabkkk..",".kbak.kaak.kabk.",".kaak.kaak.kaak.",".kaakkaaaakkaak.",".kbbkkabbakkbbk.","..kk.kaaaak.kk..",".....kak.kak....",".....kak.kak....","....kbbk.kbbk...","....kkkk.kkkk...","................"],jelly:["................",".....kkkkkk.....","....kahhaaak....","...kahaaaaaak...","...kaaawwaaak...","...kaaakkaaak...","...kbaaaaaabk...","...kkbkbbkbkk...","....kak.kak.....","....ka..ka......",".....ka..ka.....","....ka..ka......",".....k...k......","................","................","................"]}).forEach(([k,g])=>{if(!TPL[k])TPL[k]=g});
-function roomMigrate(){const r=P.room;if(!r||!Array.isArray(r.put))return;const FP={bed:900,sofa:800,desk:600,aqua:1000,chair:200,plant:150,trunk:250,lamp:300,rocket:400,robo:350,poster:150,clock:250,shelf:300,starmap:400,neon:500,monitor:650},WP={w1:300,w2:400,w3:500,w4:400},FL={f1:300,f2:400,f3:500};
+function roomMigrate(){if(!P.roomWF){P.roomWF=1;const ids=new Set(['wallp','floorp'].flatMap(k=>FURN[k].list.filter(f=>f.price>0).map(f=>f.id))),had=(P.own||[]).filter(id=>ids.has(id));
+    if(had.length){const cr=had.reduce((a,id)=>a+furnById(id).price,0);P.own=P.own.filter(id=>!ids.has(id));P.cr=(P.cr||0)+cr;log(`마이룸 벽지·바닥재가 테마로 합쳐져, 산 벽지·바닥재 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
+  const r=P.room;if(!r||!Array.isArray(r.put))return;const FP={bed:900,sofa:800,desk:600,aqua:1000,chair:200,plant:150,trunk:250,lamp:300,rocket:400,robo:350,poster:150,clock:250,shelf:300,starmap:400,neon:500,monitor:650},WP={w1:300,w2:400,w3:500,w4:400},FL={f1:300,f2:400,f3:500};
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
   P.room={};if(cr>0){P.cr=(P.cr||0)+cr;log(`마이룸이 새 모습으로 바뀌어, 전에 산 가구 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
 function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
