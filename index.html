@@ -189,10 +189,10 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .pilot-name{font-family:var(--f-display);font-size:17px;line-height:1.1;word-break:keep-all;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.pnrow .pilot-name{margin-right:2px;min-width:0;flex:0 1 auto}.pnbtns{display:inline-flex;gap:4px;flex:none;align-items:center}
 /* name and the three icons stay on one line; when the column is tight the icons shrink a little */
 .pncol{container-type:inline-size;flex:1 1 auto}.pnrow .pilot-name{flex-shrink:1}
-/* the three icons are trimmed to their drawn pixels and set to one height so they read as the same size */
-.pnbtns .mailbtn img{display:block;height:20px;width:auto}
-@container (max-width:150px){.pnbtns{gap:1px}.pnbtns .mailbtn{padding:2px}.pnbtns .mailbtn img{height:16px}}
-@container (max-width:118px){.pnbtns .mailbtn img{height:13px}}
+/* the three icons are 12x12 sprites shown at one square size */
+.pnbtns .mailbtn img{display:block;width:20px;height:20px}
+@container (max-width:150px){.pnbtns{gap:1px}.pnbtns .mailbtn{padding:2px}.pnbtns .mailbtn img{width:16px;height:16px}}
+@container (max-width:118px){.pnbtns .mailbtn img{width:13px;height:13px}}
 .lv{font-family:var(--f-pix);font-size:11px;color:var(--gold);letter-spacing:.04em;word-break:keep-all}
 .stat{display:flex;flex-direction:column;gap:4px}
 .stat-row{display:flex;align-items:center;gap:6px;justify-content:space-between;font-family:var(--f-pix);font-size:10.5px;letter-spacing:.08em}
@@ -1524,6 +1524,8 @@ function delAdminHTML(){const L=Object.entries(DELP).sort((a,b)=>(b[1].delAt||b[
   return`<div class="info-sec" data-adm="del"><span class="lbl">Deleted · 삭제된 단원 ${L.length}명</span><span class="hint">삭제 취소를 누르면 레벨·아이템·크레딧이 그대로 돌아옵니다. 단원이 다시 접속해서 새 캐릭터를 만들기 전에 되돌려 주십시오.</span><div class="fblist">${L.map(([id,p])=>{const full=p.lvl!=null||p.inv;return`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')}${full?` <span class="lv">LV.${p.lvl||1}</span>`:''}</b><span class="hint">삭제 ${fbTime(p.delAt||p.at||0)}${p.delBy?' · '+esc(p.delBy):''}</span></div>${full?`<span class="hint">${(p.cr||0).toLocaleString()} CR · 아이템 ${Object.keys(p.inv||{}).length}종</span>`:'<span class="hint" style="color:var(--red)">예전 방식으로 삭제되어 남은 데이터가 없습니다. 되돌려도 새 캐릭터로 시작합니다.</span>'}<div class="row" style="justify-content:flex-end"><button class="btn sm alt" data-act="admundel" data-k="${esc(id)}">삭제 취소</button></div></div>`}).join('')}</div></div>`}
 /* ───────── admin credit grants ───────── */
 /* ───────── suggestion box ───────── */
+// the header envelope drawn on the same 12x12 canvas as the bag and the bell, so the three icons share one size
+const ENV12=['............','............','kkkkkkkkkkkk','kkuuuuuuuukk','kukkuuuukkuk','kuuukkkkuuuk','kuuuuuuuuuuk','kuuuuuuuuuuk','kuuuuuuuuuuk','kkkkkkkkkkkk','............','............'];
 const BELL=['....kkkk....','....k..k....','...kkkkkk...','..kuuuuwwk..','..kuuuuuwk..','..kuuuuuwk..','.kuuuuuuuwk.','.kuuuuuuuwk.','kuuuuuuuuuwk','kkkkkkkkkkkk','.....kk.....','.....kk.....'];
 const ENV=["kkkkkkkkkk","kuuuuuuuuk","kkuuuuuukk","kukkuukkuk","kuuukkuuuk","kuuuuuuuuk","kkkkkkkkkk"];
 let FB=[];
@@ -1706,7 +1708,7 @@ function renderPilot(){
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').innerHTML=`
   <div class="pilot-top"><div class="avatar">${meImg(3)}</div>
-   <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(trimG(ENV),null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
+   <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
