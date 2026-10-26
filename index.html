@@ -1619,7 +1619,7 @@ function renderLog(){$('#log').innerHTML=LOG.length?LOG.map(l=>`<li><time>${hhmm
 
 /* ───────── network ───────── */
 let mode='boot',db=null,room=null,uid=null,myRef=null;
-let PLAYERS={},DELP={},CHAT=[],PEERS=[],chimeAt=Date.now();
+let PLAYERS={},DELP={},CHAT=[],PEERS=[],chimeSeen=null;
 let saveT=null,saving=false,dirty=false;
 function save(){
   if(mode==='solo'){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}return}
@@ -1654,8 +1654,8 @@ async function connect(){
   db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
-    // a fresh notice from the admin rings the station chime
-    const nw=CHAT.filter(m=>m.adm&&(+m.at||0)>chimeAt);if(nw.length){chimeAt=Math.max(...nw.map(m=>+m.at||0));sfxChime()}renderChat()},()=>{});
+    // a notice from the admin that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
+    const adm=CHAT.filter(m=>m.adm);if(chimeSeen){const nw=adm.filter(m=>!chimeSeen.has(m.id));if(nw.length){sfxChime();toast(String(nw[nw.length-1].text||'').slice(0,60))}}chimeSeen=new Set([...(chimeSeen||[]),...adm.map(m=>m.id)]);renderChat()},()=>{});
   socSubscribe();raidSubscribe();bossSubscribe();
   if(room){room.onPeers(ch=>{PEERS=ch.peers;renderCrew();renderNet();if(tab==='farm')renderPanel()});setPresence()}
 }
@@ -2409,6 +2409,7 @@ function sfxBossBack(miss){if(!soundOn)return;const a=ac();if(!a)return;const t=
   tone(a,'sawtooth',70,38,t,.55,.22);tone(a,'square',55,30,t+.02,.5,.12);noiseBurst(a,t,.5,'lowpass',500,80,.45,1.6);tone(a,'sine',180,60,t+.08,.3,.15)}
 function sfxBossKill(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.2;tone(a,'sawtooth',220,30,t,1.6,.18);noiseBurst(a,t,1.4,'lowpass',1200,60,.5,1.2);[523,659,784,1046].forEach((f,i)=>tone(a,'triangle',f,0,t+1+i*.12,.5,.08))}
 // 딩-동-댕: three soft bell tones going up (C5 E5 G5), with a faint octave shimmer
+['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{if(soundOn)ac()},{passive:true}));
 function sfxChime(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.05;[[523.25,0],[659.25,.42],[783.99,.84]].forEach(([f,d])=>{tone(a,'sine',f,0,t+d,1.3,.16);tone(a,'sine',f*2,0,t+d,.7,.04);tone(a,'triangle',f,0,t+d,.25,.05)})}
 function sfxStop(){if(!soundOn)return;const a=ac();if(!a)return;tone(a,'square',140,0,a.currentTime,.03,.04)}
 /* ───────── look & wardrobe ───────── */
