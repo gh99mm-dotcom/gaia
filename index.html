@@ -496,7 +496,8 @@ header>.chip:not(.sugg){margin-left:0}
 @media (prefers-reduced-motion:reduce){.bosssprite{animation:none}}
 .bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.bosshp{font-family:var(--f-pix);font-size:10px;color:var(--mute);text-align:right}
 .bossclock{font-family:var(--f-pix);font-size:10px;color:var(--gold)}.bossclock.urgent{color:var(--red);animation:blink 1s steps(2) infinite}
-.asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossidle{padding:28px 16px;text-align:center}
+.asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossret{background:#000;color:#d8d8e4;border:2px solid var(--ink);padding:56px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}.bossret b{font-size:18px;letter-spacing:.04em}.bossret p{margin:0;color:#9a9ab0}.bossretT{font-family:var(--f-pix);font-size:34px;line-height:1;color:#fff;letter-spacing:.08em}
+.bossidle{padding:28px 16px;text-align:center}
 .bosspicks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px;margin:4px 0 8px}.bosspick{justify-content:flex-start;gap:6px;text-align:left;font-size:11px;padding:3px 6px}.bosspick span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chestcard{display:flex;gap:14px;align-items:center;padding:12px 14px;border:2px solid var(--gold);background:linear-gradient(135deg,rgba(191,174,128,.16),var(--deep) 60%)}
 .chestcard .chestspr{flex:none;line-height:0}.chestcard.shake .chestspr{animation:chestshake .15s steps(2) infinite}
@@ -2106,7 +2107,10 @@ function bossHi(K){if(BOSS_HR.has(K))return BOSS_HR.get(K);const g=K.g,h=g.lengt
   const r={body,eyes,po};BOSS_HR.set(K,r);return r}
 const bossSpr=(b,sc)=>{const K=bossKind(b),hi=bossHi(K),s2=sc/2;return`<span class="bossart" style="--eye:${K.po.E}">${img(hi.body,null,s2,'',hi.po)}${img(hi.eyes,null,s2,'beye',hi.po)}</span>`};
 const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
+const BOSS_RET=10*60e3,bossRetLeft=b=>bossKilled(b)&&b.killedAt?Math.max(0,b.killedAt+BOSS_RET-Date.now()):0;
 function bossMainHTML(){const b=BOSS;
+  // just put down: the screen goes black for 10 minutes before you head back out to space
+  if(bossRetLeft(b)>0)return`<div class="bossret"><b>${esc(b.name)} 토벌 성공</b><p>10분 뒤에 우주로 돌아갑니다.</p><span class="bossretT" id="bossRet">${fmtClock(bossRetLeft(b))}</span></div>`;
   // no live invader (none yet, put down, failed or sent back): just the old receiver, no ranking
   if(!bossAlive(b))return`<div class="card bossidle"><b>우주 저편으로 신호를 보냅니다.</b></div>${asigHTML()}`;
   const alive=true,rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
@@ -2139,6 +2143,7 @@ function renderBoss(){const here=bossHere();
 function bossPaint(){const m=$('#bossMain');if(!m){renderPanel();return}m.innerHTML=chestHTML()+bossMainHTML()}
 function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=bossChatLogHTML();if(end)l.scrollTop=l.scrollHeight}
 function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT');{const at=$('#asigT');if(at){const sg=asigState();const k='a'+sg.n+(sg.off?'o':'');if(k!==window.__ak){window.__ak=k;if(window.__akInit)bossPaint();window.__akInit=1}else at.textContent=asigMsg(sg)}}
+  {const r=$('#bossRet');if(r){const l=bossRetLeft(b);if(l>0)r.textContent=fmtClock(l);else bossPaint()}}
   if(bossAlive(b)){const c=$('#bossClock');if(c){c.textContent=bossClock(b);c.classList.toggle('urgent',(b.end||0)-Date.now()<30*60e3)}if(t){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}}
   const h=bossHere(),hc=$('#bossHere'),hw=$('#bossWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 setInterval(bossTick,1000);
