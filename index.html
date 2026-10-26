@@ -3531,7 +3531,9 @@ function renderShip(){if(shipView==='bench')return benchHTML();if(shipView==='ro
 const SW=240,SH=120,BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
 let shipBg=null,shipBgKey='',shipTimer=0;
 const SHIP_GLOW=new Set(['#4f9a92','#8fd0c4','#6a4a30','#523826','#4a6488']);
-const SHIPV={S:4.1,Q:.5,PH:-.72,X:116,Y:80,CX:214,CY:108,LX:30,LY:108};
+const SHIPV={S:4.1,Q:.5,PH:-.72,X:116,Y:80,CX:214,CY:108};
+// the base's teal consoles and the solar panels: unlit until the power core runs, then bright
+const SHIP_BLUE={'#4f9a92':'#5fe8d8','#8fd0c4':'#d8fff6','#4a6488':'#6fa8f0'};
 /* day from 06:00 to 18:00 Korea time (UTC+9, no DST), night otherwise — the same for every player */
 const isDay=()=>{const h=(new Date().getUTCHours()+9)%24;return h>=6&&h<18};
 /* the planet's surface as seen from the crash site: sky, stars or sun, the big moon-planet, ridges, ground (240x120) */
@@ -3568,12 +3570,13 @@ function shipSceneBuild(st){
   const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
   const dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
   const HZ=92;surfaceBackdrop(g,day,rnd);
-  // lantern glow on the ground
-  const LX=SHIPV.LX,LY=SHIPV.LY;if(st.hull)for(let y=HZ;y<SH;y++)for(let x=0;x<160;x++){const d=Math.hypot((x-LX)/2.6,(y-LY));if(d<16&&dith(x,y,(1-d/16)*.7))px(x,y,d<7?'#a8682c':'#6e4024')}
-  // the ship: the starfighter belly-down on the ground, nose to the upper right; key light from the planet (upper left), warm fill from the camp lantern
+  // the ship: the starfighter belly-down on the ground, nose to the upper right; key light from the planet (upper left)
   const S=SHIPV.S,Q=SHIPV.Q,PH=SHIPV.PH;
   const place=(cx,cy,ph,ox,oy)=>{const sn=Math.sin(ph),cs=Math.cos(ph);return{to:(X,Y)=>{const lx=(X-ox)*S,ly=(Y-oy)*S;return[cx-lx*sn-ly*cs,cy+(lx*cs-ly*sn)*Q]},from:(x,y)=>{const vx=x-cx,vy=(y-cy)/Q;return[ox+(-vx*sn+vy*cs)/S,oy+(-vx*cs-vy*sn)/S]}}};
   const hull=place(SHIPV.X,SHIPV.Y,PH,20,22),chunk=place(SHIPV.CX,SHIPV.CY,PH+1.9,35.5,22);
+  // 주 엔진: the exhaust lights the ground under the tail blue
+  const [etx,ety]=hull.to(20,37.5),[emx,emy]=hull.to(20,22),eL=Math.hypot(etx-emx,ety-emy),GX=etx+(etx-emx)/eL*7,GY=ety+(ety-emy)/eL*7+5;
+  if(st.engine)for(let y=HZ;y<SH;y++)for(let x=0;x<SW;x++){const d=Math.hypot((x-GX)/2.4,y-GY);if(d<13&&dith(x,y,(1-d/13)*.8))px(x,y,d<5?'#4fb8e8':d<9?'#2a6aa8':'#1c3c66')}
   // K = sections repaired so far: every one dims the wreck less, clears debris and adds its own sign of life
   const wreck=!st.hull,mess=SHIP.some(p=>!st[p.id]),K=SHIP.filter(p=>st[p.id]).length;
   const [mx,my]=hull.to(21,24),FX=Math.round(mx),FY=Math.max(Math.round(my)+12,100);
@@ -3586,27 +3589,24 @@ function shipSceneBuild(st){
   const draw=(P,stx)=>{const M=new Map();for(let y=10;y<SH;y++)for(let x=0;x<SW;x++){const [X,Y]=P.from(x+.5,y+.5),col=shipColorAt(X,Y,stx);if(col)M.set(y*SW+x,col)}
     // cast shadow falls to the lower right, away from the planet
     M.forEach((_,k)=>{const x=k%SW+4,y=(k-k%SW)/SW+3;if(y<SH&&!M.has(y*SW+x))px(x,y,day?'#2e2628':'#07060b')});
-    M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW;if(wreck){if(!SHIP_GLOW.has(col))col=mix(col,day?'#1a1820':'#0c0b10',(day?.45:.66)*(1-K*.16));let w=0;FIRES.forEach(([fx,fy])=>{const d=Math.hypot(x-fx,(y-fy)*1.3);if(d<16)w=Math.max(w,1-d/16)});if(w)col=mix(col,'#ff7a2a',w*w*.75)}else{const d=Math.hypot((x-LX)/1.6,y-LY);if(d<40)col=mix(col,'#e0904a',(1-d/40)*.45)}px(x,y,col)});
+    M.forEach((col,k)=>{const x=k%SW,y=(k-x)/SW;if(wreck){const bl=SHIP_BLUE[col];if(bl){if(st.power){col=bl;glow.push([x,y])}else col=mix(col,'#0c0b10',.8)}if(!SHIP_GLOW.has(col)&&!bl)col=mix(col,day?'#1a1820':'#0c0b10',(day?.45:.66)*(1-K*.16));let w=0;FIRES.forEach(([fx,fy])=>{const d=Math.hypot(x-fx,(y-fy)*1.3);if(d<16)w=Math.max(w,1-d/16)});if(w)col=mix(col,'#ff7a2a',w*w*.75)}else if(st.engine){const d=Math.hypot((x-GX)/1.6,y-GY);if(d<30)col=mix(col,'#5fd8ff',(1-d/30)*.35)}px(x,y,col)});
     // rim: lit edges facing the planet, dark outline elsewhere
     M.forEach((_,k)=>{const x=k%SW,y=(k-x)/SW;[[0,-1,1],[-1,0,1],[1,0,0],[0,1,0]].forEach(([a,b,lt])=>{const n=(y+b)*SW+x+a;if(!M.has(n))px(x+a,y+b,lt?(day?'#f0e6c8':'#8d7fbf'):'#0d0f16')})});return M};
-  const HM=draw(hull,st);
+  const glow=[],HM=draw(hull,st);
   if(wreck){draw(chunk,Object.assign({},st,{chunk:1}));
     // molten drips hanging from the underside
     HM.forEach((_,k)=>{const x=k%SW,y=(k-x)/SW;if(HM.has(k+SW)||rnd()>.09)return;const L=2+(rnd()*4|0);for(let i=1;i<=L;i++)px(x,y+i,'#1a1618')});
     // a boarding ramp let down from the base to the ground
     {const [ax0,ay0]=hull.to(17,27.5),[ax1,ay1]=hull.to(24,27.5),gy=Math.max(ay0,ay1)+9;for(let y=Math.round(Math.min(ay0,ay1));y<gy;y++){const k=(y-Math.min(ay0,ay1))/(gy-Math.min(ay0,ay1)),l=ax0+(ax0-ax1)*.25*k,r=ax1+(ax1-ax0)*.1*k;for(let x=Math.round(l);x<=r;x++)px(x,y,y%2?'#23262e':'#2e323b')}for(let x=Math.round(ax0-(ax1-ax0)*.25);x<=ax1+2;x++)px(x,gy,'#121016')}
-    // crates, a lamp post and charred slabs in the yard
+    // crates and charred slabs in the yard
     for(let k=0;k<7;k++){const x=FX-50+rnd()*100|0,y=FY+rnd()*12|0,w=3+(rnd()*4|0),h=2+(rnd()*3|0);for(let j=0;j<h;j++)for(let i=0;i<w;i++)px(x+i,y-j,j===h-1?'#6a4a30':i===0?'#3a2a1e':'#4e3624')}
-    {const lx=FX+26,ly=FY+2;for(let j=0;j<9;j++)px(lx,ly-j,'#2a2d36');px(lx-1,ly-9,'#8fd0c4');px(lx,ly-9,'#cfeee8');px(lx+1,ly-9,'#8fd0c4')}
     for(let k=0;k<8;k++){const x=FX-70+rnd()*140|0,y=FY-2+rnd()*16|0,w=3+(rnd()*5|0);for(let i=0;i<w;i++){px(x+i,y,'#4a3a34');px(x+i,y+1,'#1a1618')}}}
   // wreckage strewn over the ground
   if(mess)for(let k=0;k<Math.round(34*(1-K/6));k++){const x=40+rnd()*190|0,y=96+rnd()*22|0,w=1+(rnd()*3|0),col=['#747c8e','#535a6b','#383e4c','#4a1f16'][rnd()*4|0];for(let i=0;i<w;i++)px(x+i,y,col);if(w>2)px(x+1,y-1,'#9aa2b2')}
   // 생명 유지 장치: an oxygen generator by the ramp — two tanks and a green status light
   if(st.life){const ox=FX-22,oy=FY+3;for(const dx of [0,4]){for(let j=0;j<7;j++)for(let i=0;i<3;i++)px(ox+dx+i,oy-j,i===0?'#c8ccd8':i===1?'#9aa0b4':'#6a7088');px(ox+dx+1,oy-7,'#5d6274')}for(let i=-1;i<9;i++)px(ox+i,oy+1,'#2a2d36');px(ox+3,oy-9,'#7dff9b');px(ox+3,oy-8,'#3a8a5a')}
-  // lantern post
-  if(st.hull){px(LX,LY-1,'#ffe9a8');px(LX,LY,'#e09040');px(LX,LY+1,'#5a3a24')}
   const stars=[];for(let k=0;k<46;k++)stars.push({x:rnd()*SW|0,y:rnd()*72|0,p:rnd()*6.28,s:.6+rnd()*1.6,big:rnd()<.2});
-  return{c,day,stars,LX,LY,FX,FY,FIRES,lights:[[19,19],[23,18],[17,22],[25,23],[21,25],[15,20]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),tipL:hull.to(1.5,24).map(Math.round),tipR:hull.to(38.5,24).map(Math.round),run:[[6,19],[10,20.5],[14,22],[34,19],[30,20.5],[26,22]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
+  return{c,day,stars,glow,GX,GY,FX,FY,FIRES,lights:[[19,19],[23,18],[17,22],[25,23],[21,25],[15,20]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),tipL:hull.to(1.5,24).map(Math.round),tipR:hull.to(38.5,24).map(Math.round),run:[[6,19],[10,20.5],[14,22],[34,19],[30,20.5],[26,22]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
 }
 function shipSceneDraw(cv,t){
   const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('')+(isDay()||isLight()?'d':'n');
@@ -3627,7 +3627,7 @@ function shipSceneDraw(cv,t){
       for(let cx=-r;cx<=r;cx++){const h=Math.max(0,(r*2.1-Math.abs(cx)*1.6)*(.7+.3*Math.sin(t/80+cx*1.4+n*2.3)+.12*Math.sin(t/33+cx*2.9+n)));for(let k=0;k<h;k++){const f=k/Math.max(1,h);px(fx+cx,fy-k,f<.2&&Math.abs(cx)<r/2?'#fff4c8':f<.45?'#ffd65f':f<.78?'#ff8a3a':'#b0402a')}}
       const ph=((t/1200)+n/8)%1;if(ph<.7)px(fx+Math.sin(n*2.1+ph*7)*4,fy-r*2-ph*16,ph<.35?'#ffd65f':'#ff8a3a')});
     // console lights blinking inside the base
-    for(let i=0;i<6;i++){if(((t/(400+i*130))|0)%3)continue;const [lx,ly]=B.lights[i];px(lx,ly,i%2?'#8fd0c4':'#7fb4d2')}}
+    if(st.power)for(let i=0;i<6;i++){if(((t/(400+i*130))|0)%3)continue;const [lx,ly]=B.lights[i];px(lx,ly,i%2?'#8fd0c4':'#7fb4d2')}}
   // engine glow, pointing away from the nose
   if(st.engine){const f=(t/120|0)%3,[tx,ty]=B.tail,[mx,my]=B.mid,L=Math.hypot(tx-mx,ty-my),ux=(tx-mx)/L,uy=(ty-my)/L;for(let k=1;k<=9+f;k++)for(let w=-2;w<=2;w++){if(Math.abs(w)*2>9+f-k)continue;px(tx+ux*k-uy*w,ty+uy*k+ux*w,k<3?'#d8f6ff':k<6?'#5fd8ff':'#2a6aa8')}}
   // 생명 유지 장치 breathing light
@@ -3643,8 +3643,10 @@ function shipSceneDraw(cv,t){
     for(let i=-3;i<=3;i++)px(mx+i,top+Math.round(Math.abs(i)*.6),i===0?'#c4c7d4':'#8a8ea6');px(mx,top-1,'#5d6274');
     if((t/500|0)%2===0){px(mx,top-2,'#ff5f6a');px(mx+1,top-2,'#ff5f6a')}
     const w=(t%1800)/1800;for(let a=-6;a<=6;a++){const r=4+w*14,x=mx+Math.round(Math.sin(a/6*1.1)*r),y=top-2-Math.round(Math.cos(a/6*1.1)*r*.6);if(y>0)px(x,y,`rgba(127,232,255,${(1-w)*.9})`)}}
-  // lantern flicker
-  if(st.hull&&(t/140|0)%5!==0)px(B.LX,B.LY-1,'#fffbe0');
+  // powered consoles and panels hum with a soft glow
+  if(B.glow.length){const a=.1+(Math.sin(t/650)+1)*.07;g.fillStyle=`rgba(120,240,255,${a})`;B.glow.forEach(([x,y],i)=>{if(i%3===0)g.fillRect(x-1,y-1,3,3)})}
+  // the blue pool under the exhaust flickers with the flame
+  if(st.engine){const f=(t/120|0)%3;g.fillStyle=`rgba(95,216,255,${.08+f*.04})`;g.fillRect(B.GX-14,B.GY-3,28,7);g.fillRect(B.GX-8,B.GY-5,16,11)}
 }
 function startShipScene(){
   clearInterval(shipTimer);const cv=$('#shipCv');if(!cv)return;
