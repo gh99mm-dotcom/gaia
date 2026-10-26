@@ -425,7 +425,7 @@ header>.chip:not(.sugg){margin-left:0}
 .megrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.mecol{display:flex;flex-direction:column;gap:12px;min-width:0}
 .mecard{display:flex;flex-direction:column;gap:8px;background:var(--deep);border:2px solid var(--ink);padding:10px 12px;min-width:0}
 .mecard .life{background:var(--panel)}.mecard .lifes{grid-template-columns:minmax(0,1fr)}
-.abrows{display:flex;flex-direction:column;gap:3px}.abrow{display:grid;grid-template-columns:54px 32px minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:4px 6px 4px 9px}.abrow b{font-weight:400}.abrow .abv{font-family:var(--f-display);font-size:18px;color:var(--gold);text-align:center}.abrow .btn{padding:4px 10px}
+.abrows{display:flex;flex-direction:column;gap:3px}.abbtn{display:flex;gap:4px}.abrow.pend{border-color:var(--gold)}.abrow .abv small{font-size:11px;color:var(--green);margin-left:2px}.abfoot{justify-content:flex-end;gap:6px;align-items:center;flex-wrap:wrap}.abrow{display:grid;grid-template-columns:54px 32px minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:4px 6px 4px 9px}.abrow b{font-weight:400}.abrow .abv{font-family:var(--f-display);font-size:18px;color:var(--gold);text-align:center}.abrow .btn{padding:4px 10px}
 .merows{margin:0;display:flex;flex-direction:column}.merows div{display:flex;justify-content:space-between;gap:10px;padding:5px 2px;border-bottom:1px dashed var(--line)}.merows div:last-child{border-bottom:0}.merows dt{color:var(--mute)}.merows dd{margin:0;text-align:right;overflow-wrap:anywhere}
 @media(max-width:760px){.mehero{grid-template-columns:auto minmax(0,1fr)}.mequick{grid-column:1/-1;grid-template-columns:repeat(3,1fr) auto}.megrid{grid-template-columns:1fr}}
 @media(max-width:460px){.mehero{grid-template-columns:1fr;justify-items:start}.mequick{grid-template-columns:repeat(3,1fr)}.mequick .btn{grid-column:1/-1}.mequick>div{flex-direction:column;align-items:center;gap:0}.memeters{grid-template-columns:1fr}}
@@ -1582,6 +1582,8 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
+// points are placed first and only applied when 확인 is pressed
+let abPend={};const pendSum=()=>Object.values(abPend).reduce((a,n)=>a+n,0),ptsFree=()=>ptsLeft()-pendSum();
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
 function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${lifePct(k).toFixed(1)}%</span></div></div>`}).join('');
@@ -1599,9 +1601,9 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
      <div class="memeters">${meter('체력',`${P.hp}/${maxHp()}`,P.hp/maxHp()*100,'var(--pink)')}${meter('에너지',`${P.en}/${maxEn()}`,P.en/maxEn()*100,'var(--gold)')}</div></div>
     <div class="mequick"><div><span>공격력</span><b>${atk()}</b></div><div><span>방어력</span><b>${def()}</b></div><div><span>크레딧</span><b>${(P.cr||0).toLocaleString()}</b></div><button class="btn sm alt" data-act="relopen">관계도 보기</button></div></div>
    <div class="megrid"><div class="mecol">
-    <section class="mecard"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsLeft()?'ptsgo':''}">남은 포인트 ${ptsLeft()}</b></div>
-     <div class="abrows">${ABIL.map(([k,n,d])=>`<div class="abrow"><b>${n}</b><span class="abv">${AS(k)}</span><span class="hint">${d}</span><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsLeft()?'':'disabled'} aria-label="${n} 올리기">+1</button></div>`).join('')}</div>
-     <div class="row" style="justify-content:space-between;gap:8px"><span class="hint">기본 2씩 + 15포인트로 시작하고 레벨마다 2포인트를 받습니다.</span><button class="qchip" data-act="resetpt">초기화</button></div></section>
+    <section class="mecard"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsFree()?'ptsgo':''}">남은 포인트 ${ptsFree()}</b></div>
+     <div class="abrows">${ABIL.map(([k,n,d])=>{const q=abPend[k]||0;return`<div class="abrow${q?' pend':''}"><b>${n}</b><span class="abv">${AS(k)+q}${q?`<small>+${q}</small>`:''}</span><span class="hint">${d}</span><span class="abbtn"><button class="btn sm ghost" data-act="subpt" data-k="${k}" ${q?'':'disabled'} aria-label="${n} 내리기">−1</button><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsFree()?'':'disabled'} aria-label="${n} 올리기">+1</button></span></div>`}).join('')}</div>
+     <div class="row abfoot"><span class="hint" style="flex:1;min-width:160px">${pendSum()?`${pendSum()}포인트를 배분했습니다. 확인을 눌러야 적용됩니다.`:'기본 2씩 + 15포인트로 시작하고 레벨마다 2포인트를 받습니다.'}</span>${pendSum()?'<button class="qchip" data-act="cancelpt">취소</button><button class="btn sm gold" data-act="okpt">확인</button>':''}<button class="qchip" data-act="resetpt">초기화</button></div></section>
     <section class="mecard"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></section></div>
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
@@ -3073,8 +3075,11 @@ const A={
   const id=FISHES[tr][ri(0,FISHES[tr].length-1)],xp=FT[tr].xp,first=!P.dex[id];add(id);P.dex[id]=(P.dex[id]||0)+1;gainXp(xp);stat('fish');if(tr==='l')stat('legend');lxp('fish',{c:8,r:15,u:30,l:60}[tr]);duelCatch(tr,id);lastFish={id,ms,xp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
   log(`${ITEMS[id].n}을(를) 낚았다! (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」을 낚았습니다!`);commit()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
- addpt(d){if(ptsLeft()<=0||!ABIL.find(a=>a[0]===d.k))return;P.as=Object.assign({},P.as);P.as[d.k]=(P.as[d.k]||0)+1;save();renderInfo();renderPilot()},
- resetpt(){P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
+ addpt(d){if(ptsFree()<=0||!ABIL.find(a=>a[0]===d.k))return;abPend=Object.assign({},abPend,{[d.k]:(abPend[d.k]||0)+1});renderInfo()},
+ subpt(d){if(!(abPend[d.k]>0))return;abPend=Object.assign({},abPend,{[d.k]:abPend[d.k]-1});if(!abPend[d.k])delete abPend[d.k];renderInfo()},
+ cancelpt(){abPend={};renderInfo()},
+ okpt(){const n=pendSum();if(!n||n>ptsLeft()){abPend={};renderInfo();return}P.as=Object.assign({},P.as);Object.entries(abPend).forEach(([k,q])=>{if(ABIL.find(a=>a[0]===k))P.as[k]=AS(k)+q});abPend={};log(`능력치 ${n}포인트를 배분했다.`,'good');save();renderInfo();renderPilot()},
+ resetpt(){abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
  metab(d){meTab=d.k==='look'?'look':'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
@@ -3118,7 +3123,7 @@ const A={
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now()}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
- profile(){meView=true;mailView=false;adminView=false;renaming=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ profile(){meView=true;mailView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
  mailopen(){mailView=true;meView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  mailclose(){mailView=false;renderPanel()},
