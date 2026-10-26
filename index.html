@@ -14,6 +14,8 @@
   --text:#c4c7d4; --mute:#787d94; --dim:#4a4f64;
   --pink:#a8778c; --pinkd:#4f3240; --violet:#7a6fa0; --violetd:#2c2845; --cyan:#8aa9bd; --cyand:#2b4252;
   --gold:#bfae80; --green:#8ba790; --red:#a8626b;
+  /* relationship tiers, worst to best: 혐오 · 싫다 · 불편 · 무감정 · 안면 · 친구 · 절친 */
+  --rel0:#e0474f; --rel1:#e8845a; --rel2:#d4b060; --rel3:#8a8fa6; --rel4:#6fb8d8; --rel5:#6fd08f; --rel6:#ff7fb8;
   --f-display:"Do Hyeon","Nanum Gothic Coding",sans-serif;
   --f-body:"Nanum Gothic Coding",ui-monospace,monospace;
   --f-pix:"Silkscreen","Nanum Gothic Coding",monospace;
@@ -62,6 +64,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .sndrow .qchip{justify-content:center;padding:2px 4px}
 /* 우주모드 OFF: a white station skin; the pixel outlines stay, everything else turns light */
 :root[data-skin="light"]{
+  --rel0:#b8202a; --rel1:#b85a2a; --rel2:#8a6a10; --rel3:#6a7088; --rel4:#1f6f9a; --rel5:#1f7f44; --rel6:#c0306a;
   /* faded daylight: bleached paper, dusty pastels, soft charcoal ink — bright but a little lonely */
   --void:#e7e4de; --deep:#f0eee9; --panel:#f6f4f0; --panel2:#e9e6e0; --ink:#c9c3b9; --line:#dfdad2;
   --text:#4a4a4f; --mute:#8b877f; --dim:#b8b3aa;
@@ -749,6 +752,13 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 /* relationship map */
 .relmap{position:relative;width:100%;max-width:640px;margin:0 auto;background:radial-gradient(ellipse at 50% 50%,#151b2e 0 35%,var(--deep) 75%);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
 .relmap svg{position:absolute;inset:0;width:100%;height:100%}
+.reltiers{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;max-width:640px;margin:12px auto 0}
+.reltier{--c:var(--rel3);display:flex;flex-direction:column;gap:2px;padding:8px 10px;background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--c)}
+.reltier b{color:var(--c);font-size:14px}.reltier .rng{font-family:var(--f-pix);font-size:10px;color:var(--mute)}.reltier .hint{font-size:11.5px}
+.reltier .cnt{font-size:11.5px;color:var(--c)}.reltier.mine{box-shadow:0 0 0 1px var(--c)}
+.reltier .hint{color:var(--text);opacity:.75}
+:root[data-skin="light"] .relmap{background:radial-gradient(ellipse at 50% 50%,#fbfaf7 0 35%,var(--deep) 75%)}
+:root[data-skin="light"] .rellab{background:rgba(251,250,247,.94)}
 .relnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel);border:2px solid var(--ink);padding:3px 5px 2px;cursor:pointer;color:var(--text);font:inherit;z-index:2}
 .relnode:hover{box-shadow:inset 0 0 0 1px var(--cyan)}
 .relnode.center{border-color:var(--gold);z-index:3}.relnode.me .nm{color:var(--gold)}
@@ -4429,8 +4439,11 @@ const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항�
 // every affinity change is two-way: both sides apply the same delta on their own record (greeting, gift, rescue)
 const AFF={rescue:2,like:3,hate:-3,gift:1},AFF_MIN=-100,AFF_MAX=100;
 const affOf=(p,id)=>((p&&p.aff)||{})[id]||0;
-const affLabel=v=>v<=-90?'혐오':v<=-60?'싫다':v<=-30?'불편':v<30?'아무 감정도 없다':v<60?'안면이 있다':v<90?'친구':'절친한 사이';
-const affColor=v=>v<=-60?'var(--red)':v<=-30?'#c48a6a':v<30?'var(--mute)':v<60?'var(--cyan)':v<90?'var(--green)':'var(--pink)';
+// relationship tiers by 호감도, best first: [lowest value, name, what it means]
+const AFF_TIERS=[[90,'절친한 사이','무엇이든 믿고 맡길 수 있는 단짝'],[60,'친구','함께 있으면 즐거운 사이'],[30,'안면이 있다','오가며 인사 정도는 나누는 사이'],[-29,'아무 감정도 없다','아직 서로 잘 모르는 사이'],[-59,'불편','같이 있으면 어색한 사이'],[-89,'싫다','되도록 마주치고 싶지 않은 사이'],[-100,'혐오','이름만 들어도 질색하는 사이']];
+const affTier=v=>{const i=AFF_TIERS.findIndex(([m])=>v>=m);return i<0?AFF_TIERS.length-1:i};
+const affLabel=v=>AFF_TIERS[affTier(v)][1];
+const affColor=v=>`var(--rel${6-affTier(v)})`;
 function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf(P,id),v=Math.max(AFF_MIN,Math.min(AFF_MAX,before+delta));P.aff=Object.assign({},P.aff,{[id]:v});
   const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'단원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
 const giftedToday=id=>(P.giftDay||{})[id]===dayKey();
@@ -4439,17 +4452,19 @@ function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span c
 function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const others=orgAll().filter(([id])=>id!==cid);
   const W=100,H=compact?70:82,cx=W/2,cy=H/2,rx=compact?40:39,ry=compact?27:32,n=others.length;
   const pos=others.map(([id,p],i)=>{const a=-Math.PI/2+i/Math.max(1,n)*Math.PI*2;return{id,p,x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry}});
-  const lab=v=>Math.abs(v)>=30?affLabel(v):(v>0?'+':'')+v;
   let lines='',labels='';
   pos.forEach(o=>{const out=affOf(C,o.id),inn=affOf(o.p,cid);if(!out&&!inn){lines+=`<line x1="${cx}" y1="${cy}" x2="${o.x}" y2="${o.y}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3" vector-effect="non-scaling-stroke"/>`;return}
     const dx=o.x-cx,dy=o.y-cy,L=Math.hypot(dx,dy)||1,nx=-dy/L*0.9,ny=dx/L*0.9;
     [[out,nx,ny,.32],[inn,-nx,-ny,.68]].forEach(([v,ox,oy,t])=>{if(!v)return;const col=affColor(v);
-      lines+=`<line x1="${cx+ox}" y1="${cy+oy}" x2="${o.x+ox}" y2="${o.y+oy}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" vector-effect="non-scaling-stroke"/>`;
-      labels+=`<span class="rellab" style="left:${(cx+dx*t+ox*2.2)/W*100}%;top:${(cy+dy*t+oy*2.2)/H*100}%;color:${col}">${esc(lab(v))}</span>`})});
+      lines+=`<line x1="${cx+ox}" y1="${cy+oy}" x2="${o.x+ox}" y2="${o.y+oy}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" stroke-opacity="${Math.abs(v)<30?.55:1}" vector-effect="non-scaling-stroke"/>`;
+      labels+=`<span class="rellab" style="left:${(cx+dx*t+ox*2.2)/W*100}%;top:${(cy+dy*t+oy*2.2)/H*100}%;color:${col};border-color:${col}">${esc(affLabel(v))}</span>`})});
   const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="profopen" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
   return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
-  <span class="hint">선 위 글자는 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>입니다. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 한 번)</span>`}
-function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">단원을 누르면 그 단원의 프로필이 열립니다</span></div>${relMapHTML(uid,false)}`}
+  <span class="hint">선 위 글자는 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>이고, 선 색깔이 관계를 나타냅니다${compact?'':'(아래 카드 참고)'}. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 한 번)</span>`}
+function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">단원을 누르면 그 단원의 프로필이 열립니다</span></div>${relMapHTML(uid,false)}${relTiersHTML()}`}
+// one card per relationship tier, with how many crew I currently feel that way about
+function relTiersHTML(){const mine=orgAll().filter(([id])=>id!==uid).map(([id])=>affTier(affOf(P,id)));
+  return`<div class="reltiers">${AFF_TIERS.map(([m,n,d],i)=>{const hi=i?AFF_TIERS[i-1][0]-1:100,c=mine.filter(t=>t===i).length;return`<div class="reltier ${c?'mine':''}" style="--c:var(--rel${6-i})"><b>${n}</b><span class="rng">♥ ${m} ~ ${hi}</span><span class="hint">${d}</span>${c?`<span class="cnt">내가 이렇게 느끼는 단원 ${c}명</span>`:''}</div>`}).join('')}</div>`}
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:13px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:13px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m)}
