@@ -2245,12 +2245,14 @@ const bossReady=()=>Math.max(0,(P.bossAt||0)+BOSS_CD-Date.now());
 // the invader's counterblow: a same-level crew member goes down in about 3 of these
 const bossBlow=b=>Math.max(1,Math.round((20+b.lv*6.5)*bossKind(b).atk*(.85+Math.random()*.3)-def()*.4));
 // every 30% of its health lost, the invader lashes out at everyone who has fought it
-function bossQuake(){const b=BOSS;if(!b||!bossAlive(b)||!(b.aoe>0)||!(b.dmg&&b.dmg[uid]))return;const seen=(P.bossAoe&&P.bossAoe.gen===b.gen)?P.bossAoe.n:0;if(b.aoe<=seen)return;
-  const k=b.aoe-seen;P.bossAoe={gen:b.gen,n:b.aoe};let tot=0;for(let i=0;i<k;i++)tot+=bossBlow(b);heal(-tot,0);
+// count of 30% steps lost (70% · 40% · 10% left) — taken from hp so a stale client's counter can't add extra blows
+const bossAoeN=b=>b&&b.hp>0&&b.max>0?Math.min(3,Math.floor((b.max-b.hp)/(b.max*.3)+1e-9)):0;
+function bossQuake(){const b=BOSS;if(!b||!bossAlive(b)||!(bossAoeN(b)>0)||!(b.dmg&&b.dmg[uid]))return;const seen=(P.bossAoe&&P.bossAoe.gen===b.gen)?P.bossAoe.n:0;const na=bossAoeN(b);if(na<=seen)return;
+  const k=na-seen;P.bossAoe={gen:b.gen,n:na};let tot=0;for(let i=0;i<k;i++)tot+=bossBlow(b);heal(-tot,0);
   bossLast={t:Date.now(),miss:false,txt:`${b.name}의 광역 반격! 모든 토벌대 체력 -${tot}`};log(`${b.name}이(가) 체력을 잃고 날뛰었다! 광역 반격으로 체력 -${tot}`,'bad');toast(`${b.name}의 광역 반격! 체력 -${tot}`);commit()}
-async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossReady()>0||isFaint()||bossBusy)return;bossBusy=true;if(!(P.bossAoe&&P.bossAoe.gen===b.gen))P.bossAoe={gen:b.gen,n:b.aoe||0};
+async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossReady()>0||isFaint()||bossBusy)return;bossBusy=true;if(!(P.bossAoe&&P.bossAoe.gen===b.gen))P.bossAoe={gen:b.gen,n:bossAoeN(b)};
   const crit=Math.random()*100<AS('agi'),d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(crit?1.5:1)));let dealt=0,kill=false;
-  try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,d);{const st=Math.max(1,cur.max*.3),q0=Math.floor((cur.max-cur.hp)/st);cur.hp-=dealt;const q1=Math.floor((cur.max-cur.hp)/st);if(cur.hp>0&&q1>q0){cur.aoe=(cur.aoe||0)+(q1-q0);cur.aoeAt=Date.now()}}cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
+  try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,d);{const q0=bossAoeN(cur);cur.hp-=dealt;const q1=bossAoeN(cur);if(cur.hp>0&&q1>q0){cur.aoe=q1;cur.aoeAt=Date.now()}}cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=dealt;cur.dmg[uid]=m;
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
   P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
