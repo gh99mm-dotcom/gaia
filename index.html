@@ -3602,7 +3602,7 @@ function shipGive(partId,only){
     if(tab==='ship')renderPanel()
   }).catch(()=>{list.forEach(([id,n])=>add(id,n));P.cr-=cr;commit();toast('재료를 넣지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')})
 }
-const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['moss',10],['ore',12],['crystal',40],['drink',45],['kit',50]];
+const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['drink',45],['kit',50]];
 const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,relic:25,drink:15,kit:18};
 const FSELL={c:6,r:20,u:60,l:250};
 const sellPrice=id=>ITEMS[id].type==='relic'?1:crs(ITEMS[id].fish?FSELL[ITEMS[id].fish]:(ITEMS[id].sv||SELLP[id]||1));
