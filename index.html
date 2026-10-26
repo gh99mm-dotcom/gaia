@@ -107,7 +107,8 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 :root[data-skin="light"] :is(.twimgs img,.pvimg img,.imgmodal img,.profimg img){filter:saturate(.55) sepia(.14) brightness(1.03) contrast(.94)}
 /* 우주모드 OFF: flat 2px outlines, no drop shadows or bevels; selected states keep their inner ring */
 :root[data-skin="light"] *{box-shadow:none!important}
-:root[data-skin="light"] .px,:root[data-skin="light"] .toast{border-width:2px}
+/* OFF keeps the thin 2px frame line but the same 3px box as 우주모드 ON, so nothing shifts when switching */
+:root[data-skin="light"] .px{border-color:transparent;background-clip:border-box;outline:2px solid var(--ink);outline-offset:-2px}:root[data-skin="light"] .toast{border-width:2px}
 :root[data-skin="light"] .logo h1{text-shadow:none}
 :root[data-skin="light"] :is(.rtile[aria-pressed=true],.nav button[aria-pressed="true"],.dtabs button[aria-selected="true"],.site[aria-checked="true"],.qchip[aria-pressed="true"],.ttl[aria-pressed="true"],.witem.on,.orgm[aria-pressed="true"],.dmi[aria-pressed="true"],.tool[aria-pressed="true"],.seedbtn[aria-pressed="true"]){box-shadow:inset 0 0 0 1px var(--cyan)!important}
 :root[data-skin="light"] :is(.raidmem.turn){box-shadow:inset 0 0 0 1px var(--gold)!important}
@@ -185,7 +186,11 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .mailitem.sys{box-shadow:inset 0 0 0 1px var(--gold)}.mailfrom{flex:none;width:44px;display:flex;justify-content:center}
 .mailsys{font-family:var(--f-pix);font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:3px 4px}
 .mailbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.mailmsg{margin:0;font-size:13.5px}
-.pilot-name{font-family:var(--f-display);font-size:17px;line-height:1.1;word-break:keep-all;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.pnrow .pilot-name{margin-right:2px}.pnbtns{display:inline-flex;gap:4px;flex:none;align-items:center}
+.pilot-name{font-family:var(--f-display);font-size:17px;line-height:1.1;word-break:keep-all;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.pnrow .pilot-name{margin-right:2px;min-width:0;flex:0 1 auto}.pnbtns{display:inline-flex;gap:4px;flex:none;align-items:center}
+/* name and the three icons stay on one line; when the column is tight the icons shrink a little */
+.pncol{container-type:inline-size;flex:1 1 auto}.pnrow .pilot-name{flex-shrink:1}.pnbtns .mailbtn img{display:block}
+@container (max-width:150px){.pnbtns{gap:1px}.pnbtns .mailbtn{padding:2px}.pnbtns .mailbtn img{height:15px;width:auto}}
+@container (max-width:118px){.pnbtns .mailbtn img{height:12px}}
 .lv{font-family:var(--f-pix);font-size:11px;color:var(--gold);letter-spacing:.04em;word-break:keep-all}
 .stat{display:flex;flex-direction:column;gap:4px}
 .stat-row{display:flex;align-items:center;gap:6px;justify-content:space-between;font-family:var(--f-pix);font-size:10.5px;letter-spacing:.08em}
@@ -1697,7 +1702,7 @@ function renderPilot(){
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').innerHTML=`
   <div class="pilot-top"><div class="avatar">${meImg(3)}</div>
-   <div style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:wrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(IC.bag,null,1.5)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(BELL,null,2)}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
+   <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(IC.bag,null,1.5)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(BELL,null,2)}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
