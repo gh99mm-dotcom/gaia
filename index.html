@@ -516,6 +516,12 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.admpick{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px;border:1px solid var(--gold);margin:4px 0}.admbig{align-self:flex-start;padding:10px 22px;font-size:15px}.admfaint{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}.admfrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line)}.admfrow.down{border-color:var(--red);background:color-mix(in srgb,var(--red) 8%,transparent)}.admfn{flex:1;min-width:0;display:flex;flex-direction:column}.admfn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.shiptabs{margin:0 0 10px}
 .roomlock{display:flex;flex-direction:column;gap:6px;max-width:600px}.roomlock .btn{align-self:flex-start}.roomstaff{margin:0 0 8px;color:var(--gold)}
 .roomwrap{position:relative;max-width:600px}
+.roomlay{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.roommain{flex:1 1 420px;max-width:600px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.vside{flex:0 1 200px;display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-top:34px}
+.vfaces{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:5px}
+.vface{position:relative;display:flex;align-items:flex-end;justify-content:center;height:38px;padding:2px;background:var(--panel2);border:1px solid var(--line);cursor:pointer}.vface:hover,.vface.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.vface .von{position:absolute;right:2px;top:2px;width:6px;height:6px;background:var(--green);border:1px solid var(--ink)}
+@media (max-width:760px){.vside{flex:1 1 100%;margin-top:0}}
 .roomcv{display:block;width:100%;aspect-ratio:2/1;max-width:100%;image-rendering:pixelated;border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),3px 3px 0 var(--ink);background:#121522}
 .pvbar{display:flex;flex-direction:column;gap:7px;background:var(--deep);border:2px solid var(--gold);padding:8px 10px;max-width:600px}
 .pvchips{display:flex;flex-wrap:wrap;gap:4px}
@@ -2962,18 +2968,18 @@ const FURN={
   M('fl13','이끼 정원',900,[['moss',10],['seed_berry',1]],'작은 꽃이 핀 이끼 바닥',{pat:'garden',c:['#1b2420','#26332a','#a8778c']}),
  ]},
  bed:{n:'침대',list:[
-  M('bed0','간이 침상',0,null,'쉬면 체력·에너지 30% 회복',{st:'basic',f:'#2a2e3a',bl:'#4a4570',rest:.3}),
-  M('bed1','수면 캡슐',1500,[['ore',10],['crystal',2]],'쉬면 체력·에너지 50% 회복',{st:'cap',f:'#22343f',bl:'#3a5866',tint:'138,169,189',rest:.5}),
-  M('bed2','군용 접이식 침대',300,[['ore',3]],'쉬면 32% 회복',{st:'basic',f:'#3a3f4f',bl:'#4d5a45',rest:.32}),
-  M('bed3','낡은 소파베드',500,[['moss',3]],'쉬면 35% 회복',{st:'sofa',f:'#3a2a22',bl:'#6a4f42',rest:.35}),
-  M('bed4','우주 해먹',400,[['moss',4]],'쉬면 33% 회복',{st:'hammock',f:'#5d6274',bl:'#7a6a52',rest:.33}),
-  M('bed5','별무늬 이불 침대',700,[['crystal',1]],'쉬면 38% 회복',{st:'basic',f:'#2a2e3a',bl:'#2c3a5a',stars:1,rest:.38}),
-  M('bed6','붉은 벨벳 침대',1200,[['ore',6]],'쉬면 40% 회복',{st:'basic',f:'#2a1a1c',bl:'#6a2f38',rest:.4}),
-  M('bed7','이끼 매트리스',600,[['moss',8]],'쉬면 36% 회복',{st:'basic',f:'#2a2e3a',bl:'#3e5545',rest:.36}),
-  M('bed8','무중력 수면 고치',3000,[['crystal',5],['dark',1]],'쉬면 55% 회복',{st:'cocoon',f:'#2c2845',bl:'#9a8fc0',rest:.55}),
-  M('bed9','캐노피 침대',2200,[['ore',8],['moss',4]],'쉬면 45% 회복',{st:'canopy',f:'#3a2e25',bl:'#5f5a80',rest:.45}),
-  M('bed10','냉동 수면 포드',6000,[['crystal',8],['dark',3]],'쉬면 60% 회복',{st:'cap',f:'#2a2e3a',bl:'#8a8da0',tint:'196,199,212',rest:.6}),
-  M('bed11','2층 침대',1500,[['ore',10]],'쉬면 40% 회복 · 손님용 자리도',{st:'bunk',f:'#41444f',bl:'#4a4570',rest:.4}),
+  M('bed0','간이 침상',0,null,'개척선에 딸려 온 딱딱한 기본 침상',{st:'basic',f:'#2a2e3a',bl:'#4a4570',rest:.3}),
+  M('bed1','수면 캡슐',1500,[['ore',10],['crystal',2]],'푸른 유리 덮개가 달린 1인용 캡슐',{st:'cap',f:'#22343f',bl:'#3a5866',tint:'138,169,189',rest:.5}),
+  M('bed2','군용 접이식 침대',300,[['ore',3]],'접으면 벽에 붙는 군용 침대',{st:'basic',f:'#3a3f4f',bl:'#4d5a45',rest:.32}),
+  M('bed3','낡은 소파베드',500,[['moss',3]],'스프링이 삐걱대는 오래된 소파베드',{st:'sofa',f:'#3a2a22',bl:'#6a4f42',rest:.35}),
+  M('bed4','우주 해먹',400,[['moss',4]],'두 벽 사이에 건 흔들 그물 침대',{st:'hammock',f:'#5d6274',bl:'#7a6a52',rest:.33}),
+  M('bed5','별무늬 이불 침대',700,[['crystal',1]],'별자리 무늬 이불을 덮은 침대',{st:'basic',f:'#2a2e3a',bl:'#2c3a5a',stars:1,rest:.38}),
+  M('bed6','붉은 벨벳 침대',1200,[['ore',6]],'붉은 벨벳을 씌운 묵직한 침대',{st:'basic',f:'#2a1a1c',bl:'#6a2f38',rest:.4}),
+  M('bed7','이끼 매트리스',600,[['moss',8]],'습지 이끼로 채운 폭신한 매트리스',{st:'basic',f:'#2a2e3a',bl:'#3e5545',rest:.36}),
+  M('bed8','무중력 수면 고치',3000,[['crystal',5],['dark',1]],'공중에 떠서 몸을 감싸는 고치',{st:'cocoon',f:'#2c2845',bl:'#9a8fc0',rest:.55}),
+  M('bed9','캐노피 침대',2200,[['ore',8],['moss',4]],'천장에서 천이 드리운 캐노피 침대',{st:'canopy',f:'#3a2e25',bl:'#5f5a80',rest:.45}),
+  M('bed10','냉동 수면 포드',6000,[['crystal',8],['dark',3]],'얼음처럼 차가운 은빛 수면 포드',{st:'cap',f:'#2a2e3a',bl:'#8a8da0',tint:'196,199,212',rest:.6}),
+  M('bed11','2층 침대',1500,[['ore',10]],'손님도 재울 수 있는 2층 침대',{st:'bunk',f:'#41444f',bl:'#4a4570',rest:.4}),
  ]},
  desk:{n:'책상',list:[
   M('d0','기본 사무 책상',0,null,'서랍 달린 금속 책상',{top:'#2f3340',body:'#262a37',base:'drawers',mon:'lcd',chair:'office',cc:'#3a3358'}),
@@ -3044,7 +3050,7 @@ SX('wallp','wpx2','고대 회로 문양','누군가 새겨 놓은 금빛 회로'
 SX('floorp','flx1','별가루 바닥','밟으면 반짝이는 가루가 깔려 있어요',{pat:'garden',c:['#10121e','#1a1d30','#e2d39a']});
 SX('floorp','flx2','운석 단면 바닥','붉은 결이 흐르는 운석을 잘라 깔았어요',{pat:'marble',c:['#1a1a1e','#3a3a44','#a8626b']});
 SX('desk','dx1','외계 유물 탁자','홀로그램이 떠오르는 정체불명의 탁자',{top:'#3a3358',body:'#2c2845',base:'legs',mon:'holo',chair:'cushion',cc:'#7a6fa0',ext:'moss'});
-SX('bed','bedx1','발굴된 수면 캡슐','잔해 속에서 꺼낸 호박색 캡슐 · 52% 회복',{st:'cap',f:'#2a211b',bl:'#9a7a5e',tint:'201,150,94',rest:.52});
+SX('bed','bedx1','발굴된 수면 캡슐','잔해 속에서 꺼낸 호박색 캡슐',{st:'cap',f:'#2a211b',bl:'#9a7a5e',tint:'201,150,94',rest:.52});
 SX('wall','wx1','해독된 신호 판','처음 해독한 신호의 파형',{k:'signal'});
 SX('wall','wx2','고대 석판','읽을 수 없는 문자가 새겨진 돌',{k:'tablet'});
 SX('floor','fx1','추락한 위성 조각','태양전지판이 반쯤 남은 위성',{k:'satellite'});
@@ -3370,19 +3376,18 @@ function pvPending(){const buy=[],mats={};let cost=0,lock=0;for(const [slot,id] 
 function pvBar(){const ks=Object.entries(preview);if(!ks.length)return'';const pd=pvPending();
   return`<div class="pvbar"><div class="pvchips">${ks.map(([slot,id])=>{const f=furnById(id);return`<span class="ichip">${FURN[slot].n} · ${esc(f.n)}${ownsF(id)?' (보유)':''}<button class="pvx" data-act="pvone" data-k="${slot}" aria-label="${esc(f.n)} 미리보기 빼기">×</button></span>`}).join('')}</div>
    <div class="row" style="gap:8px">${pd.lock?'<span class="hint" style="color:var(--red)">조사에서만 얻는 가구가 포함되어 있어요</span>':''}${pd.buy.length?`<span class="price">${img(IC.coin,null,2)}${pd.cost.toLocaleString()}</span>${pd.mats.length?matHTML(pd.mats):''}`:'<span class="hint">모두 보유한 가구예요.</span>'}<span style="margin-left:auto"></span><button class="btn sm ghost" data-act="pvoff">되돌리기</button><button class="btn sm gold" data-act="pvall" ${pd.ok?'':'disabled'}>${pd.buy.length?`전체 구매·배치 (${pd.buy.length}개 구매)`:'전체 배치'}</button></div></div>`}
-function visitHTML(others){if(!others.length)return'';const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean));return`<div><span class="lbl">Visit · 단원의 방 구경</span><div class="vgrid">${others.slice().sort((a,b)=>on.has(b[0])-on.has(a[0])).map(([id,p])=>`<button class="vcard" data-act="visit" data-k="${id}" title="${esc(p.nick||'단원')} 님의 방 구경하기" aria-label="${esc(p.nick||'단원')} 님의 방 구경하기"><span class="vhead">${headImg(3,p)}</span><span class="vnm">${esc(p.nick||'단원')}</span></button>`).join('')}</div></div>`}
+// other crew's rooms as small faces next to the room picture; online first
+function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean));return`<div class="vside"><span class="lbl">단원의 방</span>${others.length?`<div class="vfaces">${others.slice().sort((a,b)=>on.has(b[0])-on.has(a[0])).map(([id,p])=>`<button class="vface ${visit===id?'on':''}" data-act="visit" data-k="${id}" title="${esc(p.nick||'단원')} 님의 방 구경하기" aria-label="${esc(p.nick||'단원')} 님의 방 구경하기">${headImg(2,p)}${on.has(id)?'<i class="von"></i>':''}</button>`).join('')}</div>`:`<span class="hint">${mode==='online'?'아직 다른 단원이 없습니다.':'온라인에서 볼 수 있습니다.'}</span>`}</div>`}
 function renderRoom(){
   enterRoomSpace(visit||uid);
   const vis=visit&&PLAYERS[visit];
   const others=mode==='online'?Object.entries(PLAYERS).filter(([id])=>id!==uid):[];
-  const left=Math.max(0,(P.restAt||0)+REST_CD-Date.now());
-  const rm=roomOf(P),bed=FURN.bed.list.find(b=>b.id===rm.bed);
-  const scene=`<div class="roomwrap"><canvas id="roomCv" class="roomcv" aria-label="${vis?esc(vis.nick)+'의 방':'내 방'}"></canvas><div class="roomnames" id="roomNames"></div><span class="roomtag">${vis?esc(vis.nick)+' 님의 방':'내 방 · C-12'}</span>${!vis&&Object.keys(preview).length?`<span class="pvtag">미리보기 ${Object.keys(preview).length}개</span>`:''}</div>${!vis?pvBar():''}<div class="row emotes">${Object.keys(EMOTES).map(k=>`<button class="qchip emo" data-act="emote" data-k="${k}" aria-label="감정 표현">${img(EMOTES[k],null,2)}</button>`).join('')}<span class="hint">감정 표현을 눌러 보세요.${mode==='online'?' 같은 방에 있는 친구에게 실시간으로 보여요.':''}</span></div>`;
-  if(vis)return head()+shipSubTabs()+scene+`<div class="row"><button class="btn sm ghost" data-act="roomhome">내 방으로 돌아가기</button><span class="hint">Lv.${vis.lvl||1} · 던전 최고 ${vis.deep||0}층 · 어류 도감 ${Object.keys(vis.dex||{}).length}/115</span></div>${visitHTML(others.filter(([id])=>id!==visit))}`;
+  const rm=roomOf(P);
+  const emo=`<div class="row emotes">${Object.keys(EMOTES).map(k=>`<button class="qchip emo" data-act="emote" data-k="${k}" aria-label="감정 표현">${img(EMOTES[k],null,2)}</button>`).join('')}</div>`;
+  const scene=`<div class="roomlay"><div class="roommain">${emo}<div class="roomwrap"><canvas id="roomCv" class="roomcv" aria-label="${vis?esc(vis.nick)+'의 방':'내 방'}"></canvas><div class="roomnames" id="roomNames"></div><span class="roomtag">${vis?esc(vis.nick)+' 님의 방':'내 방 · C-12'}</span>${!vis&&Object.keys(preview).length?`<span class="pvtag">미리보기 ${Object.keys(preview).length}개</span>`:''}</div>${!vis?pvBar():''}</div>${visitHTML(others.filter(([id])=>id!==visit))}</div>`;
+  if(vis)return head()+shipSubTabs()+scene+`<div class="row"><button class="btn sm ghost" data-act="roomhome">내 방으로 돌아가기</button><span class="hint">Lv.${vis.lvl||1} · 어류 도감 ${Object.keys(vis.dex||{}).length}종</span></div>`;
   const sl=FURN[roomSlot]||FURN.wallp;const lk=lookOf(P);
   return head()+shipSubTabs()+scene+`
-  <div class="row"><button class="btn sm alt" data-act="rest" ${left?'disabled':''}>${bed.n}에서 쉬기</button><span class="hint" id="restT">${left?'다시 쉴 수 있을 때까지 '+fmtClock(left):bed.d+' · 2시간마다 한 번'}</span></div>
-  ${visitHTML(others)}
   <div><div class="dtabs" role="tablist"><button role="tab" aria-selected="${roomSlot==='ward'||roomSlot==='look'}" data-act="rslot" data-k="ward">옷장</button>${Object.entries(FURN).filter(([k])=>!ROOM_HIDE.has(k)).map(([k,v])=>`<button role="tab" aria-selected="${roomSlot===k}" data-act="rslot" data-k="${k}">${v.n}</button>`).join('')}</div>
   ${roomSlot==='ward'||roomSlot==='look'?wardHTML():false?`<div class="lookbox"><div class="lookprev">${meImg(6)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button class="sw" style="background:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">모습은 언제든 무료로 바꿀 수 있어요. 친구에게도 이 모습으로 보여요.</span></div></div>`:`<div class="slist" style="margin-top:6px">${sl.list.map(f=>{const own=ownsF(f.id),on=rm[roomSlot]===f.id,can=(P.cr||0)>=f.price&&hasMat(f.mat);return`<div class="srow"><span class="fsw ${on?'on':''}"></span><div class="sinfo"><b>${f.n}${f.scan?' <span class="scantag">조사 전용</span>':''}</b><span class="hint">${f.d}</span>${own||f.scan?'':matHTML(f.mat)}</div>${own?'<span></span>':f.scan?'<span class="hint">조사 중 발견</span>':`<span class="price">${img(IC.coin,null,2)}${f.price.toLocaleString()}</span>`}<div class="sbtns">${on?'':`<button class="btn sm ghost" data-act="pv" data-k="${f.id}" aria-pressed="${preview[roomSlot]===f.id}">${preview[roomSlot]===f.id?'보는 중':'미리보기'}</button>`}${on?'<span class="hint">배치 중</span>':own?`<button class="btn sm" data-act="fplace" data-k="${f.id}">배치</button>`:f.scan?'<span class="hint">미발견</span>':`<button class="btn sm gold" data-act="fbuy" data-k="${f.id}" ${can?'':'disabled'}>구매</button>`}</div></div>`}).join('')}</div>`}</div>`;
 }
@@ -3881,7 +3886,6 @@ const A={
  pvoff(){preview={};renderPanel()},
  fplace(d){if(!ownsF(d.k))return;delete preview[roomSlot];P.room=Object.assign({},roomOf(P),{[roomSlot]:d.k});save();renderPanel()},
  fbuy(d){const f=FURN[roomSlot].list.find(x=>x.id===d.k);if(!f||ownsF(f.id))return;if((P.cr||0)<f.price){toast('크레딧이 부족해요.');return}if(!hasMat(f.mat)){toast('재료가 부족해요.');return}(f.mat||[]).forEach(([id,n])=>take(id,n));P.cr-=f.price;sfxCoin();P.own=[...(P.own||[]),f.id];delete preview[roomSlot];P.room=Object.assign({},roomOf(P),{[roomSlot]:f.id});log(`${f.n}을(를) 방에 들였다.`,'good');commit()},
- rest(){if(Date.now()<(P.restAt||0)+REST_CD)return;const b=FURN.bed.list.find(x=>x.id===roomOf(P).bed);heal(Math.round(maxHp()*b.rest),Math.round(maxEn()*b.rest));P.restAt=Date.now();log(`${b.n}에서 잠시 눈을 붙였다. 몸이 가벼워졌다.`,'good');commit()},
  visit(d){if(!PLAYERS[d.k])return;visit=d.k;renderPanel();const w=document.querySelector('.roomwrap');if(w)w.scrollIntoView({block:'nearest',behavior:'smooth'})},
  roomhome(){visit=null;renderPanel()},
  emote(d){if(!EMOTES[d.k])return;myEmote={k:d.k,at:Date.now()};pushRoomPresence();drawRoomCv()},
@@ -4422,8 +4426,7 @@ setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.tex
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
 addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm'){fitSide();fitBay()}});
 setInterval(()=>{
-  scoutTick();if(!!BBGM!==bossBgmWant())syncBgm();if(roomShown()&&!visit){const r=$('#restT'),left=(P.restAt||0)+REST_CD-Date.now();if(r&&left>0)r.textContent='다시 쉴 수 있을 때까지 '+fmtClock(left);else if(r&&left<=0&&r.textContent.startsWith('다시'))renderPanel()}
-  if(tab==='req'){const sk=(spresNow()||{}).id||'';if((P.req&&P.req.day!==reqKey())||sk!==(window.__spk||'')){window.__spk=sk;renderPanel()}else{const e=$('#reqT');if(e)e.textContent=fmtClock(reqLeft());const t=$('#spresT'),x=spresNow();if(t&&x)t.textContent=fmtClock(x.end-Date.now())}}{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
+  scoutTick();if(!!BBGM!==bossBgmWant())syncBgm();if(tab==='req'){const sk=(spresNow()||{}).id||'';if((P.req&&P.req.day!==reqKey())||sk!==(window.__spk||'')){window.__spk=sk;renderPanel()}else{const e=$('#reqT');if(e)e.textContent=fmtClock(reqLeft());const t=$('#spresT'),x=spresNow();if(t&&x)t.textContent=fmtClock(x.end-Date.now())}}{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
