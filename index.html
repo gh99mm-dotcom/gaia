@@ -536,6 +536,8 @@ header>.chip:not(.sugg){margin-left:0}
 .pcm.host{border-color:var(--gold)}.pcm.empty{opacity:.45;border-style:dashed}.pcm.empty i{width:22px;height:22px;border:2px dashed var(--mute);border-radius:50%;display:block}
 .pcfoot{display:flex;align-items:center;justify-content:space-between;gap:8px}.pcfoot b{font-family:var(--f-pix)}
 .raidtopbtn{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.raidtopbtn .btn{padding:7px 14px;font-size:14px}
+.padwrap{display:flex;gap:12px;align-items:stretch;justify-content:center;margin-top:10px}.padwrap>.padphone{flex:0 1 400px;margin:0;min-width:0}.padwrap>.lounge{flex:1 1 280px;max-width:420px;margin:0}.lounge .bosslog{max-height:none}
+@media (max-width:760px){.padwrap{flex-direction:column;align-items:stretch}.padwrap>.padphone{flex:none;width:100%;max-width:400px;margin:0 auto}.padwrap>.lounge{max-width:none;min-height:360px}}
 .padphone{--ph-body:#111217;--ph-line:#000000;--ph-hi:#2a2d38;--ph-hole:#07080c;max-width:400px;margin:10px auto 0;background:var(--ph-body);border:3px solid var(--ph-line);border-radius:30px;padding:0 12px;box-shadow:inset 0 0 0 2px var(--ph-hi),4px 4px 0 rgba(0,0,0,.35)}
 :root[data-skin="light"] .padphone{--ph-body:#fbfaf7;--ph-line:#8b877f;--ph-hi:#ffffff;--ph-hole:#ece9e3;box-shadow:inset 0 0 0 2px var(--ph-hi)}
 .pp-top{height:38px;display:flex;align-items:center;justify-content:center;gap:10px}.pp-spk{width:64px;height:9px;border:2px solid var(--ph-line);border-radius:6px;background:var(--ph-hole)}.pp-cam{width:9px;height:9px;border:2px solid var(--ph-line);border-radius:50%;background:var(--ph-hole)}
@@ -2126,7 +2128,8 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
   P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 단원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
   bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossClaim();bossPenalty();bossExpire();if(tab==='adv')bossPaint()},()=>{});
-  bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{})}
+  bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{});
+  loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='social'&&socTab==='pad')loungePaint()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
   if(!src||(P.bossGot||0)>=src.gen)return;const tot=Object.values(src.dmg).reduce((a,v)=>a+(v.d||0),0)||1,mine=src.dmg[uid].d||0,share=mine/tot;
@@ -2165,6 +2168,19 @@ async function bossHit(){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||bossR
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
   sfxBossHit(crit);if(kill)sfxBossKill();else sfxBossBack(bossLast&&bossLast.miss);
   log(`${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
+/* 교류 lounge: a small live chat for whoever is on the 교류 tab right now, next to the PAD phone (last 40 lines kept) */
+const LOUNGE_MAX=40,loungeRef=()=>db.doc('boss/lounge');let LCHAT=[],loungeDraft='';
+const loungeHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='교류').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
+function loungeLogHTML(){return LCHAT.length?LCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 교류 탭에 있는 단원에게 말을 걸어 보십시오.</li>'}
+function loungeHTML(){const h=loungeHere();return`<div class="card bosschat lounge"><div class="stat-row"><span>교류 대화</span><b id="lgHere">${h.length}명</b></div><span class="hint" id="lgWho">${h.map(esc).join(', ')}</span>
+  <ol class="bosslog" id="lgLog">${loungeLogHTML()}</ol>
+  <form class="bossform" id="lgForm"><input id="lgIn" value="${esc(loungeDraft)}" maxlength="120" autocomplete="off" placeholder="교류 중인 단원에게 말하기" aria-label="교류 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
+  <span class="hint">교류 탭에 있는 단원끼리 이야기합니다. 최근 ${LOUNGE_MAX}개만 남습니다.</span></div>`}
+function loungePaint(){const l=$('#lgLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=loungeLogHTML();if(end)l.scrollTop=l.scrollHeight;const h=loungeHere(),hc=$('#lgHere'),hw=$('#lgWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
+function loungeSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t||mode!=='online')return;const m={uid,n:P.nick,t,at:Date.now()};
+  return bossTx(loungeRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-LOUNGE_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
+document.addEventListener('submit',e=>{if(e.target.id!=='lgForm')return;e.preventDefault();const i=$('#lgIn');const v=i.value;if(!v.trim())return;i.value='';loungeDraft='';loungeSay(v)});
+document.addEventListener('input',e=>{if(e.target.id==='lgIn')loungeDraft=e.target.value});
 function bossSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t)return;const m={uid,n:P.nick,t,at:Date.now()};
   return bossTx(bchatRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-BOSS_CHAT_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
 const bossHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='탐사').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
@@ -3411,8 +3427,8 @@ function renderSocial(){
   const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='dm'?socDm():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
-const padPhone=h=>`<div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>`;
-function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}}
+const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>${loungeHTML()}</div>`;
+function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}if(tab==='social'&&socTab==='pad'){const l=$('#lgLog');if(l)l.scrollTop=l.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
     if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'단원'} 님이 인사를 건넸다.`,'good');addAff(g.from,1,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸습니다!`);ch=true}});
