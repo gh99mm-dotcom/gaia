@@ -585,7 +585,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @keyframes skpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
 @media (prefers-reduced-motion:reduce){.skpop{animation:none}}
 .raidlog li.lg-sk{color:var(--gold);font-weight:700}.raidlog li.lg-atk{color:var(--cyan)}.raidlog li.lg-hurt{color:var(--red)}.raidlog li.lg-heal{color:var(--green)}
-.rchat .bosslog{max-height:180px}
+.rchat{min-height:0}.rchat .bosslog{height:200px;max-height:200px;flex:none}
 .raidlog{list-style:none;margin:0;padding:6px 8px;background:var(--ink);border:1px solid var(--line);font-size:12.5px;display:flex;flex-direction:column;gap:2px;max-height:150px;overflow:auto}
 .pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:8px;margin-top:8px}
 .pcard{display:flex;flex-direction:column;background:var(--deep);border:2px solid var(--ink);overflow:hidden}.pcard.off{opacity:.6}.pcard:not(.off){box-shadow:0 0 0 1px var(--gold) inset}
@@ -3862,8 +3862,17 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
  let rs=null;const g=$('#bwGrip');g.addEventListener('pointerdown',e=>{const r=bagWin.getBoundingClientRect();rs={x:e.clientX,y:e.clientY,w:r.width,h:r.height};g.setPointerCapture(e.pointerId);e.preventDefault()});
  g.addEventListener('pointermove',e=>{if(rs)bagSize(rs.w+e.clientX-rs.x,rs.h+e.clientY-rs.y)});
  g.addEventListener('pointerup',()=>{if(!rs)return;rs=null;try{localStorage.setItem('gaia-bagsize',JSON.stringify([bagWin.offsetWidth,bagWin.offsetHeight]))}catch(e){}})}
-// the party chat box survives any redraw of the stage: focus and cursor go back where they were
-function renderPanel(){const ae=document.activeElement,pos=ae&&ae.id==='rcIn'?ae.selectionStart:null;renderPanel0();if(pos!=null){const i=$('#rcIn');if(i){i.focus({preventScroll:true});try{i.setSelectionRange(pos,pos)}catch(e){}}}}
+// the party chat box survives any redraw of the stage: focus and cursor go back where they were.
+// While a Korean syllable is still being composed a redraw would break it apart, so it waits for compositionend.
+let imeOn=false,imeWait=false;
+document.addEventListener('compositionstart',()=>{imeOn=true});
+document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
+function renderPanel(){const ae=document.activeElement;if(imeOn&&ae&&ae.id==='rcIn'){imeWait=true;return}const pos=ae&&ae.id==='rcIn'?ae.selectionStart:null;
+  // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
+  const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
+  renderPanel0();
+  Object.entries(logs).forEach(([id,v])=>{const l=document.getElementById(id);if(l)l.scrollTop=v.end?l.scrollHeight:v.t});
+  {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}if(pos!=null){const i=$('#rcIn');if(i){i.focus({preventScroll:true});try{i.setSelectionRange(pos,pos)}catch(e){}}}}
 function renderPanel0(){bagWinRender();
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox'))$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll();return}
