@@ -513,7 +513,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bossstage.down .bosssprite{filter:grayscale(1) brightness(.6);animation:none}.bossstage.down .bosssprite::before{display:none}.bossstage.down .beye{animation:none;filter:none}
 @keyframes bossbob{50%{transform:translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.bosssprite{animation:none}}
-.bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.bosshp{font-family:var(--f-pix);font-size:11px;color:var(--mute);text-align:right}
+.bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.bosshp{font-family:var(--f-pix);font-size:11px;color:var(--mute);text-align:right}.bosspct{color:var(--red);font-size:14px;font-weight:700;margin-right:2px}
 .bossclock{font-family:var(--f-pix);font-size:11px;color:var(--gold)}.bossclock.urgent{color:var(--red);animation:blink 1s steps(2) infinite}
 .asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossdim{padding-bottom:64px}.bossdim::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.38);pointer-events:none}.bossdim .bosssprite{filter:brightness(.8)}
 .bossretov{position:absolute;left:0;right:0;bottom:12px;z-index:1;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center;color:#e8e8f0;text-shadow:0 2px 4px #000}.bossretov p{margin:0;font-weight:700}.bossretT{font-family:var(--f-pix);font-size:30px;line-height:1;color:#fff;letter-spacing:.08em}
@@ -2189,6 +2189,7 @@ const BOSS_KINDS=[
 let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='',bossLast=null;
 const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
 const bossKind=b=>BOSS_KINDS[(b&&b.kind)|0]||BOSS_KINDS[0];
+const bossPct=b=>{if(b.hp<=0)return 0;if(b.hp>=b.max)return 100;return Math.max(.1,Math.floor(b.hp/b.max*1000)/10).toFixed(1)};
 // invader HP = 20 crew of its level each landing 10 typical hits (typical ATK 12 at Lv.1, +5.2/level incl. weapon and gear), never below the old curve
 const typAtk=lv=>12+5.2*(lv-1),bossHpFor=(lv,k)=>Math.round(Math.max(200*typAtk(lv),400*lv+12*lv*lv)*BOSS_KINDS[k].hp);
 const bossAlive=b=>!!b&&b.hp>0&&!b.failed&&!b.gone;
@@ -2354,7 +2355,7 @@ function beaconHTML(off){const b=beaconImg();return`<div class="beacon ${off?'of
 function bossMainHTML(){const b=BOSS;
   // just put down: the fallen invader's stage dims for 10 minutes before you head back out to space
   if(bossRetLeft(b)>0)return`<div class="bossstage bossdim"><div class="bosssprite">${bossSpr(b,10)}</div>
-    <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 토벌 성공</span>${raidBar(0,b.max,'var(--red)')}<span class="bosshp">0 / ${b.max.toLocaleString()}</span></div>
+    <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 토벌 성공</span>${raidBar(0,b.max,'var(--red)')}<span class="bosshp"><b class="bosspct">0%</b> · 0 / ${b.max.toLocaleString()}</span></div>
     <div class="bossretov"><p>30초 뒤에 우주로 돌아갑니다.</p><span class="bossretT" id="bossRet">${fmtClock(bossRetLeft(b))}</span></div></div>`;
   // no live invader (none yet, put down, failed or sent back): just the old receiver, no ranking
   if(!bossAlive(b))return beaconHTML(asigState().off)+asigHTML();
@@ -2362,7 +2363,7 @@ function bossMainHTML(){const b=BOSS;
   const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null,urgent=alive&&(b.end||0)-Date.now()<30*60e3;
   return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,10)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
-    ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp">${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span>${alive?`<span class="bossclock ${urgent?'urgent':''}" id="bossClock">${bossClock(b)}</span>`:''}</div></div>
+    ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp"><b class="bosspct">${bossPct(b)}%</b> · ${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span>${alive?`<span class="bossclock ${urgent?'urgent':''}" id="bossClock">${bossClock(b)}</span>`:''}</div></div>
    ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div><p class="hint">공격하면 침략자가 반격합니다(방어력만큼 줄고, 민첩이 높으면 피할 수 있음). 체력이 20% 줄 때마다 공격에 참여한 모든 단원에게 광역 반격을 합니다. 체력이 0이 되면 기절하니 음식으로 체력을 채우십시오. <b style="color:var(--red)">2시간 안에 토벌하지 못하면 모든 단원의 체력과 에너지가 1이 됩니다.</b></p>`
     :b.failed?`<div class="card"><b style="color:var(--red)">토벌 실패…</b><p class="hint">${esc(b.name)}이(가) 2시간을 버티고 심연으로 돌아갔습니다. 저주로 모든 단원의 체력과 에너지가 1이 되었습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`
     :b.gone?`<div class="card"><b>침략자가 물러났습니다</b><p class="hint">운영자가 ${esc(b.name)}을(를) 심연으로 돌려보냈습니다. 다음 침략자를 기다리십시오.</p></div>`
