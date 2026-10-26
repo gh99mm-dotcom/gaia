@@ -1401,7 +1401,7 @@ const wpnById=id=>WPNS.find(w=>w.id===id);
 Object.assign(TPL,{wArmor:["................", "...kkk....kkk...", "..khhak..kahhk..", ".khaaakkkkaaahk.", ".kaaaabhhbaaaak.", ".kaaaabaabaaaak.", "..kkaabaabaakk..", "...kaabaabaak...", "...kaabhhbaak...", "...kaaabbaaak...", "...kaaaaaaaak...", "...kbaayyaabk...", "...kbbbbbbbbk...", "....kkkkkkkk....", "................", "................"],wRing:["................", "....kkkkkkkk....", "...kyk....kyk...", "..kyk......kyk..", "..kyk......kyk..", "...kyk....kyk...", "....kyk..kyk....", ".....kykkyk.....", "......kyyk......", ".....kkhhkk.....", "....khhaaabk....", "....khaaaabk....", "....kaaaabbk....", ".....kabbbk.....", "......kkkk......", "................"]});
 
 const GF=k=>{let v=0;const g=P.gear||{};for(const s2 in g){const f=craftById(g[s2]);if(f&&f.fx[k])v+=f.fx[k]}const w=P.wpn&&wpnById(P.wpn);if(w&&w.fx[k])v+=w.fx[k];return v};
-const maxHp=()=>60+P.lvl*12+(P.job==='guard'?20:0)+AS('vit')*8+GF('hp'), maxEn=()=>30+P.lvl*2+AS('end')*2+GF('en'), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='fighter'?1.15:1)), def=()=>Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='guard'?5:0)+GF('def')+BUFF('def'), need=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
+const maxHp=()=>60+P.lvl*12+(P.job==='guard'?20:0)+AS('vit')*8+GF('hp'), maxEn=()=>30+P.lvl*2+AS('end')*2+GF('en'), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='fighter'?1.15:1)), def=()=>Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='guard'?5:0)+GF('def')+BUFF('def'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
 function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났습니다. 음식을 먹거나 잠시 쉬십시오.');return false}if(P.en<n){toast(`에너지가 부족합니다 (필요 ${n})`);return false}P.en-=n;return true}
 function add(id,n=1){P.inv[id]=(P.inv[id]||0)+n}
@@ -1409,6 +1409,10 @@ function take(id,n=1){if((P.inv[id]||0)<n)return false;P.inv[id]-=n;if(!P.inv[id
 // level 60 is the cap. With ~2,000 XP a day for an active player: level 20 takes a little over 3 days (~6.5k XP),
 // level 60 about two weeks (~30.8k XP). The first few levels ramp up quickly so new crew still feel progress.
 const MAX_LV=60;
+/* level curve: paced so ~8 hours of play is ~10 levels. Model hour = 3 raids at your level (boss one above) + ~150 XP of
+   fishing/farming/scanning, and one level costs 0.8 of those hours. Raid rewards are scaled off xpBase, not need. */
+const raidXpAt=L=>xpBase(L)*.74+xpBase(L+1)*.54*(1+Math.pow((L+1)/15,1.5));
+const NEED=Array.from({length:61},(_,l)=>l?Math.round((3*raidXpAt(l)+150)*.8/10)*10:0),need=l=>NEED[Math.max(1,Math.min(60,l))];
 function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
 function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.min(maxEn(),Math.max(0,P.en+(en||0)))}
 
@@ -1847,7 +1851,7 @@ const RAID_EVENTS=[
  {k:'cache',n:'숨겨진 보급고',t:'벽 뒤에 숨겨진 보급고를 발견했다!',cr:[60,120],item:['kit']}];
 // a full clear in your own zone is worth about half a level, so expeditions lead the XP race without breaking the 60-level curve
 // bosses pay out far more the higher they are: ×(1+(L/15)^1.5) on top of the base share
-const raidMonXp=(L,kind)=>Math.round(need(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1)*(kind==='boss'?1+Math.pow(L/15,1.5):1));
+const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1)*(kind==='boss'?1+Math.pow(L/15,1.5):1));
 function raidMon(zone,L,kind,name,n){const s={elite:[1.5,1.1,1.1],mid:[2.2,1.15,1.15],boss:[3,1.15,1.2]}[kind]||[1,1,1],pm=kind==='mid'||kind==='boss'?1+.7*(n-1):1;
   const hp=Math.round((14+L*5+L*L*.06)*s[0]*pm);return{n:name,L,kind:kind||'',hp,max:hp,atk:Math.round((3.5+L*1.4+L*L*.018)*s[1]),def:Math.round((1+L*.6)*s[2]),agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
