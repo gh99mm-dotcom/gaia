@@ -1415,7 +1415,8 @@ const MAX_LV=60;
 const raidXpAt=L=>xpBase(L)*.74+xpBase(L+1)*.54*(1+Math.pow((L+1)/15,1.5)),SIDE_XP=50;
 const RAIDS_AT=[[10,3],[20,3.5],[30,4],[40,4.5],[50,6],[59,9],[60,9]];
 const RAIDS_PER=L=>{for(let i=1;i<RAIDS_AT.length;i++){const[a,x]=RAIDS_AT[i-1],[b,y]=RAIDS_AT[i];if(L<=b)return x+(y-x)*(Math.max(L,a)-a)/(b-a)}return 9};
-const lvCost=L=>RAIDS_PER(L)*(raidXpAt(L)+SIDE_XP);
+// RAID_PACE stretches the anchors so a 6h/day player (raids take ~5-10 min, ~48 a day) reaches Lv.60 in about 10 days
+const RAID_PACE=1.94,lvCost=L=>RAIDS_PER(L)*RAID_PACE*(raidXpAt(L)+SIDE_XP);
 const NEED=Array.from({length:61},(_,l)=>{if(!l)return 0;if(l<5)return xpBase(l);if(l>=10)return Math.round(lvCost(l)/10)*10;return Math.round(xpBase(4)*Math.pow(lvCost(10)/xpBase(4),(l-4)/6)/10)*10}),need=l=>NEED[Math.max(1,Math.min(60,l))];
 function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
 function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.min(maxEn(),Math.max(0,P.en+(en||0)))}
