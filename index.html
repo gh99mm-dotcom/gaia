@@ -111,8 +111,9 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 :root[data-skin="light"] .px{border-color:transparent;background-clip:border-box;outline:2px solid var(--ink);outline-offset:-2px}:root[data-skin="light"] .toast{border-width:2px}
 :root[data-skin="light"] .logo h1{text-shadow:none}
 :root[data-skin="light"] :is(.rtile[aria-pressed=true],.nav button[aria-pressed="true"],.dtabs button[aria-selected="true"],.site[aria-checked="true"],.qchip[aria-pressed="true"],.ttl[aria-pressed="true"],.witem.on,.orgm[aria-pressed="true"],.dmi[aria-pressed="true"],.tool[aria-pressed="true"],.seedbtn[aria-pressed="true"]){box-shadow:inset 0 0 0 1px var(--cyan)!important}
-:root[data-skin="light"] :is(.raidmem.turn){box-shadow:inset 0 0 0 1px var(--gold)!important}
-:root[data-skin="light"] :is(.raidmon.tgt){box-shadow:inset 0 0 0 1px var(--red)!important}
+:root[data-skin="light"] :is(.raidmem.turn){border-color:#c8901a!important;background:#fff3d2!important;box-shadow:0 0 0 2px #e8b040,0 2px 8px #c8901a55!important}
+:root[data-skin="light"] :is(.raidmon.tgt){border-color:#c8303c!important;background:#ffe6e8!important;box-shadow:0 0 0 3px #e85a64,0 3px 10px #c8303c55!important}
+:root[data-skin="light"] .raidmon.tgt::before{background:#c8303c;color:#fff}:root[data-skin="light"] .raidmem.turn::before{background:#c8901a;color:#fff}
 :root[data-skin="light"] :is(.shippart.on,.dial.live .dial-face){box-shadow:inset 0 0 0 1px var(--cyan)!important}
 :root[data-skin="light"] .slot[aria-pressed="true"]{box-shadow:inset 0 0 0 1px var(--pink)!important}
 .solobanner{display:flex;flex-direction:column;gap:4px;background:#1f1218;border:2px solid var(--red);padding:9px 12px;font-size:13px;line-height:1.6}
@@ -494,10 +495,12 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .sigbox{display:flex;gap:12px;align-items:center}
 .shiptop{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.shiptop .sinfo{flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px}
 .raidwrap{display:grid;grid-template-columns:220px minmax(0,1fr);gap:10px;margin-top:8px}@media (max-width:760px){.raidwrap{grid-template-columns:minmax(0,1fr)}}
-.raidparty{display:flex;flex-direction:column;gap:6px}.raidmem{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:3px}
+.raidparty{display:flex;flex-direction:column;gap:10px;padding-top:8px}.raidmem{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:3px}
 .raidmem.turn{box-shadow:inset 0 0 0 2px var(--gold)}.raidmem.down{opacity:.5}.raidmain{min-width:0;display:flex;flex-direction:column;gap:8px}
 .raidmons{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}.raidmon{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:110px;background:var(--deep);border:2px solid var(--ink);padding:6px;color:inherit;font:inherit;cursor:pointer}
-.raidmon.tgt{box-shadow:inset 0 0 0 2px var(--red)}.raidmon.dead{opacity:.3;cursor:default}.raidmon.boss{min-width:170px;box-shadow:inset 0 0 0 1px var(--gold)}.raidmon.boss.tgt{box-shadow:inset 0 0 0 2px var(--red)}.raidmon .bar{width:100%}
+.raidmon.tgt{box-shadow:inset 0 0 0 2px var(--red),0 0 10px #ff5f6a66}
+.raidmon{position:relative}.raidmon.tgt::before{content:'공격 대상';position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:10px;line-height:1.5;padding:0 6px;background:var(--red);color:var(--ink);white-space:nowrap;font-weight:700}
+.raidmem{position:relative}.raidmem.turn::before{content:'▶ 차례';position:absolute;top:-8px;right:6px;font-size:10px;line-height:1.5;padding:0 5px;background:var(--gold);color:var(--ink);font-weight:700}.raidmon.dead{opacity:.3;cursor:default}.raidmon.boss{min-width:170px;box-shadow:inset 0 0 0 1px var(--gold)}.raidmon.boss.tgt{box-shadow:inset 0 0 0 2px var(--red)}.raidmon .bar{width:100%}
 .bossgrid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:12px;align-items:stretch}
 @media (max-width:760px){.bossgrid{grid-template-columns:1fr}}
 .bossmain{display:flex;flex-direction:column;gap:10px;min-width:0}
