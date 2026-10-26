@@ -631,6 +631,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .shippart span{font-size:.85em;color:var(--mute)}.shippart.lock{opacity:.55}.shippart.lock span{color:var(--dim)}.shiplock{margin:6px 0 0;font-size:13px;color:var(--gold)}
 .shippart.on{box-shadow:inset 0 0 0 2px var(--cyan)}.shippart.ok b{color:var(--green)}
 .shipdet{margin-bottom:10px}.shipmats{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.shipmats .smq{display:flex;gap:4px;align-items:center}.shipmats .smq input{width:64px}
 .shipmats li{display:grid;grid-template-columns:auto 7.5em 1fr auto auto auto;gap:8px;align-items:center}
 .shipmats .smc{font-variant-numeric:tabular-nums}.shipmats .smok{color:var(--green);font-size:.85em;padding:0 6px}
 @media(max-width:560px){.shipmats li{grid-template-columns:auto 1fr auto auto;row-gap:3px}.shipmats li .bar{grid-column:1/-1;order:9}.shipmats li .hint{display:none}}
@@ -3523,7 +3524,7 @@ function renderShip(){if(shipView==='bench')return benchHTML();if(shipView==='ro
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
   <div class="card shipdet"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div><b>${pt.n}</b> <span class="hint">${shipDone(pt)?'수리 완료':Math.floor(shipPct(pt)*100)+'%'}</span><p class="hint" style="margin:4px 0 0">${pt.d}</p>${open?'':`<p class="shiplock">🔒 ${esc(prevN)}을(를) 먼저 고쳐야 이 구역을 수리할 수 있습니다.</p>`}</div>
    ${shipDone(pt)?'':`<button class="btn sm" data-act="shipgive" data-k="${pt.id}" ${canAny?'':'disabled'}>가진 재료 모두 넣기</button>`}</div>
-   <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?`<button class="btn sm alt" data-act="shipgive" data-k="${pt.id}" data-i="${id}" ${my&&open?'':'disabled'}>넣기</button>`:'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>
+   <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?(()=>{const mx=Math.min(left,my,1000),q=Math.max(1,Math.min(mx||1,shipQty[id]||mx||1));return`<span class="smq"><input class="sel" type="number" min="1" max="${mx||1}" value="${q}" data-shipq="${id}" aria-label="${esc(ITEMS[id].n)} 넣을 개수" ${my&&open?'':'disabled'}><button class="btn sm alt" data-act="shipgive" data-k="${pt.id}" data-i="${id}" ${my&&open?'':'disabled'}>넣기</button></span>`})():'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>
   <div class="card"><div class="stat-row"><span>수리 기여 순위</span><b>내 기여 ${mine}개</b></div>${top.length?`<ol class="shiprank">${top.map(([id,r],k)=>`<li><span>${k+1}</span><button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(id===uid?P.nick:(PLAYERS[id]&&PLAYERS[id].nick)||r.nick||'단원')}</button><b>${r.n}개</b></li>`).join('')}</ol>`:'<p class="hint">아직 아무도 재료를 넣지 않았습니다. 첫 번째 수리공이 되어 보십시오.</p>'}</div>`;
 }
 /* ship scene: a pixel-art crash site on an alien world; repaired parts show on the downed starfighter */
@@ -3635,10 +3636,12 @@ function startShipScene(){
   const tick=()=>{if(!cv.isConnected){clearInterval(shipTimer);return}shipSceneDraw(cv,performance.now())};
   tick();shipTimer=setInterval(tick,110);
 }
-function shipGive(partId,only){
+// how many of each material to hand in (typed per row; unset means everything that still fits)
+let shipQty={};
+function shipGive(partId,only,qty){
   const pt=SHIP.find(x=>x.id===partId);if(!pt||mode!=='online')return;if(!shipOpen(pt)){toast('앞 구역을 먼저 고쳐야 합니다.');return}
   const list=[];
-  pt.need.forEach(([id])=>{if(only&&id!==only)return;const n=Math.min(shipLeft(pt,id),P.inv[id]||0,1000);if(n>0)list.push([id,n])});
+  pt.need.forEach(([id])=>{if(only&&id!==only)return;const n=Math.min(shipLeft(pt,id),P.inv[id]||0,1000,qty>0?qty:Infinity);if(n>0)list.push([id,n])});if(only)delete shipQty[only];
   if(!list.length){toast('넣을 수 있는 재료가 없습니다.');return}
   const finish=pt.need.every(([id])=>shipLeft(pt,id)-((list.find(x=>x[0]===id)||[,0])[1])<=0);
   list.forEach(([id,n])=>take(id,n));
@@ -3998,7 +4001,7 @@ const A={
  fstake(d){const have=FSTORE[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-store')||{}).value)||1)));if(n<1||have<n)return;storeAdd(d.id,-n);add(d.id,n);storeLogAdd('take',d.id,n);log(`공용 창고에서 ${ITEMS[d.id].n} ${n}개를 꺼냈다.`);commit()},
  fsput(d){const have=P.inv[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-bag')||{}).value)||1)));if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);storeLogAdd('put',d.id,n);log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
  shipsel(d){shipSel=d.k;renderPanel()},
- shipgive(d){shipGive(d.k,d.i)},
+ shipgive(d){const inp=d.i&&document.querySelector(`[data-shipq="${d.i}"]`);shipGive(d.k,d.i,inp?Math.max(1,Math.floor(+inp.value||1)):0)},
  refill(){if(FARM.water>=FARM.cap)return;if(Date.now()<FARM.refCd){toast(`아직 물을 채울 수 없습니다. ${fmtClock(FARM.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+3600e3;sfxWater();
   if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:FARM.refCd}).catch(()=>{});else farmSave();log(`공용 물탱크를 가득 채웠다. 1시간 뒤에 다시 채울 수 있다.`,'good');commit()},
  raidzone(d){raidSel=d.k;renderPanel()},
@@ -4276,6 +4279,7 @@ function mailHTML(){const L=mailList();const tabs=[['in',`받은 우편${L.lengt
 // typed drafts survive the redraws snapshots cause
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='mlMsg')mlMsg=t.value;else if(t.id==='trMsg')trMsg=t.value;else if(t.id==='trGiveCr')trGiveCr=Math.max(0,Math.floor(+t.value||0));else if(t.id==='trWantCr')trWantCr=Math.max(0,Math.floor(+t.value||0));
   else if(t.dataset&&t.dataset.q){const k=t.dataset.k,v=Math.max(1,Math.min(ML_EACH,Math.floor(+t.value||1))),o=t.dataset.q==='ml'?mlAtt:t.dataset.q==='tg'?trGive:trWant;if(o[k]){o[k]=t.dataset.q==='tw'?v:Math.min(v,P.inv[k]||0);if(t.value!==''&&+t.value!==o[k])t.value=o[k]}}});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset&&t.dataset.shipq){const v=Math.floor(+t.value||0);if(v>0)shipQty[t.dataset.shipq]=v}});
 document.addEventListener('change',e=>{const t=e.target;if(t.id==='mlTo')mlTo=t.value;else if(t.id==='trTo')trTo=t.value;else if(t.id==='trPick')trPick=t.value});
 
 /* ---- fishing duel ---- */
