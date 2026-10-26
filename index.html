@@ -2972,21 +2972,27 @@ function renderCrew(){
 }
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
 const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
-let tickI=0,tickOpen=false,tickTop=0;
+let tickOpen=false;
 // notices older than 2 hours drop off the ticker; a minute timer keeps it fresh even with no new chat
-const TICK_TTL=2*3600e3,tickList=()=>CHAT.filter(m=>m.sys&&TICK_RE.test(m.text||'')&&Date.now()-(+m.at||0)<TICK_TTL).slice().reverse().slice(0,10);
+const TICK_TTL=2*3600e3,tickList=()=>CHAT.filter(m=>m.sys&&!m.adm&&TICK_RE.test(m.text||'')&&Date.now()-(+m.at||0)<TICK_TTL).slice().reverse().slice(0,10);
 setInterval(()=>{if(CHAT.some(m=>m.sys&&Date.now()-(+m.at||0)>=TICK_TTL&&Date.now()-(+m.at||0)<TICK_TTL+65e3))renderChat()},60e3);
 const tickKind=t=>t.startsWith('[공지]')?'n':t.startsWith('새 단원')?'j':'c';
 // the admin can strike any notice off the ticker
 const tickDel=x=>isAdmin&&mode==='online'&&x&&x.id?`<button type="button" class="tk-x" data-act="tickdel" data-k="${esc(x.id)}" title="이 알림 삭제" aria-label="이 알림 삭제">×</button>`:'';
+/* ticker: the latest admin notice stays pinned; everyone else's news slides past once (6 s each) and is gone */
+let tickSeen=null,tickQ=[],tickCur=null,tickUntil=0;
+const tickPin=()=>{let p=null;CHAT.forEach(m=>{if(m.adm&&(!p||(+m.at||0)>(+p.at||0)))p=m});return p};
 function renderChat(fresh){
-  const el=$('#ticker');if(!el)return;const L=tickList();
-  const changed=!!L[0]&&L[0].at!==tickTop&&tickTop!==0;if(changed)tickI=0;tickTop=L[0]?L[0].at:0;if(tickI>=L.length)tickI=0;fresh=fresh===true||changed;
-  const m=L[tickI];
-  el.innerHTML=`<span class="tk-l"><i></i>NOTICE · 알림</span>${m?`<span class="tk-m k-${tickKind(m.text)} ${fresh?'in':''}"><time>${hhmm(m.at)}</time>${esc(m.text)}</span>${L.length>1?`<span class="tk-c">${tickI+1}/${L.length}</span>`:''}${tickDel(m)}`:`<span class="tk-m">${mode==='online'?'새 소식이 없습니다.':mode==='solo'?'혼자 모드에서는 알림이 오지 않습니다.':'통신 연결 중…'}</span>`}
-   ${tickOpen&&L.length?`<div class="tk-list">${L.map(x=>`<div class="tk-m k-${tickKind(x.text)}"><time>${hhmm(x.at)}</time>${esc(x.text)}${tickDel(x)}</div>`).join('')}</div>`:''}`;
+  const el=$('#ticker');if(!el)return;const L=tickList(),pin=tickPin();
+  const news=CHAT.filter(m=>m.sys&&!m.adm&&TICK_RE.test(m.text||''));
+  if(!tickSeen){if(mode==='online'&&CHAT.length)tickSeen=new Set(news.map(m=>m.id))}else news.forEach(m=>{if(!tickSeen.has(m.id)){tickSeen.add(m.id);tickQ.push(m)}});
+  if(tickCur&&Date.now()>=tickUntil)tickCur=null;
+  if(!tickCur&&tickQ.length){tickCur=tickQ.shift();tickUntil=Date.now()+6000;fresh=true}
+  const m=tickCur||pin;
+  el.innerHTML=`<span class="tk-l"><i></i>NOTICE · 알림</span>${m?`<span class="tk-m k-${m===pin?'n':tickKind(m.text)} ${fresh===true?'in':''}"><time>${hhmm(m.at)}</time>${esc(m.text)}</span>${tickQ.length?`<span class="tk-c">+${tickQ.length}</span>`:''}${tickDel(m)}`:`<span class="tk-m">${mode==='online'?'새 소식이 없습니다.':mode==='solo'?'혼자 모드에서는 알림이 오지 않습니다.':'통신 연결 중…'}</span>`}
+   ${tickOpen&&(L.length||pin)?`<div class="tk-list">${[...(pin&&!L.includes(pin)?[pin]:[]),...L].map(x=>`<div class="tk-m k-${x===pin?'n':tickKind(x.text)}"><time>${hhmm(x.at)}</time>${esc(x.text)}${tickDel(x)}</div>`).join('')}</div>`:''}`;
 }
-setInterval(()=>{const n=tickList().length;if(n>1&&!tickOpen){tickI=(tickI+1)%n;renderChat(true)}},6000);
+setInterval(()=>{if(tickCur&&Date.now()>=tickUntil&&!tickOpen)renderChat(tickQ.length>0)},1000);
 document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(inT){if(!e.target.closest('.tk-list,[data-act]')){tickOpen=!tickOpen;renderChat()}}else if(tickOpen){tickOpen=false;renderChat()}});
 
 /* ───────── actions ───────── */
