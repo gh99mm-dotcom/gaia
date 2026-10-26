@@ -2600,7 +2600,7 @@ function renderGather(){
 }
 function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='nav'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}{const rl=relicRoll(P.lvl);if(rl)got[rl]=(got[rl]||0)+1}}
   Object.entries(got).forEach(([id,n])=>add(id,n));gainXp(3*x.pending);stat('gather',x.pending);lxp('gather',4*x.pending);P.exp=Object.assign({},x.e,{tg:x.tg+x.pending});
-  if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 로봇이 땅속에서 무기를 찾아왔다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 상점 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
+  if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 로봇이 땅속에서 무기를 찾아왔다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 우주선 → 제작대의 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
   lastGather={t:`채집 로봇이 ${x.site.n}에서 ${x.pending}회분 채집물을 가져왔다.${wf?` 희귀 무기 「${wf.n}」도 찾아왔다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
   if(x.done>=x.total&&P.exp.tg>=x.G){P.exp=null;log(`${x.site.n}에서 채집 로봇이 돌아왔다.`)}return true}
 function renderFish(){
@@ -2775,11 +2775,11 @@ function myLookHTML(){const lk=lookOf(P),of=outfitOf(P),tabs=[['color','색상']
     body=`<div class="mlsec"><span class="lbl">무기</span><div class="eqitem on static">${img(IC.raygun,null,2)}<div><b>${esc(WEAPONS[P.wlv])} +${P.wlv}</b><span class="hint">무기는 하나를 계속 강화합니다. 가방에서 강화할 수 있습니다.</span></div></div></div>
      <div class="mlsec"><span class="lbl">우주복</span><div class="eqlist">${SUITS.slice(0,suitMax()+1).map((u,lv)=>card(img(IC.suit,u.t,2),u.n,u.d,(P.suit||0)===lv,'eqsuit',lv)).join('')}</div></div>
      <div class="mlsec"><span class="lbl">낚싯대</span><div class="eqlist">${RODS.slice(0,rodMax()+1).map((r,lv)=>card(img(IC.rod,r.t,2),r.n,r.d,(P.rod||0)===lv,'eqrod',lv)).join('')}</div></div>
-     ${Object.entries(CRAFT).map(([slot,c])=>{const mine=c.list.filter(f=>(P.own||[]).includes(f.id)),cur=(P.gear||{})[slot];return`<div class="mlsec"><span class="lbl">${c.n} 장비</span>${mine.length?`<div class="eqlist">${card(`<span class="eqnone">—</span>`,'착용 안 함','이 부위를 비워 둡니다.',!cur,'cunequip',slot)}${mine.map(f=>card(img(TPL[c.ic],f.t,2),f.n,f.d,cur===f.id,'cequip',slot,f.id)).join('')}</div>`:`<p class="hint">아직 만든 ${c.n} 장비가 없습니다. 상점의 제작에서 만들 수 있습니다.</p>`}</div>`}).join('')}`}
+     ${Object.entries(CRAFT).map(([slot,c])=>{const mine=c.list.filter(f=>(P.own||[]).includes(f.id)),cur=(P.gear||{})[slot];return`<div class="mlsec"><span class="lbl">${c.n} 장비</span>${mine.length?`<div class="eqlist">${card(`<span class="eqnone">—</span>`,'착용 안 함','이 부위를 비워 둡니다.',!cur,'cunequip',slot)}${mine.map(f=>card(img(TPL[c.ic],f.t,2),f.n,f.d,cur===f.id,'cequip',slot,f.id)).join('')}</div>`:`<p class="hint">아직 만든 ${c.n} 장비가 없습니다. 우주선 → 제작대의 제작 장비에서 만들 수 있습니다.</p>`}</div>`}).join('')}`}
   else{const g=WARD[mlTab],mine=g.list.filter(it=>ownsW(it.id));body=`<div class="wgrid">${mine.map(it=>{const on=of[mlTab]===it.id;return`<div class="witem ${on?'on':''}" data-act="wwear" data-k="${mlTab}" data-id="${it.id}" role="button" tabindex="0" aria-pressed="${on}" title="${esc(it.n)} 착용">${meImg(2,P,{[mlTab]:it.id})}<b>${esc(it.n)}</b><span class="hint">${on?'착용 중':'눌러서 착용'}</span></div>`}).join('')}</div>${mine.length<=1?`<p class="hint">아직 가진 ${g.n} 아이템이 없습니다.</p>`:''}`}
   return`<div class="mecard mylook"><div class="mlprev">${meImg(8)}<span class="hint">지금 내 모습</span></div>
    <div class="mlbody"><div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${mlTab===k}" data-act="mltab" data-k="${k}">${n}${WARD[k]?`<em class="wcur">${WARD[k].list.filter(it=>ownsW(it.id)).length-1}</em>`:''}</button>`).join('')}</div>${body}
-    <div class="row" style="justify-content:flex-end"><button class="qchip" data-act="mlshop">${mlTab==='gear'?'상점에서 장비 더 보기 →':'마이룸 옷장에서 더 사기 →'}</button></div></div></div>`}
+    <div class="row" style="justify-content:flex-end"><button class="qchip" data-act="mlshop">${mlTab==='gear'?'제작대에서 장비 더 보기 →':'마이룸 옷장에서 더 사기 →'}</button></div></div></div>`}
 const headImg=(sc,p)=>{let g=avatarGrid(p).slice(0,25);while(g.length>16&&![...g[0]].some(c=>c!=='.'))g=g.slice(1);const h=img(g,null,sc/2,'',lookPal(p)),gl=lookGlow(p);return gl?h.replace('<img ',`<img style="filter:drop-shadow(0 0 ${Math.max(2,sc)}px ${gl})" `):h};
 let lakePh=0,LAKE=null;
 function lakeBase(W,H,hz){let r=7;const rnd=()=>((r=(r*9301+49297)%233280)/233280);
@@ -3460,8 +3460,8 @@ function roomMigrate(){roomDropGone();
   const r=P.room;if(!r||!Array.isArray(r.put))return;const FP={bed:900,sofa:800,desk:600,aqua:1000,chair:200,plant:150,trunk:250,lamp:300,rocket:400,robo:350,poster:150,clock:250,shelf:300,starmap:400,neon:500,monitor:650},WP={w1:300,w2:400,w3:500,w4:400},FL={f1:300,f2:400,f3:500};
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
   P.room={};if(cr>0){P.cr=(P.cr||0)+cr;log(`마이룸이 새 모습으로 바뀌어, 전에 산 가구 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
-function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
-function renderShip(){if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 단원에게는 아직 잠겨 있습니다.</div>')}
+function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='bench'}" data-act="shipview" data-k="bench">제작대</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
+function renderShip(){if(shipView==='bench')return benchHTML();if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 단원에게는 아직 잠겨 있습니다.</div>')}
   if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 단원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
   const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP.find(x=>!shipDone(x))||SHIP[SHIP.length-1],open=shipOpen(pt),g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
   const rank={};SHIPDON.forEach(d=>{if(!d.uid)return;const r=rank[d.uid]||(rank[d.uid]={nick:d.nick,n:0});r.n+=+d.n||0});
@@ -3609,6 +3609,20 @@ const sellPrice=id=>ITEMS[id].type==='relic'?1:crs(ITEMS[id].fish?FSELL[ITEMS[id
 const KEEPER=['어서 와. 오늘도 손님은 너 하나뿐이네.','오, 또 왔구나. 기다리고 있었다고는 안 할게.','어제는 별이 하나 꺼졌어. 너도 봤니?','내 부품도 하나씩 녹슬고 있어. 그래도 장사는 해야지.','크레딧은 충분해? 없으면 구경만 해도 돼.','저 낚싯대, 나도 한번 잡아보고 싶었어.','조용한 게 좋아. 그런데 너무 조용하면 조금 슬퍼.','오늘 입고된 물건? 어제랑 똑같아. 항상 똑같아.','먼지 털어 둔 거야. 거의.','이 궤도엔 신호가 잘 안 잡혀. 그래도 물건은 있어.','팔 거 있으면 줘. 뭐든 언젠가는 쓸모가 있으니까.','예전엔 여기도 붐볐지. 다들 어디로 갔을까.','물고기는 신선할 때 팔아. 냄새가 오래 남거든.','내 이름은 7호야. 1호부터 6호는 본 적 없어.','밤이 길어. 여기선 늘 밤이지만.','창밖 행성은 오늘도 그대로야. 나처럼.','가끔 내 회로에서 옛날 노래가 흘러나와. 가사는 기억 안 나.','손님이 오면 전원을 아껴 둔 보람이 있어.','고장 난 건 고치면 돼. 잊힌 건… 잘 모르겠어.','이 상자는 누가 맡기고 간 거야. 아직 안 찾아갔어.','네가 마지막으로 웃은 게 언제야? 난 웃는 법을 몰라서.','별빛은 아주 오래전에 출발한 거래. 우리가 받는 건 늘 늦은 인사야.','재고 조사를 했어. 세 번. 할 일이 없었거든.','오늘은 운석이 안 떨어졌으면 좋겠다.','기름칠을 좀 해야 하는데. 다음에, 다음에.','나도 언젠가 저 창밖으로 날아가 보고 싶어.','거래 기록을 보면 네 이름이 제일 많아. 고마워.','이 가게 문은 닫힌 적이 없어. 열 사람이 없었거든.','메탄 비가 그치면 조금 덜 외로워져.','네 우주복에 흠집이 늘었네. 조심해.','방금 한 말, 저장해 둘게. 오래 기억하려고.','누군가 여기 있다는 게 좋아. 그게 너라서 더 좋아.','전원이 깜빡여도 놀라지 마. 원래 그래.','지구는 어떤 곳이었을까. 사진으로만 봤어.','싸게 해 줄 수는 없어. 대신 오래 이야기해 줄게.','너무 무리하지 마. 쓰러지면 내가 구해 줄 수가 없어.','오늘 하늘 색은 회색 37번. 어제는 38번이었어.','가끔 빈 선반을 정리해. 정리할 게 없어도.','물건은 많은데, 이야기할 상대는 적어.','다녀와. 기다리는 건 내가 제일 잘하니까.','또 와 줄 거지? 대답 안 해도 알아.','나는 꿈을 꾸지 않아. 대신 대기 모드에서 너를 기다려.','신호가 하나 잡혔다 사라졌어. 누구였을까.','이 볼트, 내 몸에서 빠진 거야. 팔지는 않을 거야.','모든 게 천천히 식어 가. 이 가게도, 저 별도.','네가 산 물건이 네 방을 따뜻하게 해 주면 좋겠어.','한때는 이 궤도에 불빛이 가득했대. 지금은 우리 둘이야.','좋은 하루 보내. 하루라는 게 여기에도 있다면.','안녕, 또 보자. 아마 내일도 여기 있을 거야.'];
 let shopTab='sup',keeperLine=0;
 function itemDesc(id){const it=ITEMS[id];return it.type==='food'?[it.hp?`체력 +${it.hp}`:'',it.en?`에너지 +${it.en}`:''].filter(Boolean).join(' · ')+(it.tier?` · ${it.tier}`:''):(it.d||'')}
+/* ───────── 제작대 (workbench, under the 우주선 tab): weapons, suits and crafted gear moved here from the shop ───────── */
+let benchTab='wpn';
+function benchRows(k){const cr=P.cr||0;
+  const price=pr=>`<span class="price">${img(IC.coin,null,2)}${pr.toLocaleString()}</span>`;
+  const ownBtn=(own,act,k2,pr,cur,mat)=>`<div class="sbtns">${own?`<span class="hint">${cur?'장착 중':'보유 중'}</span>`:`<button class="btn sm gold" data-act="${act}" data-k="${k2}" ${cr>=pr&&hasMat(mat)?'':'disabled'}>구매</button>`}</div>`;
+  let rows;
+  if(k==='wpn')rows=`<p class="hint" style="margin:0 0 4px">무기를 사서 장착하면 공격력이 바로 올라갑니다. 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 무기들은 채집 로봇이 아주 드물게(3%) 찾아옵니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
+  else if(k==='craft')rows='<p class="hint" style="margin:0 0 4px">채집에서 모은 재료로 장비를 만듭니다. 부위마다 하나씩 착용할 수 있습니다.</p>'+Object.entries(CRAFT).map(([slot,c])=>`<span class="lbl" style="margin-top:6px">${c.n} 장비</span>`+c.list.map(f=>{const own=(P.own||[]).includes(f.id),on=(P.gear||{})[slot]===f.id,can=cr>=f.price&&hasMat(f.mat);return`<div class="srow">${img(TPL[c.ic],f.t,3)}<div class="sinfo"><b>${f.n}</b><span class="hint">${f.d}</span>${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${on?`<button class="btn sm ghost" data-act="cunequip" data-k="${slot}">벗기</button>`:own?`<button class="btn sm" data-act="cequip" data-k="${slot}" data-id="${f.id}">착용</button>`:`<button class="btn sm gold" data-act="craft" data-k="${slot}" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`}</div></div>`}).join('')).join('');
+  else rows='<span class="lbl">Suits · 우주복</span>'+SUITS.slice(1).map((u,k)=>{const lv=k+1;return`<div class="srow">${img(IC.suit,u.t,2)}<div class="sinfo"><b>${u.n}</b><span class="hint">${u.d}</span>${suitMax()>=lv?'':matHTML(u.mat)}</div>${price(u.price)}${ownBtn(suitMax()>=lv,'buysuit',lv,u.price,(P.suit||0)===lv,u.mat)}</div>`}).join('');
+  return rows}
+function benchHTML(){const tabs=[['wpn','무기'],['gear','장비'],['craft','제작 장비']];
+  return head()+shipSubTabs()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot">${img(IC.ship,null,4)}</span><div class="sinfo"><b>제작대 · 별무리호 정비실</b><p class="say">무기와 우주복을 사고, 채집 재료로 장비를 만드는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
+   <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${benchTab===k}" data-act="benchtab" data-k="${k}">${n}</button>`).join('')}</div>
+   <div class="slist">${benchRows(benchTab)}</div></div>`}
 function renderShop(){
   const cr=P.cr||0;
   const price=pr=>`<span class="price">${img(IC.coin,null,2)}${pr.toLocaleString()}</span>`;
@@ -3617,11 +3631,10 @@ function renderShop(){
   let rows;
   if(shopTab==='sup')rows=BUY.filter(([id])=>ITEMS[id].type!=='seed').map(buyRow).join('');
   else if(shopTab==='seed')rows=BUY.filter(([id])=>ITEMS[id].type==='seed').map(([id,pr])=>buyRow([id,pr]).replace(itemDesc(id),ITEMS[id].d)).join('');
-  else if(shopTab==='wpn')rows=`<p class="hint" style="margin:0 0 4px">무기를 사서 장착하면 공격력이 바로 올라갑니다. 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 무기들은 채집 로봇이 아주 드물게(3%) 찾아옵니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
+
   else if(shopTab==='rod')rows=RODS.slice(1).map((r,k)=>{const lv=k+1;return`<div class="srow">${img(IC.rod,r.t,2)}<div class="sinfo"><b>${r.n}</b><span class="hint">${r.d}</span></div>${price(r.price)}${ownBtn(rodMax()>=lv,'buyrod',lv,r.price,(P.rod||0)===lv)}</div>`}).join('');
-  else if(shopTab==='craft')rows='<p class="hint" style="margin:0 0 4px">채집에서 모은 재료로 장비를 만듭니다. 부위마다 하나씩 착용할 수 있습니다.</p>'+Object.entries(CRAFT).map(([slot,c])=>`<span class="lbl" style="margin-top:6px">${c.n} 장비</span>`+c.list.map(f=>{const own=(P.own||[]).includes(f.id),on=(P.gear||{})[slot]===f.id,can=cr>=f.price&&hasMat(f.mat);return`<div class="srow">${img(TPL[c.ic],f.t,3)}<div class="sinfo"><b>${f.n}</b><span class="hint">${f.d}</span>${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${on?`<button class="btn sm ghost" data-act="cunequip" data-k="${slot}">벗기</button>`:own?`<button class="btn sm" data-act="cequip" data-k="${slot}" data-id="${f.id}">착용</button>`:`<button class="btn sm gold" data-act="craft" data-k="${slot}" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`}</div></div>`}).join('')).join('');
-  else if(shopTab==='gear')rows='<span class="lbl">Suits · 우주복</span>'+SUITS.slice(1).map((u,k)=>{const lv=k+1;return`<div class="srow">${img(IC.suit,u.t,2)}<div class="sinfo"><b>${u.n}</b><span class="hint">${u.d}</span>${suitMax()>=lv?'':matHTML(u.mat)}</div>${price(u.price)}${ownBtn(suitMax()>=lv,'buysuit',lv,u.price,(P.suit||0)===lv,u.mat)}</div>`}).join('')
-;
+
+
   else rows=(()=>{const bb=Object.entries(soldBack).filter(([,b])=>b.n>0);const back=bb.length?`<span class="lbl">Buyback · 되사기 (상점을 나가면 사라집니다)</span>`+bb.map(([id,b])=>`<div class="srow">${iicon(id,3)}<div class="sinfo"><b>${ITEMS[id].n}</b><span class="hint">방금 판 물건 ${b.n}개 · 판 값 그대로 되살 수 있습니다</span></div>${price(b.pr)}<div class="sbtns"><button class="btn sm" data-act="rebuy" data-id="${id}" data-n="1" ${cr>=b.pr?'':'disabled'}>×1</button><button class="btn sm ghost" data-act="rebuy" data-id="${id}" data-n="all" ${cr>=b.pr*b.n?'':'disabled'}>전부</button></div></div>`).join('')+`<span class="lbl" style="margin-top:6px">Sell · 판매</span>`:'';const ids=ORDER.filter(id=>P.inv[id]);if(sellSel&&!P.inv[sellSel])sellSel=null;
     // laid out like the bag: a grid of what I carry, pick one, choose how many, sell
     const it=sellSel&&ITEMS[sellSel],pr=it?sellPrice(sellSel):0,have=it?P.inv[sellSel]:0,q=Math.max(1,Math.min(sellN,have||1));
@@ -3631,7 +3644,7 @@ function renderShop(){
     const ones=ids.filter(id=>P.inv[id]===1),onesCr=ones.reduce((a,id)=>a+sellPrice(id),0);
     const bulk=ones.length>1?`<div class="row sellones"><span class="hint" style="flex:1;min-width:160px">${sellArm?`1개짜리 ${ones.length}종: ${ones.map(id=>ITEMS[id].n).join(', ')}`:`1개만 있는 아이템 ${ones.length}종을 한 번에 팔 수 있습니다.`}</span>${sellArm?'<button class="btn sm ghost" data-act="sellones" data-k="no">취소</button>':''}<button class="btn sm ${sellArm?'gold':'alt'}" data-act="sellones">${sellArm?'정말 팔기':'1개짜리 모두 팔기'} · +${onesCr.toLocaleString()} CR</button></div>`:'';
     return back+(ids.length?`${bulk}<div class="bag sellbag">${ids.map(id=>`<button class="slot" data-act="sellsel" data-id="${id}" aria-pressed="${id===sellSel}" aria-label="${ITEMS[id].n} ${P.inv[id]}개" title="${ITEMS[id].n} · 한 개 ${sellPrice(id)} CR">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>${pick}`:'<p class="hint" style="padding:10px">팔 물건이 없습니다.</p>')})();
-  const tabs=[['sup','보급품'],['wpn','무기'],['gear','장비'],['craft','제작 장비'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
+  const tabs=[['sup','보급품'],['seed','씨앗'],['rod','낚싯대'],['sell','판매']];
   return head()+`<div class="shop">
    <div class="shoptop"><div class="shopmain"><div class="card keeper"><span class="bot">${img(IC.robot,null,4)}<i class="botlight"></i></span><div class="sinfo"><b>고물상 로봇 · 녹슨 7호</b><p class="say">“${KEEPER[keeperLine]}”</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${cr.toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${shopTab===k}" data-act="shoptab" data-k="${k}"${k==='sell'?' style="margin-left:auto"':''}>${n}</button>`).join('')}</div>
@@ -3927,7 +3940,7 @@ const A={
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
  bosshit(){bossHit()},
- shipview(d){shipView=d.k==='room'?'room':'ship';if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
+ shipview(d){shipView=d.k==='room'?'room':d.k==='bench'?'bench':'ship';if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
  rslot(d){roomSlot=d.k;renderPanel()},
  pv(d){if(preview[roomSlot]===d.k)delete preview[roomSlot];else preview[roomSlot]=d.k;renderPanel()},
  pvone(d){delete preview[d.k];renderPanel()},
@@ -3939,6 +3952,7 @@ const A={
  roomhome(){visit=null;renderPanel()},
  emote(d){if(!EMOTES[d.k])return;myEmote={k:d.k,at:Date.now()};pushRoomPresence();drawRoomCv()},
  bossskill(){bossSkill()},
+ benchtab(d){benchTab=['wpn','gear','craft'].includes(d.k)?d.k:'wpn';renderPanel()},
  chestopen(){openChest()},
  chestok(){chestOpen=null;renderPanel()},
  raidbag(){raidBag=!raidBag;renderPanel()},
@@ -3980,7 +3994,7 @@ const A={
  wtab(d){wardTab=d.k;renderPanel()},
  metab(d){meTab=d.k==='look'?'look':'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
- mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='shop';shopTab='gear'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
+ mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='ship';shipView='bench';benchTab='gear'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
  wprev(d){if(!wardById(d.id))return;if(wPrev[d.k]===d.id)delete wPrev[d.k];else wPrev[d.k]=d.id;renderPanel()},
  wprevclr(){wPrev={};neonPick=null;neonSlot=null;renderPanel()},
  wwear(d){if(!ownsW(d.id))return;delete wPrev[d.k];P.outfit=Object.assign({},outfitOf(P),{[d.k]:d.id});save();renderPanel();renderPilot()},
