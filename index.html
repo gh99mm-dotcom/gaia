@@ -4438,9 +4438,14 @@ const A={
  grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){log(`${x.site.n}에서 채집 로봇을 불러들였다. (${x.gd}/${x.G}회 채집)`);P.exp=null}commit()},
  cast(){if(['wait','bite','aim'].includes(fish.ph))return;ac();if(!spend(3))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:9,zc:nextZc};nextZc=ri(-68,68);commit();
   const step=matchMedia('(prefers-reduced-motion: reduce)').matches?3:4;
-  sfxLever();fish.tk=0;
-  fish.spin=setInterval(()=>{fish.a+=step*fish.dir;if(fish.a>=84){fish.a=84;fish.dir=-1;sfxStop()}if(fish.a<=-84){fish.a=-84;fish.dir=1;sfxStop()}if(++fish.tk%3===0)sfxTick(fish.a);const n=$('#needle');if(n)n.style.transform=`translateX(-50%) rotate(${fish.a}deg)`},30)},
- throw(){if(fish.ph!=='aim')return;clearInterval(fish.spin);const hit=Math.abs(fish.a-(fish.zc||0))<=(fish.zone||9);fish.bonus=hit;fish.ph='wait';sfxCast();
+  sfxLever();
+  // the needle's angle comes from elapsed time, not from counting timer ticks, so a busy or throttled page can't slow it down
+  const f=fish,sp=step/30,L=168,t0=performance.now();let leg=0,lt=t0;
+  f.pos=t=>{const d=(t-t0)*sp,m=d%(2*L);return m<L?-84+m:84-(m-L)};
+  const frame=t=>{if(fish!==f||f.ph!=='aim')return;const d=(t-t0)*sp,lg=Math.floor(d/L);f.a=f.pos(t);
+    if(lg!==leg){leg=lg;sfxStop()}if(t-lt>=90){lt=t;sfxTick(f.a)}const n=$('#needle');if(n)n.style.transform=`translateX(-50%) rotate(${f.a}deg)`;f.spin=requestAnimationFrame(frame)};
+  f.spin=requestAnimationFrame(frame)},
+ throw(){if(fish.ph!=='aim')return;cancelAnimationFrame(fish.spin);if(fish.pos)fish.a=fish.pos(performance.now());const hit=Math.abs(fish.a-(fish.zc||0))<=(fish.zone||9);fish.bonus=hit;fish.ph='wait';sfxCast();
   log(hit?'완벽한 캐스팅! 줄이 초록 궤도로 날아갔다.':'캐스팅이 조금 빗나갔다.',hit?'rare':'');renderPanel();
   fish.t1=setTimeout(()=>{fish.ph='bite';fish.at=Date.now();sfxBite();if(tab==='fish')renderPanel();fish.t2=setTimeout(()=>{if(fish.ph==='bite'){fish.ph='miss';fish.bonus=null;log('물고기가 미끼만 먹고 달아났다.','bad');if(tab==='fish')renderPanel()}},1300)},ri(1800,5200))},
  pull(){if(fish.ph==='wait'){clearTimeout(fish.t1);fish={ph:'early',bonus:fish.bonus,a:fish.a};log('너무 일찍 당겨서 물고기가 놀라 도망쳤다.','bad');renderPanel();return}
