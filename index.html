@@ -784,7 +784,8 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @media (max-width:560px){.reltiers{grid-template-columns:1fr 1fr}}
 .tastyhint{margin:2px 0 6px;font-size:12px;line-height:1.5}.tastytag{color:#e0a020;font-weight:700}
 img.pix.tasty{filter:drop-shadow(0 0 2px #ffcf4a) drop-shadow(0 0 1px #ffcf4a)}:root[data-skin="light"] img.pix.tasty{filter:saturate(.85) drop-shadow(0 0 2px #e0a020)}
-.sellp{font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
+.sellp{display:block;margin-top:2px;font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
+.tmaker{margin-top:1.1em}
 .rkgrid{--rk-lv:#e0606a;--rk-life:var(--green);--rk-don:var(--cyan);--rk2:#c9d1dc;--rk3:#d49a6a;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
 :root[data-skin="light"] .rkgrid{--rk-lv:#c8323c;--rk-life:#3d9a68;--rk-don:#2f86c0;--rk2:#76808f;--rk3:#b0673a}
 .rkcard{--c:var(--gold);display:flex;flex-direction:column;gap:8px;padding:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,var(--panel2)),var(--panel2) 140px);border:1px solid var(--line);border-top:3px solid var(--c);min-width:0}
@@ -1765,7 +1766,18 @@ critPct=()=>AS('agi')+GF('crit')+PF('crit'), xpBase=l=>Math.round(290+8*l-250*Ma
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);if(!raidLocked())P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
 function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났습니다. 음식을 먹거나 잠시 쉬십시오.');return false}if(P.en<n){toast(`에너지가 부족합니다 (필요 ${n})`);return false}P.en-=n;return true}
 function add(id,n=1){P.inv[id]=(P.inv[id]||0)+n}
-function take(id,n=1){if((P.inv[id]||0)<n)return false;P.inv[id]-=n;if(!P.inv[id])delete P.inv[id];return true}
+function take(id,n=1){if((P.inv[id]||0)<n)return false;if(ITEMS[id]&&ITEMS[id].tasty)TAKEN[id]=tmkTake(id,n);P.inv[id]-=n;if(!P.inv[id])delete P.inv[id];return true}
+/* who made each [맛있는!] dish in the bag, oldest first: P.tmk[id] = [{k:maker, n}]. Dishes leave oldest first (any of unknown origin before those),
+   and whatever take() just removed is kept in TAKEN so a gift, letter or trade can carry the makers along as items[].by */
+let TAKEN={};
+const tmkList=id=>((P.tmk||{})[id]||[]);
+function tmkAdd(id,by){if(!ITEMS[id]||!ITEMS[id].tasty||!Array.isArray(by)||!by.length)return;P.tmk=P.tmk||{};const L=tmkList(id).map(x=>({k:x.k,n:x.n}));
+  by.forEach(b=>{const n=Math.max(0,Math.floor(+(b&&b.n)||0));if(!n||!b.k)return;const k=String(b.k).slice(0,16),last=L[L.length-1];if(last&&last.k===k)last.n+=n;else L.push({k,n})});P.tmk=Object.assign({},P.tmk,{[id]:L.slice(-20)})}
+function tmkTake(id,n){const L=tmkList(id).map(x=>({k:x.k,n:x.n})),out=[];let left=Math.max(0,n-Math.max(0,(P.inv[id]||0)-L.reduce((a,x)=>a+x.n,0)));
+  while(left>0&&L.length){const x=L[0],k=Math.min(x.n,left);out.push({k:x.k,n:k});x.n-=k;left-=k;if(!x.n)L.shift()}P.tmk=Object.assign({},P.tmk,{[id]:L});if(!L.length)delete P.tmk[id];return out}
+// the makers of what's in the bag now (trimmed to the count, oldest dropped first), merged by name
+function tmkView(id){let extra=tmkList(id).reduce((a,x)=>a+x.n,0)-(P.inv[id]||0);const m=new Map();tmkList(id).forEach(x=>{let n=x.n;if(extra>0){const d=Math.min(extra,n);n-=d;extra-=d}if(n>0)m.set(x.k,(m.get(x.k)||0)+n)});return[...m]}
+const byField=id=>TAKEN[id]&&TAKEN[id].length&&ITEMS[id]&&ITEMS[id].tasty?{by:TAKEN[id]}:{};
 // level 60 is the cap. With ~2,000 XP a day for an active player: level 20 takes a little over 3 days (~6.5k XP),
 // level 60 about two weeks (~30.8k XP). The first few levels ramp up quickly so new crew still feel progress.
 const MAX_LV=60;
@@ -4321,7 +4333,7 @@ function bagInner(){
   const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c);
   return`<div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
    ${ids.length?`<div class="bagkey">${BAGCAT.map(([k,n])=>`<span class="bk bk-${k}"><i></i>${n}</span>`).join('')}</div><div class="bag">${ids.map(id=>`<button class="slot bc-${bagCat(id)}" data-act="sel" data-id="${id}" data-tip="${esc(ITEMS[id].n)} ×${P.inv[id]}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
-   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}${isBound(selItem)?'':` <span class="sellp">판매가 ${sellPrice(selItem).toLocaleString()} CR</span>`}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}
+   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}${isBound(selItem)?'':` <span class="sellp">판매가 ${sellPrice(selItem).toLocaleString()} CR</span>`}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}${it.tasty?(()=>{const mk=tmkView(selItem);return mk.length?`<span class="hint tmaker">제작자: ${mk.map(([k,n])=>esc(k)+(mk.length>1||n>1?` ×${n}`:'')).join(' · ')}</span>`:''})():''}
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
@@ -4460,7 +4472,7 @@ const A={
  cookq(d){const c=COOK.find(x=>x.id===cookSel);if(!c)return;const mx=cookMax(c);cookN=d.k==='max'?mx:Math.max(1,Math.min(mx,cookN+(+d.k)));renderCook()},
  cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)ingTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;const n=ck.n||1,c=COOK.find(x=>x.id===ck.id);let t=0;for(let i=0;i<n;i++)if(Math.random()*100<tastyPct())t++;
-  if(n-t)add(ck.id,n-t);if(t)add(TASTY+ck.id,t);P.cook=null;if(c)lxp('cook',(6+c.need.reduce((a,[,k])=>a+k*2,0))*n);stat('cook',n);sfxCoin();
+  if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(6+c.need.reduce((a,[,k])=>a+k*2,0))*n);stat('cook',n);sfxCoin();
   log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit()},
  selpod(d){const i=+d.i,pl=fpod(i);if(podArmed(i)&&pl&&pl.seed){podArm=null;if(stage(pl)===3)harvestAt(i);else A.water({i});return}selPod=i;podArm=i;podArmAt=Date.now();renderPanel()},
  soil(d){const i=+d.i;podArm=null;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spend(1))return;
@@ -4586,7 +4598,7 @@ const A={
  giftcr(d){giftCr=+d.k;renderGift()},
  giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&isDish(i)&&(P.inv[i]||0)>=n);if(items.reduce((a,[,n])=>a+n,0)>GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}const cr=Math.min(giftCr,P.cr||0),note=!items.length&&!cr;if(note&&!giftMsg.trim())return;if(!note&&giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 이미 선물했습니다. 쪽지는 언제든 보낼 수 있습니다.`);return}
   items.forEach(([i,n])=>take(i,n));P.cr-=cr;const msg=giftMsg.trim().slice(0,40);save();
-  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items:items.map(([id,n])=>({id,n})),cr,msg,at:Date.now()}).then(()=>{if(!note){P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});const [dv,why]=giftAffDelta(items,t.likes,t.hates);addAff(gto,dv,why+'을 함')}sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
+  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items:items.map(([id,n])=>Object.assign({id,n},byField(id))),cr,msg,at:Date.now()}).then(()=>{if(!note){P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});const [dv,why]=giftAffDelta(items,t.likes,t.hates);addAff(gto,dv,why+'을 함')}sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
  duelstart(){if(mode!=='online'||duelOn())return;if(duelOpensLeft()<=0){toast(`오늘은 낚시 대결을 ${DUEL_DAILY}번 모두 열었습니다. 내일 다시 열 수 있습니다.`);return}const now=Date.now(),dk=duelDay();P.duelOpen={d:dk,n:(P.duelOpen&&P.duelOpen.d===dk?P.duelOpen.n:0)+1};save();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)).catch(()=>toast('대결을 열지 못했습니다.'))},
  duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+DUEL_PRIZE;sfxCoin();log(`낚시 대결 우승! 상금 ${DUEL_PRIZE} CR`,'rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
@@ -4642,19 +4654,19 @@ const A={
  trwantx(d){delete trWant[d.id];renderPanel()},
  mlsend(){if(mode!=='online'||mlBusy)return;const to=($('#mlTo')||{}).value||mlTo,msg=String(($('#mlMsg')||{}).value??mlMsg).trim().slice(0,200),items=attList(mlAtt);
   if(!PLAYERS[to]){toast('받는 사람을 고르십시오.');return}if(!msg&&!items.length){toast('편지 내용을 쓰거나 아이템을 넣으십시오.');return}if(!haveAll(items,0)){toast('넣은 아이템이 가방에 모자랍니다.');return}
-  mlBusy=true;items.forEach(x=>take(x.id,x.n));const nick=PLAYERS[to].nick||'단원';
+  mlBusy=true;items.forEach(x=>take(x.id,x.n));items.forEach(x=>Object.assign(x,byField(x.id)));const nick=PLAYERS[to].nick||'단원';
   db.collection('gifts').add({to,from:uid,nick:P.nick,kind:'letter',items,cr:0,msg,at:Date.now()}).then(()=>{mlBusy=false;mlAtt={};mlMsg='';log(`${nick} 님에게 편지를 보냈다.${items.length?' 첨부: '+items.map(x=>ITEMS[x.id].n+'×'+x.n).join(', '):''}`,'good');toast(`${nick} 님에게 편지를 보냈습니다.`);commit()})
    .catch(()=>{mlBusy=false;items.forEach(x=>add(x.id,x.n));toast('편지를 보내지 못했습니다. 아이템은 그대로 돌려놓았습니다.');commit()})},
  trsend(){if(mode!=='online'||mlBusy)return;const to=($('#trTo')||{}).value||trTo,give=attList(trGive),want=attList(trWant),gc=Math.max(0,Math.floor(trGiveCr||0)),wc=Math.max(0,Math.floor(trWantCr||0)),msg=String(trMsg||'').trim().slice(0,120);
   if(!PLAYERS[to]){toast('거래할 단원을 고르십시오.');return}if(!give.length&&!gc){toast('내가 줄 것을 넣으십시오.');return}if(!haveAll(give,gc)){toast('줄 물건이나 크레딧이 모자랍니다.');return}
-  mlBusy=true;give.forEach(x=>take(x.id,x.n));P.cr-=gc;const tid='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),nick=PLAYERS[to].nick||'단원';
+  mlBusy=true;give.forEach(x=>take(x.id,x.n));give.forEach(x=>Object.assign(x,byField(x.id)));P.cr-=gc;const tid='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),nick=PLAYERS[to].nick||'단원';
   db.collection('gifts').add({to,from:uid,nick:P.nick,toNick:nick,kind:'trade',tid,give,giveCr:gc,want,wantCr:wc,items:[],cr:0,msg,at:Date.now()}).then(()=>{mlBusy=false;trGive={};trWant={};trGiveCr=0;trWantCr=0;trMsg='';log(`${nick} 님에게 거래를 제안했다. 줄 것은 답이 올 때까지 맡겨 둔다.`,'good');toast(`${nick} 님에게 거래 제안을 보냈습니다.`);commit()})
    .catch(()=>{mlBusy=false;give.forEach(x=>add(x.id,x.n));P.cr+=gc;toast('거래 제안을 보내지 못했습니다. 물건은 그대로 돌려놓았습니다.');commit()})},
  // accept, decline and cancel each claim the offer first, so only one of them can ever happen
  async tracc(d){const t=MAILG.find(x=>x.id===d.k);if(!t||t.kind!=='trade'||mlBusy)return;const want=(t.want||[]).filter(x=>ITEMS[x.id]),wc=+t.wantCr||0;if(!haveAll(want,wc)){toast('줄 물건이나 크레딧이 모자랍니다.');return}
   mlBusy=true;let won=false;try{await bossTx(trLock(t.tid||t.id),cur=>{if(cur&&cur.st)return null;won=true;return{st:'acc',by:uid,at:Date.now()}})}catch(e){}
   if(!won){mlBusy=false;toast('이미 끝난 거래입니다.');MAILG=MAILG.filter(x=>x.id!==t.id);db.collection('gifts').doc(t.id).delete().catch(()=>{});renderPanel();return}
-  want.forEach(x=>take(x.id,x.n));P.cr-=wc;(t.give||[]).forEach(x=>{if(ITEMS[x.id])add(x.id,Math.min(ML_EACH,x.n))});P.cr+=Math.max(0,+t.giveCr||0);P.gotG=[...(P.gotG||[]).slice(-60),t.id];MAILG=MAILG.filter(x=>x.id!==t.id);
+  want.forEach(x=>take(x.id,x.n));want.forEach(x=>Object.assign(x,byField(x.id)));P.cr-=wc;(t.give||[]).forEach(x=>{if(ITEMS[x.id]){add(x.id,Math.min(ML_EACH,x.n));tmkAdd(x.id,x.by)}});P.cr+=Math.max(0,+t.giveCr||0);P.gotG=[...(P.gotG||[]).slice(-60),t.id];MAILG=MAILG.filter(x=>x.id!==t.id);
   db.collection('gifts').add({to:t.from,from:uid,nick:P.nick,kind:'tradeok',items:want,cr:wc,msg:`거래 성사 · ${P.nick} 님이 거래를 받아들였습니다.`,at:Date.now()}).catch(()=>{});db.collection('gifts').doc(t.id).delete().catch(()=>{});
   mlBusy=false;sfxCoin();log(`${t.nick||'단원'} 님과 거래했다. 받은 것: ${chipsTxt(t.give,+t.giveCr)} · 준 것: ${chipsTxt(want,wc)}`,'rare');commit();mailRefresh()},
  async trno(d){const t=MAILG.find(x=>x.id===d.k);if(!t||t.kind!=='trade'||mlBusy)return;mlBusy=true;let won=false;try{await bossTx(trLock(t.tid||t.id),cur=>{if(cur&&cur.st)return null;won=true;return{st:'no',by:uid,at:Date.now()}})}catch(e){}
@@ -4739,14 +4751,14 @@ function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assig
 function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0)||got.includes(d.id))return;
   if((+g.at||0)<(P.joined||0)){P.gr=[...(P.gr||[]),d.id].slice(-80);ch=true;return}MAILA.push(Object.assign({id:d.id,grant:1},g))});if(ch)save();mailRefresh()}
 // gift items are stored as [{id,n}] (Firestore refuses nested arrays); older docs may still hold [[id,n]]
-const giftItems=g=>(g.items||[]).map(x=>Array.isArray(x)?x:[x&&x.id,x&&+x.n]);
+const giftItems=g=>(g.items||[]).map(x=>Array.isArray(x)?x:[x&&x.id,x&&+x.n,x&&x.by]);
 const mailHasGift=g=>giftItems(g).some(([i,n])=>ITEMS[i]&&n>0)||(+g.cr||0)>0;
 const mailList=()=>[...MAILA,...MAILG].sort((a,b)=>(+b.at||0)-(+a.at||0));
 function mailRefresh(){const b=$('#mailBtn');if(b){const n=mailList().length;b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n)}if(mailView)renderPanel()}
 function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
   if(a){const cr=Math.min(100000,Math.floor(+a.cr));P.gr=[...(P.gr||[]),id].slice(-80);P.cr=(P.cr||0)+cr;MAILA=MAILA.filter(x=>x.id!==id);log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');sfxCoin();return true}
   const g=MAILG.find(x=>x.id===id);if(!g||g.kind==='trade')return false;P.gotG=[...(P.gotG||[]).slice(-60),id];MAILG=MAILG.filter(x=>x.id!==id);
-  const parts=[];giftItems(g).forEach(([i,n])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
+  const parts=[];giftItems(g).forEach(([i,n,by])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));tmkAdd(i,by);parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
   giftAff(g);
   const who=g.sys?'운영자':(g.nick||'누군가'),what=g.kind==='letter'?'편지':g.kind==='tradeok'?'거래 물품':g.kind==='tradeno'?'돌려받은 거래 물품':'선물';log(parts.length?`${who} 님의 ${what}을(를) 받았다: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`:`${who} 님의 쪽지 — “${String(g.msg||'').slice(0,40)}”`,parts.length?'rare':'good');if(parts.length)sfxCoin();
   if(mode==='online')db.collection('gifts').doc(id).delete().catch(()=>{});return true}
