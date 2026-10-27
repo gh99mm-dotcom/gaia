@@ -1809,6 +1809,8 @@ const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+n
 // critical chance in %: agility, gear and pet
 critPct=()=>AS('agi')+GF('crit')+PF('crit'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);if(!raidLocked())P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
+// farming and scouting never use your last point: if an action would leave less than 1 energy it simply can't be done
+function spendKeep(n){regen();if(P.hp>0&&P.en-n<1){toast(`에너지가 부족합니다 (필요 ${n} · 1은 남아야 합니다)`);return false}return spend(n)}
 function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났습니다. 음식을 먹거나 잠시 쉬십시오.');return false}if(P.en<n){toast(`에너지가 부족합니다 (필요 ${n})`);return false}P.en-=n;return true}
 function add(id,n=1){P.inv[id]=(P.inv[id]||0)+n}
 function take(id,n=1){if((P.inv[id]||0)<n)return false;if(ITEMS[id]&&ITEMS[id].tasty)TAKEN[id]=tmkTake(id,n);P.inv[id]-=n;if(!P.inv[id])delete P.inv[id];return true}
@@ -4538,7 +4540,7 @@ const A={
   if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(6+c.need.reduce((a,[,k])=>a+k*2,0))*n);stat('cook',n);sfxCoin();
   log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit()},
  selpod(d){const i=+d.i,pl=fpod(i);if(podArmed(i)&&pl&&pl.seed){podArm=null;if(stage(pl)===3)harvestAt(i);else A.water({i});return}selPod=i;podArm=i;podArmAt=Date.now();renderPanel()},
- soil(d){const i=+d.i;podArm=null;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spend(1))return;
+ soil(d){const i=+d.i;podArm=null;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spendKeep(1))return;
   podAct(i,cur=>cur&&cur.til?null:{til:1,wet:0},()=>log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`),()=>{heal(0,1);toast('다른 단원이 먼저 배양토를 채웠습니다.')})},
  plant(d){const i=+d.i,pl=fpod(i);podArm=null;if(!pl||!pl.til||pl.seed)return;const fromStore=d.k==='store';if(fromStore){if(!(FSTORE[d.id]>0))return;storeAdd(d.id,-1)}else if(!take(d.id))return;
   let wet=false;podAct(i,cur=>{if(!cur||!cur.til||cur.seed)return null;wet=isWet(cur);return{til:1,seed:d.id,got:0,wet:wet?Date.now():0,by:uid,byN:P.nick}},
@@ -4546,7 +4548,7 @@ const A={
  water(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til)return;
   // a damp crop needs nothing more
   if(pl.seed&&isWet(pl)){toast('더 이상 물을 줄 필요는 없을 것 같다.');return}
-  if(FARM.water<=0){toast('공용 물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}if(!spend(1))return;let why='';
+  if(FARM.water<=0){toast('공용 물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}if(!spendKeep(1))return;let why='';
   podAct(i,cur=>{why='';if(!cur||!cur.til){why='gone';return null}if(cur.seed&&isWet(cur)){why='wet';return null}const q=Object.assign({},cur);if(q.seed)q.got=effG(q);q.wet=Date.now();return q},
    q=>{sfxWater();FARM.water--;if(mode==='online'){if(FARM.wset)farmInc('farm/pods','water',-1).catch(()=>{});else farmMerge('farm/pods',{water:FARM.water}).catch(()=>{})}else farmSave();if(q.seed&&q.by&&q.by!==uid){gainXp(2);lxp('farm',2);stat('helpfarm')}},
    ()=>{heal(0,1);toast(why==='wet'?'방금 다른 단원이 물을 줬다. 더 이상 물을 줄 필요는 없을 것 같다.':'포드 상태가 바뀌어 물을 주지 못했습니다.')})},
@@ -4775,10 +4777,10 @@ const A={
  sell(d){const have=P.inv[d.id]||0;if(!have||isBound(d.id))return;const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
  asigskip(){if(bossAlive(BOSS))return;if(!useAsig())return;lastAsig=null;log('구식 신호기: 잡힌 신호를 무시하고 흘려보냈다.');commit()},
  asigpow(){if(bossAlive(BOSS))return;const sg=asigState();P.asig=sg.off?{n:sg.n,t:Date.now()}:{n:sg.n,t:Date.now(),off:1};log(sg.off?'구식 신호기를 다시 켰다. SOS 신호를 보내기 시작한다.':'구식 신호기를 껐다.');commit()},
- asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
+ asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spendKeep(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
- scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=SC_N)return;if(!spend(scEn(from+1)))return;
+ scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=SC_N)return;if(!spendKeep(scEn(from+1)))return;
   const ms=TRAILS[i].m[from]*60e3*(P.job==='nav'?.75:1);sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${scWay(i,from+1)} (${TRAILS[i].m[from]}분 뒤 도착)`);commit()},
  scsearch(){scoutSearch()},
  scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
