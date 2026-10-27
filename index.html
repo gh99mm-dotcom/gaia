@@ -1217,8 +1217,8 @@ onAuthStateChanged(auth,async u=>{
   const lobby=Object.assign(makeRoom('lobby'),{join:async n=>makeRoom(String(n).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,80))});
   const user={id:async()=>u.uid,me:async()=>({id:u.uid,name:u.displayName||''}),isOwner:async()=>admin,canEdit:async()=>admin,can:async()=>true,profiles:async()=>({})};
   window.__fbInvite={mk:()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>A[x%32]).join('')}};
-  // new photos always go into Firestore (imgs/…) even when Storage is switched on; older Storage photos still display and can still be deleted
-  IMG_MODE='firestore';
+  // photos go to Firebase Storage whenever it is switched on for the project; without it they fall back to Firestore (imgs/…)
+  IMG_MODE=(await storageReady())?'storage':'firestore';
   window.__fbResolve({db,user,room:lobby,assets});setTimeout(fillImgs,0);
 });
 </script>
@@ -1858,7 +1858,9 @@ var SEASON=0,seasonLock=false,seasonBusy=false;
 const seasonRef=()=>db.doc('boss/season');
 async function seasonCleanMine(){const gone=async(col,q)=>{try{const sn=await q.get();await Promise.all(sn.docs.map(d=>db.doc(col+'/'+d.id).delete().catch(()=>{})))}catch(e){}};
   await Promise.all([(async()=>{try{const sn=await db.collection('dm').where('users','array-contains',uid).get();await Promise.all(sn.docs.filter(d=>d.data().from===uid).map(d=>db.doc('dm/'+d.id).delete().catch(()=>{})))}catch(e){}})(),gone('gifts',db.collection('gifts').where('to','==',uid)),gone('gifts',db.collection('gifts').where('from','==',uid)),
-    gone('farmhelp',db.collection('farmhelp').where('to','==',uid)),gone('farmhelp',db.collection('farmhelp').where('from','==',uid)),db.doc('rescues/'+uid).delete().catch(()=>{})])}
+    gone('farmhelp',db.collection('farmhelp').where('to','==',uid)),gone('farmhelp',db.collection('farmhelp').where('from','==',uid)),db.doc('rescues/'+uid).delete().catch(()=>{}),
+    // photo files in Storage can only be removed by whoever uploaded them: clear the ones on my own PAD posts
+    (async()=>{try{const sn=await db.collection('posts').where('uid','==',uid).get();const ids=[].concat(...sn.docs.map(d=>d.data().img||[]));if(ASSETS)await Promise.all(ids.map(id=>ASSETS.delete(id).catch(()=>{})))}catch(e){}})()])}
 let seasonSeen=false,seasonFromDoc=false;
 // stop for good: no more saving, clear what only I can clear, then sign out so I can't slip back in before the wipe is done
 async function seasonQuit(){seasonLock=true;clearTimeout(saveT);dirty=false;toast('테스트 기록이 초기화됩니다. 잠시 뒤 다시 로그인해 주십시오.');await seasonCleanMine();setTimeout(()=>{if(window.__fbLogout)window.__fbLogout();else location.reload()},1200)}
