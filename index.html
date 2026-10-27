@@ -6,7 +6,7 @@
 <title>가이아 프로젝트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gugi&family=Nanum+Gothic+Coding:wght@400;700&family=Silkscreen:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gugi&family=Nanum+Myeongjo:wght@700;800&family=Nanum+Gothic+Coding:wght@400;700&family=Silkscreen:wght@400;700&display=swap">
 <style>
 /* Layout: 3-column cockpit — pilot card | activity console | crew & comms. Single dark space look by choice. */
 :root{
@@ -41,10 +41,24 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:100px;
 .logo{display:flex;align-items:center;gap:16px}
 .logo h1{font-family:"Gugi",var(--f-display);font-weight:400;letter-spacing:.02em;font-size:28px;line-height:1;color:var(--text);text-shadow:2px 2px 0 var(--ink)}
 .logo .lbl{margin-top:8px;display:block}
+/* wordmark: thin serif title over a dithered planet, a ring crossing it, a moon and a vertical beam of light */
+:root{--lg-pl1:#7a9cf0;--lg-pl2:#2a3f8e;--lg-pl3:#0a0e2c;--lg-dot:#c8d8ff;--lg-ring:#b8c8ff;--lg-rim:#a8c0ff;--lg-moon:#e8e4f8;--lg-star:#f2f0ff;--lg-t1:#ffffff;--lg-t2:#dde4ff;--lg-t3:#a8b8ff;--lg-glow:#5f7fffaa}
+.lg{position:relative;width:360px;height:100px;flex:none}
+.lg-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.logo h1.lg-word{position:absolute;left:0;right:0;top:27px;margin:0;text-align:center;font-family:"Nanum Myeongjo",serif;font-weight:800;font-size:31px;letter-spacing:.06em;line-height:1;text-shadow:none;
+  background:linear-gradient(180deg,var(--lg-t1) 20%,var(--lg-t2) 60%,var(--lg-t3));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 3px var(--lg-glow)) drop-shadow(0 0 10px var(--lg-glow)) drop-shadow(0 1px 0 rgba(0,0,0,.6))}
+.logo h1.lg-word i{font-style:normal;font-size:.55em;vertical-align:.35em;margin:0 .12em;color:var(--lg-star);-webkit-text-fill-color:var(--lg-star)}
+.lg-sub{position:absolute;left:0;right:0;top:68px;text-align:center;font-family:var(--f-pix);font-size:10px;letter-spacing:.5em;color:var(--lg-t2);text-indent:.5em}
+.lg-sub::before,.lg-sub::after{content:'';display:inline-block;width:36px;height:1px;background:linear-gradient(90deg,transparent,var(--lg-ring));vertical-align:middle;margin:0 8px}.lg-sub::after{transform:scaleX(-1)}
+.lg-tw path,.lg-tw circle{animation:lgtw 3.2s ease-in-out infinite}.lg-tw :nth-child(2){animation-delay:.8s}.lg-tw :nth-child(3){animation-delay:1.6s}.lg-tw :nth-child(4){animation-delay:2.2s}
+@keyframes lgtw{50%{opacity:.35}}
+.lg-moon{animation:lgmoon 14s ease-in-out infinite}@keyframes lgmoon{50%{transform:translate(-6px,1px)}}
+:root[data-skin="light"]{--lg-pl1:#9ab4e8;--lg-pl2:#5a74b8;--lg-pl3:#2a3a78;--lg-dot:#dfe6f8;--lg-ring:#5a6aa8;--lg-rim:#4a5a98;--lg-moon:#8a8eb0;--lg-star:#5a6aa8;--lg-t1:#3a4278;--lg-t2:#2a3266;--lg-t3:#1a2050;--lg-glow:#ffffffaa}
+:root[data-skin="light"] .logo h1.lg-word{filter:drop-shadow(0 0 4px #fff);color:transparent;letter-spacing:.06em;text-shadow:none}
 header>.chip:not(.sugg){margin-left:0}
 /* top-right header items: no frames, set a little closer together */
 header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10px}header:not(.joinhead)>.chip,:root[data-skin="light"] header:not(.joinhead)>.chip{border:0;box-shadow:none;background:transparent;padding:4px 7px}header:not(.joinhead)>button.chip:hover{background:var(--panel2)}
-@media (max-width:620px){header{min-height:90px;justify-content:flex-end;gap:8px}.logo{flex-basis:100%}.logo h1{font-size:24px}header>.sugg{margin-left:0}}
+@media (max-width:620px){header{min-height:90px;justify-content:flex-end;gap:8px}.logo{flex-basis:100%;justify-content:center}.logo h1{font-size:24px}header>.sugg{margin-left:0}.lg{width:320px;height:90px}.logo h1.lg-word{top:24px;font-size:26px}.lg-sub{top:60px}}
 .adminchip{cursor:pointer;color:var(--gold);border-color:var(--ink)}
 .adminchip+.chip{margin-left:0}
 .renamef{display:flex;gap:6px;align-items:center;margin:2px 0}
@@ -988,8 +1002,27 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <div class="wrap">
   <header>
     <div class="logo">
-      <span id="logoIc"></span>
-      <div><h1>가이아 프로젝트</h1><span class="lbl">Gaia project · Sector K-7</span></div>
+      <div class="lg"><svg class="lg-art" viewBox="0 0 360 100" aria-hidden="true">
+        <defs>
+          <radialGradient id="lgPl" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="var(--lg-pl1)"/><stop offset=".55" stop-color="var(--lg-pl2)"/><stop offset="1" stop-color="var(--lg-pl3)"/></radialGradient>
+          <pattern id="lgDot" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="var(--lg-dot)"/></pattern>
+          <linearGradient id="lgRing" x1="0" x2="1"><stop offset="0" stop-color="var(--lg-ring)" stop-opacity="0"/><stop offset=".25" stop-color="var(--lg-ring)"/><stop offset=".8" stop-color="var(--lg-ring)"/><stop offset="1" stop-color="var(--lg-ring)" stop-opacity="0"/></linearGradient>
+          <clipPath id="lgBack"><rect x="0" y="0" width="360" height="50"/></clipPath>
+        </defs>
+        <circle cx="180" cy="50" r="46" fill="none" stroke="var(--lg-ring)" stroke-opacity=".28" stroke-dasharray="1.5 3"/>
+        <g class="lg-orbit"><ellipse cx="180" cy="52" rx="150" ry="17" transform="rotate(-9 180 52)" fill="none" stroke="url(#lgRing)" stroke-width="1.6" clip-path="url(#lgBack)" opacity=".55"/></g>
+        <circle cx="180" cy="50" r="38" fill="url(#lgPl)"/><circle cx="180" cy="50" r="38" fill="url(#lgDot)" opacity=".22"/>
+        <radialGradient id="lgSh" cx="78%" cy="80%" r="70%"><stop offset=".35" stop-color="#05061a" stop-opacity=".75"/><stop offset="1" stop-color="#05061a" stop-opacity="0"/></radialGradient><circle cx="180" cy="50" r="38" fill="url(#lgSh)"/>
+        <circle cx="180" cy="50" r="38" fill="none" stroke="var(--lg-rim)" stroke-width="1.2" opacity=".9"/>
+        <ellipse cx="180" cy="52" rx="150" ry="17" transform="rotate(-9 180 52)" fill="none" stroke="url(#lgRing)" stroke-width="1.8" stroke-dasharray="0 471 471 0" opacity=".95"/>
+        <circle class="lg-moon" cx="318" cy="31" r="4" fill="var(--lg-moon)"/>
+        <line x1="180" y1="0" x2="180" y2="100" stroke="var(--lg-ring)" stroke-opacity=".35" stroke-width=".8" stroke-dasharray="2 3"/>
+        <g class="lg-tw" fill="var(--lg-star)"><path d="M180 2 l1.4 6 6 1.4 -6 1.4 -1.4 6 -1.4 -6 -6 -1.4 6 -1.4z"/><path d="M42 20 l.8 3 3 .8 -3 .8 -.8 3 -.8 -3 -3 -.8 3 -.8z"/><path d="M330 74 l.9 3.4 3.4 .9 -3.4 .9 -.9 3.4 -.9 -3.4 -3.4 -.9 3.4 -.9z"/><circle cx="72" cy="78" r=".9"/><circle cx="290" cy="14" r=".9"/><circle cx="18" cy="56" r=".7"/></g>
+        <path d="M180 88 l2 6 -2 6 -2 -6z" fill="var(--lg-star)"/>
+      </svg>
+        <h1 class="lg-word" aria-label="가이아 프로젝트">가이아<i aria-hidden="true">✦</i>프로젝트</h1>
+        <span class="lg-sub" aria-hidden="true">GAIA PROJECT</span>
+      </div>
     </div>
     <button class="chip sugg" id="suggBtn" type="button" data-act="suggopen">건의함</button>
     <button class="chip bgm" id="bgmBtn" type="button" aria-expanded="false" aria-controls="sndPop">♪ 소리</button>
@@ -4958,7 +4991,7 @@ setInterval(()=>{
   if(tab==='farm'&&FARM.refCd){const r=$('#refT'),l=FARM.refCd-Date.now();if(r&&l>0)r.textContent='다시 채우기까지 '+fmtClock(l);else if(r&&l<=0)renderPanel()}
 },1000);
 
-$('#logoIc').innerHTML=shipIcon(40,2);if($('#authIc'))$('#authIc').innerHTML=shipIcon(40,2);$('#joinIc').innerHTML=meImg(4);
+if($('#authIc'))$('#authIc').innerHTML=shipIcon(40,2);$('#joinIc').innerHTML=meImg(4);
 renderNet();renderAll();
 connect();
 })();
