@@ -4050,9 +4050,12 @@ const WIGBOT=['...kAAAkAAAk....','..kABBAAABBAk...','.kAAAAAAAAAAAkk.','kAAkkkkk
 const WIGPO={A:'#e07aa8',B:'#ffb4d2',D:'#d8343c'};
 const BROKER=['녹슨 7호요? 처음 듣는 이름이네요. 저는 의뢰 중개인 마담 로자랍니다.','어머, 그 고물상 로봇이랑 닮았다고요? 자주 듣는 말이에요. 호호.','이 머리카락은 진짜예요. 만지지 마세요. 정전기가 나거든요.','의뢰는 확실해요. 돈은 제가… 아니, 의뢰인이 꼭 드려요.','고물상이요? 아, 거기 주인은 오늘 쉬는 날이래요. 아마도요.','삐… 아니, 콜록. 감기 기운이 좀 있어서요.','포스터가 다섯 장뿐이냐고요? 좋은 일은 원래 귀한 법이죠.','이 가발이요? 저 먼 성운 너머에서 직접 사 왔어요. 어느 성운인지는 묻지 마세요.','녹슨 7호는 지금 창고 정리 중이에요. 저랑 마주칠 일은 절대 없죠. 절대로요.','어머, 제 목소리에서 기계음이 난다고요? 요즘 목 관리를 못 해서 그래요.','눈이 두 개 다 네모난 건 유행이에요. 이번 시즌 화장법이랍니다.','의뢰 수수료요? 없어요. 저는 좋은 일만 하는 중개인이니까요. 대신 운석 파편 하나만…','아까 상점에서 본 로봇이랑 저랑 키가 같다고요? 세상에 비슷한 키는 많아요.','제 안테나요? 이건 머리핀이에요. 아주 큰 머리핀.','포스터는 제가 직접 붙였어요. 압정이 손에 잘 안 붙어서 고생했죠. 손이… 아니, 장갑이 미끄러워서요.','오늘 의뢰인들이 다들 배가 고프대요. 개척지는 늘 배가 고프죠.','삐빅— 앗, 이건 제 휴대폰 알림이에요. 휴대폰이요. 정말로요.','고물상 로봇이 저를 질투한다는 소문이 있더라고요. 걔는 패션 감각이 없거든요.','납품은 깔끔하게, 보수는 두둑하게. 마담 로자의 철칙이에요.','제 립스틱 색이 녹슨 색이랑 똑같다고요? 그건 우연의 일치예요.','어제는 쉬었어요. 그래서 어제 고물상이 문을 닫았… 아, 그건 상관없는 얘기네요.','기름 냄새요? 향수예요. 이름은 「엔진의 속삭임」.','포스터가 좀 비뚤어졌죠? 예술이에요. 일부러 그런 거예요.','손님 같은 단골이 있어서 제가 이 일을 해요. 물론 저는 오늘 처음 일하지만요.','의뢰 다 끝내면 제가 특별히 윙크해 드릴게요. 한쪽 눈 셔터가 좀 뻑뻑하지만.','고물상 7호한테 제 얘기는 하지 마세요. 걔가 부끄러워해요. 아니, 제가요.','이 정거장에서 제일 우아한 중개인이 누구냐고요? 호호, 질문이 너무 쉽네요.','저는 충전기 같은 거 안 써요. 아침에 커피 한 잔이면 충분하죠. 전기 커피요.','머리가 좀 기울었죠? 가발이 무거워서 그래요. 목 관절이… 아니, 목이 가늘어서요.','오늘도 좋은 의뢰만 골라 왔어요. 나쁜 의뢰는 제가 몰래 녹여 버렸거든요.'];
 // [item, min, max, CR per piece, client]
-const REQ_POOL=[['pot',10,20,15,'배고픈 기관실 3교대 팀'],['berry',8,15,22,'잼 가게를 꿈꾸는 조종사'],['carrot',6,12,30,'시력 검사를 앞둔 항해사'],['corn',6,10,36,'팝콘이 그리운 통신사'],['pump',4,8,50,'호박 축제 준비 위원회'],['melon',2,4,80,'더위에 지친 화물칸 담당'],
- ['fish:c',5,10,25,'정거장 식당 주방장'],['fish:r',1,3,120,'희귀 어종 수집가'],['ore',15,30,10,'선체 보수 작업반'],['crystal',5,10,40,'동력로 정비사'],['moss',10,20,8,'온실 관리인'],['dark',2,4,90,'수상한 연구원'],
+// no crops here: posters ask for fish, ores, crystals, moss, dark matter and dishes only
+const REQ_POOL=[['fish:c',5,10,25,'정거장 식당 주방장'],['fish:r',1,3,120,'희귀 어종 수집가'],['ore',15,30,10,'선체 보수 작업반'],['crystal',5,10,40,'동력로 정비사'],['moss',10,20,8,'온실 관리인'],['dark',2,4,90,'수상한 연구원'],
  ['d_potRoast',2,4,60,'야근하는 관제사'],['d_hoe',1,3,90,'회가 먹고 싶은 선장'],['d_grill',1,2,110,'생선구이 마니아']];
+// a poster list made before crops were taken out: swap each unfinished crop request for one from the pool (finished ones stay as they are)
+function reqDropCrops(){const R=P.req,L=R.list;let ch=false;L.forEach((q,i)=>{if(!isCropId(q.id)||(R.done||[]).includes(i))return;const free=REQ_POOL.filter(([id])=>!L.some(x=>x.id===id));if(!free.length)return;
+  const [id,a,b,,who]=free[(i*7+L.length)%free.length],n=a+((i*3)%(b-a+1));L[i]={id,n,cr:reqPay(id,n,REQ_X),who};ch=true});if(ch)save()}
 function reqRng(seed){let x=seed%2147483647||1;return()=>(x=(x*16807)%2147483647)/2147483647}
 // posters change twice a day, at 08:00 and 20:00 Korea time (UTC+9): one 12-hour window per key
 const REQ_WIN=12*3600e3,reqKey=()=>'r'+Math.floor((Date.now()+3600e3)/REQ_WIN),reqLeft=()=>REQ_WIN-((Date.now()+3600e3)%REQ_WIN);
@@ -4060,7 +4063,7 @@ const REQ_WIN=12*3600e3,reqKey=()=>'r'+Math.floor((Date.now()+3600e3)/REQ_WIN),r
 const REQ_X=2.5,REQ_SP_X=4;
 const reqUnit=id=>id.startsWith('fish:')?crs(FSELL[id.slice(5)]||1):ITEMS[id]?sellPrice(id):1;
 const reqPay=(id,n,x)=>Math.max(1,Math.round(reqUnit(id)*n*x));
-function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list)){if(P.req.v!==2){P.req.v=2;P.req.list.forEach(q=>q.cr=reqPay(q.id,q.n,REQ_X));if(P.req.sp)P.req.sp.cr=reqPay(P.req.sp.id,P.req.sp.n,REQ_SP_X);save()}return P.req}
+function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list)){reqDropCrops();if(P.req.v!==2){P.req.v=2;P.req.list.forEach(q=>q.cr=reqPay(q.id,q.n,REQ_X));if(P.req.sp)P.req.sp.cr=reqPay(P.req.sp.id,P.req.sp.n,REQ_SP_X);save()}return P.req}
   let h=0;for(const c of day+uid)h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+7),pool=REQ_POOL.slice(),list=[];
   for(let k=0;k<5&&pool.length;k++){const [id,a,b,per,who]=pool.splice(Math.floor(rnd()*pool.length),1)[0],n=a+Math.floor(rnd()*(b-a+1));list.push({id,n,cr:reqPay(id,n,REQ_X),who})}
   P.req={day,list,done:[],v:2};save();return P.req}
