@@ -4164,7 +4164,10 @@ document.addEventListener('contextmenu',e=>{const s=e.target.closest('.slot[data
 {let lp=null;document.addEventListener('touchstart',e=>{const s=e.target.closest('.slot[data-id="invite"]');if(!s)return;clearTimeout(lp);lp=setTimeout(()=>{if(P&&P.inv.invite>0)A.secretopen()},650)},{passive:true});['touchend','touchmove','touchcancel'].forEach(k=>document.addEventListener(k,()=>clearTimeout(lp),{passive:true}))}
 // bag slot frame colour by kind: dishes, crops & seeds, fish, ship repair materials, everything else
 const BAGCAT=[['farm','작물·씨앗'],['dish','요리'],['ship','재료'],['fish','물고기'],['etc','그 외']];
-function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(shipMatIds().includes(id))return'ship';return'etc'}
+// what a material goes into: ship repair and/or gear (gear, accessories, weapons, suits and weapon upgrades)
+let GEAR_MATS=null;const gearMats=()=>GEAR_MATS||(GEAR_MATS=new Set([...Object.values(CRAFT).flatMap(g=>g.list),...ACC,...WPNS,...SUITS].flatMap(f=>(f.mat||[]).map(([id])=>id)).concat(['ore','crystal','dark'])));
+const matUse=id=>[shipMatIds().includes(id)&&'우주선 수리',gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
+function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(it.type!=='relic'&&matUse(id))return'ship';return'etc'}
 function bagInner(){
   // grouped in the legend's order; items keep their catalogue order inside each group
   const cix=Object.fromEntries(BAGCAT.map(([k],i)=>[k,i])),ids=ORDER.filter(id=>P.inv[id]).sort((a,b)=>cix[bagCat(a)]-cix[bagCat(b)]);
@@ -4173,7 +4176,7 @@ function bagInner(){
   const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c);
   return`<div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
    ${ids.length?`<div class="bagkey">${BAGCAT.map(([k,n])=>`<span class="bk bk-${k}"><i></i>${n}</span>`).join('')}</div><div class="bag">${ids.map(id=>`<button class="slot bc-${bagCat(id)}" data-act="sel" data-id="${id}" data-tip="${esc(ITEMS[id].n)} ×${P.inv[id]}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
-   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>
+   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
