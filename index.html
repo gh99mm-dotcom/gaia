@@ -3179,8 +3179,8 @@ const TRAILS=[
  {n:'얼음 협곡',dir:'서',a:194,k:'ice',g:['#222c38','#334356'],c:'#b8d4ec',it:'crystal',nodes:['서리 내린 비탈','얼어붙은 개울','얼음 동굴','수정 빙벽','눈보라 고개','얼음 다리','푸른 빙하 틈','얼어붙은 폭포','빙하 아래 동굴','협곡 밑바닥']}];
 // ten stops on every trail, 5 minutes between each
 const SC_N=10,SC_MIN=5;TRAILS.forEach(t=>{t.m=Array(SC_N).fill(SC_MIN)});
-// the deeper the stop, the rougher the way: energy per move 3 (stops 1-3) · 4 (4-6) · 5 (7-9) · 6 (the end), with a line per trail for each stretch
-const scEn=k=>SCOUT_EN+Math.floor((Math.max(1,k)-1)/3),scTier=k=>k<=3?0:k<=6?1:k<=9?2:3;
+// the deeper the stop, the rougher the way: energy per move doubles with each stretch — 3 (stops 1-3) · 6 (4-6) · 12 (7-9) · 24 (the end), with a line per trail for each stretch
+const scEn=k=>SCOUT_EN*2**scTier(Math.max(1,k)),scTier=k=>k<=3?0:k<=6?1:k<=9?2:3;
 const SC_ROUGH=['완만한 길','험한 길','가파른 길','극한의 길'],SC_ROUGH_C=['var(--green)','var(--gold)','#e0904a','var(--red)'];
 const SC_WAY=[
  ['바위 사이로 난 길이 아직은 걸을 만하다.','날카로운 결정이 발밑에서 솟아 있어 한 걸음씩 조심해야 한다.','결정 절벽을 손으로 짚고 기어올라야 한다. 바람이 거세진다.','숨이 차오르는 얼음 능선. 한 발만 헛디뎌도 끝이다.'],
