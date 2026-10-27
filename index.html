@@ -2322,7 +2322,7 @@ function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.ord
 // job skills: each is ready at the start of a battle, then waits 3 (first) or 4 (second) of its user's own turns
 const RSK={medic:[{n:'응급 처치',d:'동료 한 명의 체력을 전부 회복 (쓰러진 동료도 일으킴)',cd:3},{n:'전체 치료',d:'살아 있는 파티 전원 최대 체력의 50% 회복',cd:4}],
   mech:[{n:'연속 타격',d:'고른 적을 두 번 공격',cd:3},{n:'과부하 방전',d:'모든 적을 공격 (공격력 80%)',cd:4}],
-  nav:[{n:'약점 분석',d:'고른 적을 공격하고 모든 적의 방어력을 이 전투 동안 10% 깎음',cd:3},{n:'방패 전개',d:'다음 내 턴까지 광역 공격까지 모든 공격을 혼자 대신 맞고, 그동안 방어력 +100%',cd:3}]};
+  nav:[{n:'약점 분석',d:'고른 적을 공격하고 모든 적의 방어력을 이 전투 동안 15% 깎음 (겹쳐서 최대 75%)',cd:3},{n:'방패 전개',d:'다음 내 턴까지 광역 공격까지 모든 공격을 혼자 대신 맞고, 그동안 방어력 +100%',cd:3}]};
 const rJob=m=>m?(OLDJOB[m.job]||m.job||''):'';
 const rskLeft=(b,u,i)=>((b.cd||{})[u]||{})['s'+i]||0;
 // log line colours: skills gold, crew hitting monsters cyan, monsters hitting crew red, healing green
@@ -2357,7 +2357,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
         else if(j==='medic'){raidUp(r).forEach(u=>{const m=r.m[u];m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.5))});raidLog(b,`[${sk.n}] ${me.nick} 님이 파티 전원의 체력을 50% 회복시켰다.`)}
         else if(j==='mech'&&i===0){const t1=strike(tm,1),t2=tm.hp>0?strike(tm,1):'(이미 쓰러짐)';raidLog(b,`[${sk.n}] ${me.nick} → ${t1} / ${t2}`)}
         else if(j==='mech'){raidLog(b,`[${sk.n}] ${me.nick} → ${live.map(k=>strike(b.mons[k],.8)).join(', ')}`)}
-        else if(j==='nav'&&i===0){const t=strike(tm,1);b.mons.forEach(m=>{if(m.hp>0)m.def=Math.round(m.def*.9*10)/10});raidLog(b,`[${sk.n}] ${me.nick} → ${t} · 모든 적의 방어력 10% 감소`)}
+        else if(j==='nav'&&i===0){const t=strike(tm,1);let cap=false;b.mons.forEach(m=>{if(m.hp<=0)return;if(m.def0==null)m.def0=m.def;m.wk=Math.min(5,(m.wk||0)+1);if(m.wk>=5)cap=true;m.def=Math.round(m.def0*(1-.15*m.wk)*10)/10});raidLog(b,`[${sk.n}] ${me.nick} → ${t} · 모든 적의 방어력 15% 감소${cap?' (최대 75%)':''}`)}
         else{b.taunt={u:a.id};raidLog(b,`[${sk.n}] ${me.nick} 님이 방패를 펼쳤다. 다음 턴까지 공격을 대신 맞는다. (방어력 +100%)`)}}
       else if(kind==='def'){b.def[a.id]=1;raidLog(b,`${me.nick} 님이 방어 태세를 취했다.`)}
       else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:Math.round((it.hp||0)*(me.job==='medic'?1.5:1));if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
@@ -2590,10 +2590,11 @@ const bossAoeN=b=>b&&b.hp>0&&b.max>0?Math.min(3,Math.floor((b.max-b.hp)/(b.max*.
 function bossQuake(){const b=BOSS;if(!b||!bossAlive(b)||!(bossAoeN(b)>0)||!(b.dmg&&b.dmg[uid]))return;const seen=(P.bossAoe&&P.bossAoe.gen===b.gen)?P.bossAoe.n:0;const na=bossAoeN(b);if(na<=seen)return;
   const k=na-seen;P.bossAoe={gen:b.gen,n:na};let tot=0;for(let i=0;i<k;i++)tot+=bossBlow(b);heal(-tot,0);
   bossLast={t:Date.now(),miss:false,txt:`${b.name}의 광역 반격! 모든 토벌대 체력 -${tot}`};log(`${b.name}이(가) 체력을 잃고 날뛰었다! 광역 반격으로 체력 -${tot}`,'bad');toast(`${b.name}의 광역 반격! 체력 -${tot}`);commit()}
-// invader skills: one per job, 10 min apart; the medic's rally and the navigator's weak spot are 3-min team effects kept on the invader, together worth at most +30% damage
-const BSK={medic:{n:'전투 고무',d:'3분 동안 토벌대 전원 공격력 +10%'},mech:{n:'연속 타격',d:'침략자를 두 번 연속 공격'},nav:{n:'약점 분석',d:'3분 동안 침략자가 받는 피해 +10%'}},BSK_CD=10*60e3,BFX_MS=3*60e3,BFX_MAX=.3;
+// invader skills: one per job, 10 min apart; the medic's rally (+10%) and the navigator's weak spot (+15%) are 3-min team effects kept on the invader, stacking to at most +75% damage
+const BSK={medic:{n:'전투 고무',d:'3분 동안 토벌대 전원 공격력 +10%'},mech:{n:'연속 타격',d:'침략자를 두 번 연속 공격'},nav:{n:'약점 분석',d:'3분 동안 침략자가 받는 피해 +15%'}},BSK_CD=10*60e3,BFX_MS=3*60e3,BFX_MAX=.75;
+const fxVal=f=>f&&f.k==='weak'?.15:.1;
 const bossFx=b=>((b&&b.fx)||[]).filter(f=>f&&f.until>Date.now());
-const bossBonus=b=>Math.min(BFX_MAX,.1*bossFx(b).length);
+const bossBonus=b=>Math.min(BFX_MAX,bossFx(b).reduce((a,f)=>a+fxVal(f),0));
 const bossSkReady=()=>{const b=BOSS,s=P.bossSk;return s&&b&&s.gen===b.gen?Math.max(0,s.at+BSK_CD-Date.now()):0};
 async function bossSkill(){const b=BOSS,j=OLDJOB[P.job]||P.job,k=BSK[j];if(!k||!bossAlive(b)||Date.now()>=b.end||bossSkReady()>0||isFaint()||bossBusy)return;
   if(j==='mech')return bossHit(true);
@@ -2607,7 +2608,7 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
   try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,Math.round(d*(1+bossBonus(cur))));{const q0=bossAoeN(cur);cur.hp-=dealt;const q1=bossAoeN(cur);if(cur.hp>0&&q1>q0){cur.aoe=q1;cur.aoeAt=Date.now()}}cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};
     // the share a rally or weak spot added counts toward its caster's contribution, split evenly between the active effects
     const fx=bossFx(cur).filter(f=>f.u),extra=Math.max(0,dealt-Math.min(dealt,d));let mine=dealt;
-    if(fx.length&&extra>0){fx.forEach((f,i)=>{const part=Math.floor(extra/fx.length)+(i<extra%fx.length?1:0);if(!part)return;mine-=part;const e=cur.dmg[f.u]||{n:f.by||'단원',d:0};e.d+=part;cur.dmg[f.u]=e})}
+    if(fx.length&&extra>0){const wt=fx.reduce((a,f)=>a+fxVal(f),0);let given=0;fx.forEach((f,i)=>{const part=i===fx.length-1?extra-given:Math.floor(extra*fxVal(f)/wt);given+=part;if(!part)return;mine-=part;const e=cur.dmg[f.u]||{n:f.by||'단원',d:0};e.d+=part;cur.dmg[f.u]=e})}
     const m=cur.dmg[uid]||{n:P.nick,d:0};m.n=P.nick;m.d+=mine;cur.dmg[uid]=m;
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
@@ -2752,7 +2753,7 @@ function renderBoss(){const here=bossHere();
 function bossPaint(){const m=$('#bossMain');if(!m){renderPanel();return}m.innerHTML=chestHTML()+bossMainHTML()}
 function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=bossChatLogHTML();if(end)l.scrollTop=l.scrollHeight}
 function bossSkHTML(b){const j=OLDJOB[P.job]||P.job,k=BSK[j],fx=bossFx(b),bn=bossBonus(b),sc=bossSkReady();
-  const fxs=fx.length?`<div class="bossfx">${fx.map(f=>`<span class="qchip">${f.k==='atk'?'전투 고무 · 공격력':'약점 분석 · 받는 피해'} +10% <small>${esc(f.by||'')} · <i class="bfxt" data-u="${f.until}">${fmtClock(f.until-Date.now())}</i></small></span>`).join('')}<b class="bossfxsum">합계 +${Math.round(bn*100)}%${bn>=BFX_MAX?' (최대)':''}</b></div>`:'';
+  const fxs=fx.length?`<div class="bossfx">${fx.map(f=>`<span class="qchip">${f.k==='atk'?'전투 고무 · 공격력':'약점 분석 · 받는 피해'} +${Math.round(fxVal(f)*100)}% <small>${esc(f.by||'')} · <i class="bfxt" data-u="${f.until}">${fmtClock(f.until-Date.now())}</i></small></span>`).join('')}<b class="bossfxsum">합계 +${Math.round(bn*100)}%${bn>=BFX_MAX?' (최대)':''}</b></div>`:'';
   return`${k?`<div class="row bossact"><button class="btn gold" data-act="bossskill" id="bossSkBtn" ${sc>0||isFaint()||(j!=='mech'&&bn>=BFX_MAX)?'disabled':''}>${k.n}</button><span class="hint" id="bossSkT">${JOBS[j].n} 스킬 · ${k.d} · ${sc>0?`다시 쓰기까지 ${fmtClock(sc)}`:'10분에 한 번 쓸 수 있습니다.'}</span></div>`:''}${fxs}<span class="hint">스킬 효과는 겹쳐 쓸 수 있지만 합쳐서 최대 +${BFX_MAX*100}%까지입니다. 효과로 늘어난 피해는 효과를 건 단원의 기여도로 들어갑니다.</span>`}
 function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT');{const at=$('#asigT');if(at){const sg=asigState();const k='a'+sg.n+(sg.off?'o':'');if(k!==window.__ak){window.__ak=k;if(window.__akInit)bossPaint();window.__akInit=1}else at.textContent=asigMsg(sg)}}
   {const r=$('#bossRet');if(r){const l=bossRetLeft(b);if(l>0)r.textContent=fmtClock(l);else bossPaint()}}
