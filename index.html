@@ -4163,10 +4163,11 @@ function podFert(i){const pl=fpod(i);if(!pl||!pl.seed||stage(pl)===3)return;if(p
 document.addEventListener('contextmenu',e=>{const s=e.target.closest('.slot[data-id="invite"]');if(!s||!P||!(P.inv.invite>0))return;e.preventDefault();A.secretopen()});
 {let lp=null;document.addEventListener('touchstart',e=>{const s=e.target.closest('.slot[data-id="invite"]');if(!s)return;clearTimeout(lp);lp=setTimeout(()=>{if(P&&P.inv.invite>0)A.secretopen()},650)},{passive:true});['touchend','touchmove','touchcancel'].forEach(k=>document.addEventListener(k,()=>clearTimeout(lp),{passive:true}))}
 // bag slot frame colour by kind: dishes, crops & seeds, fish, ship repair materials, everything else
-const BAGCAT=[['dish','요리'],['farm','작물·씨앗'],['fish','물고기'],['ship','재료'],['etc','그 외']];
+const BAGCAT=[['farm','작물·씨앗'],['dish','요리'],['ship','재료'],['fish','물고기'],['etc','그 외']];
 function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(shipMatIds().includes(id))return'ship';return'etc'}
 function bagInner(){
-  const ids=ORDER.filter(id=>P.inv[id]);
+  // grouped in the legend's order; items keep their catalogue order inside each group
+  const cix=Object.fromEntries(BAGCAT.map(([k],i)=>[k,i])),ids=ORDER.filter(id=>P.inv[id]).sort((a,b)=>cix[bagCat(a)]-cix[bagCat(b)]);
   if(selItem&&!P.inv[selItem])selItem=null;
   const it=selItem&&ITEMS[selItem];
   const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c);
