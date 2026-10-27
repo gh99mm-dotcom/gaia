@@ -15,6 +15,7 @@
   --pink:#a8778c; --pinkd:#4f3240; --violet:#7a6fa0; --violetd:#2c2845; --cyan:#8aa9bd; --cyand:#2b4252;
   --gold:#bfae80; --green:#8ba790; --red:#a8626b;
   /* relationship tiers, worst to best: 혐오 · 싫다 · 불편 · 언짢다 · 무감정 · 안면 · 호감 · 친구 · 절친 */
+  --job-mech:#e8a05a; --job-nav:#78c4e8; --job-medic:#86d49a;
   --rel0:#e0474f; --rel1:#e8845a; --rel2:#d4b060; --rel3:#a89a7a; --rel4:#8a8fa6; --rel5:#6fb8d8; --rel6:#8f9bff; --rel7:#6fd08f; --rel8:#ff7fb8;
   --f-display:"Do Hyeon","Nanum Gothic Coding",sans-serif;
   --f-body:"Nanum Gothic Coding",ui-monospace,monospace;
@@ -64,6 +65,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .sndrow .qchip{justify-content:center;padding:2px 4px}
 /* 우주모드 OFF: a white station skin; the pixel outlines stay, everything else turns light */
 :root[data-skin="light"]{
+  --job-mech:#a85a12; --job-nav:#1f6f9a; --job-medic:#2a7f44;
   --rel0:#b8202a; --rel1:#b85a2a; --rel2:#8a6a10; --rel3:#7a6a4a; --rel4:#6a7088; --rel5:#1f6f9a; --rel6:#4a4ab8; --rel7:#1f7f44; --rel8:#c0306a;
   /* faded daylight: bleached paper, dusty pastels, soft charcoal ink — bright but a little lonely */
   --void:#e7e4de; --deep:#f0eee9; --panel:#f6f4f0; --panel2:#e9e6e0; --ink:#c9c3b9; --line:#dfdad2;
@@ -496,6 +498,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .faintbar b{font-family:var(--f-pix);font-weight:400;color:var(--red)}
 .fainttag{color:var(--red);font-weight:700}
 .crew li .rescue{padding:2px 6px;font-size:12px;margin-left:4px}
+.joblegend{display:flex;gap:8px;font-size:11px;margin:-2px 0 4px}.joblegend i{font-style:normal}.joblegend i::before{content:'■ ';font-size:9px}
 .crew li.downrow .rescue{margin-left:auto}
 .sigbox{display:flex;gap:12px;align-items:center}
 .shiptop{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.shiptop .sinfo{flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px}
@@ -1000,7 +1003,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
   <div class="grid">
     <div class="leftcol"><aside class="px pilot" id="pilot" aria-label="내 캐릭터"></aside>
       <section class="px crew" aria-label="개척단원">
-        <span class="lbl">Crew · 개척단원</span>
+        <span class="lbl">Crew · 개척단원</span><span class="joblegend"><i style="color:var(--job-mech)">기관사</i><i style="color:var(--job-nav)">항해사</i><i style="color:var(--job-medic)">의무원</i></span>
         <ul id="crew"></ul>
       </section></div>
 
@@ -4146,7 +4149,8 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat()}
 
 /* ───────── crew & chat ───────── */
-function colorOf(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return['#b38a9b','#8aa9bd','#bfae80','#8ba790','#9a92bf','#b0906f'][h%6]}
+// name colour = job: 기관사 orange, 항해사 sky, 의무원 green; no job yet → plain text colour
+function colorOf(id){const p=id===uid||id==='me'?P:PLAYERS[id],j=p&&p.job?(JOBS[p.job]?p.job:OLDJOB[p.job]):'';return j?`var(--job-${j})`:'var(--text)'}
 function renderCrew(){
   const ul=$('#crew');
   if(mode!=='online'){ul.innerHTML=`<li><span class="dot on"></span><span class="nm">${esc(P.nick)} (나)</span><span class="lvt">LV.${P.lvl}</span></li><li class="hint" style="border-style:dashed">${mode==='solo'?'공유된 페이지에서 열면 다른 단원이 여기에 보입니다.':'연결 중…'}</li>`;return}
