@@ -3170,11 +3170,13 @@ function asigHTML(){const sg=asigState();return`<div class="card asigcard"><div 
 /* ───────── 조사: five trails out of the settlement, walked one stop at a time ───────── */
 const SCOUT_EN=3;
 const TRAILS=[
- {n:'결정 능선',dir:'북',a:-90,k:'crystal',g:['#16283a','#203a52'],c:'#4fc8f0',m:[4,6,9,13,18],it:'crystal',nodes:['갈라진 바위틈','푸른 결정 지대','공명하는 첨탑','결정 동굴 입구','별빛 정상']},
- {n:'녹슨 잔해길',dir:'동',a:-14,k:'wreck',g:['#2e251c','#433526'],c:'#b0906f',m:[3,5,8,12,16],it:'ore',nodes:['부서진 착륙 다리','녹슨 화물 컨테이너','추락한 셔틀','고철 무덤','모선 파편 분화구']},
- {n:'포자 습지',dir:'남동',a:58,k:'reed',g:['#18301f','#22442c'],c:'#5ab878',m:[5,7,10,14,20],it:'moss',nodes:['안개 낀 갈대밭','발광 포자 군락','가라앉은 탐사 차량','거대 버섯 숲','숨 쉬는 늪 한가운데']},
- {n:'운석 분화구',dir:'남서',a:128,k:'lava',g:['#2a1012','#42181a'],c:'#e85a2a',m:[3,4,7,11,15],it:'dark',nodes:['그을린 평지','작은 운석공','검은 유리 들판','거대 분화구 가장자리','낙하 중심핵']},
- {n:'얼음 협곡',dir:'서',a:194,k:'ice',g:['#222c38','#334356'],c:'#b8d4ec',m:[6,8,12,16,24],it:'crystal',nodes:['서리 내린 비탈','얼어붙은 개울','얼음 동굴','수정 빙벽','협곡 밑바닥']}];
+ {n:'결정 능선',dir:'북',a:-90,k:'crystal',g:['#16283a','#203a52'],c:'#4fc8f0',it:'crystal',nodes:['갈라진 바위틈','푸른 결정 지대','공명하는 첨탑','결정 동굴 입구','메아리 치는 동굴','얼어붙은 결정 호수','노래하는 결정숲','부서진 관측탑','하늘 결정 절벽','별빛 정상']},
+ {n:'녹슨 잔해길',dir:'동',a:-14,k:'wreck',g:['#2e251c','#433526'],c:'#b0906f',it:'ore',nodes:['부서진 착륙 다리','녹슨 화물 컨테이너','추락한 셔틀','고철 무덤','기울어진 통신탑','불 꺼진 정비창','엔진 잔해 협곡','뒤집힌 화물선','깨진 조종실','모선 파편 분화구']},
+ {n:'포자 습지',dir:'남동',a:58,k:'reed',g:['#18301f','#22442c'],c:'#5ab878',it:'moss',nodes:['안개 낀 갈대밭','발광 포자 군락','가라앉은 탐사 차량','거대 버섯 숲','썩은 나무다리','반딧불 웅덩이','덩굴 터널','포자 구름 언덕','잠든 거목','숨 쉬는 늪 한가운데']},
+ {n:'운석 분화구',dir:'남서',a:128,k:'lava',g:['#2a1012','#42181a'],c:'#e85a2a',it:'dark',nodes:['그을린 평지','작은 운석공','검은 유리 들판','거대 분화구 가장자리','연기 나는 틈','녹은 바위 강','불타는 운석 파편','용암 동굴','붉은 결정 고원','낙하 중심핵']},
+ {n:'얼음 협곡',dir:'서',a:194,k:'ice',g:['#222c38','#334356'],c:'#b8d4ec',it:'crystal',nodes:['서리 내린 비탈','얼어붙은 개울','얼음 동굴','수정 빙벽','눈보라 고개','얼음 다리','푸른 빙하 틈','얼어붙은 폭포','빙하 아래 동굴','협곡 밑바닥']}];
+// ten stops on every trail, 5 minutes between each
+const SC_N=10,SC_MIN=5;TRAILS.forEach(t=>{t.m=Array(SC_N).fill(SC_MIN)});
 const SC_W=240,SC_H=160,SC_CX=120,SC_CY=82;
 const SC_PTS=(()=>{const mx=Math.max(...TRAILS.map(t=>t.m.reduce((a,b)=>a+b,0)));return TRAILS.map((t,i)=>{const tot=t.m.reduce((a,b)=>a+b,0),L=.62+.38*tot/mx,ar=t.a*Math.PI/180;let c=0;
   return t.m.map((m,k)=>{c+=m;const r=12+(c/tot)*L*(68-12),w=Math.sin(k*1.9+i*2.3)*3.5;return[Math.round(SC_CX+Math.cos(ar)*r*1.5-Math.sin(ar)*w),Math.round(SC_CY+Math.sin(ar)*r+Math.cos(ar)*w)]})})})();
@@ -3217,10 +3219,10 @@ function scoutMapImg(){const sc=scoutSt(),key=sc.far.join('')+'|'+sc.t+'|'+sc.at
      spots(i,10,3,22,7).forEach(([x,y])=>{px(x,y,'#ecf6ff');px(x-1,y,'#b8d4ec');px(x+1,y,'#b8d4ec');px(x,y-1,'#b8d4ec');px(x,y+1,'#8aa8c0')})}];
   TRAILS.forEach((_,i)=>draw[i](i));
   // paths: gold where you've walked, dim dirt beyond
-  TRAILS.forEach((T,i)=>{for(let k=1;k<=5;k++){const [x0,y0]=scPt(i,k-1),[x1,y1]=scPt(i,k),len=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),lit=k<=sc.far[i];
+  TRAILS.forEach((T,i)=>{for(let k=1;k<=SC_N;k++){const [x0,y0]=scPt(i,k-1),[x1,y1]=scPt(i,k),len=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),lit=k<=sc.far[i];
     for(let s2=0;s2<=len;s2++){const x=Math.round(x0+(x1-x0)*s2/len),y=Math.round(y0+(y1-y0)*s2/len);px(x,y+1,'#14121a');px(x+1,y+1,'#14121a');if(!lit&&s2%4===3)continue;px(x,y,lit?'#f0d27a':'#9a8c74');px(x+1,y,lit?'#b8984c':'#6a6050')}}});
   // fog past the next unexplored stop on each trail
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=sector(x,y),k=Math.min(5,sc.far[i]+1),[fx,fy]=scPt(i,k),rf=Math.hypot((fx-SC_CX)/1.5,fy-SC_CY)+6,r=Math.hypot((x-SC_CX)/1.5,y-SC_CY);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=sector(x,y),k=Math.min(SC_N,sc.far[i]+1),[fx,fy]=scPt(i,k),rf=Math.hypot((fx-SC_CX)/1.5,fy-SC_CY)+6,r=Math.hypot((x-SC_CX)/1.5,y-SC_CY);
     if(r>rf){const t=Math.min(1,(r-rf)/10);if(t*16>BAYER[y&3][x&3]-2){g.fillStyle='rgba(6,6,14,.34)';g.fillRect(x,y,1,1)}}}
   // stops
   TRAILS.forEach((T,i)=>SC_PTS[i].forEach(([x,y],k0)=>{const k=k0+1;
@@ -3232,19 +3234,19 @@ function scoutMapImg(){const sc=scoutSt(),key=sc.far.join('')+'|'+sc.t+'|'+sc.at
   for(let a=-7;a<=7;a++){px(SC_CX+a,SC_CY+1,'#4a5060');px(SC_CX+a,SC_CY+2,'#2a2e38')}px(SC_CX-2,SC_CY-2,'#ffe8a0');px(SC_CX+2,SC_CY-2,'#ffe8a0');px(SC_CX,SC_CY-5,'#f0c75a');px(SC_CX,SC_CY-6,'#ff6a5a');
   return SCMAP[key]={src:c.toDataURL()}}
 function scoutPos(){const sc=scoutSt();if(sc.mv){const m=sc.mv,f=Math.max(0,Math.min(1,(Date.now()-m.s)/(m.e-m.s))),[x0,y0]=scPt(m.t,m.from),[x1,y1]=scPt(m.t,m.to);return[x0+(x1-x0)*f,y0+(y1-y0)*f]}return sc.t<0?[SC_CX,SC_CY]:scPt(sc.t,sc.at)}
-const scNext=(sc,i)=>!sc.mv&&!sc.pend&&((sc.t<0&&true)||sc.t===i)&&(sc.t<0?0:sc.at)<5;
+const scNext=(sc,i)=>!sc.mv&&!sc.pend&&((sc.t<0&&true)||sc.t===i)&&(sc.t<0?0:sc.at)<SC_N;
 function scoutMapHTML(){const sc=scoutSt(),m=scoutMapImg(),[mx,my]=scoutPos();
   const btns=TRAILS.map((T,i)=>SC_PTS[i].map(([x,y],k0)=>{const k=k0+1,go=scNext(sc,i)&&k===(sc.t<0?1:sc.at+1);return`<button type="button" class="scn ${go?'go':''}" style="left:${(x+.5)/SC_W*100}%;top:${(y+.5)/SC_H*100}%" ${go?`data-act="scgo" data-t="${i}"`:'tabindex="-1"'} title="${esc(T.n)} ${k}지점${k<=sc.far[i]?' · '+esc(T.nodes[k0]):''}${go?` · ${T.m[k0]}분`:''}"></button>`}).join('')).join('');
-  return`<div class="scmap"><img class="pix" src="${m.src}" alt="정착지 주변 다섯 갈래 길 지도">${btns}${TRAILS.map((T,i)=>{const [a,b]=SC_PTS[i][1],[c,d]=SC_PTS[i][2],ar=T.a*Math.PI/180,x=(a+c)/2-Math.sin(ar)*9,y=(b+d)/2+Math.cos(ar)*9;return`<span class="sclbl" style="left:${x/SC_W*100}%;top:${y/SC_H*100}%">${esc(T.n)}</span>`}).join('')}<span class="rmme" id="scMe" style="left:${(mx+.5)/SC_W*100}%;top:${(my-5)/SC_H*100}%">${headImg(2,P)}</span><span class="rmlbl">${sc.mv?'이동 중':sc.t<0?'정착지':`${TRAILS[sc.t].n} ${sc.at}지점`}</span></div>`}
+  return`<div class="scmap"><img class="pix" src="${m.src}" alt="정착지 주변 다섯 갈래 길 지도 · 길마다 10지점">${btns}${TRAILS.map((T,i)=>{const [a,b]=SC_PTS[i][3],[c,d]=SC_PTS[i][4],ar=T.a*Math.PI/180,x=(a+c)/2-Math.sin(ar)*11,y=(b+d)/2+Math.cos(ar)*11;return`<span class="sclbl" style="left:${x/SC_W*100}%;top:${y/SC_H*100}%">${esc(T.n)}</span>`}).join('')}<span class="rmme" id="scMe" style="left:${(mx+.5)/SC_W*100}%;top:${(my-5)/SC_H*100}%">${headImg(2,P)}</span><span class="rmlbl">${sc.mv?'이동 중':sc.t<0?'정착지':`${TRAILS[sc.t].n} ${sc.at}지점`}</span></div>`}
 function scoutLeft(){const m=scoutSt().mv;return m?Math.max(0,m.e-Date.now()):0}
 function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(renderNav,0)}const mv=sc.mv,T=sc.t>=0?TRAILS[sc.t]:null;
   const status=mv?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(TRAILS[mv.t].n)} ${mv.to}지점으로 이동 중</b><div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 도착하면 주변을 조사할 수 있습니다.</div></div><button class="btn sm alt" data-act="scstop">이동 취소</button></div>`
-   :T?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(T.n)} · ${esc(T.nodes[sc.at-1])}</b><div class="hint">${sc.pend?'도착했습니다. 주변을 조사한 뒤에 더 나아갈 수 있습니다.':sc.at<5?`다음 지점까지 ${T.m[sc.at]}분 걸립니다.`:'이 길의 끝입니다. 더 나아갈 곳이 없습니다.'}</div></div>${sc.pend?`<button class="btn gold" data-act="scsearch">이 지점 조사하기</button>`:sc.at<5?`<button class="btn" data-act="scgo" data-t="${sc.t}">더 깊이 <small>${T.m[sc.at]}분 · EN ${SCOUT_EN}</small></button>`:''}<button class="btn sm alt" data-act="scback">정착지로 귀환</button></div>`
+   :T?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(T.n)} · ${esc(T.nodes[sc.at-1])}</b><div class="hint">${sc.pend?'도착했습니다. 주변을 조사한 뒤에 더 나아갈 수 있습니다.':sc.at<SC_N?`다음 지점까지 ${T.m[sc.at]}분 걸립니다.`:'이 길의 끝입니다. 더 나아갈 곳이 없습니다.'}</div></div>${sc.pend?`<button class="btn gold" data-act="scsearch">이 지점 조사하기</button>`:sc.at<SC_N?`<button class="btn" data-act="scgo" data-t="${sc.t}">더 깊이 <small>${T.m[sc.at]}분 · EN ${SCOUT_EN}</small></button>`:''}<button class="btn sm alt" data-act="scback">정착지로 귀환</button></div>`
    :`<div class="note">정착지에 있습니다. 지도에서 빛나는 지점을 누르거나 아래에서 길을 골라 출발하십시오.</div>`;
   const cards=TRAILS.map((t,i)=>{const here=!mv&&sc.t===i,lock=mv||sc.pend||(sc.t>=0&&sc.t!==i),nk=sc.t===i?sc.at:0;
     return`<div class="card sctr"><div class="tn"><span class="sw" style="background:${t.c}"></span>${esc(t.n)} <small class="hint">${t.dir}쪽</small></div><div class="scdots">${t.m.map((_,k)=>`<i class="${here&&sc.at===k+1?'here':k<sc.far[i]?'on':''}" title="${k<sc.far[i]?esc(t.nodes[k]):'미탐색'}"></i>`).join('')}</div>
-      <div class="hint">구간 ${t.m.map(x=>x+'분').join(' · ')}</div>${lock?'':nk<5?`<button class="btn sm" data-act="scgo" data-t="${i}">${nk?'더 깊이':'출발'} <small>${t.m[nk]}분 · EN ${SCOUT_EN}</small></button>`:''}</div>`}).join('');
-  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 멀리 갈수록 이동은 오래 걸리지만 더 귀한 것을 찾습니다. 한 번 이동할 때마다 에너지 ${SCOUT_EN}.</p>
+      <div class="hint">${SC_N}지점 · 구간마다 ${SC_MIN}분</div>${lock?'':nk<SC_N?`<button class="btn sm" data-act="scgo" data-t="${i}">${nk?'더 깊이':'출발'} <small>${t.m[nk]}분 · EN ${SCOUT_EN}</small></button>`:''}</div>`}).join('');
+  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 멀리 갈수록 더 귀한 것을 찾습니다. 한 번 이동할 때마다 에너지 ${SCOUT_EN}.</p>
   ${scoutMapHTML()}${status}
   ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:''}
   <div class="sctrails">${cards}</div>`;
@@ -4674,7 +4676,7 @@ const A={
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
- scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=5)return;if(!spend(SCOUT_EN))return;
+ scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=SC_N)return;if(!spend(SCOUT_EN))return;
   const ms=TRAILS[i].m[from]*60e3*(P.job==='nav'?.75:1);sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${TRAILS[i].m[from]}분 뒤 도착.`);commit()},
  scsearch(){scoutSearch()},
  scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
