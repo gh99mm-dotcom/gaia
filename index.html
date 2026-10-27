@@ -15,7 +15,7 @@
   --pink:#a8778c; --pinkd:#4f3240; --violet:#7a6fa0; --violetd:#2c2845; --cyan:#8aa9bd; --cyand:#2b4252;
   --gold:#bfae80; --green:#8ba790; --red:#a8626b;
   /* relationship tiers, worst to best: 혐오 · 싫다 · 불편 · 언짢다 · 무감정 · 안면 · 호감 · 친구 · 절친 */
-  --job-mech:#e8a05a; --job-nav:#78c4e8; --job-medic:#86d49a;
+  --job-mech:#e8a05a; --job-nav:#78c4e8; --job-medic:#86d49a; --me-name:#b892ff; --off-name:#6a6e80;
   --rel0:#e0474f; --rel1:#e8845a; --rel2:#d4b060; --rel3:#a89a7a; --rel4:#8a8fa6; --rel5:#6fb8d8; --rel6:#8f9bff; --rel7:#6fd08f; --rel8:#ff7fb8;
   --f-display:"Do Hyeon","Nanum Gothic Coding",sans-serif;
   --f-body:"Nanum Gothic Coding",ui-monospace,monospace;
@@ -65,7 +65,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .sndrow .qchip{justify-content:center;padding:2px 4px}
 /* 우주모드 OFF: a white station skin; the pixel outlines stay, everything else turns light */
 :root[data-skin="light"]{
-  --job-mech:#a85a12; --job-nav:#1f6f9a; --job-medic:#2a7f44;
+  --job-mech:#a85a12; --job-nav:#1f6f9a; --job-medic:#2a7f44; --me-name:#7a3ad0; --off-name:#a8a49c;
   --rel0:#b8202a; --rel1:#b85a2a; --rel2:#8a6a10; --rel3:#7a6a4a; --rel4:#6a7088; --rel5:#1f6f9a; --rel6:#4a4ab8; --rel7:#1f7f44; --rel8:#c0306a;
   /* faded daylight: bleached paper, dusty pastels, soft charcoal ink — bright but a little lonely */
   --void:#e7e4de; --deep:#f0eee9; --panel:#f6f4f0; --panel2:#e9e6e0; --ink:#c9c3b9; --line:#dfdad2;
@@ -1003,7 +1003,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
   <div class="grid">
     <div class="leftcol"><aside class="px pilot" id="pilot" aria-label="내 캐릭터"></aside>
       <section class="px crew" aria-label="개척단원">
-        <span class="lbl">Crew · 개척단원</span><span class="joblegend"><i style="color:var(--job-mech)">기관사</i><i style="color:var(--job-nav)">항해사</i><i style="color:var(--job-medic)">의무원</i></span>
+        <span class="lbl">Crew · 개척단원</span><span class="joblegend"><i style="color:var(--job-mech)">기관사</i><i style="color:var(--job-nav)">항해사</i><i style="color:var(--job-medic)">의무원</i><i style="color:var(--off-name)">오프라인</i></span>
         <ul id="crew"></ul>
       </section></div>
 
@@ -4156,10 +4156,10 @@ function renderCrew(){
   if(mode!=='online'){ul.innerHTML=`<li><span class="dot on"></span><span class="nm">${esc(P.nick)} (나)</span><span class="lvt">LV.${P.lvl}</span></li><li class="hint" style="border-style:dashed">${mode==='solo'?'공유된 페이지에서 열면 다른 단원이 여기에 보입니다.':'연결 중…'}</li>`;return}
   const online={};PEERS.forEach(p=>{if(p.presence&&p.presence.uid)online[p.presence.uid]=p.presence.act||''});
   const list=Object.entries(PLAYERS).map(([id,p])=>({id,rcd:rescueCd(id===uid?P:p,id===uid?null:id),faint:id===uid?isFaint():isDown(id,p),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
-   .sort((a,b)=>(b.on-a.on)||(b.lvl-a.lvl));
+   .sort((a,b)=>((b.id===uid)-(a.id===uid))||(b.on-a.on)||(b.lvl-a.lvl));
   if(!list.find(x=>x.id===uid))list.unshift({id:uid,nick:P.nick,lvl:P.lvl,on:true,act:''});
   // a fainted crewmate shows only the name and the rescue button
-  ul.innerHTML=list.map(x=>{const down=x.faint&&x.id!==uid;return`<li class="${down?'downrow':''}"><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${colorOf(x.id)}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button>${down?'':`<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>`}${down?(x.rcd>0?`<button class="btn sm ghost rescue" disabled title="구조를 받은 지 30분이 지나야 다시 구조할 수 있습니다">구조 <small>${Math.ceil(x.rcd/60e3)}분</small></button>`:`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN ${P.job==='medic'?0:3}</small></button>`):''}${x.id!==uid&&!down?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`}).join('');
+  ul.innerHTML=list.map(x=>{const down=x.faint&&x.id!==uid;return`<li class="${down?'downrow':''}"><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${x.id===uid?'var(--me-name)':x.on?colorOf(x.id):'var(--off-name)'}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button>${down?'':`<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>`}${down?(x.rcd>0?`<button class="btn sm ghost rescue" disabled title="구조를 받은 지 30분이 지나야 다시 구조할 수 있습니다">구조 <small>${Math.ceil(x.rcd/60e3)}분</small></button>`:`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN ${P.job==='medic'?0:3}</small></button>`):''}${x.id!==uid&&!down?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`}).join('');
 }
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
 const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
