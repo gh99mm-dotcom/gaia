@@ -1838,7 +1838,8 @@ const st=k=>(P.st&&P.st[k])||0;
 let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
 // managers: crew the admin lets into 마이룸 before the life-support section is repaired
 function admStaffHTML(others){const list=STAFF.filter(id=>PLAYERS[id]),rest=others.filter(([id])=>!STAFF.includes(id));
-  return`<div class="info-sec"><span class="lbl">Managers · 관리자 명단</span><span class="hint">관리자로 임명한 단원은 생명 유지 장치를 고치기 전에도 마이룸을 미리 볼 수 있습니다.</span>
+  return`<div class="info-sec"><span class="lbl">My room · 마이룸 공개</span><div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="hint">${ROOM_LINK?`<b style="color:var(--gold)">우주선과 연동 중</b> · 생명 유지 장치를 고치기 전에는 운영자와 관리자만 마이룸에 들어갈 수 있습니다.${roomOpen()?' (지금은 이미 수리가 끝나 모두에게 열려 있습니다)':''}`:'<b style="color:var(--green)">연동 꺼짐</b> · 우주선 수리와 상관없이 모든 단원이 마이룸에 들어갈 수 있습니다.'}</span><button class="btn sm ${ROOM_LINK?'alt':'gold'}" data-act="admroomlink" aria-pressed="${ROOM_LINK}">${ROOM_LINK?'연동 끄기 (모두에게 공개)':'연동 켜기 (수리 후 공개)'}</button></div></div>
+  <div class="info-sec"><span class="lbl">Managers · 관리자 명단</span><span class="hint">관리자로 임명한 단원은 생명 유지 장치를 고치기 전에도 마이룸을 미리 볼 수 있습니다.</span>
    ${list.length?`<div class="admfaint">${list.map(id=>{const p=PLAYERS[id];return`<div class="admfrow">${headImg(3,p)}<div class="admfn"><b>${esc(p.nick||'단원')}</b><span class="hint">Lv.${p.lvl||1} · 관리자</span></div><button class="btn sm ghost" data-act="admstaff" data-k="${esc(id)}">해제</button></div>`}).join('')}</div>`:'<span class="hint">아직 임명한 관리자가 없습니다.</span>'}
    ${rest.length?`<div class="row" style="gap:6px;flex-wrap:wrap"><select id="admStaffPick" class="sel" aria-label="관리자로 임명할 단원">${rest.map(([id,p])=>`<option value="${esc(id)}">${esc(p.nick||'단원')} · Lv.${p.lvl||1}</option>`).join('')}</select><button class="btn sm gold" data-act="admstaff">관리자 임명</button></div>`:''}</div>`}
 // every item laid out like the shared store, grouped by kind
@@ -2510,7 +2511,7 @@ function bossSubscribe(){
   bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{});
   loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='social'&&socTab==='pad')loungePaint()},()=>{});
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -3138,7 +3139,9 @@ const rescuedRef=()=>db.doc('boss/rescued');let RESCUED={};
 const isStaff=()=>isAdmin||STAFF.includes(uid);
 const roomLife=()=>SHIP.find(x=>x.id==='life');
 const roomOpen=()=>mode==='online'&&shipDone(roomLife());
-const canRoom=()=>roomOpen()||isStaff();
+// boss/staff.roomLink (admin switch): while linked, 마이룸 stays locked until the life-support section is repaired; unlinked, it is open to everyone
+let ROOM_LINK=true;
+const canRoom=()=>!ROOM_LINK||roomOpen()||isStaff();
 function roomLockHTML(){const pt=roomLife(),v=mode==='online'?shipPct(pt):0;return head()+shipSubTabs()+`<div class="card roomlock"><b>🔒 마이룸은 아직 잠겨 있습니다</b><p class="hint">별무리호의 <b>${esc(pt.n)}</b>를 고치면 거주 구역에 공기가 돌아 마이룸이 열립니다. 단원 모두가 우주선 탭에서 재료를 넣어 함께 고칠 수 있습니다.</p><div class="stat-row"><span>${esc(pt.n)} 수리율</span><b>${Math.floor(v*100)}%</b></div><div class="bar"><i style="--c:var(--cyan);width:${v*100}%"></i></div><button class="btn sm" data-act="shipview" data-k="ship">우주선 수리하러 가기</button></div>
   <div class="card" style="margin-top:10px"><span class="lbl">옷장</span>${wardHTML()}</div>`}
 if(!IC.room)IC.room=["................","....kkkkkkkk....","...kSSSSSSSSk...","...kSkkkkkkSk...","...kSkcccckSk...","...kSkcwcckSk...","...kSkkkkkkSk...","...kSvvvvvvSk...","...kSvvvvvvSk...","...kSvvvvyvSk...","...kSvvvvvvSk...","...kSvvvvvvSk...","...kSvvvvvvSk...","..kkkkkkkkkkkk..","..kSSSSSSSSSSk..","..kkkkkkkkkkkk.."];
@@ -3706,7 +3709,7 @@ function roomMigrate(){roomDropGone();
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
   P.room={};if(cr>0){P.cr=(P.cr||0)+cr;log(`마이룸이 새 모습으로 바뀌어, 전에 산 가구 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
 function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='bench'}" data-act="shipview" data-k="bench">제작대</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
-function renderShip(){if(shipView==='bench')return benchHTML();if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 단원에게는 아직 잠겨 있습니다.</div>')}
+function renderShip(){if(shipView==='bench')return benchHTML();if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 단원에게는 아직 잠겨 있습니다.</div>')}
   if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 단원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
   const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP.find(x=>!shipDone(x))||SHIP[SHIP.length-1],open=shipOpen(pt),g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
   const rank={};SHIPDON.forEach(d=>{if(!d.uid)return;const r=rank[d.uid]||(rank[d.uid]={nick:d.nick,n:0});r.n+=+d.n||0});
@@ -4392,7 +4395,8 @@ const A={
  admbosspick(d){if(!isAdmin)return;bossPick=Math.max(0,Math.min(BOSS_KINDS.length-1,+d.k||0));renderAdminAll()},
  admboss(){if(!isAdmin)return;const lv=Math.max(1,Math.min(99,Math.round(+$('#admBossLv').value)||30)),K=BOSS_KINDS[bossPick];bossSummon(bossPick,lv).then(nx=>{if(!nx){toast('이미 침략자가 출현 중입니다.');return}toast(`${K.n} Lv.${lv}을(를) 소환했습니다.`);sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`,true,'siren');renderAdminAll()}).catch(()=>toast('소환하지 못했습니다.'))},
  admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
- admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'단원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return{ids:on?l:[...l,id]}}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
+ admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 단원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
+ admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'단원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
  admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
  admgive(){if(!isAdmin)return;const id=admPick,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
@@ -4606,7 +4610,7 @@ function duelCatch(tr,id,sz){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
