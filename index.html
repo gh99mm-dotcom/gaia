@@ -1165,7 +1165,7 @@ const assets={
   upload:async(blob,o)=>{const id=newId();
     if(IMG_MODE==='storage'){const type=(o&&o.type)||blob.type||'image/jpeg';try{await uploadBytes(sref(st,'pad/'+id),blob,{contentType:type,customMetadata:{owner:ME.uid}})}catch(e){throw imgErr(e)}IMGC[id]=stURL(id);return{id,url:IMGC[id],sizeBytes:blob.size,contentType:type}}
     let d;try{d=await compactImg(blob);await setDoc(doc(fs,'imgs',id),{d,owner:ME.uid,at:Date.now()})}catch(e){throw imgErr(e)}IMGC[id]=d;return{id,url:d,sizeBytes:d.length,contentType:'image/jpeg'}},
-  delete:async id=>{try{if(IMG_MODE==='storage')await deleteObject(sref(st,'pad/'+id));else await deleteDoc(doc(fs,'imgs',id));return{deleted:true}}catch(e){return{deleted:false}}},
+  delete:async id=>{let ok=false;try{await deleteDoc(doc(fs,'imgs',id));ok=true}catch(e){}if(STORAGE_ON&&st)try{await deleteObject(sref(st,'pad/'+id));ok=true}catch(e){}return{deleted:ok}},
   list:async()=>({assets:[],usage:{}})};
 
 /* ---- auth gate: ID login, invite-only sign-up ---- */
@@ -1217,7 +1217,8 @@ onAuthStateChanged(auth,async u=>{
   const lobby=Object.assign(makeRoom('lobby'),{join:async n=>makeRoom(String(n).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,80))});
   const user={id:async()=>u.uid,me:async()=>({id:u.uid,name:u.displayName||''}),isOwner:async()=>admin,canEdit:async()=>admin,can:async()=>true,profiles:async()=>({})};
   window.__fbInvite={mk:()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>A[x%32]).join('')}};
-  IMG_MODE=(await storageReady())?'storage':'firestore';
+  // new photos always go into Firestore (imgs/…) even when Storage is switched on; older Storage photos still display and can still be deleted
+  IMG_MODE='firestore';
   window.__fbResolve({db,user,room:lobby,assets});setTimeout(fillImgs,0);
 });
 </script>
