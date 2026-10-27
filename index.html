@@ -1600,7 +1600,8 @@ COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}
 COOK.forEach(c=>{const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf}});
 const ORDER=Object.keys(ITEMS);
 /* ancient signal records: one roll at 3% wherever they can turn up; the grade follows the finder's level (6급 lowest) */
-const RELIC_P=.03,relicFor=L=>'relic'+(L>=50?1:L>=40?2:L>=30?3:L>=20?4:L>=10?5:6),relicRoll=L=>Math.random()<RELIC_P?relicFor(L):null;
+// 조사 has its own, higher chance (8%): searches are few because walking the trails takes time
+const RELIC_P=.03,RELIC_SCAN_P=.08,relicFor=L=>'relic'+(L>=50?1:L>=40?2:L>=30?3:L>=20?4:L>=10?5:6),relicRoll=(L,p=RELIC_P)=>Math.random()<p?relicFor(L):null;
 // credits: everything that pays out CR (except invader chests and admin gifts) is scaled by this
 const CR_RATE=.3,crs=n=>Math.max(1,Math.round(n*CR_RATE));
 const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자'];
@@ -3252,7 +3253,7 @@ function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.
   log(`${T.nodes[k-1]}에 도착했다. 주변을 조사할 수 있다.`);save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
 function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;const T=TRAILS[sc.t],k=sc.at,first=sc.pend===2;sc.pend=0;
   const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();if(k>=2)got.push([T.it,ri(1,k-1)]);
-  {const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
+  {const rl=relicRoll(P.lvl,RELIC_SCAN_P);if(rl)got.push([rl,1])}const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   // 1% of searches turn up a 마이룸 piece found nowhere else
