@@ -1646,7 +1646,7 @@ const petX=k=>1+PF(k)/100;
 const maxHp=()=>Math.round((60+P.lvl*12+(P.job==='nav'?30:0)+AS('vit')*8+GF('hp'))*petX('hp')), maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')), def=()=>Math.floor((Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='nav'?6:0)+GF('def')+BUFF('def'))*petX('def')),
 // critical chance in %: agility, gear and pet
 critPct=()=>AS('agi')+GF('crit')+PF('crit'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
-function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
+function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);if(!raidLocked())P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
 function spend(n){regen();if(P.hp<=0){toast('체력이 바닥났습니다. 음식을 먹거나 잠시 쉬십시오.');return false}if(P.en<n){toast(`에너지가 부족합니다 (필요 ${n})`);return false}P.en-=n;return true}
 function add(id,n=1){P.inv[id]=(P.inv[id]||0)+n}
 function take(id,n=1){if((P.inv[id]||0)<n)return false;P.inv[id]-=n;if(!P.inv[id])delete P.inv[id];return true}
@@ -2184,6 +2184,8 @@ function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],def=Math.rou
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
 const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
+// while I'm out on an expedition my profile HP follows my expedition HP (never below 1 here, so the main game doesn't faint me mid-run)
+function raidHpSync(){const r=MYRAID,me=r&&r.m&&r.m[uid];if(!raidLocked()||r.phase==='end'||!me)return;const v=Math.max(1,Math.min(maxHp(),Math.round(me.hp)));if(v!==P.hp){P.hp=v;renderPilot()}}
 const raidRef=id=>db.doc('parties/'+id);
 const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,job:P.job||'',atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:critPct()});
 const raidZone=r=>RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];
@@ -2240,7 +2242,7 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
     const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}`};
     if(boss)raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5);L.cr+=crs(200);L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=crs(200)});return r}
-  if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 정거장으로 돌아가고, 모두 기절합니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);if(L.cb){for(const k in L.cb)L.cb[k]=Math.round(L.cb[k]/2)}L.it={}}r.m[u].hp=1});return r}
+  if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 체력 1로 정거장에 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);if(L.cb){for(const k in L.cb)L.cb[k]=Math.round(L.cb[k]/2)}L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
 const raidMyTurn=()=>{const r=MYRAID,c=r&&r.b&&r.b.cur;return!!(r&&r.phase==='battle'&&c&&c.k==='p'&&c.id===uid)};
@@ -2279,7 +2281,7 @@ function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidN
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
   if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
 function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(P.raidDone||[]).slice(-30),r.id];const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
-  if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));if(r.result==='wipe'){P.hp=0;log('원정에 실패해 쓰러졌다.','bad')}stat('raid');if(r.result==='clear')stat('raidclear');
+  if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));if(r.result==='wipe'){P.hp=1;log('원정에 실패해 체력 1만 남기고 겨우 돌아왔다.','bad')}stat('raid');if(r.result==='clear')stat('raidclear');
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
 let raidWid=null;
 // battle sounds from what changed between two snapshots: a monster losing health = a hit landing, a crew member losing health = taking a blow
@@ -2313,7 +2315,7 @@ function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();rai
   if(mode==='online')rcUnsub=rcRef(id).onSnapshot(sn=>{const prev=RCHAT.length;RCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='raid'){const l=$('#rcLog');if(l){l.innerHTML=rcLogHTML();if(RCHAT.length>prev)l.scrollTop=l.scrollHeight}}},()=>{});
   raidUnsub=raidRef(id).onSnapshot(s=>{if(raidWid!==id)return;if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
     if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
-    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same)raidSfx(MYRAID,r);MYRAID=r;if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel()}},()=>{})}
+    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same)raidSfx(MYRAID,r);MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel()}},()=>{})}
 function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS.length=0;sn.docs.forEach(d=>{const v=d.data();if(raidNow()-(v.at||0)<30*60e3)RAIDS.push(Object.assign({id:d.id},v))});if(tab==='raid')renderPanel()},()=>{});
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
