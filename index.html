@@ -863,6 +863,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @media (max-width:620px){.petcards{grid-template-columns:minmax(0,1fr)}.petmine{flex-direction:column;text-align:center}}
 .barkeep{background:linear-gradient(180deg,#1c1220,#140c16);border-color:#5a2f4a}.barkeep .say{color:#e8c8a0}.barkeep b{color:#ffb8f0}.barmenu{border-style:dashed}
 :root[data-skin="light"] .barkeep{background:linear-gradient(180deg,#3a2838,#2a1c28)}:root[data-skin="light"] .barkeep .hint{color:#c8b8c0}
+.fishlen{margin:2px 0}.fishlen b{color:var(--cyan)}.fishlen.big b{color:var(--gold);font-size:15px}.spctag.rec{color:var(--green)}.dexlen{color:var(--cyan)!important}
 .spctag{font-family:var(--f-pix);font-size:10px;padding:0 4px;border:1px solid currentColor;color:var(--gold);vertical-align:middle}.spctag.bound{color:var(--pink)}
 .keeper .bal{font-family:var(--f-pix);font-weight:400;font-size:13px;color:var(--gold)}
 .slist{display:flex;flex-direction:column;gap:5px;max-height:420px;overflow:auto}
@@ -1379,13 +1380,18 @@ const FT={c:{n:'일반',hp:[6,14],en:[2,5],xp:4},r:{n:'레어',hp:[18,28],en:[6,
 const FTINT=['#8aa9bd','#a99a74','#93707f','#7f9c85','#9a8fc0','#b0906f','#c4c7d4','#6c8fa8','#a8626b','#bfae80','#7a6fa0','#5f8f8a'];
 const FSHAPE={피라미:'fishs',송사리:'fishs',멸치:'fishs',붕어:'puff',망둥이:'puff',송어:'fishs',장어:'eel',농어:'fishs',가오리:'ray',쏘가리:'puff',아귀:'angl',상어:'fishs',철갑상어:'eel',해룡:'eel'};
 const FISHES={c:[],r:[],u:[],l:[]};
-function mkFish(tr,name,shape,tint){const t=FT[tr],i=FISHES[tr].length,f=((i*37)%11)/10,id='f'+tr+i;
-  ITEMS[id]={n:name,ic:shape,t:tint,type:'food',hp:Math.round(t.hp[0]+(t.hp[1]-t.hp[0])*f),en:Math.round(t.en[0]+(t.en[1]-t.en[0])*f),tier:t.n,fish:tr};FISHES[tr].push(id)}
+// sz: [smallest, largest] body length in cm for that kind of fish
+const FSIZE={피라미:[8,15],송사리:[3,6],붕어:[15,45],망둥이:[8,25],멸치:[5,15],송어:[30,80],장어:[40,150],농어:[30,100],가오리:[40,200],쏘가리:[20,60],아귀:[30,120],상어:[100,400],철갑상어:[100,350],해룡:[200,800]};
+function mkFish(tr,name,shape,tint,sz){const t=FT[tr],i=FISHES[tr].length,f=((i*37)%11)/10,id='f'+tr+i;
+  ITEMS[id]={n:name,ic:shape,t:tint,type:'food',hp:Math.round(t.hp[0]+(t.hp[1]-t.hp[0])*f),en:Math.round(t.en[0]+(t.en[1]-t.en[0])*f),tier:t.n,fish:tr,sz:sz||[10,30]};FISHES[tr].push(id)}
 [['c',['먼지','메탄','얼음','자갈','안개','잿빛','갯','점박이','줄무늬','꼬마','은빛','녹슨'],['피라미','송사리','붕어','망둥이','멸치']],
  ['r',['혜성','펄서','성운','오로라빛','궤도','유성'],['송어','장어','농어','가오리','쏘가리']],
  ['u',['블랙홀','초신성','퀘이사','중성자','암흑성운'],['아귀','상어','철갑상어','해룡']]
-].forEach(([tr,pre,base])=>pre.forEach((a,pi)=>base.forEach((b,bi)=>mkFish(tr,a+' '+b,FSHAPE[b],FTINT[(pi*5+bi*7)%FTINT.length]))));
-[['오로라 고래상어','fishs','#7f9c85'],['시간을 삼킨 실러캔스','puff','#bfae80'],['은하수 용왕','eel','#9a8fc0'],['마지막 별의 인어','ray','#c4c7d4'],['사건의 지평선 리바이어던','angl','#a8626b']].forEach(([n,sh,t])=>mkFish('l',n,sh,t));
+].forEach(([tr,pre,base])=>pre.forEach((a,pi)=>base.forEach((b,bi)=>mkFish(tr,a+' '+b,FSHAPE[b],FTINT[(pi*5+bi*7)%FTINT.length],FSIZE[b]))));
+[['오로라 고래상어','fishs','#7f9c85',[800,1800]],['시간을 삼킨 실러캔스','puff','#bfae80',[150,250]],['은하수 용왕','eel','#9a8fc0',[1000,3000]],['마지막 별의 인어','ray','#c4c7d4',[150,220]],['사건의 지평선 리바이어던','angl','#a8626b',[2000,6000]]].forEach(([n,sh,t,sz])=>mkFish('l',n,sh,t,sz));
+// one catch's length: most fish come out small-to-average, a better rod and a perfect cast tilt it larger; top 10% of the range is a 대어
+function fishSize(id,rod,bonus){const [a,b]=ITEMS[id].sz||[10,30];let u=Math.pow(Math.random(),1.6);u=Math.min(1,u+rod*.03+(bonus?.05:0));const cm=a+(b-a)*u;return{cm:Math.round(cm*10)/10,big:u>=.9}}
+const fmtLen=cm=>cm>=100?`${(cm/100).toFixed(cm>=1000?1:2)}m`:`${cm.toFixed(1)}cm`;
 /* ───────── procedural fish sprites (18x12) ───────── */
 function genFish(seed,fam,tier){let r=7;for(const c of seed)r=(r*31+c.charCodeAt(0))>>>0;const rnd=()=>((r=(Math.imul(r,1103515245)+12345)>>>0)/4294967296);
   const s={c:1,r:1.3,u:1.6,l:2}[tier]||1,W=Math.round(18*s),H=Math.round(12*s),cy=Math.floor(H/2),Q=v=>Math.round(v*s);
@@ -2763,7 +2769,7 @@ function renderFish(){
    <div class="fishside"><div class="dial-wrap"><div class="dial ${aim?'live':''}"><div class="dial-face" style="--z:${fish.zone||9}deg;--zc:${fish.zc||0}deg"></div><div class="needle" id="needle" style="transform:translateX(-50%) rotate(${fish.a||0}deg)"></div><div class="hub"></div></div><span class="lbl">Reel lever · 릴 레버</span></div>${inWater?`<button class="btn alt fishgo" data-act="pull">끌어올리기!</button>`:aim?`<button class="btn gold fishgo" data-act="throw">던지기!</button>`:`<button class="btn fishgo" data-act="cast">캐스팅 <small>EN 3</small></button>`}</div>
   </div>
   <div class="row">${inWater||ph==='early'||ph==='miss'||ph==='idle'?bonusTxt:''}<button class="qchip" style="margin-left:auto" data-act="sound" aria-pressed="${soundOn}">소리 ${soundOn?'켜짐':'꺼짐'}</button></div>
-  ${lastFish?`<div class="card result">${iicon(lastFish.id,3)}<div><p><b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier?ITEMS[lastFish.id].tier+' 등급':'기본 낚싯대에 걸린 씨앗'}</p><p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}</p></div></div>`:''}
+  ${lastFish?`<div class="card result">${iicon(lastFish.id,3)}<div><p><b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier?ITEMS[lastFish.id].tier+' 등급':'기본 낚싯대에 걸린 씨앗'}</p>${lastFish.cm?`<p class="fishlen ${lastFish.big?'big':''}">크기 <b>${fmtLen(lastFish.cm)}</b>${lastFish.big?' <span class="spctag">대어!</span>':''}${lastFish.rec?' <span class="spctag rec">내 최고 기록</span>':''} <span class="hint">(${fmtLen(ITEMS[lastFish.id].sz[0])} ~ ${fmtLen(ITEMS[lastFish.id].sz[1])})</span></p>`:''}<p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}${lastFish.big?' (대어 보너스 ×1.5)':''}</p></div></div>`:''}
   ${dexHTML()}`;
 }
 let AC=null,soundOn=true,sfxVol=100;try{soundOn=localStorage.getItem('nebula-sound')!=='off';const v=localStorage.getItem('nebula-sfxv');if(v!=null)sfxVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
@@ -2956,7 +2962,7 @@ function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],g
   const tabs=[['c','일반'],['r','레어'],['u','유니크'],['l','레전더리']];
   return`<div class="card dexbox"><button class="dex-head" data-act="dextoggle" aria-expanded="${dexOpen}"><span class="lbl">Fish log · 어류 도감</span><b>${got}/${all.length}</b><span class="caret">${dexOpen?'▾':'▸'}</span></button>
   ${dexOpen?`<div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${dexTab===k}" data-act="dextab" data-k="${k}">${n} <em>${FISHES[k].filter(id=>P.dex[id]).length}/${FISHES[k].length}</em></button>`).join('')}</div>
-  <div class="dex">${FISHES[dexTab].map(id=>`<div title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span></div>`).join('')}</div>`:''}</div>`}
+  <div class="dex">${FISHES[dexTab].map(id=>`<div title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span>${P.dex[id]&&(P.fsz||{})[id]?`<span class="hint dexlen">최대 ${fmtLen(P.fsz[id])}</span>`:''}</div>`).join('')}</div>`:''}</div>`}
 // 탐사's old signal receiver: catches a stray signal every 30 minutes (up to 5) while no invader is loose; investigating works like 조사
 const ASIG_MS=30*60e3,ASIG_MAX=5;let lastAsig=null;
 function asigState(){if(!P.asig)P.asig={n:1,t:Date.now()};if(P.asig.off)return{n:Math.min(ASIG_MAX,P.asig.n),next:0,off:true};const el=Date.now()-P.asig.t,gain=Math.floor(el/ASIG_MS),n=Math.min(ASIG_MAX,P.asig.n+gain);return{n,next:n>=ASIG_MAX?0:ASIG_MS-(el%ASIG_MS)}}
@@ -4285,8 +4291,8 @@ const A={
   // the basic rod snags a seed one cast in ten instead of a fish
   if(rod===0&&Math.random()<.1){const seeds=Object.keys(ITEMS).filter(k=>ITEMS[k].type==='seed'),sid=seeds[ri(0,seeds.length-1)],sxp=3;add(sid);gainXp(sxp);lxp('fish',4);lastFish={id:sid,ms,xp:sxp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
     log(`물고기 대신 ${ITEMS[sid].n}이(가) 낚싯바늘에 걸려 올라왔다!`,'good');commit();return}
-  const id=FISHES[tr][ri(0,FISHES[tr].length-1)],xp=FT[tr].xp,first=!P.dex[id];add(id);P.dex[id]=(P.dex[id]||0)+1;gainXp(xp);stat('fish');if(tr==='l')stat('legend');lxp('fish',{c:8,r:15,u:30,l:60}[tr]);duelCatch(tr,id);lastFish={id,ms,xp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
-  log(`${ITEMS[id].n}을(를) 낚았다! (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」을 낚았습니다!`);commit()},
+  const id=FISHES[tr][ri(0,FISHES[tr].length-1)],first=!P.dex[id],sz=fishSize(id,rod,fish.bonus),rec=!first&&sz.cm>((P.fsz||{})[id]||0),xp=Math.round(FT[tr].xp*(sz.big?1.5:1));P.fsz=Object.assign({},P.fsz);if(sz.cm>(P.fsz[id]||0))P.fsz[id]=sz.cm;add(id);P.dex[id]=(P.dex[id]||0)+1;gainXp(xp);stat('fish');if(tr==='l')stat('legend');lxp('fish',{c:8,r:15,u:30,l:60}[tr]);duelCatch(tr,id);lastFish={id,ms,xp,bonus:fish.bonus,cm:sz.cm,big:sz.big,rec};fish={ph:'idle',a:fish.a};
+  log(`${ITEMS[id].n}을(를) 낚았다! 크기 ${fmtLen(sz.cm)}${sz.big?' · 대어!':''}${rec?' · 내 최고 기록!':''} (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'||sz.big?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」(${fmtLen(sz.cm)})을 낚았습니다!`);commit()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
  addpt(d){if(ptsFree()<=0||!ABIL.find(a=>a[0]===d.k))return;abPend=Object.assign({},abPend,{[d.k]:(abPend[d.k]||0)+1});renderInfo()},
  subpt(d){if(!(abPend[d.k]>0))return;abPend=Object.assign({},abPend,{[d.k]:abPend[d.k]-1});if(!abPend[d.k])delete abPend[d.k];renderInfo()},
