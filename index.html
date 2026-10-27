@@ -3030,8 +3030,8 @@ function fkCard(week){const rows=fkRows(week),[t]=rows,nm=(id,p)=>`<button class
     ${rows.length>1?`<ol class="fklist">${rows.slice(1).map((r,i)=>`<li class="${r[0]===uid?'me':''}"><i class="fkmed"></i><span class="no">${i+2}위</span><span class="rkface">${headImg(2,r[1])}</span>${nm(r[0],r[1])}<b>${sc(r)}</b></li>`).join('')}</ol>`:''}`
     :`<p class="hint fkempty">${week?'이번 주':'오늘'} 아직 물고기를 낚은 단원이 없습니다.</p>`}<span class="hint fkreset">${week?'매주 월요일 0시(한국 시간)에 새로 시작':'매일 0시(한국 시간)에 새로 시작'} · 일반 1 · 레어 3 · 유니크 8 · 레전더리 25점</span></div></div>`}
 const fkHTML=()=>mode==='online'?`<div class="fkgrid">${fkCard(false)}${fkCard(true)}</div>`:'';
-// a cast costs 3 energy but never your last point: at 2-3 energy it takes just enough to leave 1, so fishing can't knock you out
-const CAST_EN=3,castEn=()=>{regen();return P.en>=2&&P.en<=CAST_EN?P.en-1:CAST_EN};
+// a cast needs 3 energy; with exactly 3 left it takes only 2 so you keep 1 and fishing can't knock you out
+const CAST_EN=3,castEn=()=>{regen();return P.en===CAST_EN?CAST_EN-1:CAST_EN};
 function renderFish(){
   const ph=fish.ph,aim=ph==='aim',inWater=ph==='wait'||ph==='bite';
   const txt={idle:'레버를 돌려 낚싯줄을 던져 보십시오',aim:'레버가 돌아갑니다. 초록 칸에서 던지십시오!',wait:'찌가 메탄 위에 떠 있다…',bite:'입질! 지금 당기십시오!',early:'너무 일찍 당겼다…',miss:'놓쳤다. 다시 던져 보십시오'}[ph]||'';
@@ -3044,7 +3044,7 @@ function renderFish(){
    <div class="lake"><canvas id="lakeCv" aria-hidden="true"></canvas>
     ${inWater?`<span class="bob ${ph==='bite'?'bite':''}">${img(["..kk..",".kppk.",".kwwk.","..kk..","..k...","..k..."],null,3)}</span>`:''}
     <div class="bob-txt ${ph==='bite'||aim?'hot':''}">${txt}</div></div>
-   <div class="fishside"><div class="dial-wrap"><div class="dial ${aim?'live':''}"><div class="dial-face" style="--z:${fish.zone||9}deg;--zc:${shownZc()}deg"></div><div class="needle" id="needle" style="transform:translateX(-50%) rotate(${fish.a||0}deg)"></div><div class="hub"></div></div><span class="lbl">Reel lever · 릴 레버</span></div>${inWater?`<button class="btn alt fishgo" data-act="pull">끌어올리기!</button>`:aim?`<button class="btn gold fishgo" data-act="throw">던지기!</button>`:`<button class="btn fishgo" data-act="cast">캐스팅 <small>EN ${castEn()}</small></button>`}</div>
+   <div class="fishside"><div class="dial-wrap"><div class="dial ${aim?'live':''}"><div class="dial-face" style="--z:${fish.zone||9}deg;--zc:${shownZc()}deg"></div><div class="needle" id="needle" style="transform:translateX(-50%) rotate(${fish.a||0}deg)"></div><div class="hub"></div></div><span class="lbl">Reel lever · 릴 레버</span></div>${inWater?`<button class="btn alt fishgo" data-act="pull">끌어올리기!</button>`:aim?`<button class="btn gold fishgo" data-act="throw">던지기!</button>`:`<button class="btn fishgo" data-act="cast">캐스팅 <small>EN ${CAST_EN}</small></button>`}</div>
   </div>
   <div class="row">${inWater||ph==='early'||ph==='miss'||ph==='idle'?bonusTxt:''}<button class="qchip" style="margin-left:auto" data-act="sound" aria-pressed="${soundOn}">소리 ${soundOn?'켜짐':'꺼짐'}</button></div>
   ${lastFish?`<div class="card result ${lastFish.cm&&mode==='online'?'fishres':''}"><div class="fishres-l">${iicon(lastFish.id,3)}<div><p>${lastFish.first?'<span class="spctag newfish">새로운!</span> ':''}<b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier?ITEMS[lastFish.id].tier+' 등급':'기본 낚싯대에 걸린 씨앗'}</p>${lastFish.cm?`<p class="fishlen ${lastFish.big?'big':''}">크기 <b>${fmtLen(lastFish.cm)}</b>${lastFish.big?' <span class="spctag">대어!</span>':''}${lastFish.rec?' <span class="spctag rec">내 최고 기록</span>':''} <span class="hint">(${fmtLen(ITEMS[lastFish.id].sz[0])} ~ ${fmtLen(ITEMS[lastFish.id].sz[1])})</span></p>`:''}<p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}${lastFish.big?' (대어 보너스 ×1.5)':''}</p></div></div>${lastFish.cm&&mode==='online'?`<div class="fishres-r"><textarea id="fishTxt" class="sel" maxlength="200" rows="3" placeholder="${esc(fishShareDef(lastFish))}" ${lastFish.shared?'disabled':''} aria-label="PAD에 함께 올릴 글">${esc(lastFish.note||'')}</textarea><div class="row" style="justify-content:space-between;gap:6px"><span class="hint">비워 두면 기본 문구로 올라갑니다</span><button class="btn sm ${lastFish.shared?'ghost':'alt'}" data-act="fishshare" ${lastFish.shared?'disabled':''}>${lastFish.shared?'PAD에 공유함':'PAD로 공유하기'}</button></div></div>`:''}</div>`:''}
@@ -4601,7 +4601,7 @@ const A={
  gdur(d){gDur=d.k==='s10'?'s10':+d.k;renderPanel()},
  gclaim(){if(claimGather())commit()},
  grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){log(`${x.site.n}에서 채집 로봇을 불러들였다. (${x.gd}/${x.G}회 채집)`);P.exp=null}commit()},
- cast(){if(['wait','bite','aim'].includes(fish.ph))return;ac();if(!spend(castEn()))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:9,zc:nextZc};nextZc=ri(-68,68);commit();
+ cast(){if(['wait','bite','aim'].includes(fish.ph))return;ac();regen();if(P.en<CAST_EN){toast(`에너지가 부족합니다 (필요 ${CAST_EN})`);return}if(!spend(castEn()))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:9,zc:nextZc};nextZc=ri(-68,68);commit();
   const step=matchMedia('(prefers-reduced-motion: reduce)').matches?3:4;
   sfxLever();
   // the needle's angle comes from elapsed time, not from counting timer ticks, so a busy or throttled page can't slow it down
