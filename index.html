@@ -943,7 +943,8 @@ img.pix.tasty{filter:drop-shadow(0 0 2px #ffcf4a) drop-shadow(0 0 1px #ffcf4a)}:
 .fishcard.t-r{--fc:var(--cyan)}.fishcard.t-u{--fc:#c88aff}.fishcard.t-l{--fc:var(--gold);box-shadow:0 0 10px #ffd65f33}.card.result.fishres{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch}.fishres-l{display:flex;gap:10px;align-items:center;min-width:0}
 .fishres-r{display:flex;flex-direction:column;gap:6px;min-width:0}.fishres-r textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:56px;font:inherit;font-size:13px}
 @media (max-width:620px){.card.result.fishres{grid-template-columns:minmax(0,1fr)}}
-.fishlen{margin:2px 0}.fishlen b{color:var(--cyan)}.fishlen.big b{color:var(--gold);font-size:15px}.spctag.rec{color:var(--green)}.spctag.newfish{color:#ff8fd0;box-shadow:0 0 6px #ff4fd855;animation:newfish 1.2s ease-in-out 3}@keyframes newfish{50%{transform:scale(1.12)}}:root[data-skin="light"] .spctag.newfish{color:#c0306a}.dexlen{color:var(--cyan)!important}
+.fishlen{margin:2px 0}.fishlen b{color:var(--cyan)}.fishlen.big b{color:var(--gold);font-size:15px}.spctag.rec{color:var(--green)}.spctag.newfish{color:#ff8fd0;box-shadow:0 0 6px #ff4fd855;animation:newfish 1.2s ease-in-out 3}@keyframes newfish{50%{transform:scale(1.12)}}:root[data-skin="light"] .spctag.newfish{color:#c0306a}
+.spctag.tastyb{color:#ffc04a;box-shadow:0 0 6px #ffb02055;animation:newfish 1.2s ease-in-out 3}:root[data-skin="light"] .spctag.tastyb{color:#b0650a}.dexlen{color:var(--cyan)!important}
 .subwtag{font-size:11px;font-weight:400;color:var(--mute);margin-left:2px}
 .spctag{font-family:var(--f-pix);font-size:10px;padding:0 4px;border:1px solid currentColor;color:var(--gold);vertical-align:middle}.spctag.bound{color:var(--pink)}
 .keeper .bal{font-family:var(--f-pix);font-weight:400;font-size:13px;color:var(--gold)}
@@ -1606,6 +1607,11 @@ COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}
 const TASTY='tt_',TASTY_X=1.5,TASTY_BASE=5;
 const tastyOf=c=>({hp:c.hp>=999?999:Math.round(c.hp*TASTY_X),en:c.en>=999?999:Math.round(c.en*TASTY_X),xp:Math.round((c.xp||0)*TASTY_X),buff:c.buff?Object.fromEntries(Object.entries(c.buff).map(([k,v])=>[k,Math.round(v*TASTY_X)])):null,bmin:c.bmin});
 const dishBase=id=>(ITEMS[id]&&ITEMS[id].tasty)||id;
+// "[맛있는!]" in any text on screen is shown as a glowing tag like the fishing "새로운!" one (names stay plain text for logs, toasts and tooltips)
+const TASTY_MARK='[맛있는!]';
+function tastyBadges(root){if(!root||!root.ownerDocument&&root!==document)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.nodeValue.includes(TASTY_MARK)&&!n.parentNode.closest('option,select,textarea,script,style,.spctag')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});
+  const hits=[];while(w.nextNode())hits.push(w.currentNode);hits.forEach(n=>{const parts=n.nodeValue.split(TASTY_MARK),f=document.createDocumentFragment();parts.forEach((t,i)=>{if(i){const b=document.createElement('span');b.className='spctag tastyb';b.textContent='맛있는!';f.append(b)}const tx=i?t.replace(/^ /,'\u00a0'):t;if(tx)f.append(tx)});n.replaceWith(f)})}
+{let q=false;new MutationObserver(()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;tastyBadges(document.body)})}).observe(document.documentElement,{childList:true,subtree:true,characterData:true})}
 COOK.forEach(c=>{const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf};
   const tc=tastyOf(c),tb=tc.buff?' · '+Object.entries(tc.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')+` (${tc.bmin}분)`:'';
   ITEMS[TASTY+c.id]=Object.assign({},ITEMS[c.id],{n:'[맛있는!] '+c.n,tasty:c.id,hp:tc.hp,en:tc.en,d:c.d+' 유난히 맛있게 됐습니다.'+(tc.hp>=999?' 체력·에너지 완전 회복':` 체력 +${tc.hp} · 에너지 +${tc.en}`)+tb})});
