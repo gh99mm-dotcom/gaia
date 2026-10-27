@@ -776,6 +776,28 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .reltier .cnt{font-size:11.5px;color:var(--c)}.reltier.mine{box-shadow:0 0 0 1px var(--c)}
 .reltier .hint{color:var(--text);opacity:.75}
 @media (max-width:560px){.reltiers{grid-template-columns:1fr 1fr}}
+.rkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
+.rkcard{--c:var(--gold);display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--c);min-width:0}
+.rkcard>.lbl{color:var(--c)!important}
+.rktop{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:stretch}
+.rkport{height:124px;display:flex;align-items:flex-end;justify-content:center;border:2px solid var(--c);background:radial-gradient(circle at 50% 65%,color-mix(in srgb,var(--c) 22%,transparent) 0 52%,transparent 53%),var(--deep);overflow:hidden;padding-bottom:4px}
+.rkport img{max-height:100%;width:auto}
+.rkhead{display:flex;flex-direction:column;justify-content:center;gap:6px;min-width:0}
+.rkhead .rk1{font-size:18px;color:var(--c);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.rkhead .namebtn{font-size:15px;font-weight:700;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rkhead .namebtn::before{content:'〈 ';color:var(--c)}.rkhead .namebtn::after{content:' 〉';color:var(--c)}
+.rkhead .rkv{color:var(--mute);font-size:13px}
+.rklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.rklist li{display:grid;grid-template-columns:30px 34px minmax(0,1fr) auto;align-items:center;gap:6px;padding:2px 4px}
+.rklist li.me{background:color-mix(in srgb,var(--me-name) 16%,transparent);outline:1px solid color-mix(in srgb,var(--me-name) 55%,transparent)}
+.rklist .no{font-weight:700;color:var(--mute);text-align:right}
+.rklist li:nth-child(1) .no{color:#c9d1dc}.rklist li:nth-child(2) .no{color:#d49a6a}
+.rkface{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:var(--deep);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.rkface img{width:26px;height:auto}
+.rklist .namebtn{text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rklist b{font-size:13px;white-space:nowrap}
+.rkmine{font-size:13px;color:var(--mute);border-top:1px dashed var(--line);padding-top:6px}
+@media (max-width:900px){.rkgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}@media (max-width:620px){.rkgrid{grid-template-columns:minmax(0,1fr)}}
 :root[data-skin="light"] .relmap{background:radial-gradient(ellipse at 50% 50%,#fbfaf7 0 35%,var(--deep) 75%)}
 :root[data-skin="light"] .rellab{background:rgba(251,250,247,.94)}
 .relnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel);border:2px solid var(--ink);padding:3px 5px 2px;cursor:pointer;color:var(--text);font:inherit;z-index:2}
@@ -1980,7 +2002,7 @@ async function connect(){
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   db.collection('gifts').where('from','==',uid).onSnapshot(sn=>{MYTR=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>g.kind==='trade').sort((a,b)=>(+b.at||0)-(+a.at||0));if(mailView)renderPanel()},()=>{});
   farmLoad();
-  db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship')renderPanel()},()=>{});
+  db.collection('shipdon').onSnapshot(sn=>{SHIPDON=sn.docs.map(d=>d.data());if(tab==='ship'||(tab==='social'&&socTab==='rank'))renderPanel()},()=>{});
   db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
     // every notice sent from the admin side (adm:true) that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
@@ -4791,6 +4813,19 @@ function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const ot
   const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="profopen" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
   return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
   <span class="hint">선 위 글자는 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>이고, 선 색깔이 관계를 나타냅니다${compact?'':'(아래 카드 참고)'}. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 한 번)</span>`}
+/* rankings: level, life level (sum of the four) and ship-repair contribution */
+const RANKS=[['lv','레벨 랭킹','var(--gold)'],['life','생활레벨 랭킹','var(--green)'],['don','기여도 랭킹','var(--cyan)']];
+function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick);let rows;
+  if(k==='lv')rows=all.map(([id,p])=>[id,p,(p.lvl||1)*1e9+(p.xp||0),`LV.${p.lvl||1}`]);
+  else if(k==='life')rows=all.map(([id,p])=>{const lx=p.lx||{},s=LIFE.reduce((a,[q])=>a+lifeLv(lx[q]),0),x=LIFE.reduce((a,[q])=>a+(lx[q]||0),0);return[id,p,s*1e9+x,`생활 LV.${s}`]});
+  else if(k==='don'){const m={};SHIPDON.forEach(d=>{if(d.uid)m[d.uid]=(m[d.uid]||0)+(+d.n||0)});rows=all.filter(([id])=>m[id]>0).map(([id,p])=>[id,p,m[id],`재료 ${m[id].toLocaleString()}개`])}
+  return rows.sort((a,b)=>b[2]-a[2])}
+function rankCard([k,n,c]){const rows=rankRows(k),top=rows[0],mi=rows.findIndex(r=>r[0]===uid);
+  const nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'단원')}${id===uid?' (나)':''}</button>`;
+  return`<div class="rkcard" style="--c:${c}"><span class="lbl">${n}</span>${top?`<div class="rktop"><div class="rkport">${meImg(4,top[1])}</div><div class="rkhead"><span class="rk1">랭킹 1위</span>${nm(top[0],top[1])}<span class="rkv">${top[3]}</span></div></div>
+   ${rows.length>1?`<ol class="rklist">${rows.slice(1,10).map(([id,p,,v],i)=>`<li class="${id===uid?'me':''}"><span class="no">${i+2}위</span><span class="rkface">${headImg(2,p)}</span>${nm(id,p)}<b>${v}</b></li>`).join('')}</ol>`:''}
+   ${mi>=10?`<div class="rkmine">내 순위 <b>${mi+1}위</b> · ${rows[mi][3]}</div>`:''}`:'<p class="hint">아직 순위에 오른 단원이 없습니다.</p>'}</div>`}
+function socRank(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">개척단 랭킹</b><span class="hint">이름을 누르면 프로필이 열립니다</span></div><div class="rkgrid">${RANKS.map(rankCard).join('')}</div>`}
 function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">단원을 누르면 그 단원의 프로필이 열립니다</span></div>${relMapHTML(uid,false)}${relTiersHTML()}`}
 // one card per relationship tier, with how many crew I currently feel that way about
 function relTiersHTML(){const mine=orgAll().filter(([id])=>id!==uid).map(([id])=>affTier(affOf(P,id)));
@@ -4841,8 +4876,8 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
 function renderSocial(){
   if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
-  return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='dm'?socDm():padPhone(socPad()))}
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['crew','조직도'],['rel','관계도'],['rank','랭킹']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='rank'?socRank():socTab==='dm'?socDm():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>${loungeHTML()}</div>`;
 function afterSocialRender(){if(tab==='social'&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}if(tab==='social'&&socTab==='pad'){const l=$('#lgLog');if(l)l.scrollTop=l.scrollHeight}}
