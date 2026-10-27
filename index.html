@@ -936,6 +936,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .fishres-r{display:flex;flex-direction:column;gap:6px;min-width:0}.fishres-r textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:56px;font:inherit;font-size:13px}
 @media (max-width:620px){.card.result.fishres{grid-template-columns:minmax(0,1fr)}}
 .fishlen{margin:2px 0}.fishlen b{color:var(--cyan)}.fishlen.big b{color:var(--gold);font-size:15px}.spctag.rec{color:var(--green)}.spctag.newfish{color:#ff8fd0;box-shadow:0 0 6px #ff4fd855;animation:newfish 1.2s ease-in-out 3}@keyframes newfish{50%{transform:scale(1.12)}}:root[data-skin="light"] .spctag.newfish{color:#c0306a}.dexlen{color:var(--cyan)!important}
+.subwtag{font-size:11px;font-weight:400;color:var(--mute);margin-left:2px}
 .spctag{font-family:var(--f-pix);font-size:10px;padding:0 4px;border:1px solid currentColor;color:var(--gold);vertical-align:middle}.spctag.bound{color:var(--pink)}
 .keeper .bal{font-family:var(--f-pix);font-weight:400;font-size:13px;color:var(--gold)}
 .slist{display:flex;flex-direction:column;gap:5px;max-height:420px;overflow:auto}
@@ -1738,7 +1739,9 @@ const PET_FX={atk:'공격력',hp:'최대 체력',crit:'치명타',def:'방어력
 const petChips=p=>`<span class="fxchips">${Object.entries(p.fx).map(([k,v])=>`<span class="fxc ${k==='gather'?'luck':k}">${PET_FX[k]} +${v}%</span>`).join('')}</span>`;
 const GF=k=>{let v=0;for(const id of accOf()){const f=accById(id);if(f&&f.fx[k])v+=f.fx[k]}const w=P.wpn&&wpnById(P.wpn);if(w&&w.fx[k])v+=w.fx[k];return v};
 const petX=k=>1+PF(k)/100;
-const maxHp=()=>Math.round((60+P.lvl*12+(P.job==='nav'?30:0)+AS('vit')*8+GF('hp'))*petX('hp')), maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')), def=()=>Math.floor((Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+(P.job==='nav'?6:0)+GF('def')+BUFF('def'))*petX('def')),
+// 항해사 (tank): +20% max HP and +30% DEF, never less than the old flat +30 HP / +6 DEF
+const NAV_HP=.2,NAV_DEF=.3,navAdd=(base,pct,min)=>P.job==='nav'?Math.max(min,Math.round(base*pct)):0;
+const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+navAdd(b,NAV_HP,30))*petX('hp'))}, maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')), def=()=>{const b=Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+GF('def')+BUFF('def');return Math.floor((b+navAdd(b,NAV_DEF,6))*petX('def'))},
 // critical chance in %: agility, gear and pet
 critPct=()=>AS('agi')+GF('crit')+PF('crit'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);if(!raidLocked())P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
@@ -1846,7 +1849,7 @@ function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.q
 /* ───────── profile: titles, jobs, life levels ───────── */
 /* three crew roles: 기관사 fights and fixes, 항해사 scouts and takes hits, 의무원 heals and backs the party up */
 const JOBS={mech:{n:'기관사',r:'전투 · 엔지니어',d:'공격력 +15% · 무기 강화 재료 30% 절약 · 원정 우주선 자재 +1'},
- nav:{n:'항해사',r:'탐사 · 탱커',d:'방어력 +6 · 최대 체력 +30 · 채집 로봇이 재료를 더 자주 가져옴 · 조사 이동 시간 25% 단축'},
+ nav:{n:'항해사',r:'탐사 · 탱커',d:'최대 체력 +20% · 방어력 +30% (최소 체력 +30 · 방어 +6) · 원정에서 몬스터의 공격을 3배 더 자주 받음 · 채집 로봇이 재료를 더 자주 가져옴 · 조사 이동 시간 25% 단축'},
  medic:{n:'의무원',r:'힐러 · 서포터',d:'음식 회복량 +50% (원정에서 동료에게 써도 적용) · 원정 전투에서 이길 때마다 파티 전원 체력 10% 회복 · 구조에 에너지가 들지 않고 구조한 단원은 체력 70%로 깨어남'}};
 const jobOf=p=>p&&p.job?JOBS[p.job]||JOBS[OLDJOB[p.job]]||null:null;
 const OLDJOB={fighter:'mech',engineer:'mech',guard:'nav',scout:'nav',angler:'nav',farmer:'medic'};
@@ -2393,7 +2396,7 @@ const rskLeft=(b,u,i)=>((b.cd||{})[u]||{})['s'+i]||0;
 // log line colours: skills gold, crew hitting monsters cyan, monsters hitting crew red, healing green
 function raidLogKind(r,l){if(l[0]==='[')return'sk';if(/회복|치료/.test(l))return'heal';const i=l.indexOf(' → ');if(i<0)return'';const who=l.slice(0,i);return Object.values(r.m||{}).some(m=>m&&m.nick&&who.startsWith(m.nick))?'atk':'hurt'}
 // monsters single out the tank: a navigator (항해사) is twice as likely as anyone else to be the target
-const RAID_TANK_W=2;
+const RAID_TANK_W=3;
 function raidAggro(r,tg){const w=tg.map(u=>rJob(r.m[u])==='nav'?RAID_TANK_W:1),sum=w.reduce((a,b)=>a+b,0);let x=Math.random()*sum;for(let i=0;i<tg.length;i++){x-=w[i];if(x<0)return tg[i]}return tg[tg.length-1]}
 function raidHit(atkv,defv,crit){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
 // after any action: victory, wipe, or the next turn
@@ -4042,7 +4045,7 @@ function benchRows(k){const cr=P.cr||0;
   const price=pr=>`<span class="price">${img(IC.coin,null,2)}${pr.toLocaleString()}</span>`;
   const ownBtn=(own,act,k2,pr,cur,mat)=>`<div class="sbtns">${own?`<span class="hint">${cur?'장착 중':'보유 중'}</span>`:`<button class="btn sm gold" data-act="${act}" data-k="${k2}" ${cr>=pr&&hasMat(mat)?'':'disabled'}>구매</button>`}</div>`;
   let rows;
-  if(k==='wpn')rows=`<p class="hint" style="margin:0 0 4px">보조무기를 사서 장착하면 공격력이 바로 올라갑니다. 주무기인 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 보조무기들은 채집 로봇이 아주 드물게(3%) 찾아옵니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n}${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
+  if(k==='wpn')rows=`<p class="hint" style="margin:0 0 4px">보조무기를 사서 장착하면 공격력이 바로 올라갑니다. 주무기인 렌치 강화(+${P.wlv})는 그대로 함께 적용됩니다. 맨 아래 보조무기들은 채집 로봇이 아주 드물게(3%) 찾아옵니다.</p>`+WPNS.map(w=>{const own=(P.own||[]).includes(w.id),on=P.wpn===w.id;return`<div class="srow">${img(TPL[w.ic],w.t,2,w.drop?'legend':'')}<div class="sinfo"><b>${w.n} <span class="subwtag">보조무기</span>${w.drop?' <span class="lv">채집 전용</span>':''}</b><span class="hint">${w.d}</span>${own||w.drop?'':matHTML(w.mat)}</div>${w.drop?(own?'':'<span class="hint">미발견</span>'):price(w.price)}<div class="sbtns">${own?(on?`<button class="btn sm ghost" data-act="wpnoff">해제</button>`:`<button class="btn sm" data-act="wpnon" data-k="${w.id}">장착</button>`):w.drop?'':`<button class="btn sm gold" data-act="buywpn" data-k="${w.id}" ${cr>=w.price&&hasMat(w.mat)?'':'disabled'}>구매</button>`}</div></div>`}).join('');
   else{const worn=accOf();rows='<p class="hint" style="margin:0 0 4px">채집과 원정에서 모은 재료로 장신구를 만듭니다. 장신구는 두 개까지 낄 수 있고, 같은 장신구는 하나만 만들 수 있습니다.</p>'+ACC.map(f=>{const own=(P.own||[]).includes(f.id),slot=worn.indexOf(f.id),can=cr>=f.price&&hasMat(f.mat);
       const btn=slot>=0?`<button class="btn sm ghost" data-act="accoff" data-k="${slot}">빼기</button>`:own?`<button class="btn sm" data-act="accon" data-id="${f.id}" data-k="0">장신구1</button><button class="btn sm" data-act="accon" data-id="${f.id}" data-k="1">장신구2</button>`:`<button class="btn sm gold" data-act="accmake" data-id="${f.id}" ${can?'':'disabled'}>제작</button>`;
       const g=accGrade(f);return`<div class="srow accrow ag${g}"><span class="accico">${accImg(f.id,3)}</span><div class="sinfo"><b>${f.n} <span class="ag">${ACC_GRADE[g][0]}</span>${slot>=0?` <span class="lv">장신구${slot+1}</span>`:''}</b>${accChips(f)}${own?'':matHTML(f.mat)}</div>${own?'<span></span>':price(f.price)}<div class="sbtns">${btn}</div></div>`}).join('');
