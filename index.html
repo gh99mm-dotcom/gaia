@@ -510,6 +510,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .faintbar b{font-family:var(--f-pix);font-weight:400;color:var(--red)}
 .fainttag{color:var(--red);font-weight:700}
 .crew li .rescue{padding:2px 6px;font-size:12px;margin-left:4px}
+.seasonbox{border:1px solid color-mix(in srgb,var(--red) 50%,transparent);padding:10px}.seasongo{background:var(--red);color:#fff}
 .joblegend{display:flex;gap:8px;font-size:11px;margin:-2px 0 4px}.joblegend i{font-style:normal}.joblegend i::before{content:'■ ';font-size:9px}
 .crew li.downrow .rescue{margin-left:auto}
 .sigbox{display:flex;gap:12px;align-items:center}
@@ -1181,7 +1182,18 @@ async function signup(id,pw,code){
   try{const bt=writeBatch(fs);bt.set(doc(fs,'members',c.user.uid),{id,code:admin?'':code,at:Date.now()});if(!admin)bt.delete(doc(fs,'invites',code));await bt.commit()}
   catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'초대코드가 방금 다른 사람에게 사용됐습니다. 운영자에게 새 초대장을 받아 주십시오.'}}
 }
-$('#authForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('#authId').value.trim().toLowerCase(),pw=$('#authPw').value,btn=$('#authGo');
+// signed in but no member record (records were reset, or the account was let go): rejoin with a fresh invite under the same ID
+let rejoinU=null;
+function showRejoin(u){rejoinU=u;modeA='rejoin';['#authId','#authPw','#authPw2'].forEach(q=>$(q).hidden=true);const tabs=document.querySelector('#authForm .dtabs');if(tabs)tabs.hidden=true;$('#authCode').hidden=false;$('#authCode').value='';
+  $('#authTitle').textContent='다시 합류';$('#authGo').textContent='새 초대코드로 합류하기';$('#authGate').hidden=false;
+  say(`${(u.email||'').split('@')[0]} 아이디의 승선 기록이 없습니다. 테스트가 끝나 기록이 초기화됐거나 운영자가 내보낸 계정입니다. 새 초대코드를 적으면 같은 아이디로 다시 합류할 수 있습니다.`,1);
+  if(!$('#authOther')){const b=document.createElement('button');b.type='button';b.id='authOther';b.className='btn sm ghost';b.textContent='다른 아이디로 로그인';b.addEventListener('click',async()=>{await signOut(auth);location.reload()});$('#authGo').after(b)}
+  setTimeout(()=>$('#authCode').focus(),50)}
+async function rejoin(code){const u=rejoinU;if(!u)return;if(code.length!==8)throw{msg:'초대코드 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'초대코드가 올바르지 않거나 이미 사용됐습니다.'};
+  try{const bt=writeBatch(fs);bt.set(doc(fs,'members',u.uid),{id:(u.email||'').split('@')[0],code,at:Date.now()});bt.delete(doc(fs,'invites',code));await bt.commit()}catch(e){throw{msg:'초대코드가 방금 다른 사람에게 사용됐습니다. 운영자에게 새 초대장을 받아 주십시오.'}}}
+$('#authForm').addEventListener('submit',async e=>{e.preventDefault();
+  if(modeA==='rejoin'){const btn=$('#authGo');btn.disabled=true;say('합류하는 중…');try{await rejoin(normCode($('#authCode').value));say('합류했습니다! 정거장으로 들어갑니다.');setTimeout(()=>location.reload(),600)}catch(x){say(x.msg||'합류하지 못했습니다.',1);btn.disabled=false}return}
+  const id=$('#authId').value.trim().toLowerCase(),pw=$('#authPw').value,btn=$('#authGo');
   if(!ID_RE.test(id)){say('아이디는 영문 소문자·숫자·_ 4~16자로 적어 주십시오.',1);return}if(!pw){say('비밀번호를 적어 주십시오.',1);return}
   btn.disabled=true;
   if(modeA==='signup'){const code=normCode($('#authCode').value);
@@ -1199,7 +1211,7 @@ onAuthStateChanged(auth,async u=>{
   const admin=u.email===idEmail(ADMIN_ID);
   let member=false;try{member=(await getDoc(doc(fs,'members',u.uid))).exists()}catch(e){}
   if(!member&&admin){try{await setDoc(doc(fs,'members',u.uid),{id:ADMIN_ID,code:'',at:Date.now()});member=true}catch(e){}}
-  if(!member){$('#authGate').hidden=false;say('초대장으로 가입이 끝나지 않았거나 운영자가 내보낸 계정입니다. 운영자에게 초대장을 받아 다시 가입해 주십시오.',1);await signOut(auth);return}
+  if(!member){showRejoin(u);return}
   $('#authGate').hidden=true;started=true;ME=u;if(!window.__fbNick)window.__fbNick=u.displayName||'';
   const lb=$('#logoutBtn');if(lb){lb.hidden=false;lb.title=(u.email||'').split('@')[0]}
   const lobby=Object.assign(makeRoom('lobby'),{join:async n=>makeRoom(String(n).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,80))});
@@ -1576,7 +1588,7 @@ let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;
 /* ───────── player ───────── */
 const LS='nebula-outpost-solo-v1';
 const TICK=20e3;
-function newPlayer(nick){return{nick,lvl:1,xp:0,hp:72,en:32,t:Date.now(),wlv:0,cr:50,rod:0,suit:0,tk:0,inv:{seed_pot:2,seed_berry:1,fc0:2,pot:1},field:[],fu:2,fv:3,water:12,dex:{},joined:Date.now()}}
+function newPlayer(nick){return{nick,lvl:1,xp:0,hp:72,en:32,t:Date.now(),wlv:0,cr:50,rod:0,suit:0,tk:0,inv:{seed_pot:2,seed_berry:1,fc0:2,pot:1},field:[],fu:2,fv:3,water:12,dex:{},joined:Date.now(),season:window.__season||0}}
 let P=newPlayer('새 단원');
 const AS=k=>Math.max(2,(P.as&&P.as[k])||0);
 const CRAFT={
@@ -1837,6 +1849,31 @@ const TITLES=[
 const st=k=>(P.st&&P.st[k])||0;
 let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
 // managers: crew the admin lets into 마이룸 before the life-support section is repaired
+/* ───────── season reset (end of the test period) ─────────
+   boss/season {n}: the admin raises n. Every open game notices, stops saving, deletes the records only its owner may delete
+   (whispers it sent, gifts and farm help to or from it, its rescue signal) and reloads; the admin's game then wipes everything
+   shared. Anyone signing in afterwards has no member record any more and rejoins with a fresh invite code under the same ID. */
+var SEASON=0,seasonLock=false,seasonBusy=false;
+const seasonRef=()=>db.doc('boss/season');
+async function seasonCleanMine(){const gone=async(col,q)=>{try{const sn=await q.get();await Promise.all(sn.docs.map(d=>db.doc(col+'/'+d.id).delete().catch(()=>{})))}catch(e){}};
+  await Promise.all([(async()=>{try{const sn=await db.collection('dm').where('users','array-contains',uid).get();await Promise.all(sn.docs.filter(d=>d.data().from===uid).map(d=>db.doc('dm/'+d.id).delete().catch(()=>{})))}catch(e){}})(),gone('gifts',db.collection('gifts').where('to','==',uid)),gone('gifts',db.collection('gifts').where('from','==',uid)),
+    gone('farmhelp',db.collection('farmhelp').where('to','==',uid)),gone('farmhelp',db.collection('farmhelp').where('from','==',uid)),db.doc('rescues/'+uid).delete().catch(()=>{})])}
+let seasonSeen=false,seasonFromDoc=false;
+// stop for good: no more saving, clear what only I can clear, then sign out so I can't slip back in before the wipe is done
+async function seasonQuit(){seasonLock=true;clearTimeout(saveT);dirty=false;toast('테스트 기록이 초기화됩니다. 잠시 뒤 다시 로그인해 주십시오.');await seasonCleanMine();setTimeout(()=>{if(window.__fbLogout)window.__fbLogout();else location.reload()},1200)}
+function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn=>{const n=sn.exists?(+sn.data().n||0):0,first=!seasonSeen;seasonSeen=true;SEASON=n;window.__season=n;
+  if(!n||(P.season||0)===n||seasonLock)return;
+  if(isAdmin&&seasonBusy)return;                       // the admin's own reset is already doing the work
+  // a brand-new character made before the season number reached me: just take the number
+  if(first&&!seasonFromDoc){P.season=n;save();return}
+  // an older character (signed in mid-reset) or the admin resetting while I play: leave
+  seasonQuit()},()=>{})}
+const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','guest','shipdon','farmlog','parties','duel','farm','boss'];
+function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox"><span class="lbl">Season · 테스트 기록 초기화</span>
+  <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 단원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
+  <span class="hint">로그인 아이디와 비밀번호는 남아서, 단원들은 같은 아이디로 로그인한 뒤 <b>새 초대코드</b>를 적어 다시 합류합니다. 아이디까지 지우려면 Firebase 콘솔의 Authentication에서 사용자를 삭제하십시오.</span>
+  <div class="row" style="gap:6px;flex-wrap:wrap"><input id="seasonTxt" class="sel" maxlength="10" placeholder="초기화 라고 입력" style="width:150px" aria-label="확인 문구"><button class="btn sm seasongo" data-act="seasonreset" ${seasonBusy?'disabled':''}>${seasonBusy?'초기화하는 중…':'모든 기록 초기화'}</button></div>
+  ${SEASON?`<span class="hint">지금 시즌 ${SEASON}</span>`:''}</div>`}
 function admStaffHTML(others){const list=STAFF.filter(id=>PLAYERS[id]),rest=others.filter(([id])=>!STAFF.includes(id));
   return`<div class="info-sec"><span class="lbl">My room · 마이룸 공개</span><div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="hint">${ROOM_LINK?`<b style="color:var(--gold)">우주선과 연동 중</b> · 생명 유지 장치를 고치기 전에는 운영자와 관리자만 마이룸에 들어갈 수 있습니다.${roomOpen()?' (지금은 이미 수리가 끝나 모두에게 열려 있습니다)':''}`:'<b style="color:var(--green)">연동 꺼짐</b> · 우주선 수리와 상관없이 모든 단원이 마이룸에 들어갈 수 있습니다.'}</span><button class="btn sm ${ROOM_LINK?'alt':'gold'}" data-act="admroomlink" aria-pressed="${ROOM_LINK}">${ROOM_LINK?'연동 끄기 (모두에게 공개)':'연동 켜기 (수리 후 공개)'}</button></div></div>
   <div class="info-sec"><span class="lbl">Managers · 관리자 명단</span><span class="hint">관리자로 임명한 단원은 생명 유지 장치를 고치기 전에도 마이룸을 미리 볼 수 있습니다.</span>
@@ -1863,7 +1900,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보냅니다. 지금 접속하지 않은 단원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}`:''}`}
+   ${admStaffHTML(others)}${seasonAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -1905,7 +1942,7 @@ function renderLog(){$('#log').innerHTML=LOG.length?LOG.map(l=>`<li><time>${hhmm
 let mode='boot',db=null,room=null,uid=null,myRef=null;
 let PLAYERS={},DELP={},CHAT=[],PEERS=[],chimeSeen=null;
 let saveT=null,saving=false,dirty=false;
-function save(){
+function save(){if(seasonLock)return;
   if(mode==='solo'){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}return}
   if(mode!=='online')return;dirty=true;clearTimeout(saveT);saveT=setTimeout(flush,350);
 }
@@ -1928,9 +1965,9 @@ async function connect(){
   const canW=await user.can('data.write');
   if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
   mode='online';myRef=db.doc('players/'+uid);
-  try{const s=await myRef.get();if(s.exists&&!s.data().deleted){P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
+  try{const s=await myRef.get();if(s.exists&&!s.data().deleted){seasonFromDoc=true;P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
-  renderNet();renderAll();
+  renderNet();renderAll();seasonWatch();
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;adminRefresh();if(meDel&&P&&!P._fresh)charDeleted();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},()=>{});
   db.collection('grants').onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
@@ -4395,6 +4432,15 @@ const A={
  admbosspick(d){if(!isAdmin)return;bossPick=Math.max(0,Math.min(BOSS_KINDS.length-1,+d.k||0));renderAdminAll()},
  admboss(){if(!isAdmin)return;const lv=Math.max(1,Math.min(99,Math.round(+$('#admBossLv').value)||30)),K=BOSS_KINDS[bossPick];bossSummon(bossPick,lv).then(nx=>{if(!nx){toast('이미 침략자가 출현 중입니다.');return}toast(`${K.n} Lv.${lv}을(를) 소환했습니다.`);sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`,true,'siren');renderAdminAll()}).catch(()=>toast('소환하지 못했습니다.'))},
  admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
+ async seasonreset(){if(!isAdmin||mode!=='online'||seasonBusy)return;const t=($('#seasonTxt')||{}).value||'';if(t.trim()!=='초기화'){toast('확인 칸에 초기화 라고 적어 주십시오.');return}
+  seasonBusy=true;renderAdminAll();const next=(SEASON||0)+1;
+  try{await bossTx(seasonRef(),()=>({n:next,at:Date.now(),by:uid}))}catch(e){seasonBusy=false;toast('초기화를 시작하지 못했습니다.');renderAdminAll();return}
+  toast('단원들의 화면을 정리하는 중입니다… (약 8초)');await seasonCleanMine();await new Promise(r=>setTimeout(r,8000));
+  seasonLock=true;let n=0;
+  for(const col of SEASON_WIPE){try{const sn=await db.collection(col).get();const ids=sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid));
+    for(let i=0;i<ids.length;i+=40){await Promise.all(ids.slice(i,i+40).map(id=>db.doc(col+'/'+id).delete().then(()=>n++).catch(()=>{})))}}catch(e){}}
+  try{await db.doc('members/'+uid).delete()}catch(e){}
+  toast(`초기화를 마쳤습니다. 기록 ${n}건을 지웠습니다. 새로 시작합니다.`);setTimeout(()=>location.reload(),2500)},
  admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 단원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
  admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'단원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
  admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
@@ -4610,7 +4656,7 @@ function duelCatch(tr,id,sz){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
