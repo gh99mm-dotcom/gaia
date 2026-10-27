@@ -1647,6 +1647,10 @@ const LS='nebula-outpost-solo-v1';
 const TICK=20e3;
 function newPlayer(nick){return{nick,lvl:1,xp:0,hp:72,en:32,t:Date.now(),wlv:0,cr:50,rod:0,suit:0,tk:0,inv:{seed_pot:2,seed_berry:1,fc0:2,pot:1},field:[],fu:2,fv:3,water:12,dex:{},joined:Date.now(),season:window.__season||0}}
 let P=newPlayer('새 단원');
+/* listeners only one screen needs: opened when you arrive there, closed when you leave, so busy chats and logs elsewhere cost nothing */
+const TAB_SUBS=[];
+const tabSub=(want,open)=>TAB_SUBS.push({want,open,un:null});
+function tabSubsSync(){TAB_SUBS.forEach(s=>{const w=mode==='online'&&!!db&&s.want();if(w&&!s.un)s.un=s.open()||(()=>{});else if(!w&&s.un){try{s.un()}catch(e){}s.un=null}})}
 const AS=k=>Math.max(2,(P.as&&P.as[k])||0);
 const CRAFT={
  head:{n:'머리',ic:'gearH',list:[
@@ -2047,7 +2051,7 @@ async function connect(){
   db.collection('gifts').where('from','==',uid).onSnapshot(sn=>{MYTR=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>g.kind==='trade').sort((a,b)=>(+b.at||0)-(+a.at||0));if(mailView)renderPanel()},()=>{});
   farmLoad();
   shipSubscribe();
-  db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{});
+  tabSub(()=>tab==='fish',()=>db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{}));
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
     // every notice sent from the admin side (adm:true) that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
     const adm=CHAT.filter(m=>m.adm);if(chimeSeen){const nw=adm.filter(m=>!chimeSeen.has(m.id));if(nw.length){if(nw.some(m=>m.snd==='siren'))sfxSiren();else sfxChime();toast(String(nw[nw.length-1].text||'').slice(0,60))}}chimeSeen=new Set([...(chimeSeen||[]),...adm.map(m=>m.id)]);renderChat()},()=>{});
@@ -2199,10 +2203,10 @@ function farmPut(i,pl){pl=pl?Object.assign({},POD0,pl):null;FARM.pods[i]=pl;if(m
 // counts change by server-side increments so two crew members touching the store at once never overwrite each other
 function farmInc(path,field,n){const r=db.doc(path);return r.inc?r.inc({[field]:n}):r.get().then(s=>farmMerge(path,{[field]:((s.exists&&+s.data()[field])||0)+n}))}
 function storeAdd(id,n){FSTORE[id]=Math.max(0,(FSTORE[id]||0)+n);if(!FSTORE[id])delete FSTORE[id];if(mode==='online')farmInc('farm/store',id,n).catch(()=>{});else farmSave()}
+tabSub(()=>tab==='farm',()=>db.collection('farmlog').orderBy('at','desc').limit(30).onSnapshot(sn=>{FLOG=sn.docs.map(d=>d.data());if(tab==='farm')renderPanel()},()=>{}));
 function farmLoad(){if(farmOn)return;
   if(mode==='online'){farmOn=true;
     db.doc('farm/pods').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FARM=farmShape(d.xu,d.ore,Array.from({length:FIELD_N},(_,i)=>d['p'+i]||null),d);renderNav();if(tab==='farm')renderPanel()},()=>{});
-    db.collection('farmlog').orderBy('at','desc').limit(30).onSnapshot(sn=>{FLOG=sn.docs.map(d=>d.data());if(tab==='farm')renderPanel()},()=>{});
     db.doc('farm/store').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FSTORE={};for(const k in d)if(ITEMS[k]&&+d[k]>0)FSTORE[k]=+d[k];if(tab==='farm')renderPanel()},()=>{})}
   else if(!FARM.local){const s=P.sfarm||{};FARM=farmShape(s.xu,s.ore,(s.pods||[]).slice(),s);FSTORE=Object.assign({},s.store);FLOG=(s.log||[]).slice();FARM.local=1}}
 function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge='';
@@ -2490,10 +2494,7 @@ let RAIDS_ALL=[];const lobbyAlive=v=>raidNow()-Math.max(+v.at||0,...Object.value
 function raidRefilter(){const before=RAIDS.map(v=>v.id).join();RAIDS.length=0;RAIDS_ALL.forEach(v=>{if(lobbyAlive(v))RAIDS.push(v)});return before!==RAIDS.map(v=>v.id).join()}
 setInterval(()=>{if(mode==='online'&&raidRefilter()&&tab==='raid')renderPanel()},20e3);
 // parties already on their way: shown in the lobby to watch, listened to only while the 원정 lobby is open (each turn rewrites the party)
-let RAIDS_RUN=[],raidRunUn=null;
-function raidRunWatch(){const want=mode==='online'&&tab==='raid'&&!MYRAID;
-  if(want&&!raidRunUn)raidRunUn=db.collection('parties').where('state','==','run').onSnapshot(sn=>{RAIDS_RUN=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{})||(()=>{});
-  else if(!want&&raidRunUn){raidRunUn();raidRunUn=null;RAIDS_RUN=[]}}
+let RAIDS_RUN=[];
 const runAlive=v=>v.phase!=='end'&&lobbyAlive(v);
 function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).sort((a,b)=>(b.at||0)-(a.at||0));
   return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),cur=Math.min(x.step||1,RAID_STEPS),mp=raidMapImg(zz.id,cur,false,RAID_STEPS,true),boss=cur===RAID_STEPS;
@@ -2501,10 +2502,11 @@ function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).sort((a,b)=>(b.
      <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'단원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
       <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'단원')}</em><small>Lv.${m.lvl||'?'}</small>${raidBar(Math.max(0,m.hp||0),m.maxHp||1,'var(--green)')}</span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
-function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));raidRefilter();if(tab==='raid')renderPanel()},()=>{});
+function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));raidRefilter();if(tab==='raid')renderPanel()},()=>{}));
+  tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','run').onSnapshot(sn=>{RAIDS_RUN=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{}));
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
-  clearInterval(raidTimer);raidTimer=setInterval(()=>{raidTick();raidRunWatch()},400)}
+  clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
 /* ---- lobby actions ---- */
 async function raidCreate(solo){const z=RAID_ZONES.find(x=>x.id===raidSel);if(!z||mode!=='online')return;if(!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!spend(RAID_EN))return;
   const id='p'+raidNow().toString(36)+Math.random().toString(36).slice(2,6),me=raidMe(),r={host:uid,hostN:P.nick,zone:z.id,ids:[uid],m:{[uid]:me},state:'lobby',at:raidNow(),seed:1+Math.floor(Math.random()*2e9),step:0,seq:0,loot:{},hb:{[uid]:raidNow()}};
@@ -2638,8 +2640,8 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
   P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 단원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
   bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint()},()=>{});
-  bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{});
-  loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='social'&&socTab==='pad')loungePaint()},()=>{});
+  tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
+  tabSub(()=>tab==='social'&&socTab==='pad',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='social'&&socTab==='pad')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
   staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
@@ -4321,7 +4323,7 @@ let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
 const KEEP_FOCUS=new Set(['rcIn','fishTxt','fsQty-store','fsQty-bag']);
-function renderPanel(){const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
+function renderPanel(){tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
   renderPanel0();
