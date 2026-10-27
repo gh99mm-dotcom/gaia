@@ -2325,6 +2325,11 @@ function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
 let raidWid=null;
 // battle sounds from what changed between two snapshots: a monster losing health = a hit landing, a crew member losing health = taking a blow
+// party room: a bright "칭" when someone joins the lobby, a "차킹" (latch + ring) when the party sets off
+function raidLobbySfx(a,b){if(!a||!b||a.id!==b.id)return;if(a.state==='lobby'&&b.state==='lobby'&&(b.ids||[]).length>(a.ids||[]).length)sfxPartyJoin();else if(a.state==='lobby'&&b.state==='run')sfxPartyGo()}
+function sfxPartyJoin(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'sine',2637,null,t,.45,.16);tone(a,'triangle',3951,null,t+.005,.32,.07);noiseBurst(a,t,.025,'highpass',6000,6000,.08,3)}
+function sfxPartyGo(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.07,'bandpass',2600,1800,.32,2);tone(a,'square',180,90,t,.06,.12);
+  tone(a,'sine',1760,null,t+.08,.7,.18);tone(a,'sine',2637,null,t+.085,.55,.1);tone(a,'triangle',3520,null,t+.09,.35,.05)}
 function raidSfx(a,b){if(!a||!b||!a.b||!b.b||a.id!==b.id||b.phase==='end'&&a.phase==='end')return;
   {const f=b.b.skfx,g=a.b.skfx;if(f&&(!g||g.id!==f.id)){sfxSkill(f.j);skillPop(f);return}}
   const mh=x=>(x.b.mons||[]).reduce((s,m)=>s+Math.max(0,m.hp),0),ph=(x,u)=>x.m&&x.m[u]?x.m[u].hp:0;
@@ -2355,7 +2360,7 @@ function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();rai
   if(mode==='online')rcUnsub=rcRef(id).onSnapshot(sn=>{const prev=RCHAT.length;RCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='raid'){const l=$('#rcLog');if(l){l.innerHTML=rcLogHTML();if(RCHAT.length>prev)l.scrollTop=l.scrollHeight}}},()=>{});
   raidUnsub=raidRef(id).onSnapshot(s=>{if(raidWid!==id)return;if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
     if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
-    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same)raidSfx(MYRAID,r);MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel()}},()=>{})}
+    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel()}},()=>{})}
 function raidSubscribe(){db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS.length=0;sn.docs.forEach(d=>{const v=d.data();if(raidNow()-(v.at||0)<30*60e3)RAIDS.push(Object.assign({id:d.id},v))});if(tab==='raid')renderPanel()},()=>{});
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
