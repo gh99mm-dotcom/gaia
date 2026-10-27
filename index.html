@@ -2033,6 +2033,12 @@ const TANK_BASE=90,TANK_STEP=30,TANK_LV=10,tankNeed=lv=>30+15*lv;
 function farmMerge(path,obj){const r=db.doc(path);return r.update(obj).catch(()=>r.get().then(s=>r.set(Object.assign({},s.exists?s.data():{},obj))))}
 // every key is written each time, because a merge write would otherwise keep stale fields (an old seed) on the server
 const POD0={til:0,seed:null,got:0,wet:0,fert:0,by:null,byN:null};
+// several crew members can press the same pod at once: every pod change goes through one transaction on farm/pods,
+// so only the first press wins and the others are told what happened (fn must be pure — it can re-run on conflict)
+const podBusy={};
+function podTx(i,fn){if(mode!=='online'){const nx=fn(fpod(i));if(!nx)return Promise.resolve(null);farmPut(i,nx);return Promise.resolve(FARM.pods[i])}
+  let out=null;return bossTx(db.doc('farm/pods'),d=>{d=d||{};const nx=fn(d['p'+i]||null);if(!nx)return null;out=Object.assign({},POD0,nx);d['p'+i]=out;return d}).then(r=>{if(!r)return null;FARM.pods[i]=out;return out})}
+function podAct(i,fn,ok,no){if(podBusy[i])return;podBusy[i]=1;podTx(i,fn).then(nx=>{podBusy[i]=0;if(nx)ok(nx);else no();commit()}).catch(()=>{podBusy[i]=0;no(true);toast('농장에 기록하지 못했습니다. 잠시 뒤 다시 시도해 주십시오.');commit()})}
 function farmPut(i,pl){pl=pl?Object.assign({},POD0,pl):null;FARM.pods[i]=pl;if(mode==='online')farmMerge('farm/pods',{['p'+i]:pl}).catch(()=>toast('농장에 기록하지 못했습니다. 잠시 뒤 다시 시도해 주십시오.'));else farmSave()}
 // counts change by server-side increments so two crew members touching the store at once never overwrite each other
 function farmInc(path,field,n){const r=db.doc(path);return r.inc?r.inc({[field]:n}):r.get().then(s=>farmMerge(path,{[field]:((s.exists&&+s.data()[field])||0)+n}))}
@@ -2096,9 +2102,10 @@ function renderFarm(){
   <div class="card tank tcard">${tankInner(Date.now()<FARM.refCd)}</div>${grow}</div>
   </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
-function harvestAt(i){sfxHarvest();const pl=fpod(i),it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(lb?1:0),back=Math.random()<.45;
-  farmPut(i,{til:1,wet:pl.wet&&isWet(pl)?pl.wet:0});storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
-  log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good');commit()}
+function harvestAt(i){let got=null;
+  podAct(i,cur=>{got=null;if(!cur||!cur.seed||stage(cur)!==3)return null;got=cur;return{til:1,wet:cur.wet&&isWet(cur)?cur.wet:0}},()=>{const pl=got,it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(lb?1:0),back=Math.random()<.45;sfxHarvest();
+    storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',10);gainXp(5);
+    log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good')},()=>toast('다른 단원이 먼저 수확했습니다.'))}
 // one picture per tier, from a plain work jumpsuit up to glowing power armour (suitgen.py)
 const SUIT_PNG=["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABnklEQVR42mNgGOmAkRTFCuJy/4lR9+DlI0aqO0BBXO5/TGo6UWqXzJ5JtCNYSAmBj5++MDAwMDB8/fYdp5r3b9+QFAUkOeDJ48cDnwZWzGtj+P/3L1b5y9fvMbT1zaddGli1sJvh39/fOB3AwMDAwMzGwRAWX0q0I5iIdcCDl48Yw+JL8aq5fP0eSZaT5AAYuHTl9sClAVhUVBUlYpUjNf5xOgBbgfPg5SNGZHF0R7T1zcepFl8hxYjN8oLySgyNEzrbGbCJYwP41E7obEdxBNFpgFjLSVWLtSD6+v0Hw7fvP+H8F8+eMejqaML5X75+xWkgDzc3VjNg5pBdEn79/oOBgYGB4dv3nwx/fv+EFsk/UNS8ef2KQVlFleHFs2cMSsqKtMmGMGBtbU2VbEi2A44ePYpTzoCVDg7ABy78prA2vHf3Pl5NDx8+ImgwITNIToQwAyWkpBiUVVRxqsOW0qlSEsJAdGoWXsv3bt1AUnONhZQ2HS3ahDRJhHTJhtQCLKRqIDWR0TQE9m7dQDDRjaYBmjTJ0LMbNrFRQCwAAJZpu8RUmfCjAAAAAElFTkSuQmCC","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACVklEQVR42u1XQU8TQRT+tmk8cYGDTZRdm20PWA1/o5FUE38AJoZ40wNcGkiNS2g0myZ6qJ4IIeoPIIEG0j9By3YZemgNLmsTPMCFEG2argcz4y7dbmfKUjj4TrOzb9775r3vvX0LXLNIwxyKxxTHb//w2JKuHEA8pjgbO1u+754+eiwMIhKWcwDY2NnqG51LR4A6dxCBI/XHHXE6QpGQRJ0DgCNF8Pr9mkdnZWFuKBBR3ghQ57kP677vKaCVhTlUK+bVcMAtH7VXoZQhN4C9iuF5fqkVRwfg8NiSlpcWuQwau1UsLy1ykzA6iHxuQ3sVA/n554EkNHargTa4qoDWclbLQ9dyLArxmOK8efsu8Eb09n42/Lql5Oc8q+UBACenZ5gYH0MyoeDF7DOsfv3C9OyjH55zk/Jdtqa6jabFbABgdtwgfFNg1gjuTCpsnUwoHucXHV4Uqnt+3mYXadkWkgmFjwOZJ2mUNsv/iGXsY3r6gUen0bR6zrkddLoOvjUb7Hkmk4Zh7POTcCaTZus6Ieh0/7b4bhfsdr9+t5lOy7ag3JOZfuphymMj9EYEAO37P0fXiPzk1sHtSwOIDnvQnd/QARCTDDw4KL88NoQiQA1OpVKBenVChCIgicx8tLNRoay3vh+xPXfX45kbhSairJbHyekZKzuahvpBk5XkxPgYdC3H/TESqgKzRtCyrb6EbNkWzFoIKQiKwqf1z9gulXtIuF0qQ1VlFAu60GQsXIZ1QqCqcg/ZVFUefSMqFnQUC/r1dcKRzoQ35t/Q3SMo2fz2/guv/AGTixYep1mQKwAAAABJRU5ErkJggg==","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACNklEQVR42mNgoAAoiMv9VxCX+0+JGYzkWApjN0+fxcDAwMBQm5kGl3/w8hEjzRygIC73H2YpLlCbmUaSIxhJtfz7778Mv/78w6mOn5OVJEcwkWo5IfDx+2+G5umzGIhNG0zEhgAxlsPA5ctXiVbLQkoauCEoT5yhd27RxgEMDAwM7lIcBNXsJcE8kh2w89kPqhpKdBq4c+MGAy0AIzEFDgwELd5GlKHrYr0wxHBlS0ZcFscXlWHPDT9+4rWck4Mdq/jCvi6sjmFEt7ygtYPh/dt3DM/efMAw5P2LZww29jYMz54+x2qJlLQkw5GDRxikFRQZvqE5VEpEgEFQWIiBgYGBYUJ1BdwRGOmFkOUwi3ABG3sbhvsPn2KIw8yEOQIjwSqIy/2PLypjuHrlGooCQQkpFP7jhw/wRoGsvAKGw5HZ2jpa2B3w4OUjxoV9Xf9Ta1sYvv36DVdw8/xZOPv1p+8omhOs3zAwMDAwLDgqgqLm6YP7cL6huQWKeU8f3ictGwoICTEYmlswGJpbQHzx8QvD+49f4JbDHPLo+RuGq1euMzAwMDCoGxozCAgJMZzZtYV65QCtAAu5GpvW4JcXl1dkKGjtYPj64w9pDrh/G39F8uzxY6IdeeXyNeqEACFHIYOXaImM5KKYUEMiurwer+V7ViwiaClySchCbJlNjOPIaZiSnAtuXcPf2jH1DWEgpak+NLMhqQmNZiGwZ8UiohLdoI6CAXcARX1DWHZDT/Wk9g9HNgAAy6bnOVeUuaoAAAAASUVORK5CYII=","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42r1XTWgTQRT+dmklgVgvabceGpODhx56kpaCgl4U4kmkQisWC0VEodEevOnJ3kqJ1oMWKQQqRmkQQTBFLwaUhorYoKLiIX/NYWNK6fZHmgTiIcx0Nzs7O9tGHyzLvpn5vm/eezv7VgLH/IqvllFzEsvPms+aa2cSjzxy7y1Gbp6mwIT4yuht5prHsxOOhUiiEfArvpoVMUuIqAihSYRc03awvV22nd/ZedBSRGNaZZHcAoCm7Qjn9eu3H9y06nlk3mCzLaPmJH1NmVLAqnp9+Ic93UJEM8UUNw16k0VeIxLSuc3vQuS8NHAFWIVtMRlzFOrSagGLyZjQm9DCq3z9cy6fhq8r4EiIHsNKjGS1MBQKm/wflz4IEff2HTf5pqfHmSJMr6EVOQBcv9wqRN7bvWTyh0Jhiq+PjKQnvzg0Dm+7D6XiH8Pi4MkvAIDIvAeK4kE6nWeSBwJdcLsOAwBO9X0GAMQTPXTc2+FG6XcOAPA0GkZGzUmGGvC2+7C1UaGk8UQPvdctTYksizb7C/4jR+maRhxvh4+KMBXh1kbFpJzc1WIaiuIx7vjq2bqsmdfU1zhHj0MiOZVYAzMFcw+HEJnfBTh37DxefnpBn6uV+nfgxN1LzN2/v/OkvqvWAwZ/I87IhU0MX4sio+YkQxE+f9WGaqVMLwBwu2S4XbvTrMgbx6qVMlZX83StHnfq0Zr4QUSMAJFd8iJAxDflJOQR2fkcC1gpZLGuqfQSFcEjXylkAcASt8VOIQEgdqhN4RLbCecexSK9wINbccSSz5hj65qK0TM3MDYZFOoNTBGw+3o5aVZEe0LZKbDV7omNTQYddcWy01ZsoH/QNkV2WIaekNWn8Wz2zX0M9A8aqppcJP88rMYNy3v9owGA5dQCllML+2pM93QQNaM73tdJ6NSa2uqzuhqWTz/2Lvqz9i//N/5vBJptfwGanZl+atNovQAAAABJRU5ErkJggg=="];
 const SUIT_MK=['Mk.Ⅰ','Mk.Ⅱ','Mk.Ⅲ','Mk.Ⅳ'];
@@ -4193,15 +4200,20 @@ const A={
  cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)ingTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;const n=ck.n||1;add(ck.id,n);P.cook=null;sfxCoin();log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.`,'good');commit()},
  selpod(d){const i=+d.i,pl=fpod(i);if(podArm===i&&pl&&pl.seed&&stage(pl)<3){A.water({i});return}selPod=i;podArm=i;renderPanel()},
- soil(d){const i=+d.i;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spend(1))return;farmPut(i,{til:1,wet:0});log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`);commit()},
- plant(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til||pl.seed)return;if(d.k==='store'){if(!(FSTORE[d.id]>0))return;storeAdd(d.id,-1)}else if(!take(d.id))return;sfxPlant();const wet=isWet(pl);farmPut(i,{til:1,seed:d.id,got:0,wet:wet?Date.now():0,by:uid,byN:P.nick});log(`공용 농장 포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`);commit()},
+ soil(d){const i=+d.i;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spend(1))return;
+  podAct(i,cur=>cur&&cur.til?null:{til:1,wet:0},()=>log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`),()=>{heal(0,1);toast('다른 단원이 먼저 배양토를 채웠습니다.')})},
+ plant(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til||pl.seed)return;const fromStore=d.k==='store';if(fromStore){if(!(FSTORE[d.id]>0))return;storeAdd(d.id,-1)}else if(!take(d.id))return;
+  let wet=false;podAct(i,cur=>{if(!cur||!cur.til||cur.seed)return null;wet=isWet(cur);return{til:1,seed:d.id,got:0,wet:wet?Date.now():0,by:uid,byN:P.nick}},
+   ()=>{sfxPlant();log(`공용 농장 포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`)},()=>{if(fromStore)storeAdd(d.id,1);else add(d.id,1);toast('다른 단원이 먼저 이 포드에 심었습니다. 씨앗은 돌려받았습니다.')})},
  water(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til)return;
   // a damp crop needs nothing more
   if(pl.seed&&isWet(pl)){toast('더 이상 물을 줄 필요는 없을 것 같다.');return}
-  if(FARM.water<=0){toast('공용 물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}if(!spend(1))return;sfxWater();FARM.water--;
-  if(mode==='online'){if(FARM.wset)farmInc('farm/pods','water',-1).catch(()=>{});else farmMerge('farm/pods',{water:FARM.water}).catch(()=>{})}else farmSave();
-  const q=Object.assign({},pl);if(q.seed)q.got=effG(q);q.wet=Date.now();farmPut(i,q);if(q.seed&&q.by&&q.by!==uid){gainXp(2);lxp('farm',2);stat('helpfarm')}commit()},
- fert(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}const it=ITEMS[pl.seed];farmPut(i,Object.assign({},pl,{got:Math.min(it.grow,(pl.got||0)+it.grow*.3),fert:1}));log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`);commit()},
+  if(FARM.water<=0){toast('공용 물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}if(!spend(1))return;let why='';
+  podAct(i,cur=>{why='';if(!cur||!cur.til){why='gone';return null}if(cur.seed&&isWet(cur)){why='wet';return null}const q=Object.assign({},cur);if(q.seed)q.got=effG(q);q.wet=Date.now();return q},
+   q=>{sfxWater();FARM.water--;if(mode==='online'){if(FARM.wset)farmInc('farm/pods','water',-1).catch(()=>{});else farmMerge('farm/pods',{water:FARM.water}).catch(()=>{})}else farmSave();if(q.seed&&q.by&&q.by!==uid){gainXp(2);lxp('farm',2);stat('helpfarm')}},
+   ()=>{heal(0,1);toast(why==='wet'?'방금 다른 단원이 물을 줬다. 더 이상 물을 줄 필요는 없을 것 같다.':'포드 상태가 바뀌어 물을 주지 못했습니다.')})},
+ fert(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}
+  podAct(i,cur=>{if(!cur||!cur.seed||cur.fert)return null;const it=ITEMS[cur.seed];return Object.assign({},cur,{got:Math.min(it.grow,(cur.got||0)+it.grow*.3),fert:1})},()=>log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`),()=>{add('moss',2);toast('다른 단원이 먼저 비료를 뿌렸습니다. 이끼는 돌려받았습니다.')})},
  harvest(d){const i=+d.i,pl=fpod(i);if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
  fssel(d){fsSel=fsSel===d.id?null:d.id;fpSel=null;renderPanel()},
  fpsel(d){fpSel=fpSel===d.id?null:d.id;fsSel=null;renderPanel()},
