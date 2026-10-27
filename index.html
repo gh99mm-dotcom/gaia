@@ -776,6 +776,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .reltier .cnt{font-size:11.5px;color:var(--c)}.reltier.mine{box-shadow:0 0 0 1px var(--c)}
 .reltier .hint{color:var(--text);opacity:.75}
 @media (max-width:560px){.reltiers{grid-template-columns:1fr 1fr}}
+.sellp{font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
 .rkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
 .rkcard{--c:var(--gold);display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--c);min-width:0}
 .rkcard>.lbl{color:var(--c)!important}
@@ -1749,7 +1750,7 @@ function renderCook(){const el=$('#cook');if(!el)return;const c=COOK.find(x=>x.i
   ${bf?`<div class="cbuff">${iicon(bf.id,1)}<span>${Object.entries(bf.fx).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' · ')}</span><b id="buffT">${fmtClock(bf.until-now)}</b></div>`:''}
   ${busy?`<div class="card cooking"><div class="crow">${iicon(cur.id,2)}<div style="min-width:0;flex:1"><b>${esc(cur.n)}${(ck.n||1)>1?' ×'+ck.n:''}</b><span class="hint" id="cookT">${done?'완성됐습니다!':'조리 중 · '+fmtClock(left)}</span></div></div><div class="bar"><i id="cookB" style="--c:var(--gold);width:${done?100:Math.round((1-left/(cur.sec*(ck.n||1)*1e3))*100)}%"></i></div>${done?`<button class="btn gold sm" data-act="cookdone">꺼내기</button>`:''}</div>`:
   `<div class="rtiles" role="group" aria-label="레시피">${COOK.map(x=>`<button type="button" class="rtile ${canCook(x)?'ok':'no'}" data-act="cooksel" data-k="${x.id}" aria-pressed="${x.id===c.id}" title="${esc(x.n)}" aria-label="${esc(x.n)}">${iicon(x.id,1.5)}</button>`).join('')}</div>
-  <div class="card csel"><b>${esc(c.n)}</b><span class="hint">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')} ${c.bmin}분`:''}</span>
+  <div class="card csel"><b>${esc(c.n)} <span class="sellp">판매가 ${sellPrice(c.id).toLocaleString()} CR</span></b><span class="hint">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')} ${c.bmin}분`:''}</span>
    <div class="cneed">${c.need.map(([id,n])=>ingChip(id,n)).join('')}</div>
    ${(()=>{const mx=cookMax(c),n=Math.max(1,Math.min(cookN,mx||1)),t=c.sec*n;return`<div class="row cookqty"><button class="btn sm ghost" data-act="cookq" data-k="-1" ${n>1?'':'disabled'} aria-label="하나 줄이기">−</button><b>${n}개</b><button class="btn sm ghost" data-act="cookq" data-k="1" ${n<mx?'':'disabled'} aria-label="하나 늘리기">+</button><button class="btn sm ghost" data-act="cookq" data-k="max" ${mx>1?'':'disabled'}>최대 ${mx||0}</button></div>
    <button class="btn sm" data-act="cook" ${mx>0?'':'disabled'}>요리하기 · ${t<60?t+'초':Math.floor(t/60)+'분'+(t%60?' '+t%60+'초':'')}</button>`})()}</div>`}
@@ -4199,7 +4200,7 @@ function bagInner(){
   const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c);
   return`<div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
    ${ids.length?`<div class="bagkey">${BAGCAT.map(([k,n])=>`<span class="bk bk-${k}"><i></i>${n}</span>`).join('')}</div><div class="bag">${ids.map(id=>`<button class="slot bc-${bagCat(id)}" data-act="sel" data-id="${id}" data-tip="${esc(ITEMS[id].n)} ×${P.inv[id]}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
-   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}
+   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}${isBound(selItem)?'':` <span class="sellp">판매가 ${sellPrice(selItem).toLocaleString()} CR</span>`}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
