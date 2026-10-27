@@ -777,24 +777,50 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .reltier .hint{color:var(--text);opacity:.75}
 @media (max-width:560px){.reltiers{grid-template-columns:1fr 1fr}}
 .sellp{font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
-.rkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
-.rkcard{--c:var(--gold);display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--c);min-width:0}
-.rkcard>.lbl{color:var(--c)!important}
-.rktop{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:stretch}
-.rkport{height:124px;display:flex;align-items:flex-end;justify-content:center;border:2px solid var(--c);background:radial-gradient(circle at 50% 65%,color-mix(in srgb,var(--c) 22%,transparent) 0 52%,transparent 53%),var(--deep);overflow:hidden;padding-bottom:4px}
-.rkport img{max-height:100%;width:auto}
+.rkgrid{--rk-lv:var(--gold);--rk-life:var(--green);--rk-don:var(--cyan);--rk2:#c9d1dc;--rk3:#d49a6a;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
+:root[data-skin="light"] .rkgrid{--rk-lv:#b8892a;--rk-life:#3d9a68;--rk-don:#2f86c0;--rk2:#76808f;--rk3:#b0673a}
+.rkcard{--c:var(--gold);display:flex;flex-direction:column;gap:8px;padding:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,var(--panel2)),var(--panel2) 140px);border:1px solid var(--line);border-top:3px solid var(--c);min-width:0}
+:root[data-skin="light"] .rkcard{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,#fff),#fcfbf8 150px);border-color:#e4dfd5;border-top-color:var(--c);box-shadow:0 3px 0 #e2dccf,0 6px 14px rgba(120,100,70,.08)}
+.rkcard>.lbl{color:var(--c)!important;font-weight:700}
+.rktop{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;align-items:stretch}
+/* the #1 stage: slow light rays, a spotlight, twinkles and a glint sweeping across, with the champion bobbing on a little pedestal */
+.rkport{position:relative;height:132px;display:flex;align-items:flex-end;justify-content:center;border:2px solid var(--c);overflow:hidden;padding-bottom:10px;isolation:isolate;
+ background:radial-gradient(circle at 50% 66%,color-mix(in srgb,var(--c) 45%,transparent) 0 22%,transparent 60%),linear-gradient(180deg,color-mix(in srgb,var(--c) 26%,var(--deep)),var(--deep) 85%)}
+:root[data-skin="light"] .rkport{background:radial-gradient(circle at 50% 66%,color-mix(in srgb,var(--c) 38%,#fff) 0 24%,transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--c) 30%,#fff),#fffdf8 85%);box-shadow:inset 0 0 0 2px #fff}
+.rkrays{position:absolute;left:50%;top:62%;width:260px;height:260px;margin:-130px 0 0 -130px;z-index:-1;border-radius:50%;
+ background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--c) 34%,transparent) 0 9deg,transparent 9deg 24deg);
+ -webkit-mask:radial-gradient(circle,#000 18%,transparent 62%);mask:radial-gradient(circle,#000 18%,transparent 62%);animation:rkspin 22s linear infinite}
+:root[data-skin="light"] .rkrays{background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--c) 30%,#fff) 0 9deg,transparent 9deg 24deg)}
+.rkport::after{content:'';position:absolute;z-index:0;bottom:6px;left:22%;right:22%;height:9px;border-radius:50%;background:color-mix(in srgb,var(--c) 55%,transparent);box-shadow:0 0 10px color-mix(in srgb,var(--c) 60%,transparent)}
+.rkchar{position:relative;z-index:1;display:block;animation:rkbob 2.6s ease-in-out infinite;transform-origin:50% 100%}
+.rkchar img{display:block;max-height:112px;width:auto}
+.rkshine{position:absolute;z-index:2;top:-10%;bottom:-10%;width:26%;left:-45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);animation:rkshine 4.2s ease-in-out infinite;pointer-events:none}
+.rksp{position:absolute;z-index:2;width:9px;height:9px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);filter:drop-shadow(0 0 3px var(--c));animation:rktw 2.2s ease-in-out infinite;opacity:0}
+.rksp.s1{left:12%;top:16%}.rksp.s2{right:12%;top:26%;animation-delay:.7s;width:7px;height:7px}.rksp.s3{left:20%;top:58%;animation-delay:1.3s;width:6px;height:6px}.rksp.s4{right:18%;top:64%;animation-delay:1.8s}.rksp.s5{left:48%;top:8%;animation-delay:1s;width:6px;height:6px}
+:root[data-skin="light"] .rksp{background:color-mix(in srgb,var(--c) 70%,#fff)}
+@keyframes rkspin{to{transform:rotate(360deg)}}
+@keyframes rkbob{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3px) rotate(-2deg)}50%{transform:translateY(-5px) rotate(0)}75%{transform:translateY(-3px) rotate(2deg)}}
+@keyframes rkshine{0%,55%{left:-45%}100%{left:130%}}
+@keyframes rktw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+@media (prefers-reduced-motion:reduce){.rkrays{animation-duration:60s}.rkchar{animation-duration:5s}.rkshine{animation-duration:9s}.rksp{animation-duration:5s}}
 .rkhead{display:flex;flex-direction:column;justify-content:center;gap:6px;min-width:0}
-.rkhead .rk1{font-size:18px;color:var(--c);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.rkhead .rk1{font-size:18px;color:var(--c);font-weight:700;padding-bottom:6px;border-bottom:1px solid color-mix(in srgb,var(--c) 40%,var(--line));text-shadow:0 0 8px color-mix(in srgb,var(--c) 45%,transparent)}
+:root[data-skin="light"] .rkhead .rk1{text-shadow:none}
+.rkhead .rk1::before{content:'★ ';font-size:14px}
 .rkhead .namebtn{font-size:15px;font-weight:700;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rkhead .namebtn::before{content:'〈 ';color:var(--c)}.rkhead .namebtn::after{content:' 〉';color:var(--c)}
-.rkhead .rkv{color:var(--mute);font-size:13px}
-.rklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
-.rklist li{display:grid;grid-template-columns:30px 34px minmax(0,1fr) auto;align-items:center;gap:6px;padding:2px 4px}
-.rklist li.me{background:color-mix(in srgb,var(--me-name) 16%,transparent);outline:1px solid color-mix(in srgb,var(--me-name) 55%,transparent)}
+.rkhead .rkv{display:inline-block;align-self:flex-start;font-size:12px;font-weight:700;color:var(--c);padding:1px 8px;border:1px solid color-mix(in srgb,var(--c) 50%,transparent);background:color-mix(in srgb,var(--c) 12%,transparent)}
+.rklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rklist li{display:grid;grid-template-columns:30px 34px minmax(0,1fr) auto;align-items:center;gap:6px;padding:3px 6px;border-left:3px solid transparent}
+.rklist li+li{border-top:1px dashed color-mix(in srgb,var(--line) 70%,transparent)}
+.rklist li.me{background:color-mix(in srgb,var(--me-name) 16%,transparent);border-left-color:var(--me-name)}
+:root[data-skin="light"] .rklist li.me{background:color-mix(in srgb,var(--me-name) 9%,#fff)}
 .rklist .no{font-weight:700;color:var(--mute);text-align:right}
-.rklist li:nth-child(1) .no{color:#c9d1dc}.rklist li:nth-child(2) .no{color:#d49a6a}
+.rklist li:nth-child(1) .no{color:var(--rk2)}.rklist li:nth-child(2) .no{color:var(--rk3)}
 .rklist li:nth-child(-n+2){grid-template-columns:38px 34px minmax(0,1fr) auto}.rklist li:nth-child(-n+2) .no{font-size:17px}.rklist li:nth-child(-n+2) .namebtn{font-size:15px;font-weight:700}.rklist li:nth-child(-n+2) b{font-size:14px}
 .rkface{width:32px;height:32px;border-radius:50%;background:var(--deep);display:flex;align-items:center;justify-content:center;overflow:hidden}
+:root[data-skin="light"] .rkface{background:#efece6}
+.rklist li:nth-child(1) .rkface{background:color-mix(in srgb,var(--rk2) 28%,var(--deep))}.rklist li:nth-child(2) .rkface{background:color-mix(in srgb,var(--rk3) 28%,var(--deep))}
 .rkface img{height:24px;width:auto;max-width:none;flex:none}
 .rklist .namebtn{text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rklist b{font-size:13px;white-space:nowrap}
@@ -4816,7 +4842,7 @@ function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const ot
   return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
   <span class="hint">선 위 글자는 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>이고, 선 색깔이 관계를 나타냅니다${compact?'':'(아래 카드 참고)'}. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 한 번)</span>`}
 /* rankings: level, life level (sum of the four) and ship-repair contribution */
-const RANKS=[['lv','레벨 랭킹','var(--gold)'],['life','생활레벨 랭킹','var(--green)'],['don','기여도 랭킹','var(--cyan)']];
+const RANKS=[['lv','레벨 랭킹','var(--rk-lv)'],['life','생활레벨 랭킹','var(--rk-life)'],['don','기여도 랭킹','var(--rk-don)']];
 function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick);let rows;
   if(k==='lv')rows=all.map(([id,p])=>[id,p,(p.lvl||1)*1e9+(p.xp||0),`LV.${p.lvl||1}`]);
   else if(k==='life')rows=all.map(([id,p])=>{const lx=p.lx||{},s=LIFE.reduce((a,[q])=>a+lifeLv(lx[q]),0),x=LIFE.reduce((a,[q])=>a+(lx[q]||0),0);return[id,p,s*1e9+x,`생활 LV.${s}`]});
@@ -4824,7 +4850,7 @@ function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick);let rows;
   return rows.sort((a,b)=>b[2]-a[2])}
 function rankCard([k,n,c]){const rows=rankRows(k),top=rows[0],mi=rows.findIndex(r=>r[0]===uid);
   const nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'단원')}${id===uid?' (나)':''}</button>`;
-  return`<div class="rkcard" style="--c:${c}"><span class="lbl">${n}</span>${top?`<div class="rktop"><div class="rkport">${meImg(4,top[1])}</div><div class="rkhead"><span class="rk1">랭킹 1위</span>${nm(top[0],top[1])}<span class="rkv">${top[3]}</span></div></div>
+  return`<div class="rkcard" style="--c:${c}"><span class="lbl">${n}</span>${top?`<div class="rktop"><div class="rkport"><i class="rkrays"></i><span class="rkchar">${meImg(4,top[1])}</span><i class="rksp s1"></i><i class="rksp s2"></i><i class="rksp s3"></i><i class="rksp s4"></i><i class="rksp s5"></i><i class="rkshine"></i></div><div class="rkhead"><span class="rk1">랭킹 1위</span>${nm(top[0],top[1])}<span class="rkv">${top[3]}</span></div></div>
    ${rows.length>1?`<ol class="rklist">${rows.slice(1,10).map(([id,p,,v],i)=>`<li class="${id===uid?'me':''}"><span class="no">${i+2}위</span><span class="rkface">${headImg(2,p)}</span>${nm(id,p)}<b>${v}</b></li>`).join('')}</ol>`:''}
    ${mi>=10?`<div class="rkmine">내 순위 <b>${mi+1}위</b> · ${rows[mi][3]}</div>`:''}`:'<p class="hint">아직 순위에 오른 단원이 없습니다.</p>'}</div>`}
 function socRank(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">개척단 랭킹</b><span class="hint">이름을 누르면 프로필이 열립니다</span></div><div class="rkgrid">${RANKS.map(rankCard).join('')}</div>`}
