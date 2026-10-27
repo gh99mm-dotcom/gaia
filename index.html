@@ -427,7 +427,9 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @media (max-width:480px){.sclbl{display:none}}
 @keyframes scpulse{50%{outline-color:rgba(240,199,90,.25)}}@media (prefers-reduced-motion:reduce){.scn.go{animation:none}}
 .sctrails{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}.sctr{display:flex;flex-direction:column;gap:4px;padding:8px 10px}.sctr .tn{display:flex;align-items:center;gap:6px;font-weight:700}.sctr .sw{width:10px;height:10px;border:1px solid var(--ink);flex:none}
-.scdots{display:flex;gap:3px}.scdots i{width:14px;height:6px;background:var(--line,#333);display:block}.scdots i.on{background:#f0c75a}.scdots i.here{background:#fff;outline:1px solid #f0c75a}
+.scdots{display:flex;gap:3px}.scdots i{width:14px;height:6px;background:var(--line,#333);display:block;box-shadow:0 2px 0 var(--r,transparent)}
+.scrough{display:inline-block;font-size:11px;font-weight:700;padding:0 5px;margin-left:4px;color:var(--c);border:1px solid var(--c);vertical-align:middle}
+.scway{margin:4px 0 0;font-size:12px;color:var(--text);opacity:.85;line-height:1.5}.scway .scrough{margin:0 4px 0 0}.scdots i.on{background:#f0c75a}.scdots i.here{background:#fff;outline:1px solid #f0c75a}
 .scmove{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.scmove b{font-family:var(--f-pix)}
 .raidmap{position:relative;margin:6px 0 2px;border:2px solid var(--ink);line-height:0;overflow:hidden}.raidmap>img{width:100%;height:auto;display:block;image-rendering:pixelated}
 .rmme{position:absolute;transform:translate(-50%,-50%);line-height:0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6));animation:rmbob 1.6s ease-in-out infinite}
@@ -3177,6 +3179,16 @@ const TRAILS=[
  {n:'얼음 협곡',dir:'서',a:194,k:'ice',g:['#222c38','#334356'],c:'#b8d4ec',it:'crystal',nodes:['서리 내린 비탈','얼어붙은 개울','얼음 동굴','수정 빙벽','눈보라 고개','얼음 다리','푸른 빙하 틈','얼어붙은 폭포','빙하 아래 동굴','협곡 밑바닥']}];
 // ten stops on every trail, 5 minutes between each
 const SC_N=10,SC_MIN=5;TRAILS.forEach(t=>{t.m=Array(SC_N).fill(SC_MIN)});
+// the deeper the stop, the rougher the way: energy per move 3 (stops 1-3) · 4 (4-6) · 5 (7-9) · 6 (the end), with a line per trail for each stretch
+const scEn=k=>SCOUT_EN+Math.floor((Math.max(1,k)-1)/3),scTier=k=>k<=3?0:k<=6?1:k<=9?2:3;
+const SC_ROUGH=['완만한 길','험한 길','가파른 길','극한의 길'],SC_ROUGH_C=['var(--green)','var(--gold)','#e0904a','var(--red)'];
+const SC_WAY=[
+ ['바위 사이로 난 길이 아직은 걸을 만하다.','날카로운 결정이 발밑에서 솟아 있어 한 걸음씩 조심해야 한다.','결정 절벽을 손으로 짚고 기어올라야 한다. 바람이 거세진다.','숨이 차오르는 얼음 능선. 한 발만 헛디뎌도 끝이다.'],
+ ['고철 사이로 다닐 만한 길이 나 있다.','날카로운 철판과 끊어진 케이블이 길을 막는다.','무너질 듯한 잔해 더미를 넘어야 한다. 어디선가 불꽃이 튄다.','방사능 경보가 울리는 잔해 깊은 곳. 장비가 비명을 지른다.'],
+ ['질척하지만 발 디딜 곳은 있다.','무릎까지 빠지는 늪. 포자가 시야를 가린다.','허리까지 차오르는 늪물. 무언가 다리를 스치고 지나간다.','숨 쉬는 늪이 발을 붙잡는다. 산소 경고등이 깜빡인다.'],
+ ['그을린 땅이지만 걷기엔 무리가 없다.','발밑이 뜨겁다. 검은 유리 조각이 신발을 파고든다.','용암이 흐르는 틈을 건너뛰어야 한다. 우주복이 달아오른다.','열기에 시야가 일렁인다. 냉각 장치가 한계에 다다랐다.'],
+ ['미끄럽지만 걸을 만한 서리 비탈이다.','얼음 위로 바람이 몰아친다. 발이 자꾸 미끄러진다.','빙벽에 로프를 걸고 내려가야 한다. 손끝이 얼어붙는다.','영하의 폭풍 한가운데. 한 걸음 한 걸음이 사투다.']];
+const scWay=(i,k)=>SC_WAY[i][scTier(k)],scRoughTag=k=>`<span class="scrough" style="--c:${SC_ROUGH_C[scTier(k)]}">${SC_ROUGH[scTier(k)]}</span>`;
 const SC_W=240,SC_H=160,SC_CX=120,SC_CY=82;
 const SC_PTS=(()=>{const mx=Math.max(...TRAILS.map(t=>t.m.reduce((a,b)=>a+b,0)));return TRAILS.map((t,i)=>{const tot=t.m.reduce((a,b)=>a+b,0),L=.62+.38*tot/mx,ar=t.a*Math.PI/180;let c=0;
   return t.m.map((m,k)=>{c+=m;const r=12+(c/tot)*L*(68-12),w=Math.sin(k*1.9+i*2.3)*3.5;return[Math.round(SC_CX+Math.cos(ar)*r*1.5-Math.sin(ar)*w),Math.round(SC_CY+Math.sin(ar)*r+Math.cos(ar)*w)]})})})();
@@ -3236,17 +3248,17 @@ function scoutMapImg(){const sc=scoutSt(),key=sc.far.join('')+'|'+sc.t+'|'+sc.at
 function scoutPos(){const sc=scoutSt();if(sc.mv){const m=sc.mv,f=Math.max(0,Math.min(1,(Date.now()-m.s)/(m.e-m.s))),[x0,y0]=scPt(m.t,m.from),[x1,y1]=scPt(m.t,m.to);return[x0+(x1-x0)*f,y0+(y1-y0)*f]}return sc.t<0?[SC_CX,SC_CY]:scPt(sc.t,sc.at)}
 const scNext=(sc,i)=>!sc.mv&&!sc.pend&&((sc.t<0&&true)||sc.t===i)&&(sc.t<0?0:sc.at)<SC_N;
 function scoutMapHTML(){const sc=scoutSt(),m=scoutMapImg(),[mx,my]=scoutPos();
-  const btns=TRAILS.map((T,i)=>SC_PTS[i].map(([x,y],k0)=>{const k=k0+1,go=scNext(sc,i)&&k===(sc.t<0?1:sc.at+1);return`<button type="button" class="scn ${go?'go':''}" style="left:${(x+.5)/SC_W*100}%;top:${(y+.5)/SC_H*100}%" ${go?`data-act="scgo" data-t="${i}"`:'tabindex="-1"'} title="${esc(T.n)} ${k}지점${k<=sc.far[i]?' · '+esc(T.nodes[k0]):''}${go?` · ${T.m[k0]}분`:''}"></button>`}).join('')).join('');
+  const btns=TRAILS.map((T,i)=>SC_PTS[i].map(([x,y],k0)=>{const k=k0+1,go=scNext(sc,i)&&k===(sc.t<0?1:sc.at+1);return`<button type="button" class="scn ${go?'go':''}" style="left:${(x+.5)/SC_W*100}%;top:${(y+.5)/SC_H*100}%" ${go?`data-act="scgo" data-t="${i}"`:'tabindex="-1"'} title="${esc(T.n)} ${k}지점${k<=sc.far[i]?' · '+esc(T.nodes[k0]):''}${go?` · ${T.m[k0]}분 · EN ${scEn(k)}`:''} · ${SC_ROUGH[scTier(k)]}"></button>`}).join('')).join('');
   return`<div class="scmap"><img class="pix" src="${m.src}" alt="정착지 주변 다섯 갈래 길 지도 · 길마다 10지점">${btns}${TRAILS.map((T,i)=>{const [a,b]=SC_PTS[i][3],[c,d]=SC_PTS[i][4],ar=T.a*Math.PI/180,x=(a+c)/2-Math.sin(ar)*11,y=(b+d)/2+Math.cos(ar)*11;return`<span class="sclbl" style="left:${x/SC_W*100}%;top:${y/SC_H*100}%">${esc(T.n)}</span>`}).join('')}<span class="rmme" id="scMe" style="left:${(mx+.5)/SC_W*100}%;top:${(my-5)/SC_H*100}%">${headImg(2,P)}</span><span class="rmlbl">${sc.mv?'이동 중':sc.t<0?'정착지':`${TRAILS[sc.t].n} ${sc.at}지점`}</span></div>`}
 function scoutLeft(){const m=scoutSt().mv;return m?Math.max(0,m.e-Date.now()):0}
 function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(renderNav,0)}const mv=sc.mv,T=sc.t>=0?TRAILS[sc.t]:null;
-  const status=mv?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(TRAILS[mv.t].n)} ${mv.to}지점으로 이동 중</b><div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 도착하면 주변을 조사할 수 있습니다.</div></div><button class="btn sm alt" data-act="scstop">이동 취소</button></div>`
-   :T?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(T.n)} · ${esc(T.nodes[sc.at-1])}</b><div class="hint">${sc.pend?'도착했습니다. 주변을 조사한 뒤에 더 나아갈 수 있습니다.':sc.at<SC_N?`다음 지점까지 ${T.m[sc.at]}분 걸립니다.`:'이 길의 끝입니다. 더 나아갈 곳이 없습니다.'}</div></div>${sc.pend?`<button class="btn gold" data-act="scsearch">이 지점 조사하기</button>`:sc.at<SC_N?`<button class="btn" data-act="scgo" data-t="${sc.t}">더 깊이 <small>${T.m[sc.at]}분 · EN ${SCOUT_EN}</small></button>`:''}<button class="btn sm alt" data-act="scback">정착지로 귀환</button></div>`
+  const status=mv?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(TRAILS[mv.t].n)} ${mv.to}지점으로 이동 중 ${scRoughTag(mv.to)}</b><p class="scway">${scWay(mv.t,mv.to)}</p><div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 도착하면 주변을 조사할 수 있습니다.</div></div><button class="btn sm alt" data-act="scstop">이동 취소</button></div>`
+   :T?`<div class="card scmove">${img(IC.scan,null,2)}<div style="flex:1;min-width:160px"><b>${esc(T.n)} · ${esc(T.nodes[sc.at-1])}</b><div class="hint">${sc.pend?'도착했습니다. 주변을 조사한 뒤에 더 나아갈 수 있습니다.':sc.at<SC_N?`다음 지점까지 ${T.m[sc.at]}분 · ${SC_ROUGH[scTier(sc.at+1)]} — ${scWay(sc.t,sc.at+1)}`:'이 길의 끝입니다. 더 나아갈 곳이 없습니다.'}</div></div>${sc.pend?`<button class="btn gold" data-act="scsearch">이 지점 조사하기</button>`:sc.at<SC_N?`<button class="btn" data-act="scgo" data-t="${sc.t}">더 깊이 <small>${T.m[sc.at]}분 · EN ${scEn(sc.at+1)}</small></button>`:''}<button class="btn sm alt" data-act="scback">정착지로 귀환</button></div>`
    :`<div class="note">정착지에 있습니다. 지도에서 빛나는 지점을 누르거나 아래에서 길을 골라 출발하십시오.</div>`;
   const cards=TRAILS.map((t,i)=>{const here=!mv&&sc.t===i,lock=mv||sc.pend||(sc.t>=0&&sc.t!==i),nk=sc.t===i?sc.at:0;
-    return`<div class="card sctr"><div class="tn"><span class="sw" style="background:${t.c}"></span>${esc(t.n)} <small class="hint">${t.dir}쪽</small></div><div class="scdots">${t.m.map((_,k)=>`<i class="${here&&sc.at===k+1?'here':k<sc.far[i]?'on':''}" title="${k<sc.far[i]?esc(t.nodes[k]):'미탐색'}"></i>`).join('')}</div>
-      <div class="hint">${SC_N}지점 · 구간마다 ${SC_MIN}분</div>${lock?'':nk<SC_N?`<button class="btn sm" data-act="scgo" data-t="${i}">${nk?'더 깊이':'출발'} <small>${t.m[nk]}분 · EN ${SCOUT_EN}</small></button>`:''}</div>`}).join('');
-  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 멀리 갈수록 더 귀한 것을 찾습니다. 한 번 이동할 때마다 에너지 ${SCOUT_EN}.</p>
+    return`<div class="card sctr"><div class="tn"><span class="sw" style="background:${t.c}"></span>${esc(t.n)} <small class="hint">${t.dir}쪽</small></div><div class="scdots">${t.m.map((_,k)=>`<i class="${here&&sc.at===k+1?'here':k<sc.far[i]?'on':''}" style="--r:${SC_ROUGH_C[scTier(k+1)]}" title="${k+1}지점 · ${SC_ROUGH[scTier(k+1)]} · EN ${scEn(k+1)}${k<sc.far[i]?' · '+esc(t.nodes[k]):' · 미탐색'}"></i>`).join('')}</div>
+      <div class="hint">${SC_N}지점 · 구간마다 ${SC_MIN}분 · 깊을수록 길이 험해져 에너지 ${scEn(1)}→${scEn(SC_N)}</div>${nk<SC_N?`<p class="scway">${scRoughTag(nk+1)} ${scWay(i,nk+1)}</p>`:''}${lock?'':nk<SC_N?`<button class="btn sm" data-act="scgo" data-t="${i}">${nk?'더 깊이':'출발'} <small>${t.m[nk]}분 · EN ${scEn(nk+1)}</small></button>`:''}</div>`}).join('');
+  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 멀리 갈수록 더 귀한 것을 찾습니다. 깊이 들어갈수록 길이 험해져서, 이동할 때 드는 에너지가 ${scEn(1)}에서 ${scEn(SC_N)}까지 늘어납니다.</p>
   ${scoutMapHTML()}${status}
   ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:''}
   <div class="sctrails">${cards}</div>`;
@@ -4676,8 +4688,8 @@ const A={
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spend(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
- scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=SC_N)return;if(!spend(SCOUT_EN))return;
-  const ms=TRAILS[i].m[from]*60e3*(P.job==='nav'?.75:1);sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${TRAILS[i].m[from]}분 뒤 도착.`);commit()},
+ scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=SC_N)return;if(!spend(scEn(from+1)))return;
+  const ms=TRAILS[i].m[from]*60e3*(P.job==='nav'?.75:1);sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${scWay(i,from+1)} (${TRAILS[i].m[from]}분 뒤 도착)`);commit()},
  scsearch(){scoutSearch()},
  scstop(){const sc=scoutSt(),m=sc.mv;if(!m)return;sc.mv=null;sc.t=m.from?m.t:-1;sc.at=m.from;log('이동을 멈추고 되돌아왔다.');commit()},
  scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;sc.pend=0;log('정착지로 귀환했다.');commit()},
