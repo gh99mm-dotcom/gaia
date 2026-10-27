@@ -864,7 +864,9 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .barkeep{background:linear-gradient(180deg,#1c1220,#140c16);border-color:#5a2f4a}.barkeep .say{color:#e8c8a0}.barkeep b{color:#ffb8f0}.barmenu{border-style:dashed}
 :root[data-skin="light"] .barkeep{background:linear-gradient(180deg,#3a2838,#2a1c28)}:root[data-skin="light"] .barkeep .hint{color:#c8b8c0}
 .fishcard{display:flex;gap:10px;align-items:center;margin:6px 0;padding:8px 10px;border:1px solid var(--line);border-left:4px solid var(--fc,var(--mute));background:var(--panel2)}.fishcard p{margin:1px 0}
-.fishcard.t-r{--fc:var(--cyan)}.fishcard.t-u{--fc:#c88aff}.fishcard.t-l{--fc:var(--gold);box-shadow:0 0 10px #ffd65f33}.card.result .fishshare{margin-left:auto;flex:none}
+.fishcard.t-r{--fc:var(--cyan)}.fishcard.t-u{--fc:#c88aff}.fishcard.t-l{--fc:var(--gold);box-shadow:0 0 10px #ffd65f33}.card.result.fishres{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch}.fishres-l{display:flex;gap:10px;align-items:center;min-width:0}
+.fishres-r{display:flex;flex-direction:column;gap:6px;min-width:0}.fishres-r textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:56px;font:inherit;font-size:13px}
+@media (max-width:620px){.card.result.fishres{grid-template-columns:minmax(0,1fr)}}
 .fishlen{margin:2px 0}.fishlen b{color:var(--cyan)}.fishlen.big b{color:var(--gold);font-size:15px}.spctag.rec{color:var(--green)}.dexlen{color:var(--cyan)!important}
 .spctag{font-family:var(--f-pix);font-size:10px;padding:0 4px;border:1px solid currentColor;color:var(--gold);vertical-align:middle}.spctag.bound{color:var(--pink)}
 .keeper .bal{font-family:var(--f-pix);font-weight:400;font-size:13px;color:var(--gold)}
@@ -2771,7 +2773,7 @@ function renderFish(){
    <div class="fishside"><div class="dial-wrap"><div class="dial ${aim?'live':''}"><div class="dial-face" style="--z:${fish.zone||9}deg;--zc:${fish.zc||0}deg"></div><div class="needle" id="needle" style="transform:translateX(-50%) rotate(${fish.a||0}deg)"></div><div class="hub"></div></div><span class="lbl">Reel lever · 릴 레버</span></div>${inWater?`<button class="btn alt fishgo" data-act="pull">끌어올리기!</button>`:aim?`<button class="btn gold fishgo" data-act="throw">던지기!</button>`:`<button class="btn fishgo" data-act="cast">캐스팅 <small>EN 3</small></button>`}</div>
   </div>
   <div class="row">${inWater||ph==='early'||ph==='miss'||ph==='idle'?bonusTxt:''}<button class="qchip" style="margin-left:auto" data-act="sound" aria-pressed="${soundOn}">소리 ${soundOn?'켜짐':'꺼짐'}</button></div>
-  ${lastFish?`<div class="card result">${iicon(lastFish.id,3)}<div><p><b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier?ITEMS[lastFish.id].tier+' 등급':'기본 낚싯대에 걸린 씨앗'}</p>${lastFish.cm?`<p class="fishlen ${lastFish.big?'big':''}">크기 <b>${fmtLen(lastFish.cm)}</b>${lastFish.big?' <span class="spctag">대어!</span>':''}${lastFish.rec?' <span class="spctag rec">내 최고 기록</span>':''} <span class="hint">(${fmtLen(ITEMS[lastFish.id].sz[0])} ~ ${fmtLen(ITEMS[lastFish.id].sz[1])})</span></p>`:''}<p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}${lastFish.big?' (대어 보너스 ×1.5)':''}</p></div>${lastFish.cm&&mode==='online'?`<button class="btn sm ${lastFish.shared?'ghost':'alt'} fishshare" data-act="fishshare" ${lastFish.shared?'disabled':''}>${lastFish.shared?'PAD에 공유함':'PAD로 공유하기'}</button>`:''}</div>`:''}
+  ${lastFish?`<div class="card result ${lastFish.cm&&mode==='online'?'fishres':''}"><div class="fishres-l">${iicon(lastFish.id,3)}<div><p><b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier?ITEMS[lastFish.id].tier+' 등급':'기본 낚싯대에 걸린 씨앗'}</p>${lastFish.cm?`<p class="fishlen ${lastFish.big?'big':''}">크기 <b>${fmtLen(lastFish.cm)}</b>${lastFish.big?' <span class="spctag">대어!</span>':''}${lastFish.rec?' <span class="spctag rec">내 최고 기록</span>':''} <span class="hint">(${fmtLen(ITEMS[lastFish.id].sz[0])} ~ ${fmtLen(ITEMS[lastFish.id].sz[1])})</span></p>`:''}<p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}${lastFish.big?' (대어 보너스 ×1.5)':''}</p></div></div>${lastFish.cm&&mode==='online'?`<div class="fishres-r"><textarea id="fishTxt" class="sel" maxlength="200" rows="3" placeholder="${esc(fishShareDef(lastFish))}" ${lastFish.shared?'disabled':''} aria-label="PAD에 함께 올릴 글">${esc(lastFish.note||'')}</textarea><div class="row" style="justify-content:space-between;gap:6px"><span class="hint">비워 두면 기본 문구로 올라갑니다</span><button class="btn sm ${lastFish.shared?'ghost':'alt'}" data-act="fishshare" ${lastFish.shared?'disabled':''}>${lastFish.shared?'PAD에 공유함':'PAD로 공유하기'}</button></div></div>`:''}</div>`:''}
   ${dexHTML()}`;
 }
 let AC=null,soundOn=true,sfxVol=100;try{soundOn=localStorage.getItem('nebula-sound')!=='off';const v=localStorage.getItem('nebula-sfxv');if(v!=null)sfxVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
@@ -4108,12 +4110,13 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
 let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
-function renderPanel(){const ae=document.activeElement;if(imeOn&&ae&&ae.id==='rcIn'){imeWait=true;return}const pos=ae&&ae.id==='rcIn'?ae.selectionStart:null;
+const KEEP_FOCUS=new Set(['rcIn','fishTxt']);
+function renderPanel(){const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
   renderPanel0();
   Object.entries(logs).forEach(([id,v])=>{const l=document.getElementById(id);if(l)l.scrollTop=v.end?l.scrollHeight:v.t});
-  {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}if(pos!=null){const i=$('#rcIn');if(i){i.focus({preventScroll:true});try{i.setSelectionRange(pos,pos)}catch(e){}}}}
+  {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}if(pos!=null){const i=document.getElementById(kf);if(i){i.focus({preventScroll:true});try{i.setSelectionRange(pos,pos)}catch(e){}}}}
 let barWas=false;
 function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView;syncBgm()}
   // my profile opens as a page in the stage, with a way back to the tab underneath
@@ -4297,7 +4300,7 @@ const A={
   log(`${ITEMS[id].n}을(를) 낚았다! 크기 ${fmtLen(sz.cm)}${sz.big?' · 대어!':''}${rec?' · 내 최고 기록!':''} (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'||sz.big?'rare':'good');if(tr==='u'||tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」(${fmtLen(sz.cm)})을 낚았습니다!`);commit()},
  async fishshare(){const f=lastFish;if(!f||!f.cm||f.shared||mode!=='online')return;const it=ITEMS[f.id];f.shared=true;renderPanel();
   const fishc={id:f.id,tr:it.fish,cm:f.cm,big:!!f.big,rec:!!f.rec,ms:f.ms,xp:f.xp,bonus:!!f.bonus};
-  try{await db.collection('posts').add({uid,nick:P.nick,at:Date.now(),text:`${it.n} ${fmtLen(f.cm)}${f.big?' 대어':''}를 낚았어요!`,fishc})}catch(e){f.shared=false;socErr(e);renderPanel();return}sfxCoin();toast('PAD에 공유했습니다.');renderPanel()},
+  try{await db.collection('posts').add({uid,nick:P.nick,at:Date.now(),text:(String(f.note||'').trim().slice(0,200))||fishShareDef(f),fishc})}catch(e){f.shared=false;socErr(e);renderPanel();return}sfxCoin();toast('PAD에 공유했습니다.');renderPanel()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
  addpt(d){if(ptsFree()<=0||!ABIL.find(a=>a[0]===d.k))return;abPend=Object.assign({},abPend,{[d.k]:(abPend[d.k]||0)+1});renderInfo()},
  subpt(d){if(!(abPend[d.k]>0))return;abPend=Object.assign({},abPend,{[d.k]:abPend[d.k]-1});if(!abPend[d.k])delete abPend[d.k];renderInfo()},
@@ -4605,6 +4608,8 @@ function richText(s){return esc(s).replace(/(^|[\s(])#([0-9A-Za-z가-힣_]{1,20}
 const replies=id=>{const m={};[...POSTS,...THR].forEach(p=>{if(p.re===id)m[p.id]=p});return Object.values(m)};
 const myRt=id=>POSTS.find(x=>x.rt===id&&x.uid===uid);
 // a caught fish as a card on PAD: picture, name and grade, size against its range, and how it was caught
+const fishShareDef=f=>`${ITEMS[f.id].n} ${fmtLen(f.cm)}${f.big?' 대어':''}를 낚았어요!`;
+document.addEventListener('input',e=>{if(e.target.id==='fishTxt'&&lastFish)lastFish.note=e.target.value.slice(0,200)});
 function fishCardHTML(f){const it=ITEMS[f.id];if(!it)return'';return`<div class="fishcard t-${esc(f.tr||it.fish||'c')}">${iicon(f.id,3)}<div><p><b>${esc(it.n)}</b> · ${esc(it.tier||'')} 등급</p><p class="fishlen ${f.big?'big':''}">크기 <b>${fmtLen(+f.cm||0)}</b>${f.big?' <span class="spctag">대어!</span>':''}${f.rec?' <span class="spctag rec">최고 기록</span>':''} <span class="hint">(${fmtLen(it.sz[0])} ~ ${fmtLen(it.sz[1])})</span></p><p class="hint">${f.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${+f.ms||0}ms · 경험치 +${+f.xp||0}</p></div></div>`}
 function twHTML(p,big){const isRt=!!p.rt,s=isRt?Object.assign({},p.rto||{},{id:p.rt}):p,orig=isRt?(POSTS.find(x=>x.id===p.rt)||(THRP&&THRP.id===p.rt?THRP:null)):p;
   const lk=orig?Object.values(orig.likes||{}).filter(Boolean).length:0,liked=!!(orig&&orig.likes&&orig.likes[uid]),rc=replies(s.id).length,rtc=POSTS.filter(x=>x.rt===s.id).length,rted=!!myRt(s.id),k=esc(s.id),canDel=!isRt&&(p.uid===uid||isAdmin);
