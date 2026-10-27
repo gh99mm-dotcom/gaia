@@ -544,12 +544,15 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bossinfo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}.bossname{font-family:var(--f-display);font-size:20px;font-weight:400;color:var(--red)}.admpick{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px;border:1px solid var(--gold);margin:4px 0}.admbig{align-self:flex-start;padding:10px 22px;font-size:15px}.admfaint{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}.admfrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line)}.admfrow.down{border-color:var(--red);background:color-mix(in srgb,var(--red) 8%,transparent)}.admfn{flex:1;min-width:0;display:flex;flex-direction:column}.admfn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.shiptabs{margin:0 0 10px}
 .roomlock{display:flex;flex-direction:column;gap:6px;max-width:600px}.roomlock .btn{align-self:flex-start}.roomstaff{margin:0 0 8px;color:var(--gold)}
 .roomwrap{position:relative;max-width:600px}
-.roomlay{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.roommain{flex:1 1 420px;max-width:600px;min-width:0;display:flex;flex-direction:column;gap:6px}
-.vside{flex:0 1 200px;display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-top:34px}
-.vfaces{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:5px}
-.vface{position:relative;display:flex;align-items:flex-end;justify-content:center;height:38px;padding:2px;background:var(--panel2);border:1px solid var(--line);cursor:pointer}.vface:hover,.vface.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
-.vface .von{position:absolute;right:2px;top:2px;width:6px;height:6px;background:var(--green);border:1px solid var(--ink)}
-@media (max-width:760px){.vside{flex:1 1 100%;margin-top:0}}
+.roomlay{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.roommain .emotes{height:22px;flex-wrap:nowrap;overflow:hidden}.roommain{flex:1 1 420px;max-width:600px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.vside{flex:0 1 200px;display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-top:28px;min-height:0}
+.vside .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vside .lbl b{color:var(--text);font-weight:700}
+.vfaces{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px;align-content:start;overflow-y:auto;min-height:0;flex:1 1 0;max-height:420px}
+.vface{position:relative;display:flex;align-items:center;justify-content:center;height:40px;padding:0;background:var(--panel2);border:1px solid var(--line);cursor:pointer;overflow:hidden}
+.vface img{height:24px;width:auto;max-width:none;flex:none}.vface:hover,.vface.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.vface .von{position:absolute;z-index:1;right:2px;top:2px;width:6px;height:6px;background:var(--green);border:1px solid var(--ink)}
+@media (max-width:760px){.vside{flex:1 1 100%;margin-top:0}.vfaces{flex:none;max-height:none;overflow:visible}}
 .roomcv{display:block;width:100%;aspect-ratio:2/1;max-width:100%;image-rendering:pixelated;border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),3px 3px 0 var(--ink);background:#121522}
 .pvbar{display:flex;flex-direction:column;gap:7px;background:var(--deep);border:2px solid var(--gold);padding:8px 10px;max-width:600px}
 .pvchips{display:flex;flex-wrap:wrap;gap:4px}
@@ -3803,14 +3806,14 @@ function pvBar(){const ks=Object.entries(preview);if(!ks.length)return'';const p
   return`<div class="pvbar"><div class="pvchips">${ks.map(([slot,id])=>{const f=furnById(id);return`<span class="ichip">${FURN[slot].n} · ${esc(f.n)}${ownsF(id)?' (보유)':''}<button class="pvx" data-act="pvone" data-k="${slot}" aria-label="${esc(f.n)} 미리보기 빼기">×</button></span>`}).join('')}</div>
    <div class="row" style="gap:8px">${pd.lock?'<span class="hint" style="color:var(--red)">조사에서만 얻는 가구가 포함되어 있어요</span>':''}${pd.buy.length?`<span class="price">${img(IC.coin,null,2)}${pd.cost.toLocaleString()}</span>${pd.mats.length?matHTML(pd.mats):''}`:'<span class="hint">모두 보유한 가구예요.</span>'}<span style="margin-left:auto"></span><button class="btn sm ghost" data-act="pvoff">되돌리기</button><button class="btn sm gold" data-act="pvall" ${pd.ok?'':'disabled'}>${pd.buy.length?`전체 구매·배치 (${pd.buy.length}개 구매)`:'전체 배치'}</button></div></div>`}
 // other crew's rooms as small faces next to the room picture; online first
-function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean));return`<div class="vside"><span class="lbl">단원의 방</span>${others.length?`<div class="vfaces">${others.slice().sort((a,b)=>on.has(b[0])-on.has(a[0])).map(([id,p])=>`<button class="vface ${visit===id?'on':''}" data-act="visit" data-k="${id}" title="${esc(p.nick||'단원')} 님의 방 구경하기" aria-label="${esc(p.nick||'단원')} 님의 방 구경하기">${headImg(2,p)}${on.has(id)?'<i class="von"></i>':''}</button>`).join('')}</div>`:`<span class="hint">${mode==='online'?'아직 다른 단원이 없습니다.':'온라인에서 볼 수 있습니다.'}</span>`}</div>`}
+function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean)),vp=visit&&(others.find(([id])=>id===visit)||[])[1];return`<div class="vside"><span class="lbl">${vp?`<b>${esc(vp.nick||'단원')}</b>의 방`:'단원의 방'}</span>${others.length?`<div class="vfaces">${others.slice().sort((a,b)=>(b[0]===visit)-(a[0]===visit)||on.has(b[0])-on.has(a[0])).map(([id,p])=>`<button class="vface ${visit===id?'on':''}" data-act="visit" data-k="${id}" title="${esc(p.nick||'단원')} 님의 방 구경하기" aria-label="${esc(p.nick||'단원')} 님의 방 구경하기">${headImg(2,p)}${on.has(id)?'<i class="von"></i>':''}</button>`).join('')}</div>`:`<span class="hint">${mode==='online'?'아직 다른 단원이 없습니다.':'온라인에서 볼 수 있습니다.'}</span>`}</div>`}
 function renderRoom(){
   enterRoomSpace(visit||uid);
   const vis=visit&&PLAYERS[visit];
   const others=mode==='online'?Object.entries(PLAYERS).filter(([id])=>id!==uid):[];
   const rm=roomOf(P);
   const emo=`<div class="row emotes">${Object.keys(EMOTES).map(k=>`<button class="qchip emo" data-act="emote" data-k="${k}" aria-label="감정 표현">${img(EMOTES[k],null,2)}</button>`).join('')}</div>`;
-  const scene=`<div class="roomlay"><div class="roommain">${emo}<div class="roomwrap"><canvas id="roomCv" class="roomcv" aria-label="${vis?esc(vis.nick)+'의 방':'내 방'}"></canvas><div class="roomnames" id="roomNames"></div><span class="roomtag">${vis?esc(vis.nick)+' 님의 방':'내 방 · C-12'}</span>${!vis&&Object.keys(preview).length?`<span class="pvtag">미리보기 ${Object.keys(preview).length}개</span>`:''}</div>${!vis?pvBar():''}</div>${visitHTML(others.filter(([id])=>id!==visit))}</div>`;
+  const scene=`<div class="roomlay"><div class="roommain">${emo}<div class="roomwrap"><canvas id="roomCv" class="roomcv" aria-label="${vis?esc(vis.nick)+'의 방':'내 방'}"></canvas><div class="roomnames" id="roomNames"></div><span class="roomtag">${vis?esc(vis.nick)+' 님의 방':'내 방 · C-12'}</span>${!vis&&Object.keys(preview).length?`<span class="pvtag">미리보기 ${Object.keys(preview).length}개</span>`:''}</div>${!vis?pvBar():''}</div>${visitHTML(others)}</div>`;
   if(vis)return head()+shipSubTabs()+scene+`<div class="row"><button class="btn sm ghost" data-act="roomhome">내 방으로 돌아가기</button><span class="hint">Lv.${vis.lvl||1} · 어류 도감 ${Object.keys(vis.dex||{}).length}종</span></div>`;
   const sl=FURN[roomSlot]||FURN.wallp;const lk=lookOf(P);
   return head()+shipSubTabs()+scene+`
