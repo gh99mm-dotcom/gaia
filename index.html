@@ -1804,7 +1804,7 @@ const GF=k=>{let v=0;for(const id of accOf()){const f=accById(id);if(f&&f.fx[k])
 const petX=k=>1+PF(k)/100;
 // 항해사 (tank): +20% max HP and +30% DEF, never less than the old flat +30 HP / +6 DEF
 const NAV_HP=.2,NAV_DEF=.3,navAdd=(base,pct,min)=>P.job==='nav'?Math.max(min,Math.round(base*pct)):0;
-const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+navAdd(b,NAV_HP,30))*petX('hp'))}, maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')), def=()=>{const b=Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+GF('def')+BUFF('def');return Math.floor((b+navAdd(b,NAV_DEF,6))*petX('def'))},
+const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+navAdd(b,NAV_HP,30))*petX('hp'))}, maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')*(1+((SUITS[P.suit||0]||{}).en||0))), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')), def=()=>{const b=Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+GF('def')+BUFF('def');return Math.floor((b+navAdd(b,NAV_DEF,6))*petX('def'))},
 // critical chance in %: agility, gear and pet
 critPct=()=>AS('agi')+GF('crit')+PF('crit'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);if(!raidLocked())P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
@@ -2169,8 +2169,8 @@ function renderPilot(){if(pilotBusy())return;
   $('#pilot').innerHTML=`
   <div class="pilot-top"><div class="avatar">${withPet(meImg(3),P,3)}</div>
    <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
-  <div class="stat"><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
-  <div class="stat"><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
+  <div class="stat" data-tip="내 체력입니다."><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
+  <div class="stat" data-tip="우주복의 에너지입니다."><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
   <div class="specs"><div class="spec"><span class="lbl">ATK 공격</span><b>${atk()}</b></div><div class="spec"><span class="lbl">DEF 방어</span><b>${def()}</b></div><div class="spec" style="grid-column:1/-1;display:flex;align-items:center;gap:6px">${img(IC.coin,null,2)}<b id="crBal">${Math.round(crShown??(P.cr||0)).toLocaleString()}</b><span class="lbl" style="margin-left:auto">CR 크레딧</span></div></div>
   ${gearPickHTML()}${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어납니다</span><span class="hint">${mode==='online'?'다른 단원이 구조해 주면 바로 일어납니다.':'혼자 모드에서는 시간이 지나야 깨어납니다.'}</span></div></div>`:''}`;
@@ -2348,8 +2348,8 @@ const SUIT_MK=['Mk.Ⅰ','Mk.Ⅱ','Mk.Ⅲ','Mk.Ⅳ'];
 const suitImg=(lv,sc=2)=>`<img class="pix" src="${SUIT_PNG[lv]||SUIT_PNG[0]}" width="${16*sc}" height="${16*sc}" alt="">`;
 const suitBar=lv=>{const d=(SUITS[lv]||SUITS[0]).def,mx=SUITS[SUITS.length-1].def;return`<span class="suitbar" title="방어 +${d}"><i style="width:${Math.round(d/mx*100)}%"></i></span>`};
 // a big card when a stronger suit goes on: the new picture, its tier and the defence it adds
-function suitPop(lv){const u=SUITS[lv];if(!u)return;const d=document.createElement('div');d.className='skpop suitpop mk'+lv;d.innerHTML=`${suitImg(lv,5)}<b>${SUIT_MK[lv]} 장착!</b><span>${esc(u.n)} · 방어 +${u.def}</span>`;document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}
-const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3. 이음새를 덧대 튼튼해졌습니다.'},{n:'차폐 우주복',def:7,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7. 방사선 차폐층이 들어 있습니다.'},{n:'성운 강화복',def:12,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12. 성운 섬유로 짠 최상급 장비.'}];
+function suitPop(lv){const u=SUITS[lv];if(!u)return;const d=document.createElement('div');d.className='skpop suitpop mk'+lv;d.innerHTML=`${suitImg(lv,5)}<b>${SUIT_MK[lv]} 장착!</b><span>${esc(u.n)} · 방어 +${u.def}${u.en?` · EN +${Math.round(u.en*100)}%`:''}</span>`;document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}
+const SUITS=[{n:'기본 작업복',def:0,price:0,t:'#7e8193',d:'처음 받은 낡은 작업복.'},{n:'보강 우주복',def:3,en:.1,price:800,mat:[['ore',10],['moss',6]],t:'#8a8da0',d:'방어력 +3 · 최대 에너지 +10%. 이음새를 덧대 튼튼해졌습니다.'},{n:'차폐 우주복',def:7,en:.2,price:4000,mat:[['ore',20],['crystal',10],['dark',3]],t:'#8aa9bd',d:'방어력 +7 · 최대 에너지 +20%. 방사선 차폐층이 들어 있습니다.'},{n:'성운 강화복',def:12,en:.3,price:15000,mat:[['crystal',25],['dark',12]],t:'#9a8fc0',d:'방어력 +12 · 최대 에너지 +30%. 성운 섬유로 짠 최상급 장비.'}];
 const hasMat=m=>(m||[]).every(([id,n])=>(P.inv[id]||0)>=n);
 const matHTML=m=>`<span class="matrow">${(m||[]).map(([id,n])=>`<span class="ichip ${(P.inv[id]||0)>=n?'':'minus'}">${iicon(id,1)}${ITEMS[id].n} ${P.inv[id]||0}/${n}</span>`).join('')}</span>`;
 const RODS=[
@@ -2372,6 +2372,8 @@ SITES.forEach(st=>{const g=GX[st.id];if(!g)return;g.mats.forEach(([id],k)=>st.t.
 let gSite='crater',gDur=4;
 const GDUR={1:2,2:3,4:7,8:12,16:20,24:28};
 // trip lengths offered: a quick 10-minute run (one pickup) plus the 30-minute-slot trips above
+// the robot runs on suit energy: 2 EN per pickup, all paid when it sets out
+const G_EN=2,gEn=o=>o[2]*G_EN;
 const GOPTS=[['s10',10,1],...Object.keys(GDUR).map(Number).map(k=>[k,k*30,GDUR[k]])],gOpt=k=>GOPTS.find(o=>o[0]===k)||GOPTS[3];const gCount=e=>e.gc||(e.slots*2);
 const fmtDur=m=>{const h=Math.floor(m/60),r=m%60;return(h?h+'시간':'')+(h&&r?' ':'')+(r?r+'분':'')};
 const fmtClock=ms=>{ms=Math.max(0,ms);const t=Math.ceil(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return(h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(s).padStart(2,'0')};
@@ -3008,10 +3010,10 @@ function renderGather(){
      <div class="row"><button class="btn ${x.pending?'gold':''}" data-act="gclaim" ${x.pending?'':'disabled'}>획득물 받기${x.pending?` <small>${x.pending}회분</small>`:''}</button>${fin?'':`<button class="btn ghost sm" data-act="grecall">로봇 불러들이기</button>`}</div>
      <span class="hint">로봇이 시간이 지나는 만큼 조금씩 채집해 옵니다. 다른 활동을 하거나 창을 닫아도 로봇은 계속 일합니다. 불러들이면 그때까지 모은 것만 받습니다.</span></div>
     ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`}
-  return head()+`<div class="gscene"><canvas id="gCv" width="${GW}" height="${GH}" aria-label="채집 로봇이 지나가는 풍경"></canvas></div><p class="lead">채집 로봇을 보내면 로봇이 알아서 채집해 옵니다. 30분 2회 · 1시간 3회 · 2시간 7회 · 4시간 12회 · 8시간 20회 · 12시간 28회. 아주 가끔(3%) 희귀 무기가 묻혀 있기도 합니다.</p>
+  return head()+`<div class="gscene"><canvas id="gCv" width="${GW}" height="${GH}" aria-label="채집 로봇이 지나가는 풍경"></canvas></div><p class="lead">채집 로봇을 보내면 로봇이 알아서 채집해 옵니다. 30분 2회 · 1시간 3회 · 2시간 7회 · 4시간 12회 · 8시간 20회 · 12시간 28회. 채집 1회에 에너지 2가 들고, 로봇을 보낼 때 한 번에 냅니다. 아주 가끔(3%) 희귀 무기가 묻혀 있기도 합니다.</p>
   <div style="display:flex;flex-direction:column;gap:6px"><span class="lbl">Duration · 파견 시간</span>
-   <div class="row" style="gap:5px">${GOPTS.map(([k,m,c])=>`<button class="qchip" data-act="gdur" data-k="${k}" aria-pressed="${k===gDur}">${fmtDur(m)} · ${c}회</button>`).join('')}</div></div>
-  <div class="row"><button class="btn" data-act="gather">로봇 보내기 <small>EN 2</small></button><span class="hint">${fmtDur(gOpt(gDur)[1])} 뒤 귀환 · 채집 ${gOpt(gDur)[2]}회</span></div>
+   <div class="row" style="gap:5px">${GOPTS.map(([k,m,c])=>`<button class="qchip" data-act="gdur" data-k="${k}" aria-pressed="${k===gDur}">${fmtDur(m)} · ${c}회 · EN ${c*G_EN}</button>`).join('')}</div></div>
+  <div class="row"><button class="btn" data-act="gather" ${P.en>=gEn(gOpt(gDur))+1?'':'disabled'}>로봇 보내기 <small>EN ${gEn(gOpt(gDur))}</small></button><span class="hint">${fmtDur(gOpt(gDur)[1])} 뒤 귀환 · 채집 ${gOpt(gDur)[2]}회</span></div>
   <div><span class="lbl">Site · 채집 장소</span><div class="sites" role="radiogroup" aria-label="채집 장소" style="margin-top:6px">${SITES.map(st=>`<button class="site" role="radio" aria-checked="${st.id===gSite}" data-act="gsite" data-id="${st.id}"><b>${st.n} <span class="lv">${st.temp}</span></b><span class="hint">${st.d}</span><span class="chips">${st.t.filter(([id])=>!/^seed_/.test(id)).slice(0,6).map(([id])=>`<span class="ichip">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</span><span class="chips">${(st.ex||[]).map(id=>`<span class="ichip exc">${iicon(id,1)}전용 · ${ITEMS[id].n.replace(' 씨앗','')}</span>`).join('')}</span></button>`).join('')}</div></div>
   ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`;
 }
@@ -4164,7 +4166,7 @@ function benchWornHTML(){const w=WPNS.find(x=>x.id===P.wpn),su=SUITS[P.suit||0]|
   return`<aside class="card benchworn"><span class="lbl">착용 중</span>
    ${row(img(TPL.wHammer,'#9a9caa',2),'주무기',`${WEAPONS[P.wlv||0]} +${P.wlv||0}`,`공격 +${(P.wlv||0)*5}`)}
    ${row(w?img(TPL[w.ic],w.t,2):'<i class="bwnone"></i>','보조무기',w?w.n:'없음',w?w.d.replace(' · 채집에서만 발견',''):'보조무기 탭에서 사서 장착할 수 있습니다.',!w)}
-   ${row(suitImg(P.suit||0),'우주복 · '+SUIT_MK[P.suit||0],su.n,su.def?`방어 +${su.def}`:su.d)}
+   ${row(suitImg(P.suit||0),'우주복 · '+SUIT_MK[P.suit||0],su.n,su.def?`방어 +${su.def}${su.en?` · EN +${Math.round(su.en*100)}%`:''}`:su.d)}
    ${accOf().map((id,k)=>{const f=accById(id);return row(accImg(id),'장신구'+(k+1),f?f.n:'없음',f?f.d:'우주복·장신구 탭에서 만들어 낄 수 있습니다.',!f)}).join('')}
    ${(()=>{const p=myPet();return row(p?petImg(p.id,1):'<i class="bwnone"></i>','펫',p?p.n:'없음',p?Object.entries(p.fx).map(([k,v])=>PET_FX[k]+' +'+v+'%').join(' · '):'비밀상점에서 데려올 수 있습니다.',!p)})()}
    <div class="bwstat"><span>공격 <b>${atk()}</b></span><span>방어 <b>${def()}</b></span><span>최대 체력 <b>${maxHp()}</b></span></div></aside>`}
@@ -4597,11 +4599,11 @@ const A={
   log(FARM.tlv>before?`은하 결정을 넣어 공용 물탱크를 ${FARM.cap}까지 늘렸다!`:`물탱크 증설에 은하 결정 1개를 보탰다. (${FARM.tprog}/${FARM.tneed})`,FARM.tlv>before?'good':'');commit()},
  fdon(){if(FARM.fu>=FIELD_N)return;if(!take('ore',1)){toast('운석 파편이 없습니다.');return}const before=FARM.fu;FARM=farmShape(FARM.xu,FARM.ore+1,FARM.pods,{crys:FARM.crys,water:FARM.wset?FARM.water:null,refCd:FARM.refCd});if(mode==='online')farmInc('farm/pods','ore',1).catch(()=>{});else farmSave();gainXp(1);
   log(FARM.fu>before?`운석 파편을 넣어 공용 농장 포드 ${FARM.fu}번을 열었다!`:`포드 증설에 운석 파편 1개를 보탰다. (${FARM.prog}/${FARM.need})`,FARM.fu>before?'good':'');commit()},
- gather(){if(P.exp){toast('채집 로봇이 이미 일하는 중입니다.');return}if(!spend(2))return;const st=SITES.find(x=>x.id===gSite);const o=gOpt(gDur);P.exp=o[0]==='s10'?{site:gSite,start:Date.now(),slots:1,sl:10*60e3,gc:1,taken:0,tg:0}:{site:gSite,start:Date.now(),slots:o[0],gc:o[2],taken:0,tg:0};log(`${st.n}에 ${fmtDur(o[1])} 동안 채집 로봇을 보냈다.`);commit()},
+ gather(){if(P.exp){toast('채집 로봇이 이미 일하는 중입니다.');return}const st=SITES.find(x=>x.id===gSite);const o=gOpt(gDur),cost=gEn(o);regen();if(P.en<cost+1){toast(`에너지가 부족합니다 (채집 ${o[2]}회 × EN ${G_EN} = ${cost}, 1은 남아야 합니다)`);return}if(!spend(cost))return;P.exp=o[0]==='s10'?{site:gSite,start:Date.now(),slots:1,sl:10*60e3,gc:1,taken:0,tg:0}:{site:gSite,start:Date.now(),slots:o[0],gc:o[2],taken:0,tg:0};log(`${st.n}에 ${fmtDur(o[1])} 동안 채집 로봇을 보냈다.`);commit()},
  gsite(d){gSite=d.id;renderPanel()},
  gdur(d){gDur=d.k==='s10'?'s10':+d.k;renderPanel()},
  gclaim(){if(claimGather())commit()},
- grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){log(`${x.site.n}에서 채집 로봇을 불러들였다. (${x.gd}/${x.G}회 채집)`);P.exp=null}commit()},
+ grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){const un=Math.max(0,x.G-x.gd),back=un*G_EN;if(back)P.en=Math.min(maxEn(),P.en+back);log(`${x.site.n}에서 채집 로봇을 불러들였다. (${x.gd}/${x.G}회 채집${back?` · 못 쓴 에너지 ${back} 돌려받음`:''})`);P.exp=null}commit()},
  cast(){if(['wait','bite','aim'].includes(fish.ph))return;ac();regen();if(P.en<CAST_EN){toast(`에너지가 부족합니다 (필요 ${CAST_EN})`);return}if(!spend(castEn()))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:9,zc:nextZc};nextZc=ri(-68,68);commit();
   const step=matchMedia('(prefers-reduced-motion: reduce)').matches?3:4;
   sfxLever();
@@ -4752,7 +4754,7 @@ const A={
  cunequip(d){P.gear=Object.assign({},P.gear);delete P.gear[d.k];P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());commit()},
  eqsuit(d){const lv=+d.k;if(!SUITS[lv]||lv>suitMax())return;const up=lv>(P.suit||0);P.suitMax=suitMax();P.suit=lv;log(`${SUITS[lv].n}으로 갈아입었다.`);commit();if(up&&lv>0)suitPop(lv)},
  eqrod(d){const lv=+d.k;if(!RODS[lv]||lv>rodMax())return;if(fish&&['aim','wait','bite'].includes(fish.ph)){toast('낚시 중에는 낚싯대를 바꿀 수 없습니다.');return}P.rodMax=rodMax();P.rod=lv;log(`${RODS[lv].n}으로 바꿔 들었다.`);commit()},
- buysuit(d){const lv=+d.k,u=SUITS[lv];if(!u||suitMax()>=lv)return;if((P.cr||0)<u.price){toast('크레딧이 부족합니다.');return}if(!hasMat(u.mat)){toast('재료가 부족합니다.');return}u.mat.forEach(([id,n])=>take(id,n));P.cr-=u.price;sfxFanfare(lv>=3);P.suit=lv;P.suitMax=lv;log(`${u.n}을 입었다. 방어력 +${u.def}`,'rare');commit();suitPop(lv)},
+ buysuit(d){const lv=+d.k,u=SUITS[lv];if(!u||suitMax()>=lv)return;if((P.cr||0)<u.price){toast('크레딧이 부족합니다.');return}if(!hasMat(u.mat)){toast('재료가 부족합니다.');return}u.mat.forEach(([id,n])=>take(id,n));P.cr-=u.price;sfxFanfare(lv>=3);P.suit=lv;P.suitMax=lv;log(`${u.n}을 입었다. 방어력 +${u.def}${u.en?` · 최대 에너지 +${Math.round(u.en*100)}%`:''}`,'rare');commit();suitPop(lv)},
  buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||rodMax()>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;P.rodMax=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
  buy(d){const row=[...BUY,...SPECIAL].find(r=>r[0]===d.id);if(!row)return;const once=ITEMS[d.id].once;if(once&&((P.once||{})[d.id]||P.inv[d.id]>0)){toast('한 계정에 한 장만 살 수 있습니다.');return}const n=once?1:+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);if(once)P.once=Object.assign({},P.once,{[d.id]:Date.now()});log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
  sellones(d){if(d.k==='no'){sellArm=false;renderPanel();return}const ones=ORDER.filter(id=>P.inv[id]===1&&ITEMS[id].type!=='keep');if(ones.length<2)return;if(!sellArm){sellArm=true;renderPanel();return}sellArm=false;let gain=0;ones.forEach(id=>{const pr=sellPrice(id);take(id,1);gain+=pr;delete sellCart[id]});if(ones.includes(sellSel))sellSel=null;P.cr=(P.cr||0)+gain;sfxSell(true);log(`1개짜리 아이템 ${ones.length}종을 한 번에 팔았다. (+${gain} CR)`,'good');commit()},
@@ -4893,7 +4895,7 @@ function duelCatch(tr,id,sz){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id
 /* item name on hover: a floating label so scrolling bag panels can't clip it */
 {const tip=document.createElement('div');tip.className='itip';tip.hidden=true;document.body.appendChild(tip);
   const show=el=>{if(el.title){el.setAttribute('data-tip',el.title);el.removeAttribute('title')}const t=el.getAttribute('data-tip');if(!t){tip.hidden=true;return}tip.textContent=t;tip.hidden=false;const r=el.getBoundingClientRect(),w=tip.offsetWidth;tip.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+'px';tip.style.top=Math.max(6,r.top-tip.offsetHeight-6)+'px'};
-  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.bag .slot,.mlbag .slot');if(el)show(el);else tip.hidden=true});
+  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.bag .slot,.mlbag .slot,.stat[data-tip]');if(el)show(el);else tip.hidden=true});
   document.addEventListener('scroll',()=>{tip.hidden=true},true);document.addEventListener('pointerdown',()=>{tip.hidden=true})}
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
