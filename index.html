@@ -171,6 +171,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .dlist{display:flex;flex-direction:column;gap:3px}.drow{display:flex;align-items:center;gap:5px;font-size:12px}.drow span{flex:1;min-width:0}.drow .btn{padding:2px 7px;font-size:12px}
 .pilot{padding:12px;display:flex;flex-direction:column;gap:10px}
 .pilot-top{display:flex;gap:12px;align-items:center}
+.gearpick{display:flex;flex-direction:column;gap:4px;font-size:12.5px}.gprow{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:6px}.gprow>span{color:var(--mute)}.gprow strong{color:var(--cyan);font-weight:700}.gprow .sel{width:100%;min-width:0;padding:3px 4px;font-size:12px}
 .withpet{position:relative;display:inline-block;line-height:0}.withpet .petside{position:absolute;left:0;bottom:0;z-index:1;image-rendering:pixelated}
 .avatar{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px}
 .bagwin{position:fixed;z-index:40;box-sizing:border-box;width:min(620px,calc(100vw - 8px));height:min(80vh,760px);max-width:calc(100vw - 8px);max-height:calc(100vh - 8px);display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45),inset 0 0 0 1px var(--line)}
@@ -1948,7 +1949,20 @@ function crWatch(){const now=P.cr||0;if(crTarget===null){crTarget=now;crShown=no
   if(Date.now()-lastCoinAt>350)sfxCoin();
   const t0=performance.now(),dur=Math.min(1200,400+Math.log10(d+1)*250);cancelAnimationFrame(crAnim);
   const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);crShown=from+(now-from)*e;const b=$('#crBal');if(b)b.textContent=Math.round(crShown).toLocaleString();if(k<1)crAnim=requestAnimationFrame(step);else crShown=now};crAnim=requestAnimationFrame(step)}
-function renderPilot(){
+// don't rebuild the card while one of its dropdowns is open
+let pilotPend=false;const pilotBusy=()=>{const a=document.activeElement;if(a&&a.tagName==='SELECT'&&a.closest('#pilot')){pilotPend=true;return true}return false};
+document.addEventListener('focusout',e=>{if(pilotPend&&e.target.closest&&e.target.closest('#pilot')){pilotPend=false;setTimeout(renderPilot,0)}});
+// what I'm wearing, switchable right here from what I own (the main wrench is upgraded, not swapped)
+function gearPickHTML(){const own=P.own||[],opt=(v,n,on)=>`<option value="${esc(v)}" ${on?'selected':''}>${esc(n)}</option>`,acc=accOf();
+  const wp=WPNS.filter(w=>own.includes(w.id)),ac=ACC.filter(a=>own.includes(a.id)),sm=suitMax();
+  const row=(lbl,html)=>`<label class="gprow"><span>${lbl}</span>${html}</label>`;
+  return`<div class="gearpick">${row('장착 무기',`<strong>${esc(WEAPONS[P.wlv||0])} +${P.wlv||0}</strong>`)}
+   ${row('보조무기',`<select class="sel" data-eq="wpn" aria-label="보조무기">${opt('','없음',!P.wpn)}${wp.map(w=>opt(w.id,w.n,P.wpn===w.id)).join('')}</select>`)}
+   ${row('우주복',`<select class="sel" data-eq="suit" aria-label="우주복">${SUITS.slice(0,sm+1).map((u,i)=>opt(i,`${u.n} ${SUIT_MK[i]}`,(P.suit||0)===i)).join('')}</select>`)}
+   ${[0,1].map(k=>row('장신구'+(k+1),`<select class="sel" data-eq="acc${k}" aria-label="장신구${k+1}">${opt('','없음',!acc[k])}${ac.map(a=>opt(a.id,a.n,acc[k]===a.id)).join('')}</select>`)).join('')}</div>`}
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.eq)return;const k=t.dataset.eq,v=t.value;t.blur();
+  if(k==='wpn'){if(v)A.wpnon({k:v});else A.wpnoff()}else if(k==='suit')A.eqsuit({k:v});else{const n=k==='acc1'?1:0;if(v)A.accon({id:v,k:n});else A.accoff({k:n})}});
+function renderPilot(){if(pilotBusy())return;
   regen();queueMicrotask(renderCook);queueMicrotask(crWatch);
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').innerHTML=`
@@ -1958,8 +1972,7 @@ function renderPilot(){
   <div class="stat"><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
   <div class="specs"><div class="spec"><span class="lbl">ATK 공격</span><b>${atk()}</b></div><div class="spec"><span class="lbl">DEF 방어</span><b>${def()}</b></div><div class="spec" style="grid-column:1/-1;display:flex;align-items:center;gap:6px">${img(IC.coin,null,2)}<b id="crBal">${Math.round(crShown??(P.cr||0)).toLocaleString()}</b><span class="lbl" style="margin-left:auto">CR 크레딧</span></div></div>
-  <div class="weapon">장착 무기 <strong>${P.wpn&&wpnById(P.wpn)?wpnById(P.wpn).n:WEAPONS[P.wlv]}</strong> +${P.wlv}<br>우주복 <strong>${SUITS[P.suit||0].n}</strong></div>
-  <div class="hint">20초마다 에너지 +1, 체력 +3 이 자동으로 회복됩니다.</div>${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어납니다</span><span class="hint">${mode==='online'?'다른 단원이 구조해 주면 바로 일어납니다.':'혼자 모드에서는 시간이 지나야 깨어납니다.'}</span></div></div>`:''}`;
+  ${gearPickHTML()}${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어납니다</span><span class="hint">${mode==='online'?'다른 단원이 구조해 주면 바로 일어납니다.':'혼자 모드에서는 시간이 지나야 깨어납니다.'}</span></div></div>`:''}`;
 }
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 function renderNav(){
