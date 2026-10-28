@@ -2096,8 +2096,8 @@ function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.q
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
 /* three crew roles: 기관사 fights and fixes, 항해사 scouts and takes hits, 의무원 heals and backs the party up */
-const JOBS={mech:{n:'기관사',r:'전투 · 엔지니어',d:'공격력 +15% · 무기 강화 재료 30% 절약 · 원정 우주선 자재 +1'},
- nav:{n:'항해사',r:'탐사 · 탱커',d:'최대 체력 +20% · 방어력 +30% (최소 체력 +30 · 방어 +6) · 원정에서 몬스터의 공격을 3배 더 자주 받음 · 채집 로봇이 재료를 더 자주 가져옴 · 조사 이동 시간 25% 단축'},
+const JOBS={mech:{n:'기관사',r:'전투 · 엔지니어',d:'공격력 +15% · 무기 강화 재료 30% 절약 · 원정 우주선 자재 +1 · 채집 로봇이 재료를 더 자주 가져옴'},
+ nav:{n:'항해사',r:'탐사 · 탱커',d:'최대 체력 +20% · 방어력 +30% (최소 체력 +30 · 방어 +6) · 원정에서 몬스터의 공격을 3배 더 자주 받음 · 조사 이동 시간 25% 단축'},
  medic:{n:'의무원',r:'힐러 · 서포터',d:'음식 회복량 +50% (원정에서 동료에게 써도 적용) · 원정 전투에서 이길 때마다 파티 전원 체력 10% 회복 · 구조에 에너지가 들지 않고 구조한 단원은 체력 70%로 깨어남'}};
 const jobOf=p=>p&&p.job?JOBS[p.job]||JOBS[OLDJOB[p.job]]||null:null;
 const OLDJOB={fighter:'mech',engineer:'mech',guard:'nav',scout:'nav',angler:'nav',farmer:'medic'};
@@ -3261,7 +3261,7 @@ function renderGather(){
   <div><span class="lbl">Site · 채집 장소</span><div class="sites" role="radiogroup" aria-label="채집 장소" style="margin-top:6px">${SITES.map(st=>`<button class="site" role="radio" aria-checked="${st.id===gSite}" data-act="gsite" data-id="${st.id}"><b>${st.n} <span class="lv">${st.temp}</span></b><span class="hint">${st.d}</span><span class="chips">${st.t.filter(([id])=>!/^seed_/.test(id)).slice(0,6).map(([id])=>`<span class="ichip">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</span><span class="chips">${(st.ex||[]).map(id=>`<span class="ichip exc">${iicon(id,1)}전용 · ${ITEMS[id].n.replace(' 씨앗','')}</span>`).join('')}</span></button>`).join('')}</div></div>
   ${lastGather?`<div class="card result">${img(IC.gather,null,2)}<div><p>${esc(lastGather.t)}</p>${chipsOf(lastGather.got)}</div></div>`:''}`;
 }
-function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='nav'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0)+(Math.random()*100<PF('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}{const rl=relicRoll(P.lvl);if(rl)got[rl]=(got[rl]||0)+1}}
+function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf=null;const got={};for(let k=0;k<x.pending;k++){if(!wf&&Math.random()<.03){const pool=WPNS.filter(w=>w.drop&&!(P.own||[]).includes(w.id));if(pool.length)wf=pool[ri(0,pool.length-1)]}const rolls=ri(1,2)+(P.job==='mech'&&Math.random()<.5?1:0)+(lifeHit('gather')?1:0)+(Math.random()*100<PF('gather')?1:0);for(let r=0;r<rolls;r++){const id=pick(x.site.t);const n=id==='ore'||id==='moss'?ri(1,2):1;got[id]=(got[id]||0)+n}{const rl=relicRoll(P.lvl);if(rl)got[rl]=(got[rl]||0)+1}}
   Object.entries(got).forEach(([id,n])=>add(id,n));gainXp(3*x.pending);stat('gather',x.pending);lxp('gather',4*x.pending);P.exp=Object.assign({},x.e,{tg:x.tg+x.pending});
   if(wf){P.own=[...(P.own||[]),wf.id];log(`채집 로봇이 땅속에서 무기를 찾아왔다! 「${wf.n}」 (${wf.d.replace(' · 채집에서만 발견','')}) — 우주선 → 제작대의 무기 탭에서 장착할 수 있다.`,'rare');sys(`${P.nick} 님이 채집 중 희귀 무기 「${wf.n}」을(를) 발견했습니다!`);toast(`희귀 무기 발견: ${wf.n}`);sfxCoin()}
   lastGather={t:`채집 로봇이 ${x.site.n}에서 ${x.pending}회분 채집물을 가져왔다.${wf?` 희귀 무기 「${wf.n}」도 찾아왔다!`:''}`,got:Object.entries(got)};log('채집: '+lastGather.got.map(([id,n])=>`${ITEMS[id].n}×${n}`).join(', '),'good');
