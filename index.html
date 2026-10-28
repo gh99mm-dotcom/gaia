@@ -1154,7 +1154,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <style>
 /* ── 개척단 출입증: the sign-in form as a pixel staff access badge on a lanyard ── */
 .authwrap.bdwrap{max-width:340px;gap:10px;align-items:stretch}
-.bdwrap .authhead{gap:10px;justify-content:center}.bdwrap .authhead h1{font-size:22px}.bdwrap .authhead .lbl{font-size:9px;margin-top:4px}.bdwrap #authIc img,.bdwrap #authIc canvas{width:44px!important;height:auto!important}
+.bdwrap .authhead{justify-content:center}.authlogo .logo{display:flex;justify-content:center}
 .bdwrap .lead{font-size:12px;margin:0;text-align:center}.bdwrap .authfoot{font-size:11px}
 .bdhang{position:relative;height:50px;margin:6px auto -14px;width:120px;z-index:2}
 .bdstrap{position:absolute;bottom:24px;width:12px;height:26px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAARklEQVR42mPkk1L7rxCawwADqyyXMTAwMDCEHY+Ciz1YPYWBCcYRkJRjQAfIYnCFH54/wlCILMaEyzR0U5lwmYZu6gC6EQA6yRnr64HGuAAAAABJRU5ErkJggg==) 0 0/12px 9.6px repeat-y;image-rendering:pixelated;box-shadow:none}
@@ -1200,7 +1200,10 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 </style>
 <main class="authpage" id="authGate" hidden>
   <div class="authwrap bdwrap">
-    <header class="authhead"><span id="authIc"></span><div><h1>가이아 프로젝트</h1><span class="lbl">Gaia project · Sector K-7</span></div></header>
+    <header class="authhead authlogo"><div class="logo"><div class="lg2">
+        <span class="lg2-em"><img class="pix" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAADrklEQVR42u2YXUhTYRjH/2c7C0doklIb0lCQGrpWszGiILSLvOsD7yMsFhjdeCHRF10UiBdFBRFSUlJCFxV6IRERZpYhtmrp2MXAsVUeYl8YubV1Ol3Uezxf7rxHrQj23Jyd856z/fZ//s+z5x1QilKU4v8OZrlvYLGUCcXWC4Uc808ACdj0xy9F72usKV8WKLNSYBUsLzuf+25eEVDGKNzg6+QCxFyW6rmKCqv4et+2KkOQJqNwqfwTvP10hhqOfBFy/+DrpK5vDStosZQJt8eT+IEniCWeidenglFsdfciGktoPjcdDKPR7cR0MCxe2+WrBwB0H/ZSKWkyCjcVjIpwLnetCo7AaMEBwL2+AYxORFC3s5NKSaoUS5VzuWtFOAIrK4bfUI1uJzKZk6hx9MvW7S4fZqcmYHf5qFLM0qonhdKCkypGjjUOIBLgUN/Uj8lhpwwum+iBp60JR5qcKhX9XX0MlQcJYDRxRpZWcvwQ8+t6rsbRj0iAg7W6S4STQr65H5B5sbenXZCCMnpwqfRXzPMmvA36Zcqd9fcBAI6eHsFIx0M0Xzug6Tkl1OzUhGw9EwshHX+kKpjennaBChAAxgJx1DqqxYLY6sth75YtAIChd+9w90ZUE44WcubFRRUgF74l2JyHGFbPpEo4AHh+5Q6e485CYWw/Qq2cloKG+yDxQd7TjXneRNXnlpLexRTkwrcEALA5D6lTTOCOnRrA7fEkxgLxJUNV2kYWlOKaVcpVOhpkHpSCqRQkYKTELZYy4dJwDKGZFNUvhBJSCqcHOXp9o3hNCqfqg9L+Q6Khbi1CMyld5fTgEtwcWIVyweH9i4KpFCRVI63iS8MxABBVzGROAgA+xg4uCkn6nlZkuGaZWp6WqzCZWeTmk0imIsUBNzfsEN6HXjLKVnPi5iSSOVZUbvJpO6zVXbqeIzF0Tt7MPS1XAcYMCDx46wbNHqiZ4lQ6Cy2TrrevA2Y/i4p5d/fJlCNwv5TZqPoA757LEJgfYFABvvAN5ZtaZWk2PG7VOrYJrx4fX9I2wNt689cEYv4KnudhNpvBOvJgsVcTSk89qnnQts4lrF5TBZPJhILAgs9nYV61MCHz+SwEgYF1rR3Mmvqi/U4JuSKAUi8CwOhEROU9Ghhl0MBRz4OFQo7pPuyVTcTKuU453xG4SkeDeG4Ubkmbpo4LDzAeOK9qurQKGoFb1rbT09aEDNdMneZ0/NGf33Zqgdbt7NQthL+6cf/bf32UohSl+N/jJ0biodYgnE3xAAAAAElFTkSuQmCC" width="80" height="80" alt=""><i class="lg2-beacon"></i></span>
+        <div class="lg2-txt"><h1 class="lg2-word">가이아 프로젝트</h1><span class="lg2-sub"><b>GAIA PROJECT</b><em>SECTOR K-7 · 개척 기록</em></span></div>
+      </div></div></header>
     <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다.</p>
     <div class="bdhang" aria-hidden="true"><i class="bdstrap l"></i><i class="bdstrap r"></i><i class="bdclip"></i></div>
     <div class="bdshell">
