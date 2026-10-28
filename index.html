@@ -2034,9 +2034,9 @@ const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚
 const LIFE4=LIFE.slice(0,4);
 /* life levels cap at 30 (25*29^2 = 21,025 life XP). Gains are scaled per activity so a 6-hours-a-day player reaches 30 in about 10 days
    in each, assuming a mixed day of roughly 60 harvests, 50 robot pickups, 150 catches and 40 trail stops + 10 receiver scans. */
-// cook: half the dish's own XP (3 for a potato roast, 13 for a curry). Cooking costs no energy and runs in the background, so even
-// non-stop cooking for 6 hours (about 0.15 life XP a second) takes 6-7 days, and with real ingredient limits about 10, like the others
-const LX_RATE={farm:3.5,gather:10.5,fish:1.4,scan:3.75,cook:.5};
+// cook: 0.8x the dish's own XP (5 for a potato roast, 21 for a curry). Cooking costs no energy and runs in the background, so
+// non-stop cooking for 6 hours (about 0.24 life XP a second) takes about 4 days, and with real ingredient limits about a week
+const LX_RATE={farm:3.5,gather:10.5,fish:1.4,scan:3.75,cook:.8};
 const LIFE_MAX=30,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
 // each life level adds 0.5% to that activity's bonus chance; wearing the 황금손 title (all four maxed) adds a further 1% to every one
 const goldHand=()=>LIFE4.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
