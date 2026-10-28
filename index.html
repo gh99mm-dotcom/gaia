@@ -1151,24 +1151,90 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 </main>
 <div class="modal imgmodal" id="imgModal" hidden onclick="this.hidden=true"><img id="imgBig" alt="첨부 이미지 크게 보기"></div>
 <div class="toast" id="toast" hidden></div>
+<style>
+/* ── 개척단 출입증: the sign-in form as a pixel staff access badge on a lanyard ── */
+.authwrap.bdwrap{max-width:340px;gap:10px;align-items:stretch}
+.bdwrap .authhead{gap:10px;justify-content:center}.bdwrap .authhead h1{font-size:22px}.bdwrap .authhead .lbl{font-size:9px;margin-top:4px}.bdwrap #authIc img,.bdwrap #authIc canvas{width:44px!important;height:auto!important}
+.bdwrap .lead{font-size:12px;margin:0;text-align:center}.bdwrap .authfoot{font-size:11px}
+.bdhang{position:relative;height:50px;margin:6px auto -14px;width:120px;z-index:2}
+.bdstrap{position:absolute;bottom:24px;width:12px;height:26px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAARklEQVR42mPkk1L7rxCawwADqyyXMTAwMDCEHY+Ciz1YPYWBCcYRkJRjQAfIYnCFH54/wlCILMaEyzR0U5lwmYZu6gC6EQA6yRnr64HGuAAAAABJRU5ErkJggg==) 0 0/12px 9.6px repeat-y;image-rendering:pixelated;box-shadow:none}
+.bdstrap.l{left:40px;transform:skewX(24deg);transform-origin:bottom}.bdstrap.r{right:40px;transform:skewX(-24deg);transform-origin:bottom}
+.bdclip{position:absolute;left:50%;bottom:0;width:28px;height:36px;margin-left:-14px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAASCAYAAABrXO8xAAAApUlEQVR42mNkQANSYmr/GbCAZ69uMSLzGdE1nbp0Cps+BjM9MxTNLLgUIQNshjEx4ADPXt1iRHceURoJARZcErgCCa9GXAGEM1RhNjX0TUIRayjKY8DnXxTNs5bs+D9ryY7/uJzMQoyfkOVgNjMSinhcCQElcLbtOYFXk5eLBe5QbSjKw6oJPcBYiEnQ2PxP3ZRDKNVgaPRysWDwIjJ0GUmxBdn/AB0rRSvA+TfJAAAAAElFTkSuQmCC) 0 0/28px 36px;image-rendering:pixelated}
+.bdshell{filter:drop-shadow(2px 0 0 #0e0c18) drop-shadow(-2px 0 0 #0e0c18) drop-shadow(0 2px 0 #0e0c18) drop-shadow(0 -2px 0 #0e0c18) drop-shadow(5px 6px 0 rgba(0,0,0,.45))}
+.bdg{--card:#f2f5f8;--card2:#dfe6ee;--band:#2e5f7e;--band2:#1c3e58;--ink:#1c2634;--mute:#5e6e80;--acc:#c8506a;--gold:#d8a838;position:relative;display:flex;flex-direction:column;color:var(--ink);
+ clip-path:polygon(0 8px,2px 8px,2px 6px,4px 6px,4px 4px,6px 4px,6px 2px,8px 2px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 2px,calc(100% - 6px) 2px,calc(100% - 6px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 6px,calc(100% - 2px) 6px,calc(100% - 2px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 2px) calc(100% - 8px),calc(100% - 2px) calc(100% - 6px),calc(100% - 4px) calc(100% - 6px),calc(100% - 4px) calc(100% - 4px),calc(100% - 6px) calc(100% - 4px),calc(100% - 6px) calc(100% - 2px),calc(100% - 8px) calc(100% - 2px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 2px),6px calc(100% - 2px),6px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 6px),2px calc(100% - 6px),2px calc(100% - 8px),0 calc(100% - 8px));
+ background:repeating-conic-gradient(rgba(30,50,70,.035) 0 25%,transparent 0 50%) 0 0/4px 4px,linear-gradient(180deg,var(--card),var(--card2))}
+.bdslot{position:absolute;left:50%;top:8px;width:44px;height:8px;margin-left:-22px;background:#0b0e1c;box-shadow:none;clip-path:polygon(0 2px,2px 2px,2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px))}
+.bdhead{display:flex;align-items:center;justify-content:center;gap:8px;padding:24px 12px 10px;color:#eaf4fb;background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 2px,transparent 2px 6px),linear-gradient(180deg,var(--band),var(--band2))}
+.bdhead b{display:block;font-family:var(--f-pix);font-size:11px;letter-spacing:.14em}.bdhead span{font-family:var(--f-pix);font-size:9px;letter-spacing:.06em;opacity:.85}
+.idem{display:block;width:20px;height:20px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAtUlEQVR4nGNkQAN8Ymr/0cU+vbrFiMxnRFeskzIJXQ/DlTl5KJoZYRpgilXNdjDcPuWBoRGm+dOrW4xMyIKqZjuwKnZws0DhMyHbgk+zg5sFg07KJAY+MbX/LMgSt095YNVwYNcJFD4jn5ja/497RLA6Cxvgd3nDwMLAwMBgvaIOqwKYragBk8cADwh0z2LTDHceAwMiyGEakf2AbBssyFECAt3DmE5DsglmGwMDCSkCGRCT9gCpjEnssNw7QAAAAABJRU5ErkJggg==) 0 0/20px 20px;image-rendering:pixelated;flex:none}
+.bdid{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 14px 6px}
+.idphoto{position:relative;width:96px;height:112px;background:#9cb4c8;border:2px solid var(--ink);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.idpic{display:block;width:90px;height:105px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAABpElEQVR42s2WMWsCMRTH/3fc1kUoVGiXDtLKDXIEoQ5FxE/QoUMnBz+BOAjtkCGDhQ7FD1AcnDt2luJkQYI4HA5+AQdBpM52yvVyJrlcReibDl7y+7977+UlztvHeIcjmosjm5e2gDYbRj/rD/4mIMA85EYA8YlRyNPBBTh/egIAWK62SoBYR3yiFHHT4MvVVgtPCqnSaazBRf7aqpCmNHq66IlPkCuUrQSIT8BDDh7yvVS5ug0CXut0Uet0jQK5QjkqtrYGtNlAizLJKcCfL0/Wfd+iTKpF6kHLAs98kg+FSwKsP0CP0YOBPUbTi8xDjvViYg1dLybaVnWS0zTZqlnOgeo0O6pxHRexNd2o8HQTUkR/6LBzTBdOvJ+TQvH0mUa2ZwIPx6PfQm6+pTVxHwDUK1WlmKeCJzdPZ3MEpaIyQuGL76lXqpGQmwaX2rHNsG6z6BsAglIR09l87+9u/UvQZkOeRSa4sBs2jeBHufS/aJD90k+LXqQheM02SobjUfqrImnP73J6Hu/Noq5t7nVdBAAPdzVH53POz652NgL/9mX3A8gewjAwNG4yAAAAAElFTkSuQmCC) 0 0/90px 105px;image-rendering:pixelated}
+.idphoto .c{position:absolute;width:7px;height:7px;border:2px solid #fff}.idphoto .tl{left:3px;top:3px;border-right:0;border-bottom:0}.idphoto .tr{right:3px;top:3px;border-left:0;border-bottom:0}.idphoto .bl{left:3px;bottom:3px;border-right:0;border-top:0}.idphoto .br{right:3px;bottom:3px;border-left:0;border-top:0}
+.bdwho{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;max-width:100%}
+.bdwho b{font-family:var(--f-pix);font-size:16px;letter-spacing:.1em;color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bdrole{font-size:11px;color:var(--band);font-weight:700}.bdno{font-family:var(--f-pix);font-size:9px;color:var(--mute)}.bdno em{font-style:normal;font-size:10px;color:var(--ink)}
+.bdform{display:flex;flex-direction:column;gap:7px;padding:8px 16px 12px;border-top:2px dotted rgba(28,38,52,.22);margin:0 10px}
+.bdg h2{font-family:"Gugi",var(--f-display);font-weight:400;font-size:16px;margin:0;color:var(--ink);text-align:center}
+.idtabs{display:flex;border:2px solid var(--ink);background:rgba(28,38,52,.06)}
+.idtabs button{flex:1;font:inherit;font-family:var(--f-pix);font-size:11px;padding:5px 6px;border:0;background:transparent;color:var(--mute);cursor:pointer}
+.idtabs button[aria-selected="true"]{background:var(--band2);color:#eaf4fb}
+.idf{display:flex;flex-direction:column;gap:2px}.idf:has(input[hidden]){display:none}
+.idf span{font-family:var(--f-pix);font-size:9px;letter-spacing:.08em;color:var(--band)}
+.idf input{font:inherit;font-size:14px;color:var(--ink);background:rgba(255,255,255,.7);border:2px solid rgba(28,38,52,.22);border-radius:0;padding:5px 7px;outline:0;box-shadow:none}
+.idf input::placeholder{color:rgba(28,38,52,.4)}.idf input:focus{background:#fff;border-color:var(--band)}
+.idcode input{font-family:var(--f-pix);letter-spacing:.2em;text-transform:uppercase}
+.bdg #authMsg{color:var(--acc);font-size:11px}
+.bdg .idgo{justify-content:center;font-family:var(--f-pix);font-size:12px;padding:7px 10px;color:#fff;background:var(--band2);border:2px solid var(--ink);box-shadow:none;cursor:pointer}
+.bdg .idgo:hover{background:var(--band)}.bdg .idgo:disabled{opacity:.6}.bdg #authOther{align-self:center;color:var(--mute)}
+.bdfoot{display:flex;flex-direction:column}
+.bdacc{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 4px,transparent 4px 8px),var(--acc);color:#fff}
+.bdacc span{font-family:var(--f-pix);font-size:10px;letter-spacing:.14em}
+.idchip{width:30px;height:25px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAYAAACALL/6AAAAdklEQVR42mNkYGBgyPIS+M9ABJi27QMjS5aXwP+p/VFwwezCZQwwPjIbApb9Z4ExH56/gNVUmLi8oQEDAwMDAwvMJFyga9E1CANKM6I7CR/ILlzGgNVJMFPL4rTgYjAnMWILIWRPowMWZAXYFKHLkRxKjKRGHACrKjiFwesqdwAAAABJRU5ErkJggg==) 0 0/30px 25px;image-rendering:pixelated}
+.bdbot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px 12px}
+.bdbot dl{margin:0}.bdbot dt{font-family:var(--f-pix);font-size:8px;letter-spacing:.12em;color:var(--mute)}.bdbot dd{margin:0;font-family:var(--f-pix);font-size:11px;letter-spacing:.06em}
+.bdbar{width:120px;height:26px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAASCAYAAADMgVnKAAAAcUlEQVR42u2YQQoAIQhFY47RogPM/e83rQIR/QUtYuh9CCOt9OHKUtC+3la/YceKfNba+OiuP/f77K3sb/X27E+Vh6ony9Oye2ifPQEQgAAEIAARAAEIQAAiAAIQgFfKTxhWfSo2mmqcrkdNVehA9E9169BGcKhoOigAAAAASUVORK5CYII=) 0 0/120px 26px no-repeat;image-rendering:pixelated}
+@media (max-width:620px){.bdwrap .idf input{font-size:16px}}
+
+</style>
 <main class="authpage" id="authGate" hidden>
-  <div class="authwrap">
+  <div class="authwrap bdwrap">
     <header class="authhead"><span id="authIc"></span><div><h1>가이아 프로젝트</h1><span class="lbl">Gaia project · Sector K-7</span></div></header>
-    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다. 초대장을 받은 단원만 승선할 수 있습니다.</p>
-    <form class="px authcard" id="authForm" novalidate>
-    <h2 id="authTitle">승선 인증</h2>
-    <div class="dtabs" role="tablist"><button type="button" role="tab" data-auth="login" aria-selected="true">로그인</button><button type="button" role="tab" data-auth="signup" aria-selected="false">회원가입</button></div>
-    <input id="authId" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="16" required placeholder="아이디 (영문 소문자·숫자 4~16자)" aria-label="아이디">
-    <input id="authPw" type="password" autocomplete="current-password" required minlength="6" placeholder="비밀번호 (6자 이상)" aria-label="비밀번호">
-    <input id="authPw2" type="password" autocomplete="new-password" placeholder="비밀번호 확인" aria-label="비밀번호 확인" hidden>
-    <input id="authCode" maxlength="9" autocapitalize="characters" spellcheck="false" placeholder="초대코드 (예: ABCD-2345)" aria-label="초대코드" hidden>
-    <p class="hint" id="authMsg" role="status" style="margin:0;min-height:16px"></p>
-    <button class="btn" type="submit" id="authGo">로그인</button>
-    <p class="hint" id="authNote" style="margin:0">초대장을 받은 사람만 가입할 수 있습니다. 비밀번호를 잊으면 운영자(선장)에게 문의해 주십시오.</p>
-  </form>
+    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다.</p>
+    <div class="bdhang" aria-hidden="true"><i class="bdstrap l"></i><i class="bdstrap r"></i><i class="bdclip"></i></div>
+    <div class="bdshell">
+    <form class="bdg" id="authForm" novalidate>
+      <i class="bdslot" aria-hidden="true"></i>
+      <div class="bdhead"><i class="idem"></i><div><b>GAIA PIONEER CORPS</b><span>SECTOR K-7 · 개척단 출입증</span></div></div>
+      <div class="bdid" aria-hidden="true">
+        <div class="idphoto"><i class="idpic"></i><span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span></div>
+        <div class="bdwho"><b id="bdName">NEW CREW</b><span class="bdrole">개척단원 · PIONEER</span><span class="bdno">No. <em id="idNo">K7-0000</em></span></div>
+      </div>
+      <div class="bdform">
+        <h2 id="authTitle">승선 인증</h2>
+        <div class="dtabs idtabs" role="tablist"><button type="button" role="tab" data-auth="login" aria-selected="true">로그인</button><button type="button" role="tab" data-auth="signup" aria-selected="false">출입증 발급</button></div>
+        <label class="idf"><span>ID · 아이디</span><input id="authId" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="16" required placeholder="영문 소문자·숫자 4~16자" aria-label="아이디"></label>
+        <label class="idf"><span>PASSCODE · 비밀번호</span><input id="authPw" type="password" autocomplete="current-password" required minlength="6" placeholder="6자 이상" aria-label="비밀번호"></label>
+        <label class="idf"><span>CONFIRM · 비밀번호 확인</span><input id="authPw2" type="password" autocomplete="new-password" placeholder="한 번 더" aria-label="비밀번호 확인" hidden></label>
+        <label class="idf idcode"><span>SERVICE NO. · 군번</span><input id="authCode" maxlength="9" autocapitalize="characters" spellcheck="false" placeholder="ABCD-2345" aria-label="군번" hidden></label>
+        <p class="hint" id="authMsg" role="status" style="margin:0;min-height:14px"></p>
+        <button class="btn idgo" type="submit" id="authGo">로그인</button>
+      </div>
+      <div class="bdfoot" aria-hidden="true">
+        <div class="bdacc"><span>ACCESS · 전 구역</span><i class="idchip"></i></div>
+        <div class="bdbot"><dl><dt>ISSUED</dt><dd>XXXX.XX.XX</dd></dl><i class="bdbar"></i></div>
+      </div>
+    </form>
+    </div>
     <p class="hint authfoot">정거장 통신 · Firebase · 문의는 선장에게</p>
   </div>
 </main>
+<script>/* the badge fills itself in as the id is typed: name and number */
+(()=>{const $=q=>document.getElementById(q),i=$('authId');
+  const up=()=>{const v=(i&&i.value.trim().toUpperCase())||'';let h=0;for(const c of v)h=(h*31+c.charCodeAt(0))%10000;
+    if($('idNo'))$('idNo').textContent='K7-'+(v?String(h).padStart(4,'0'):'0000');if($('bdName'))$('bdName').textContent=v||'NEW CREW'};
+  if(i){i.addEventListener('input',up);up()}})();</script>
 <script>
 /* Firebase bridge: the game talks to window.claude.use(); here it resolves to Firebase-backed namespaces once the player signs in. */
 window.__fb=new Promise(r=>window.__fbResolve=r);
@@ -1277,25 +1343,25 @@ const assets={
 const $=s=>document.querySelector(s);let modeA='login',started=false,signupP=null;
 const AUTH_MSG={'auth/email-already-in-use':'이미 쓰고 있는 아이디입니다. 다른 아이디를 골라 주십시오.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/invalid-credential':'아이디 또는 비밀번호가 맞지 않습니다.','auth/wrong-password':'아이디 또는 비밀번호가 맞지 않습니다.','auth/user-not-found':'가입되지 않은 아이디입니다.','auth/invalid-email':'아이디는 영문 소문자·숫자·_ 4~16자로 적어 주십시오.','auth/too-many-requests':'시도가 너무 많습니다. 잠시 뒤 다시 해 주십시오.','auth/network-request-failed':'네트워크에 연결할 수 없습니다.','auth/operation-not-allowed':'파이어베이스 콘솔에서 이메일/비밀번호 로그인을 켜 주십시오.'};
 const say=(m,bad)=>{const e=$('#authMsg');e.textContent=m||'';e.style.color=bad?'var(--red)':'var(--green)'};
-function setMode(m){modeA=m;document.querySelectorAll('[data-auth]').forEach(b=>b.setAttribute('aria-selected',b.dataset.auth===m));const su=m==='signup';$('#authPw2').hidden=!su;$('#authCode').hidden=!su;$('#authGo').textContent=su?'초대장으로 가입하기':'로그인';$('#authTitle').textContent=su?'신규 단원 등록':'승선 인증';$('#authPw').autocomplete=su?'new-password':'current-password';say('')}
+function setMode(m){modeA=m;document.querySelectorAll('[data-auth]').forEach(b=>b.setAttribute('aria-selected',b.dataset.auth===m));const su=m==='signup';$('#authPw2').hidden=!su;$('#authCode').hidden=!su;$('#authGo').textContent=su?'군번으로 가입하기':'로그인';$('#authTitle').textContent=su?'신규 단원 등록':'승선 인증';$('#authPw').autocomplete=su?'new-password':'current-password';say('')}
 document.querySelectorAll('[data-auth]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.auth)));
 $('#authCode').addEventListener('input',e=>{const c=normCode(e.target.value).slice(0,8);e.target.value=c.length>4?c.slice(0,4)+'-'+c.slice(4):c});
 async function signup(id,pw,code){
   const admin=id===ADMIN_ID;
-  if(!admin){if(code.length!==8)throw{msg:'초대코드 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'초대코드가 올바르지 않거나 이미 사용됐습니다.'}}
+  if(!admin){if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않거나 이미 사용됐습니다.'}}
   const c=await createUserWithEmailAndPassword(auth,idEmail(id),pw);
   try{const bt=writeBatch(fs);bt.set(doc(fs,'members',c.user.uid),{id,code:admin?'':code,at:Date.now()});if(!admin)bt.delete(doc(fs,'invites',code));await bt.commit()}
-  catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'초대코드가 방금 다른 사람에게 사용됐습니다. 운영자에게 새 초대장을 받아 주십시오.'}}
+  catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'군번이 방금 다른 사람에게 사용됐습니다. 운영자에게 새 군번을 받아 주십시오.'}}
 }
 // signed in but no member record (records were reset, or the account was let go): rejoin with a fresh invite under the same ID
 let rejoinU=null;
 function showRejoin(u){rejoinU=u;modeA='rejoin';['#authId','#authPw','#authPw2'].forEach(q=>$(q).hidden=true);const tabs=document.querySelector('#authForm .dtabs');if(tabs)tabs.hidden=true;$('#authCode').hidden=false;$('#authCode').value='';
-  $('#authTitle').textContent='다시 합류';$('#authGo').textContent='새 초대코드로 합류하기';$('#authGate').hidden=false;
-  say(`${(u.email||'').split('@')[0]} 아이디의 승선 기록이 없습니다. 테스트가 끝나 기록이 초기화됐거나 운영자가 내보낸 계정입니다. 새 초대코드를 적으면 같은 아이디로 다시 합류할 수 있습니다.`,1);
+  $('#authTitle').textContent='다시 합류';$('#authGo').textContent='새 군번으로 합류하기';$('#authGate').hidden=false;
+  say(`${(u.email||'').split('@')[0]} 아이디의 승선 기록이 없습니다. 테스트가 끝나 기록이 초기화됐거나 운영자가 내보낸 계정입니다. 새 군번을 적으면 같은 아이디로 다시 합류할 수 있습니다.`,1);
   if(!$('#authOther')){const b=document.createElement('button');b.type='button';b.id='authOther';b.className='btn sm ghost';b.textContent='다른 아이디로 로그인';b.addEventListener('click',async()=>{await signOut(auth);location.reload()});$('#authGo').after(b)}
   setTimeout(()=>$('#authCode').focus(),50)}
-async function rejoin(code){const u=rejoinU;if(!u)return;if(code.length!==8)throw{msg:'초대코드 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'초대코드가 올바르지 않거나 이미 사용됐습니다.'};
-  try{const bt=writeBatch(fs);bt.set(doc(fs,'members',u.uid),{id:(u.email||'').split('@')[0],code,at:Date.now()});bt.delete(doc(fs,'invites',code));await bt.commit()}catch(e){throw{msg:'초대코드가 방금 다른 사람에게 사용됐습니다. 운영자에게 새 초대장을 받아 주십시오.'}}}
+async function rejoin(code){const u=rejoinU;if(!u)return;if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않거나 이미 사용됐습니다.'};
+  try{const bt=writeBatch(fs);bt.set(doc(fs,'members',u.uid),{id:(u.email||'').split('@')[0],code,at:Date.now()});bt.delete(doc(fs,'invites',code));await bt.commit()}catch(e){throw{msg:'군번이 방금 다른 사람에게 사용됐습니다. 운영자에게 새 군번을 받아 주십시오.'}}}
 $('#authForm').addEventListener('submit',async e=>{e.preventDefault();
   if(modeA==='rejoin'){const btn=$('#authGo');btn.disabled=true;say('합류하는 중…');try{await rejoin(normCode($('#authCode').value));say('합류했습니다! 정거장으로 들어갑니다.');setTimeout(()=>location.reload(),600)}catch(x){say(x.msg||'합류하지 못했습니다.',1);btn.disabled=false}return}
   const id=$('#authId').value.trim().toLowerCase(),pw=$('#authPw').value,btn=$('#authGo');
