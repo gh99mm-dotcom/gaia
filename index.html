@@ -537,6 +537,15 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .rbm{cursor:pointer}.rbm.dead{opacity:.28;cursor:default;filter:grayscale(1)}.rbm.tgt .rbtag{border-color:#ff5f6a;box-shadow:0 0 0 1px #ff5f6a}
 .rbm.tgt::after{content:'▼ 공격 대상';position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#ff8a92;white-space:nowrap;animation:rbbob .8s steps(2) infinite}
 .rbu.turn .rbtag{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.rbu.down{opacity:.4;filter:grayscale(1)}.rbp.me .rbtag b{color:#ffd76a}
+
+.skpop.instage{position:absolute;top:46%;padding:8px 18px;z-index:8}.skpop.instage b{font-size:24px}
+.rbstage.myturn{border-color:var(--gold);animation:rbglow 1.2s ease-in-out infinite}
+@keyframes rbglow{50%{outline:3px solid #ffd76a88;outline-offset:-1px}}
+.rbmyturn{position:absolute;top:4px;left:50%;transform:translateX(-50%);z-index:3;font-size:13px;font-weight:900;padding:1px 12px;background:#ffd76a;color:#1a1408;letter-spacing:.08em;animation:rbmt .9s ease-in-out infinite}
+@keyframes rbmt{50%{transform:translateX(-50%) scale(1.08)}}
+.rbp.me.turn .rbtag{background:#ffd76a;border-color:#ffd76a}.rbp.me.turn .rbtag b,.rbp.me.turn .rbtag small{color:#1a1408;opacity:1}
+.rbp.me.turn::after{content:'▼';position:absolute;top:-15px;left:50%;transform:translateX(-50%);color:#ffd76a;font-size:13px;animation:rbbob .8s steps(2) infinite}
+.rbp.me.turn .rbspr{filter:drop-shadow(0 0 4px #ffd76a) drop-shadow(0 3px 0 #0006)}
 @keyframes rbbob{50%{transform:translate(-50%,-3px)}}
 .rbspr img{max-width:none}.rbdmg{position:absolute;left:50%;top:10%;line-height:1;font-weight:900;font-size:18px;color:#ff5f6a;-webkit-text-stroke:1px #000;pointer-events:none;animation:rbdmg 1s ease-out forwards;z-index:6}.rbp .rbdmg{color:#ffb35a}
 @keyframes rbdmg{0%{transform:translate(-50%,6px);opacity:0}15%{opacity:1;transform:translate(-50%,-6px) scale(1.25)}100%{transform:translate(-50%,-34px);opacity:0}}
@@ -2653,7 +2662,10 @@ function sfxSkill(j){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curr
   else if(j==='mech'){tone(a,'sawtooth',180,1400,t,.18,.1);tone(a,'square',1400,200,t+.16,.2,.07);noiseBurst(a,t+.05,.3,'bandpass',3000,800,.25,3);tone(a,'sawtooth',90,60,t+.2,.3,.12)}
   else{tone(a,'triangle',110,220,t,.5,.2);tone(a,'sine',660,880,t+.05,.45,.06);tone(a,'sine',990,1320,t+.12,.4,.04);noiseBurst(a,t,.4,'highpass',5000,2000,.06)}}
 // a big name card over the screen when anyone in the party uses a skill
-function skillPop(f){const d=document.createElement('div');d.className='skpop sk-'+(f.j||'');d.innerHTML=`<b>${esc(f.n)}!</b><span>${esc(f.by||'')}</span>`;document.body.appendChild(d);setTimeout(()=>d.remove(),1500)}
+// shown in the middle of the battle stage; the stage is redrawn right after, so it is placed once the new one is up
+let RAID_POP=null;
+function skillPop(f){RAID_POP=f;if(tab!=='raid')RAID_POP=null}
+function skillPopShow(f){const st=$('.rbstage'),d=document.createElement('div');d.className='skpop sk-'+(f.j||'')+(st?' instage':'');d.innerHTML=`<b>${esc(f.n)}!</b><span>${esc(f.by||'')}</span>`;(st||document.body).appendChild(d);setTimeout(()=>d.remove(),1500)}
 // moving on to the next stop: four footsteps on gravel — a soft low thump and a short gritty crunch, left and right alternating
 function sfxSteps(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;for(let i=0;i<4;i++){const at=t+i*.27,lo=i%2?1:.86;tone(a,'sine',95*lo,55*lo,at,.07,.05);noiseBurst(a,at,.08,'lowpass',1400*lo,380,.07,3);noiseBurst(a,at+.012,.05,'bandpass',2600*lo,1800,.018,2)}}
 // a battle won: a quick bright 8-bit jingle; the boss going down gets a longer fanfare. Starts just after the last hit's own sound
@@ -2729,13 +2741,14 @@ function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);ret
 function raidStageHTML(r,z){const b=r.b,T=RAID_TERRAIN[z.id]||RAID_TERRAIN.r1,cur=b.cur||{};
   const crew=r.ids.filter(u=>r.m[u]).map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="rbu rbp ${m.hp<=0||gone?'down':''} ${cur.k==='p'&&cur.id===u?'turn':''} ${u===uid?'me':''}" data-ru="p${u}"><div class="rbtag"><b>${esc(m.nick)}</b><small>Lv.${m.lvl}</small>${raidBar(m.hp,m.maxHp,'var(--green)')}</div><span class="rbspr">${meImg(3,whoP(u))}</span></div>`}).join('');
   const foes=b.mons.map((m,i)=>`<button class="rbu rbm ${m.kind||''} ${m.hp<=0?'dead':''} ${raidTgt===i&&m.hp>0?'tgt':''} ${cur.k==='m'&&cur.id===i?'turn':''}" data-act="raidtgt" data-k="${i}" data-ru="m${i}" ${m.hp<=0?'disabled':''} aria-label="${esc(m.n)} Lv.${m.L} 체력 ${m.hp}/${m.max}"><div class="rbtag"><b>${esc(m.n)}</b><small>Lv.${m.L}<span class="rbkind">${m.kind==='boss'?' · 보스':m.kind==='mid'?' · 중간 보스':m.kind==='elite'?' · 정예':''}</span></small>${raidBar(m.hp,m.max,'var(--red)')}<small class="rbhp">${Math.max(0,m.hp)}/${m.max}</small></div><span class="rbspr">${img(MON_SPR,m.t,m.kind==='boss'?6:m.kind==='mid'?5:m.kind==='elite'?4:3.5)}</span></button>`).join('');
-  return`<div class="rbstage" style="--g1:${T.g[0]};--g2:${T.g[1]};--gp:${T.p[0]}"><div class="rbteam rbl">${crew}</div><div class="rbteam rbr">${foes}</div></div>`}
+  const mine=r.phase==='battle'&&cur.k==='p'&&cur.id===uid;
+  return`<div class="rbstage ${mine?'myturn':''}" style="--g1:${T.g[0]};--g2:${T.g[1]};--gp:${T.p[0]}">${mine?'<span class="rbmyturn">내 차례!</span>':''}<div class="rbteam rbl">${crew}</div><div class="rbteam rbr">${foes}</div></div>`}
 // attack motion: the attacker dashes to its target, strikes, and runs back; the target flashes and shows the damage
 let RAID_ANIM=[];
 function raidAnimNote(a,b){const c=a.b.cur;if(!c||!b.b)return;
   if(c.k==='p'){const dm={};(b.b.mons||[]).forEach((m,i)=>{const o=(a.b.mons||[])[i];if(o&&Math.max(0,m.hp)<o.hp)dm['m'+i]=o.hp-Math.max(0,m.hp)});const ks=Object.keys(dm);if(ks.length)RAID_ANIM.push({from:'p'+c.id,to:ks[0],dm})}
   else{const dm={};(b.ids||[]).forEach(u=>{const x=a.m&&a.m[u],y=b.m&&b.m[u];if(x&&y&&y.hp<x.hp)dm['p'+u]=x.hp-y.hp});const ks=Object.keys(dm);if(ks.length)RAID_ANIM.push({from:'m'+c.id,to:ks[0],dm})}}
-function raidAnimRun(){if(!RAID_ANIM.length)return;const q=RAID_ANIM;RAID_ANIM=[];if(tab!=='raid')return;
+function raidAnimRun(){if(RAID_POP){const f=RAID_POP;RAID_POP=null;requestAnimationFrame(()=>skillPopShow(f))}if(!RAID_ANIM.length)return;const q=RAID_ANIM;RAID_ANIM=[];if(tab!=='raid')return;
   requestAnimationFrame(()=>q.forEach(o=>{const st=$('.rbstage');if(!st)return;const A=st.querySelector(`[data-ru="${o.from}"] .rbspr`),B=st.querySelector(`[data-ru="${o.to}"] .rbspr`);if(!A||!B||!A.animate)return;
     const ra=A.getBoundingClientRect(),rb=B.getBoundingClientRect(),dir=o.from[0]==='p'?1:-1,dx=dir>0?rb.left-ra.right+rb.width*.3:rb.right-ra.left-rb.width*.3,dy=rb.bottom-ra.bottom,T=(f,y,d)=>`translate(${f}px,${y}px) rotate(${d||0}deg)`;
     A.parentNode.classList.add('acting');
