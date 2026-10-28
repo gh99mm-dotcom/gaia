@@ -2709,7 +2709,7 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
       <span class="hint">${RSK[rJob(me)].map(k=>`${k.n}: ${k.d}`).join(' · ')}</span></div>`:''}
      ${raidBag?`<div class="card raiditems"><div class="stat-row"><span>쓸 수 있는 아이템</span><b>${foods.length}종</b></div>${foods.length?`<div class="bag">${foods.map(i=>`<button class="slot" data-act="raidpick" data-id="${i}" aria-pressed="${i===raidPick}" aria-label="${ITEMS[i].n} ${P.inv[i]}개" title="${ITEMS[i].n}">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">전투에서 쓸 수 있는 회복 아이템이 없습니다.</p>'}
       ${pk?`<div class="fspick">${iicon(raidPick,2)}<div><b>${pk.n}</b><span class="hint">체력 +${pk.hp>=999?'전부':pk.hp} · ${P.inv[raidPick]}개</span></div></div><span class="lbl">누구에게 쓸까요?</span><div class="row" style="gap:4px;flex-wrap:wrap">${tgts.map(u=>`<button class="qchip" data-act="raidto" data-k="${u}" aria-pressed="${(raidItemTo||uid)===u}">${esc(r.m[u].nick)}${u===uid?' (나)':''} ${r.m[u].hp}/${r.m[u].maxHp}</button>`).join('')}</div><button class="btn" data-act="raiditem" data-k="${raidPick}" ${myTurn?'':'disabled'}>${myTurn?'쓰기':'내 턴에 쓸 수 있습니다'}</button>`:foods.length?'<p class="hint">쓸 아이템을 누르십시오.</p>':''}</div>`:''}
-     <ol class="raidlog">${(b.log||[]).map(l=>`<li class="lg-${raidLogKind(r,l)}">${esc(l)}</li>`).join('')}</ol>
+     <ol class="raidlog" id="raidLog">${(b.log||[]).map(l=>`<li class="lg-${raidLogKind(r,l)}">${esc(l)}</li>`).join('')}</ol>
      <span class="hint">방어: 다음 내 턴까지 맞을 때 50% 확률로 피해 없음, 아니면 절반. 도망: 살아 있는 모두가 찬성해야 합니다. 몬스터를 눌러 공격 대상을 고릅니다. ${RAID_TURN/1000}초 안에 고르지 않으면 자동으로 공격합니다.</span></div>`}
   else{const ev=r.ev||{},end=r.phase==='end',L=r.loot[uid]||{xp:0,cr:0,it:{}};
     body=`<div class="card raidev"><b>${esc(ev.n||'')}</b>${ev.t?`<p>${esc(ev.t)}</p>`:''}${ev.res?`<p class="hint">${esc(ev.res)}</p>`:''}
@@ -4518,7 +4518,9 @@ function renderPanel(){tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
   renderPanel0();
   Object.entries(logs).forEach(([id,v])=>{const l=document.getElementById(id);if(l)l.scrollTop=v.end?l.scrollHeight:v.t});
-  {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}if(kf){const i=document.getElementById(kf);if(i){i.focus({preventScroll:true});if(pos!=null)try{i.setSelectionRange(pos,pos)}catch(e){}}}}
+  {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}
+  // the battle log holds only the last 7 lines, newest last: always show the newest (on phones they wrap past the box)
+  {const l=document.getElementById('raidLog');if(l)l.scrollTop=l.scrollHeight}if(kf){const i=document.getElementById(kf);if(i){i.focus({preventScroll:true});if(pos!=null)try{i.setSelectionRange(pos,pos)}catch(e){}}}}
 let barWas=false;
 function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView;syncBgm()}
   // my profile opens as a page in the stage, with a way back to the tab underneath
