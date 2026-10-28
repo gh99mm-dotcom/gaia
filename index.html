@@ -823,6 +823,7 @@ img.pix.tasty{filter:drop-shadow(0 0 2px #ffcf4a) drop-shadow(0 0 1px #ffcf4a)}:
 .fklist .namebtn{font-size:12px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fklist b{font-family:var(--f-pix);font-size:10px;white-space:nowrap}
 .fkempty{margin:10px 0 4px;text-align:center;font-size:12px}.fkreset{font-size:10px;opacity:.75;text-align:center}
 .fabbot{display:inline-block;width:64px;height:64px}.fabbot img{image-rendering:pixelated}
+.mailitem.read{opacity:.88}.mailitem.read .mailmsg{opacity:.9}
 .sellp{display:block;margin-top:2px;font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
 .tmaker{margin-top:1.1em}
 .rkgrid{--rk-lv:#e0606a;--rk-life:var(--green);--rk-don:var(--cyan);--rk2:#c9d1dc;--rk3:#d49a6a;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
@@ -4430,7 +4431,7 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
 let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
-const KEEP_FOCUS=new Set(['rcIn','fishTxt','fsQty-store','fsQty-bag']);
+const KEEP_FOCUS=new Set(['rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg']);
 function renderPanel(){tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
@@ -4741,6 +4742,8 @@ const A={
  async trcancel(d){const t=MYTR.find(x=>x.id===d.k);if(!t||mlBusy)return;mlBusy=true;let won=false;try{await bossTx(trLock(t.tid||t.id),cur=>{if(cur&&cur.st)return null;won=true;return{st:'cancel',by:uid,at:Date.now()}})}catch(e){}
   if(won){(t.give||[]).forEach(x=>{if(ITEMS[x.id])add(x.id,x.n)});P.cr+=Math.max(0,+t.giveCr||0);db.collection('gifts').doc(t.id).delete().catch(()=>{});MYTR=MYTR.filter(x=>x.id!==t.id);log('보낸 거래 제안을 취소하고 맡긴 물건을 돌려받았다.','good');toast('거래를 취소했습니다.')}
   else toast('상대가 이미 답했습니다. 우편함을 확인하십시오.');mlBusy=false;commit()},
+ mlreply(d){if(!PLAYERS[d.k]){toast('지금은 답장할 수 없는 단원입니다.');return}mailTab='write';mlTo=d.k;renderPanel();setTimeout(()=>{const t=$('#mlMsg');if(t)t.focus()},0)},
+ mbdel(d){if(!d.k){mbDelArm=null;renderPanel();return}if(d.x!=='1'){mbDelArm=d.k;renderPanel();return}P.mbox=(P.mbox||[]).filter(x=>x.id!==d.k);mbDelArm=null;toast('우편을 삭제했습니다.');save();renderPanel()},
  mailone(d){if(mailOpenOne(d.k)){commit();mailRefresh();renderPanel()}},
  mailall(){const ids=mailList().filter(m=>m.kind!=='trade').map(m=>m.id);let n=0;ids.forEach(id=>{if(mailOpenOne(id))n++});if(n){toast(`우편 ${n}통을 모두 받았습니다.`);commit();mailRefresh();renderPanel()}},
  settitle(d){const t=TITLES.find(x=>x[0]===d.k);if(!t||!t[3]())return;P.title=d.k;save();renderInfo();renderPilot()},
@@ -4821,12 +4824,17 @@ const mailHasGift=g=>giftItems(g).some(([i,n])=>ITEMS[i]&&n>0)||(+g.cr||0)>0;
 const mailList=()=>[...MAILA,...MAILG].sort((a,b)=>(+b.at||0)-(+a.at||0));
 function mailRefresh(){const b=$('#mailBtn');if(b){const n=mailList().length;b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n)}if(mailView)renderPanel()}
 function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
-  if(a){const cr=Math.min(100000,Math.floor(+a.cr));P.gr=[...(P.gr||[]),id].slice(-80);P.cr=(P.cr||0)+cr;MAILA=MAILA.filter(x=>x.id!==id);log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');sfxCoin();return true}
+  if(a){const cr=Math.min(100000,Math.floor(+a.cr));P.gr=[...(P.gr||[]),id].slice(-80);P.cr=(P.cr||0)+cr;MAILA=MAILA.filter(x=>x.id!==id);mboxKeep({id,sys:1,kind:'grant',msg:a.msg,at:a.at,cr});log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (+${cr.toLocaleString()} CR)`,'rare');sfxCoin();return true}
   const g=MAILG.find(x=>x.id===id);if(!g||g.kind==='trade')return false;P.gotG=[...(P.gotG||[]).slice(-60),id];MAILG=MAILG.filter(x=>x.id!==id);
   const parts=[];giftItems(g).forEach(([i,n,by])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));tmkAdd(i,by);parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
-  giftAff(g);
+  giftAff(g);mboxKeep({id,from:g.from,nick:g.nick,sys:g.sys?1:0,kind:g.kind||'',msg:g.msg,at:g.at,items:giftItems(g).filter(([i,n])=>ITEMS[i]&&n>0).map(([i,n])=>({id:i,n})),cr:c});
   const who=g.sys?'운영자':(g.nick||'누군가'),what=g.kind==='letter'?'편지':g.kind==='tradeok'?'거래 물품':g.kind==='tradeno'?'돌려받은 거래 물품':'선물';log(parts.length?`${who} 님의 ${what}을(를) 받았다: ${parts.join(', ')}${g.msg?` — “${String(g.msg).slice(0,40)}”`:''}`:`${who} 님의 쪽지 — “${String(g.msg||'').slice(0,40)}”`,parts.length?'rare':'good');if(parts.length)sfxCoin();
   if(mode==='online')db.collection('gifts').doc(id).delete().catch(()=>{});return true}
+/* opened mail stays in 받은 우편 until you delete it: a copy is kept on the character (newest first, at most 60) */
+const MBOX_MAX=60;let mbDelArm=null;
+function mboxKeep(m){const e={id:m.id,from:m.from||'',nick:String(m.nick||'').slice(0,16),sys:m.sys?1:0,kind:m.kind||'',msg:String(m.msg||'').slice(0,200),at:+m.at||Date.now(),items:(m.items||[]).slice(0,ML_TYPES+2),cr:+m.cr||0,got:Date.now()};
+  P.mbox=[e,...(P.mbox||[]).filter(x=>x.id!==e.id)].slice(0,MBOX_MAX)}
+const canReply=m=>!m.sys&&!m.grant&&m.from&&m.from!==uid&&!!PLAYERS[m.from];
 /* ---- 우편: letters with attachments and item trades between members (both ride on the gifts collection) ---- */
 const ML_TYPES=3,ML_EACH=10;
 const chipsTxt=(list,cr)=>[...(list||[]).filter(x=>ITEMS[x.id]).map(x=>ITEMS[x.id].n+'×'+x.n),...(cr>0?[cr.toLocaleString()+' CR']:[])].join(', ')||'없음';
@@ -4843,15 +4851,20 @@ function attPicker(sel,act,qact){const ids=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i]&
    <span class="hint">아이템은 ${ML_TYPES}종류까지, 종류마다 ${ML_EACH}개까지 넣을 수 있습니다. (${L.length}/${ML_TYPES})</span>
    ${ids.length?`<div class="bag mlbag">${ids.map(i=>`<button class="slot" data-act="${act}" data-id="${i}" aria-pressed="${!!sel[i]}" title="${esc(ITEMS[i].n)}" aria-label="${esc(ITEMS[i].n)} ${P.inv[i]}개">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">가방이 비어 있습니다.</p>'}`}
 function toSel(id,cur){const L=Object.entries(PLAYERS).filter(([k,p])=>k!==uid&&p&&p.nick).sort((a,b)=>a[1].nick.localeCompare(b[1].nick,'ko'));return L.length?`<select id="${id}" class="sel" aria-label="받는 사람"><option value="">받는 사람 고르기</option>${L.map(([k,p])=>`<option value="${esc(k)}" ${cur===k?'selected':''}>${esc(p.nick)} · Lv.${p.lvl||1}</option>`).join('')}</select>`:'<span class="hint">다른 단원이 아직 없습니다.</span>'}
-function mailInHTML(){const L=mailList();
-  return L.length?`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">선물·편지는 받기를 눌러야 가방에 들어옵니다. 거래 제안은 수락하거나 거절하십시오.</span><button class="btn sm gold" data-act="mailall">모두 받기</button></div>
+// letters already opened: kept until deleted, with a quick reply
+function mboxHTML(R){if(!R.length)return'';return`<div class="row" style="justify-content:space-between;margin:16px 0 6px"><span class="lbl">읽은 우편 · ${R.length}통</span><span class="hint">직접 삭제하기 전까지 남아 있습니다 (최근 ${MBOX_MAX}통)</span></div>
+  <div class="maillist mbox">${R.map(m=>{const who=m.sys?'운영자':(m.nick||'단원'),kind=m.kind==='grant'?'운영자 선물':mailKind(m),chips=mlChips(m.items||[],+m.cr||0),arm=mbDelArm===m.id;
+    return`<div class="mailitem read ${m.sys?'sys':''}"><div class="mailfrom">${m.sys?`<span class="mailsys">운영자</span>`:headImg(3,whoP(m.from))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">· ${kind}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(m.msg)}”</p>`:''}${chips?`<div class="chips">${chips}<span class="hint">받음</span></div>`:''}</div>
+     <div class="sbtns" style="flex-direction:column">${canReply(m)?`<button class="btn sm" data-act="mlreply" data-k="${esc(m.from)}">답장</button>`:''}${arm?`<button class="btn sm alt" data-act="mbdel" data-k="${esc(m.id)}" data-x="1">정말 삭제</button><button class="btn sm ghost" data-act="mbdel" data-k="">취소</button>`:`<button class="btn sm ghost" data-act="mbdel" data-k="${esc(m.id)}">삭제</button>`}</div></div>`}).join('')}</div>`}
+function mailInHTML(){const L=mailList(),R=P.mbox||[];
+  return (L.length?`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">선물·편지는 받기를 눌러야 가방에 들어옵니다. 거래 제안은 수락하거나 거절하십시오.</span><button class="btn sm gold" data-act="mailall">모두 받기</button></div>
   <div class="maillist">${L.map(m=>{const sysm=m.grant||m.sys,tr=m.kind==='trade',gift=m.grant||mailHasGift(m),who=sysm?'운영자':(m.nick||'단원');
     const chips=m.grant?`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`:tr?'':mlChips(giftItems(m).map(([id,n])=>({id,n})),+m.cr||0);
     const trBody=tr?`<div class="trbox"><div><span class="lbl">받을 것</span><div class="chips">${mlChips(m.give||[],+m.giveCr||0)||'<span class="hint">없음</span>'}</div></div><div><span class="lbl">줄 것</span><div class="chips">${mlChips(m.want||[],+m.wantCr||0)||'<span class="hint">없음</span>'}</div></div></div>`:'';
     const ok=tr&&haveAll(m.want||[],+m.wantCr||0);
-    const btn=tr?`<div class="sbtns" style="flex-direction:column"><button class="btn sm gold" data-act="tracc" data-k="${esc(m.id)}" ${ok?'':'disabled'} title="${ok?'':'줄 물건이 모자랍니다'}">수락</button><button class="btn sm ghost" data-act="trno" data-k="${esc(m.id)}">거절</button></div>`:`<button class="btn sm ${gift?'gold':'ghost'}" data-act="mailone" data-k="${esc(m.id)}">${gift?'받기':'확인'}</button>`;
+    const btn=tr?`<div class="sbtns" style="flex-direction:column"><button class="btn sm gold" data-act="tracc" data-k="${esc(m.id)}" ${ok?'':'disabled'} title="${ok?'':'줄 물건이 모자랍니다'}">수락</button><button class="btn sm ghost" data-act="trno" data-k="${esc(m.id)}">거절</button></div>`:`<div class="sbtns" style="flex-direction:column"><button class="btn sm ${gift?'gold':'ghost'}" data-act="mailone" data-k="${esc(m.id)}">${gift?'받기':'확인'}</button>${canReply(m)?`<button class="btn sm ghost" data-act="mlreply" data-k="${esc(m.from)}">답장</button>`:''}</div>`;
     return`<div class="mailitem ${sysm?'sys':''} ${tr?'trade':''}"><div class="mailfrom">${sysm?`<span class="mailsys">운영자</span>`:headImg(3,whoP(m.from))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">· ${mailKind(m)}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(String(m.msg).slice(0,200))}”</p>`:''}${chips?`<div class="chips">${chips}</div>`:''}${trBody}${tr&&!ok?'<span class="hint" style="color:var(--red)">줄 물건이나 크레딧이 모자라 아직 수락할 수 없습니다.</span>':''}</div>${btn}</div>`}).join('')}</div>`
-  :'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 단원이나 운영자가 보낸 선물, 편지, 거래 제안이 여기에 도착합니다.</p>'}
+  :(R.length?'':'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 단원이나 운영자가 보낸 선물, 편지, 거래 제안이 여기에 도착합니다.</p>'))+mboxHTML(R)}
 function mailWriteHTML(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">편지는 온라인에 접속했을 때 보낼 수 있습니다.</p>';
   return`<div class="card mlform"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="lbl">받는 사람</span>${toSel('mlTo',mlTo)}</div>
    <textarea id="mlMsg" class="sel mltext" maxlength="200" placeholder="편지 내용 (200자까지)" aria-label="편지 내용">${esc(mlMsg)}</textarea>
@@ -4870,7 +4883,7 @@ function mailTradeHTML(){if(mode!=='online')return'<p class="hint" style="paddin
    <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="trsend" ${mlBusy?'disabled':''}>거래 제안 보내기</button></div></div>
   <span class="lbl" style="display:block;margin-top:12px">보낸 거래 제안 · 답을 기다리는 중</span>${MYTR.length?`<div class="maillist">${MYTR.map(t=>`<div class="mailitem trade"><div class="mailfrom">${headImg(3,whoP(t.to))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc((PLAYERS[t.to]||{}).nick||t.toNick||'단원')} <span class="hint">· 답을 기다리는 중</span></b><time class="hint">${fbTime(+t.at||0)}</time></div><div class="trbox"><div><span class="lbl">줄 것</span><div class="chips">${mlChips(t.give||[],+t.giveCr||0)||'<span class="hint">없음</span>'}</div></div><div><span class="lbl">받을 것</span><div class="chips">${mlChips(t.want||[],+t.wantCr||0)||'<span class="hint">없음</span>'}</div></div></div></div><button class="btn sm ghost" data-act="trcancel" data-k="${esc(t.id)}">취소</button></div>`).join('')}</div>`:'<p class="hint">보낸 거래 제안이 없습니다.</p>'}`}
 function mailHTML(){const L=mailList();const tabs=[['in',`받은 우편${L.length?' <em>'+L.length+'</em>':''}`],['write','편지 쓰기'],['trade',`거래${MYTR.length?' <em>'+MYTR.length+'</em>':''}`]];
-  return`<div class="stage-head mehead"><button class="qchip" data-act="mailclose">← 돌아가기</button><h2>우편함</h2><span class="loc">${L.length?L.length+'통 도착':'비어 있음'}</span></div>
+  return`<div class="stage-head mehead"><button class="qchip" data-act="mailclose">← 돌아가기</button><h2>우편함</h2><span class="loc">${L.length?L.length+'통 도착':(P.mbox||[]).length?'새 우편 없음':'비어 있음'}</span></div>
   <div class="dtabs" role="tablist" style="margin-top:8px">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${mailTab===k}" data-act="mailtab" data-k="${k}">${n}</button>`).join('')}</div>
   ${mailTab==='write'?mailWriteHTML():mailTab==='trade'?mailTradeHTML():mailInHTML()}`}
 // typed drafts survive the redraws snapshots cause
