@@ -2236,7 +2236,7 @@ async function connect(){
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
     // every notice sent from the admin side (adm:true) that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
     // invader notices carry their own sound: the beacon coming back on after a win, crackling static after a loss
-    const adm=CHAT.filter(m=>m.adm||m.snd==='beacon'||m.snd==='static');if(chimeSeen){const nw=adm.filter(m=>!chimeSeen.has(m.id));if(nw.length){if(nw.some(m=>m.snd==='siren'))sfxSiren();else if(nw.some(m=>m.snd==='static'))sfxStatic();else if(nw.some(m=>m.snd==='beacon'))sfxBeacon();else sfxChime();toast(String(nw[nw.length-1].text||'').slice(0,60))}}chimeSeen=new Set([...(chimeSeen||[]),...adm.map(m=>m.id)]);renderChat()},()=>{});
+    const adm=CHAT.filter(m=>m.adm||m.snd==='beacon'||m.snd==='static');if(chimeSeen){const nw=adm.filter(m=>!chimeSeen.has(m.id));if(nw.length){sfxNotice(nw.some(m=>m.snd==='siren')?sfxSiren:nw.some(m=>m.snd==='static')?sfxStatic:nw.some(m=>m.snd==='beacon')?sfxBeacon:sfxChime);toast(String(nw[nw.length-1].text||'').slice(0,60))}}chimeSeen=new Set([...(chimeSeen||[]),...adm.map(m=>m.id)]);renderChat()},()=>{});
   socSubscribe();raidSubscribe();bossSubscribe();
   if(room){room.onPeers(ch=>{PEERS=ch.peers;renderCrew();renderNet();if(tab==='farm')renderPanel()});setPresence()}
 }
@@ -3214,6 +3214,12 @@ function renderFish(){
 }
 let AC=null,soundOn=true,sfxVol=100;try{soundOn=localStorage.getItem('nebula-sound')!=='off';const v=localStorage.getItem('nebula-sfxv');if(v!=null)sfxVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
 function sfxOut(a){if(!a.master){a.master=a.createGain();a.master.connect(a.destination)}a.master.gain.value=sfxVol/100;return a.master}
+// browsers keep audio locked until the page is touched (and lock it again after the phone sleeps or the tab is hidden);
+// phones only count touchend / click as a touch. A notice sound that arrives while audio is locked waits for the next tap (up to a minute)
+let sfxWait=null;
+['pointerdown','pointerup','keydown','touchend','click'].forEach(ev=>document.addEventListener(ev,()=>{if(!soundOn||(AC&&AC.state==='running'&&!sfxWait))return;const a=ac();if(!a)return;
+  Promise.resolve(a.state==='running'||a.resume()).then(()=>{const w=sfxWait;sfxWait=null;if(w&&Date.now()-w.at<60e3&&a.state==='running')w.fn()}).catch(()=>{})},{capture:true,passive:true}));
+function sfxNotice(fn){if(!soundOn)return;const a=ac();if(a&&a.state==='running'){fn();return}sfxWait={fn,at:Date.now()}}
 function ac(){try{if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C()}if(AC.state==='suspended')AC.resume();return AC}catch(e){return null}}
 function tone(a,type,f0,f1,t,dur,vol){const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(sfxOut(a));o.start(t);o.stop(t+dur+.02)}
 function sfxCast(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,len=.5;
@@ -3241,7 +3247,6 @@ function sfxBossBack(miss){if(!soundOn)return;const a=ac();if(!a)return;const t=
   tone(a,'sawtooth',70,38,t,.55,.22);tone(a,'square',55,30,t+.02,.5,.12);noiseBurst(a,t,.5,'lowpass',500,80,.45,1.6);tone(a,'sine',180,60,t+.08,.3,.15)}
 function sfxBossKill(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.2;tone(a,'sawtooth',220,30,t,1.6,.18);noiseBurst(a,t,1.4,'lowpass',1200,60,.5,1.2);[523,659,784,1046].forEach((f,i)=>tone(a,'triangle',f,0,t+1+i*.12,.5,.08))}
 // 딩-동-댕: three soft bell tones going up (C5 E5 G5), with a faint octave shimmer
-['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{if(soundOn)ac()},{passive:true}));
 // invader alarm: a two-tone 삐-뽀 siren, 3 s
 function sfxSiren(){if(!soundOn)return;const N=8,S=.375;const a=ac();if(!a)return;const t=a.currentTime+.05,o=a.createOscillator(),o2=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain();
   o.type='square';o2.type='sawtooth';f.type='lowpass';f.frequency.value=2400;
@@ -4656,17 +4661,19 @@ function renderCrew(){
 const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
 let tickOpen=false;
 // notices older than 2 hours drop off the ticker; a minute timer keeps it fresh even with no new chat
-const TICK_TTL=2*3600e3,tickList=()=>CHAT.filter(m=>m.sys&&!m.adm&&TICK_RE.test(m.text||'')&&Date.now()-(+m.at||0)<TICK_TTL).slice().reverse().slice(0,10);
+// pinned notices: the admin's, and the invader's win / loss announcements; they stay up until a newer pinned one replaces them
+const tickPinned=m=>!!m&&(m.adm||(m.sys&&(m.snd==='beacon'||m.snd==='static')));
+const TICK_TTL=2*3600e3,tickList=()=>CHAT.filter(m=>m.sys&&!tickPinned(m)&&TICK_RE.test(m.text||'')&&Date.now()-(+m.at||0)<TICK_TTL).slice().reverse().slice(0,10);
 setInterval(()=>{if(CHAT.some(m=>m.sys&&Date.now()-(+m.at||0)>=TICK_TTL&&Date.now()-(+m.at||0)<TICK_TTL+65e3))renderChat()},60e3);
 const tickKind=t=>t.startsWith('[공지]')?'n':t.startsWith('새 단원')?'j':'c';
 // the admin can strike any notice off the ticker
 const tickDel=x=>isAdmin&&mode==='online'&&x&&x.id?`<button type="button" class="tk-x" data-act="tickdel" data-k="${esc(x.id)}" title="이 알림 삭제" aria-label="이 알림 삭제">×</button>`:'';
 /* ticker: the latest admin notice stays pinned; everyone else's news slides past once (6 s each) and is gone */
 let tickSeen=null,tickQ=[],tickCur=null,tickUntil=0;
-const tickPin=()=>{let p=null;CHAT.forEach(m=>{if(m.adm&&(!p||(+m.at||0)>(+p.at||0)))p=m});return p};
+const tickPin=()=>{let p=null;CHAT.forEach(m=>{if(tickPinned(m)&&(!p||(+m.at||0)>(+p.at||0)))p=m});return p};
 function renderChat(fresh){
   const el=$('#ticker');if(!el)return;const L=tickList(),pin=tickPin();
-  const news=CHAT.filter(m=>m.sys&&!m.adm&&TICK_RE.test(m.text||''));
+  const news=CHAT.filter(m=>m.sys&&!tickPinned(m)&&TICK_RE.test(m.text||''));
   if(!tickSeen){if(mode==='online'&&CHAT.length)tickSeen=new Set(news.map(m=>m.id))}else news.forEach(m=>{if(!tickSeen.has(m.id)){tickSeen.add(m.id);tickQ.push(m)}});
   if(tickCur&&Date.now()>=tickUntil)tickCur=null;
   if(!tickCur&&tickQ.length){tickCur=tickQ.shift();tickUntil=Date.now()+6000;fresh=true}
