@@ -913,6 +913,38 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 .rklist .namebtn{text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rklist b{font-size:13px;white-space:nowrap}
 .rkmine{font-size:13px;color:var(--mute);border-top:1px dashed var(--line);padding-top:6px}
+
+/* pixel-art ranking cards: chunky double frame, ribbon banner, hard drop shadows and pixel medals */
+.rkcard{position:relative;background:#141728;border:3px solid #07080e;outline:2px solid var(--c);outline-offset:-6px;padding:16px 14px 14px;image-rendering:pixelated}
+.rkcard>.lbl{display:none}
+.rkrv{position:absolute;width:4px;height:4px;background:var(--c);z-index:1}.rkrv.a{left:3px;top:3px}.rkrv.b{right:3px;top:3px}
+.rkrv.a::after,.rkrv.b::after{content:'';position:absolute;width:4px;height:4px;background:var(--c);top:calc(100% + var(--rkh,0px))}
+.rkbn{position:relative;align-self:center;display:flex;align-items:center;gap:6px;margin:-4px 0 4px;padding:4px 18px 5px;background:var(--c);color:#07080e;
+  clip-path:polygon(0 0,100% 0,calc(100% - 8px) 50%,100% 100%,0 100%,8px 50%);filter:drop-shadow(0 3px 0 #07080e)}
+.rkbn b{font-family:var(--f-display);font-size:16px;font-weight:400;letter-spacing:.04em;text-shadow:1px 1px 0 color-mix(in srgb,#fff 45%,transparent)}
+.rkic{display:inline-grid;place-items:center;line-height:0}
+.rkport{border:3px solid #07080e;outline:2px solid #ffd65f;outline-offset:-5px}
+.rkhead .rk1{display:flex;align-items:baseline;gap:6px;font-family:var(--f-display);font-weight:400;font-size:19px;color:#ffd65f;text-shadow:2px 2px 0 #07080e;border-bottom:2px dashed color-mix(in srgb,var(--c) 55%,transparent)}
+.rkhead .rk1::before{content:none}
+.rkhead .rk1 em{font-style:normal;font-family:var(--f-pix);font-size:13px;color:#07080e;background:#ffd65f;padding:1px 5px 0;text-shadow:none;filter:drop-shadow(2px 2px 0 #07080e)}
+.rkhead .namebtn{background:#07080e;border:2px solid var(--c);padding:3px 8px;color:#fff}
+.rkhead .namebtn::before,.rkhead .namebtn::after{content:none}
+.rkhead .rkv{font-family:var(--f-pix);font-size:12px;color:#07080e;background:var(--c);border:0;padding:2px 8px 1px;filter:drop-shadow(2px 2px 0 #07080e)}
+.rklist{gap:3px}
+.rklist li{background:#1b1f36;border:2px solid #07080e;border-left-width:2px;padding:3px 6px}
+.rklist li:nth-child(even){background:#181b2f}
+.rklist li+li{border-top:2px solid #07080e}
+.rklist li.me{background:color-mix(in srgb,var(--me-name) 22%,#1b1f36);border-color:var(--me-name);border-style:dashed}
+.rklist .no{display:flex;align-items:center;justify-content:flex-end;gap:2px;font-family:var(--f-pix);font-size:13px}
+.rklist li:nth-child(-n+2){grid-template-columns:46px 34px minmax(0,1fr) auto;gap:4px}.rklist li:nth-child(-n+2) .no{font-size:15px}
+.rkmd{line-height:0;filter:drop-shadow(1px 1px 0 #07080e)}
+.rkface{border-radius:0!important;border:2px solid #07080e}
+.rklist b{font-family:var(--f-pix);font-size:12px;color:var(--c)}
+.rkmine{font-family:var(--f-pix);border-top:2px dashed var(--c)}
+:root[data-skin="light"] .rkcard{background:#fffaf0;border-color:#2a2418;box-shadow:none}
+:root[data-skin="light"] .rklist li{background:#fff;border-color:#2a2418}:root[data-skin="light"] .rklist li:nth-child(even){background:#f7f1e4}
+:root[data-skin="light"] .rkhead .namebtn{background:#2a2418}:root[data-skin="light"] .rkhead .rk1{color:#c8901a;text-shadow:2px 2px 0 #2a2418}
+:root[data-skin="light"] .rklist li.me{background:color-mix(in srgb,var(--me-name) 12%,#fff)}
 @media (max-width:900px){.rkgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}@media (max-width:620px){.rkgrid{grid-template-columns:minmax(0,1fr)}}
 :root[data-skin="light"] .relmap{background:radial-gradient(ellipse at 50% 50%,#fbfaf7 0 35%,var(--deep) 75%)}
 :root[data-skin="light"] .rellab{background:rgba(251,250,247,.94)}
@@ -5296,10 +5328,17 @@ function rkReward(){if(mode!=='online'||!P||!P.nick)return;let got=[];RANKS.forE
   const ids=['rk_'+k,'rkf_'+k].filter(id=>!(P.own||[]).includes(id));if(!ids.length)return;P.own=[...(P.own||[]),...ids];got.push([k,n])});
   if(!got.length)return;got.forEach(([k,n])=>{const w=wardById('rk_'+k);log(`${n} 1위! 「${w.n}」을(를) 받았다. 옷장(등)과 마이룸(바닥 소품)에서 쓸 수 있다.`,'rare');toast(`${n} 1위 보상 · ${w.n}`)});sfxFanfare(true);commit()}
 setInterval(rkReward,60e3);setTimeout(rkReward,15e3);
+// pixel bits for the ranking cards: a medal for 2nd and 3rd, and a small badge per ranking
+const RK_MEDAL=["FEE....EEF","FEEF..FEEF",".FEEFFEEF.","..FEEEEF..","...kkkk...","..kHAABk..",".kHAAABBk.",".kAAAABBDk".slice(0,10),".kAABBBDk.",".kABBBBDk.","..kBDDDk..","...kkkk..."];
+const RK_MPO={2:{H:'#ffffff',A:'#e4e9f2',B:'#aab3c4',D:'#6e788c',E:'#5a8ad8',F:'#2f4f8a'},3:{H:'#ffe0c0',A:'#e8a46a',B:'#b8703a',D:'#7a4420',E:'#c8404a',F:'#7a1a28'}};
+const RK_IC={lv:["....k....","...kAk...","kkkkAkkkk","kAAAAAAAk",".kAAHAAk.","..kAAAk..",".kAAkAAk.",".kAk.kAk.",".kk...kk."],
+  life:["...kkk...","..kAAAk..",".kAAHAk..",".kAAAAk.k","..kkAkkAk","....kAAAk","....kAkk.","...kkAk..","..kBBBBk."],
+  don:["kkkkkkkkk","kAAAAAAAk","kAHkkkHAk","kAkAAAkAk","kAAkAkAAk","kAkAAAkAk","kAHkkkHAk","kAAAAAAAk","kkkkkkkkk"]};
+const RK_IPO={lv:{A:'#ff7a82',H:'#ffd0d4'},life:{A:'#6ad890',H:'#c8ffd8',B:'#8a6a4a'},don:{A:'#6ab0ff',H:'#d0e8ff'}};
 function rankCard([k,n,c]){const rows=rankRows(k),top=rows[0],mi=rows.findIndex(r=>r[0]===uid);
   const nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'단원')}${id===uid?' (나)':''}</button>`;
-  return`<div class="rkcard" style="--c:${c}"><span class="lbl">${n}</span>${top?`<div class="rktop"><div class="rkport" style="background-image:url(${SPACE_PNG[k]})"><i class="rkspace"></i><i class="rkmeteor"></i><img class="pix keepc rkthrone" src="${THRONE_PNG[k]}" alt="" aria-hidden="true"><span class="rkchar">${meImg(4,top[1])}</span><i class="rksp s1"></i><i class="rksp s2"></i><i class="rksp s3"></i><i class="rksp s4"></i><i class="rksp s5"></i></div><div class="rkhead"><span class="rk1">랭킹 1위</span>${nm(top[0],top[1])}<span class="rkv">${top[3]}</span></div></div>
-   ${rows.length>1?`<ol class="rklist">${rows.slice(1,10).map(([id,p,,v],i)=>`<li class="${id===uid?'me':''}"><span class="no">${i+2}위</span><span class="rkface">${headImg(2,p)}</span>${nm(id,p)}<b>${v}</b></li>`).join('')}</ol>`:''}
+  return`<div class="rkcard" style="--c:${c}"><i class="rkrv a"></i><i class="rkrv b"></i><div class="rkbn"><span class="rkic">${img(RK_IC[k],null,2,'',RK_IPO[k])}</span><b>${n}</b></div>${top?`<div class="rktop"><div class="rkport" style="background-image:url(${SPACE_PNG[k]})"><i class="rkspace"></i><i class="rkmeteor"></i><img class="pix keepc rkthrone" src="${THRONE_PNG[k]}" alt="" aria-hidden="true"><span class="rkchar">${meImg(4,top[1])}</span><i class="rksp s1"></i><i class="rksp s2"></i><i class="rksp s3"></i><i class="rksp s4"></i><i class="rksp s5"></i></div><div class="rkhead"><span class="rk1"><em>1ST</em>랭킹 1위</span>${nm(top[0],top[1])}<span class="rkv">${top[3]}</span></div></div>
+   ${rows.length>1?`<ol class="rklist">${rows.slice(1,10).map(([id,p,,v],i)=>`<li class="${id===uid?'me':''}"><span class="no">${i<2?`<span class="rkmd">${img(RK_MEDAL,null,1.5,'',RK_MPO[i+2])}</span>`:''}${i+2}위</span><span class="rkface">${headImg(2,p)}</span>${nm(id,p)}<b>${v}</b></li>`).join('')}</ol>`:''}
    ${mi>=10?`<div class="rkmine">내 순위 <b>${mi+1}위</b> · ${rows[mi][3]}</div>`:''}`:'<p class="hint">아직 순위에 오른 단원이 없습니다.</p>'}</div>`}
 function socRank(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">개척단 랭킹</b><span class="hint">이름을 누르면 프로필이 열립니다</span></div><div class="rkgrid">${RANKS.map(rankCard).join('')}</div>`}
 function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">단원을 누르면 그 단원의 프로필이 열립니다</span></div>${relMapHTML(uid,false)}${relTiersHTML()}`}
