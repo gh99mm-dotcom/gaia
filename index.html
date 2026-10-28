@@ -946,7 +946,7 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 :root[data-skin="light"] .rkhead .namebtn{background:#2a2418}:root[data-skin="light"] .rkhead .rk1{color:#c8901a;text-shadow:2px 2px 0 #2a2418}
 :root[data-skin="light"] .rklist li.me{background:color-mix(in srgb,var(--me-name) 12%,#fff)}
 
-.pfpbox{position:relative;overflow:hidden}.pfpimg{width:100%;height:100%;min-height:150px;object-fit:cover;display:block;cursor:zoom-in;image-rendering:auto}
+.pfpbox{position:relative;overflow:hidden}.pfpimg{width:3cm;height:4cm;flex:none;object-fit:cover;object-position:center;display:block;margin:auto;cursor:zoom-in;image-rendering:auto}.pfpbox:has(.pfpimg){display:grid;place-items:center}
 .pfplock{position:absolute;left:4px;right:4px;bottom:4px;font-size:10px;line-height:1.35;white-space:normal;text-align:center;background:#07080ecc;color:#cfd3e0;padding:2px 4px}
 .jobcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .jobcard{--jc:#e0a84a;position:relative;display:flex;flex-direction:column;padding:0;text-align:left;color:inherit;font:inherit;background:var(--deep);border:3px solid #07080e;outline:2px solid color-mix(in srgb,var(--jc) 45%,transparent);outline-offset:-5px;cursor:pointer;min-width:0;image-rendering:pixelated}
@@ -5408,7 +5408,7 @@ function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(
    <div class="card profcard"><div class="mehero ophero"><div class="meport pfpbox">${p.pfp?pfpImg(p.pfp):withPet(meImg(6,p),p,6)}</div>
     <div class="meid"><span class="lv">${esc(orgRole(uid))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2>${snHTML(SN_PUB||p.sn)}<span class="hint" style="color:var(--green)">● 접속 중</span>
      <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${chips(p.likes,'var(--pink)')}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${chips(p.hates,'var(--red)')}</div></div></div>
-     <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 단원에게만 보입니다.</span>
+     <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 단원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
      ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}</div>
     <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${jobOf(p)?esc(jobOf(p).n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div></div></div>
     <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
