@@ -946,6 +946,8 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 :root[data-skin="light"] .rkhead .namebtn{background:#2a2418}:root[data-skin="light"] .rkhead .rk1{color:#c8901a;text-shadow:2px 2px 0 #2a2418}
 :root[data-skin="light"] .rklist li.me{background:color-mix(in srgb,var(--me-name) 12%,#fff)}
 
+.pfpbox{position:relative;overflow:hidden}.pfpimg{width:100%;height:100%;min-height:150px;object-fit:cover;display:block;cursor:zoom-in;image-rendering:auto}
+.pfplock{position:absolute;left:4px;right:4px;bottom:4px;font-size:10px;line-height:1.35;white-space:normal;text-align:center;background:#07080ecc;color:#cfd3e0;padding:2px 4px}
 .jobcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .jobcard{--jc:#e0a84a;position:relative;display:flex;flex-direction:column;padding:0;text-align:left;color:inherit;font:inherit;background:var(--deep);border:3px solid #07080e;outline:2px solid color-mix(in srgb,var(--jc) 45%,transparent);outline-offset:-5px;cursor:pointer;min-width:0;image-rendering:pixelated}
 .jobcard.jc-nav{--jc:#5fb8f0}.jobcard.jc-medic{--jc:#7ad07a}
@@ -4939,6 +4941,7 @@ const A={
  okpt(){const n=pendSum();if(!n||n>ptsLeft()){abPend={};renderInfo();return}P.as=Object.assign({},P.as);Object.entries(abPend).forEach(([k,q])=>{if(ABIL.find(a=>a[0]===k))P.as[k]=AS(k)+q});abPend={};log(`능력치 ${n}포인트를 배분했다.`,'good');save();renderInfo();renderPilot()},
  resetpt(){abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
+ pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
  metab(d){meTab=d.k==='look'||d.k==='prof'?d.k:'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
  mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='ship';shipView='bench';benchTab='craft'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
@@ -5396,12 +5399,17 @@ async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const
 document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classList.contains('orgsel'))setRole(t.dataset.role,t.value)});
 let profId=null,profBio=false;
 // 내 프로필: my card exactly as other crew see it when they open me (likes and hates shown, since it is mine)
+// a profile photo instead of the character (kept as an uploaded image id on the player record)
+let pfpBusy=false;const pfpImg=id=>ASSET_ID.test(String(id))?`<img class="pfpimg" data-act="imgview" data-k="${id}" src="${window.__blobURL?window.__blobURL(id):'/_blob/'+id}" alt="프로필 사진">`:'';
+async function pfpUpload(f){if(!ASSETS||pfpBusy||!f)return;if(!IMG_TYPES.test(f.type)){toast('PNG·JPG·GIF·WEBP 이미지만 올릴 수 있습니다.');return}pfpBusy=true;renderInfo();
+  try{const r=await ASSETS.upload(f,{type:f.type});const old=P.pfp;P.pfp=r.id;if(old&&old!==r.id)ASSETS.delete(old).catch(()=>{});save();toast('프로필 사진을 올렸습니다.')}catch(e){imgErr(e)}pfpBusy=false;renderInfo()}
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
   return`<div class="row" style="justify-content:space-between;margin-bottom:6px"><b class="dfloor">다른 단원에게 보이는 내 프로필</b><span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
-   <div class="card profcard"><div class="mehero ophero"><div class="meport">${withPet(meImg(6,p),p,6)}</div>
+   <div class="card profcard"><div class="mehero ophero"><div class="meport pfpbox">${p.pfp?pfpImg(p.pfp):withPet(meImg(6,p),p,6)}</div>
     <div class="meid"><span class="lv">${esc(orgRole(uid))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2>${snHTML(SN_PUB||p.sn)}<span class="hint" style="color:var(--green)">● 접속 중</span>
      <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${chips(p.likes,'var(--pink)')}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${chips(p.hates,'var(--red)')}</div></div></div>
-     <span class="hint">좋아하는·싫어하는 음식은 나에 대한 호감도가 30 이상인 단원에게만 보입니다.</span></div>
+     <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 단원에게만 보입니다.</span>
+     ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}</div>
     <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${jobOf(p)?esc(jobOf(p).n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div></div></div>
     <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
@@ -5411,7 +5419,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
   if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up at 30
     const af=affOf(p,uid),open=af>=30,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 30 이상이면 보입니다</span>';
-    return`<div class="card profcard" id="profCard"><div class="mehero ophero"><div class="meport">${withPet(meImg(6,p),p,6)}</div>
+    return`<div class="card profcard" id="profCard"><div class="mehero ophero"><div class="meport pfpbox">${p.pfp&&open?pfpImg(p.pfp):withPet(meImg(6,p),p,6)}${p.pfp&&!open?'<span class="pfplock">🔒 사진은 호감도 30 이상</span>':''}</div>
      <div class="meid"><span class="lv">${esc(orgRole(id))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
       <div class="stat"><div class="stat-row"><span>나에 대한 호감도</span><b style="color:${affColor(af)}">${af} · ${affLabel(af)}</b></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div></div>
       <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${open?chips(p.likes,'var(--pink)'):lock}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${open?chips(p.hates,'var(--red)'):lock}</div></div></div></div>
@@ -5503,7 +5511,7 @@ document.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||e.i
   let act=null;if(t.id==='bioIn')act='biosave';else if(e.ctrlKey||e.metaKey)act={padIn:'padpost',padReply:'padreply'}[t.id];
   if(!act)return;e.preventDefault();t.blur();A[act]({})});
 document.addEventListener('keydown',e=>{if(e.target.id==='profBioIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();A.profbiosave()}});
-document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.imgctx&&t.files&&t.files.length){addImgs(t.dataset.imgctx,[...t.files]);t.value=''}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.imgctx&&t.files&&t.files.length){addImgs(t.dataset.imgctx,[...t.files]);t.value=''}if(t.dataset&&t.dataset.pfp&&t.files&&t.files[0]){pfpUpload(t.files[0]);t.value=''}});
 document.addEventListener('paste',e=>{const t=e.target;if(!ASSETS||!(t.id==='padIn'||t.id==='padReply'))return;const fs=[...(e.clipboardData&&e.clipboardData.files||[])].filter(f=>IMG_TYPES.test(f.type));if(!fs.length)return;e.preventDefault();t.blur();addImgs(t.id==='padReply'?'reply':'pad',fs)});
 document.addEventListener('focusout',e=>{if(!socPend||!isField(e.target))return;const rt=e.relatedTarget;if(rt&&rt.closest&&rt.closest('#stage'))return;setTimeout(()=>{if(socPend&&(tab==='social'||tab==='adv')&&!isField(document.activeElement))renderPanel()},400)});
 Object.assign(A,SA,{
