@@ -979,7 +979,7 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 .pside h4 span{display:inline-grid;place-items:center;width:20px;height:20px;background:var(--pc);color:#07080e;font-size:12px;filter:drop-shadow(2px 2px 0 #07080e)}
 .ps-like{--pc:#ff8ab8}.ps-hate{--pc:#ff6a6a}.ps-why{--pc:#f2c66a;grid-column:1/-1}.ps-aff{--pc:#9a8cff;grid-column:1/-1}
 .pside .jpicked{display:flex;flex-wrap:wrap;gap:4px}.pside .ichip{background:#07080e88}
-.pside-why{margin:0;font-size:13px;line-height:1.5;color:#fff;word-break:keep-all}
+.pside-why{margin:0;font-size:13px;line-height:1.5;color:#fff;word-break:keep-all;overflow-wrap:anywhere}
 .pside .qchip{align-self:flex-start}.pside .hint{color:#aab8d8}
 .pside-big{font-family:var(--f-pix);font-size:26px;line-height:1;display:flex;align-items:baseline;gap:8px}.pside-big small{font-family:var(--f-display);font-size:14px}
 .pside .sendrow{display:flex;gap:4px}.pside .sendrow input{flex:1;min-width:0}
@@ -4997,7 +4997,7 @@ const A={
  resetpt(){abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
  noteedit(d){noteEdit=noteEdit===d.k?null:d.k;renderInfo();if(noteEdit)setTimeout(()=>{const i=$('#noteIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},0)},
- notesave(d){const i=$('#noteIn');if(!i||!PNOTE.some(x=>x[0]===d.k))return;P[d.k]=i.value.trim().slice(0,PNOTE_MAX);noteEdit=null;save();renderInfo()},
+ notesave(d){const i=$('#noteIn');if(!i||!PNOTE.some(x=>x[0]===d.k))return;P[d.k]=i.value.trim().slice(0,noteMax(d.k));noteEdit=null;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
@@ -5493,9 +5493,9 @@ function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).fi
   const C=(cls,ic,t,b)=>`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${b}</section>`;
   return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-why','✎','프로젝트에 들어오게 된 이유',why)}${C('ps-aff','♡','호감도',aff)}</div>`}
 // free-text profile notes under the ID card (written on my own 내 프로필 tab, shown to everyone)
-const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐'],['feat','특징','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 늘 공구를 들고 다님'],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120;let noteEdit=null;
-function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,cls,ph])=>{const ed=mine&&noteEdit===k,v=p[k]||'';
-  const body=ed?`<div class="sendrow"><textarea id="noteIn" class="sel" maxlength="${PNOTE_MAX}" rows="3" placeholder="${ph}" aria-label="${t}">${esc(v)}</textarea></div><div class="row" style="gap:4px"><button class="btn sm" data-act="notesave" data-k="${k}">저장</button><button class="qchip" data-act="noteedit" data-k="${k}">취소</button><span class="hint">${PNOTE_MAX}자까지</span></div>`
+const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐',2000],['feat','특징','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 늘 공구를 들고 다님',2000],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120,noteMax=k=>(PNOTE.find(x=>x[0]===k)||[])[5]||PNOTE_MAX;let noteEdit=null;
+function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,cls,ph])=>{const ed=mine&&noteEdit===k,v=p[k]||'',mx=noteMax(k);
+  const body=ed?`<div class="sendrow"><textarea id="noteIn" class="sel" maxlength="${mx}" rows="${mx>500?8:3}" placeholder="${ph}" aria-label="${t}">${esc(v)}</textarea></div><div class="row" style="gap:4px"><button class="btn sm" data-act="notesave" data-k="${k}">저장</button><button class="qchip" data-act="noteedit" data-k="${k}">취소</button><span class="hint">${mx.toLocaleString()}자까지</span></div>`
     :`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):`<span class="hint">아직 적지 않았습니다.</span>`}</p>${mine?`<button class="qchip" data-act="noteedit" data-k="${k}">${v?'고치기':'적기'}</button>`:''}`;
   return`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${body}</section>`}).join('')}</div>`}
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
