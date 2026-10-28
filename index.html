@@ -824,7 +824,7 @@ img.pix.tasty{filter:drop-shadow(0 0 2px #ffcf4a) drop-shadow(0 0 1px #ffcf4a)}:
 .fkempty{margin:10px 0 4px;text-align:center;font-size:12px}.fkreset{font-size:10px;opacity:.75;text-align:center}
 .fabbot{display:inline-block;width:64px;height:64px}.fabbot img{image-rendering:pixelated}
 .mailitem.read{opacity:.88}.mailitem.read .mailmsg{opacity:.9}
-.mysn{display:inline-block;align-self:flex-start;font-size:12px;color:var(--mute);margin:-2px 0 2px}.mysn b{font-family:var(--f-pix);font-size:12px;letter-spacing:.12em;color:var(--gold);margin-left:4px}
+.mysn{display:block;width:max-content;align-self:flex-start;font-size:12px;color:var(--mute);margin:-2px 0 2px}.mysn b{font-family:var(--f-pix);font-size:12px;letter-spacing:.12em;color:var(--gold);margin-left:4px}
 .sellp{display:block;margin-top:2px;font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
 .tmaker{margin-top:1.1em}
 .rkgrid{--rk-lv:#e0606a;--rk-life:var(--green);--rk-don:var(--cyan);--rk2:#c9d1dc;--rk3:#d49a6a;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
@@ -2122,8 +2122,9 @@ const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 let abPend={};const pendSum=()=>Object.values(abPend).reduce((a,n)=>a+n,0),ptsFree=()=>ptsLeft()-pendSum();
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
 // my 군번: the invite code I joined with, read from my own members record (the 선장's account was made without one)
-let MY_SN=null;
-function loadMySn(){if(mode!=='online'||!uid)return;db.doc('members/'+uid).get().then(s=>{const c=s&&s.exists?String((s.data()||{}).code||''):'';MY_SN=c.length===8?c.slice(0,4)+'-'+c.slice(4):c;renderInfo()}).catch(()=>{MY_SN=''})}
+let MY_SN=null,SN_PUB='';
+function loadMySn(){if(mode!=='online'||!uid)return;db.doc('members/'+uid).get().then(s=>{const c=s&&s.exists?String((s.data()||{}).code||''):'';MY_SN=c.length===8?c.slice(0,4)+'-'+c.slice(4):c;SN_PUB=MY_SN||(isAdmin?'함장':'');if(SN_PUB&&P.nick&&P.sn!==SN_PUB)save();renderInfo()}).catch(()=>{MY_SN=''})}
+const snHTML=sn=>sn?`<span class="mysn">군번 <b>${esc(sn)}</b></span>`:'';
 const mySnHTML=()=>MY_SN?`<span class="mysn">군번 <b>${esc(MY_SN)}</b></span>`:isAdmin&&mode==='online'&&MY_SN===''?'<span class="mysn">군번 <b>함장</b></span>':'';
 function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${(k==='cook'?tastyPct():lifePct(k)).toFixed(1)}%</span></div></div>`}).join('');
@@ -2170,7 +2171,7 @@ function save(){if(seasonLock)return;
 const flushNow=()=>{if(mode==='online'&&dirty&&!seasonLock){clearTimeout(saveT);return flush()}};
 window.__flushSave=async()=>{await flushNow()};
 addEventListener('pagehide',flushNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushNow()});
-async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
+async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();if(SN_PUB&&P.sn!==SN_PUB)P.sn=SN_PUB;await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
 // adm marks a notice sent from the admin side: it pins to the ticker and rings the chime for everyone
 function sys(text,adm,snd){if(mode!=='online'||!TICK_RE.test(text))return;const d={uid,nick:P.nick,text,at:Date.now(),sys:true};if(adm&&isAdmin)d.adm=true;if(snd)d.snd=snd;db.collection('chat').add(d).catch(()=>{})}
 function setPresence(){if(room&&mode==='online')room.presence({uid,nick:P.nick,act:TABS.find(t=>t.id===tab).n}).catch(()=>{})}
@@ -5162,14 +5163,14 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
     const af=affOf(p,uid),open=af>=30,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 30 이상이면 보입니다</span>';
     return`<div class="card profcard" id="profCard"><div class="mehero ophero"><div class="meport">${withPet(meImg(6,p),p,6)}</div>
-     <div class="meid"><span class="lv">${esc(orgRole(id))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
+     <div class="meid"><span class="lv">${esc(orgRole(id))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
       <div class="stat"><div class="stat-row"><span>나에 대한 호감도</span><b style="color:${affColor(af)}">${af} · ${affLabel(af)}</b></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div></div>
       <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${open?chips(p.likes,'var(--pink)'):lock}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${open?chips(p.hates,'var(--red)'):lock}</div></div></div></div>
      <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${jobOf(p)?esc(jobOf(p).n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div>
       <button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
      <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
      <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
-  return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
+  return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
