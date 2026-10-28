@@ -524,6 +524,24 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .dfloor.raidzt{font-size:20px;letter-spacing:.02em}
 .raidparty{display:flex;flex-direction:column;gap:10px}.raidwrap{padding-top:8px}.raidmem{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:3px}
 .raidmem.turn{box-shadow:inset 0 0 0 2px var(--gold)}.raidmem.down{opacity:.5}.raidmain{min-width:0;display:flex;flex-direction:column;gap:8px}
+.rbstage{position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;min-height:190px;margin:8px 0;padding:28px 12px 16px;border:2px solid var(--ink);overflow:hidden;
+  background:linear-gradient(180deg,#0b0d1a 0,#151a30 58%,var(--g2) 58%,var(--g2) 62%,var(--g1) 62%);image-rendering:pixelated}
+.rbstage::before{content:'';position:absolute;inset:0 0 42% 0;background-image:radial-gradient(1px 1px at 12% 20%,#fff9 50%,transparent 51%),radial-gradient(1px 1px at 38% 48%,#fff6 50%,transparent 51%),radial-gradient(1px 1px at 63% 14%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 86% 36%,#fff5 50%,transparent 51%),radial-gradient(2px 2px at 74% 60%,#fff4 50%,transparent 51%);pointer-events:none}
+.rbstage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:38%;background:repeating-linear-gradient(90deg,transparent 0 14px,#0002 14px 16px),repeating-linear-gradient(0deg,transparent 0 10px,#0001 10px 12px);pointer-events:none}
+.rbside{position:absolute;top:6px;font-size:12px;font-weight:700;letter-spacing:.06em;padding:1px 8px;z-index:1}.rbside.l{left:8px;background:#2a9d6a;color:#fff}.rbside.r{right:8px;background:#c8303c;color:#fff}
+.rbteam{display:flex;align-items:flex-end;gap:8px;position:relative;z-index:2;min-width:0}.rbr{justify-content:flex-end}
+.rbu{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;background:none;border:0;padding:0;color:#eef;font:inherit}
+.rbteam .rbu:nth-child(even){margin-bottom:16px}.rbu.acting{z-index:5}
+.rbtag{display:flex;flex-direction:column;align-items:center;gap:1px;width:max-content;max-width:96px;background:#0009;border:1px solid #fff3;padding:2px 5px 3px}
+.rbtag b{font-size:11px;line-height:1.25;max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rbtag small{font-size:10px;line-height:1.2;opacity:.85}.rbtag .bar{width:68px;height:6px}
+.rbspr{position:relative;display:block;flex-shrink:0;line-height:0;filter:drop-shadow(0 3px 0 #0006)}
+.rbm{cursor:pointer}.rbm.dead{opacity:.28;cursor:default;filter:grayscale(1)}.rbm.tgt .rbtag{border-color:#ff5f6a;box-shadow:0 0 0 1px #ff5f6a}
+.rbm.tgt::after{content:'▼ 공격 대상';position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#ff8a92;white-space:nowrap;animation:rbbob .8s steps(2) infinite}
+.rbu.turn .rbtag{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.rbu.down{opacity:.4;filter:grayscale(1)}.rbp.me .rbtag b{color:#ffd76a}
+@keyframes rbbob{50%{transform:translate(-50%,-3px)}}
+.rbspr img{max-width:none}.rbdmg{position:absolute;left:50%;top:10%;line-height:1;font-weight:900;font-size:18px;color:#ff5f6a;-webkit-text-stroke:1px #000;pointer-events:none;animation:rbdmg 1s ease-out forwards;z-index:6}.rbp .rbdmg{color:#ffb35a}
+@keyframes rbdmg{0%{transform:translate(-50%,6px);opacity:0}15%{opacity:1;transform:translate(-50%,-6px) scale(1.25)}100%{transform:translate(-50%,-34px);opacity:0}}
+@media (max-width:560px){.rbstage{padding:26px 4px 12px;gap:2px;min-height:160px}.rbteam{gap:2px}.rbtag{max-width:60px;padding:1px 2px}.rbtag b{max-width:56px;font-size:10px}.rbtag .bar{width:44px;height:5px}.rbkind,.rbhp{display:none}.rbp .rbspr img{width:56px;height:56px}.rbm .rbspr img{width:44px;height:44px}.rbm.elite .rbspr img{width:52px;height:52px}.rbm.mid .rbspr img{width:64px;height:64px}.rbm.boss .rbspr img{width:84px;height:84px}.rbteam .rbu:nth-child(even){margin-bottom:10px}}
 .raidmons{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}.raidmon{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:110px;background:var(--deep);border:2px solid var(--ink);padding:6px;color:inherit;font:inherit;cursor:pointer}
 .raidmon.tgt{box-shadow:inset 0 0 0 2px var(--red),0 0 10px #ff5f6a66}
 .raidmon{position:relative}.raidmon.tgt::before{content:'공격 대상';position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:10px;line-height:1.5;padding:0 6px;background:var(--red);color:var(--ink);white-space:nowrap;font-weight:700}
@@ -2624,6 +2642,7 @@ function sfxPartyGo(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.cur
 function raidSfx(a,b){if(a&&b&&a.id===b.id&&a.state==='run'&&b.state==='run'&&(b.step||0)>(a.step||0))sfxSteps();
   if(a&&b&&a.id===b.id&&a.phase==='battle'&&(b.phase==='won'||(b.phase==='end'&&b.result==='clear')))sfxRaidWin(b.phase==='end');
   if(!a||!b||!a.b||!b.b||a.id!==b.id||b.phase==='end'&&a.phase==='end')return;
+  if(a.phase==='battle')raidAnimNote(a,b);
   {const f=b.b.skfx,g=a.b.skfx;if(f&&(!g||g.id!==f.id)){sfxSkill(f.j);skillPop(f);return}}
   const mh=x=>(x.b.mons||[]).reduce((s,m)=>s+Math.max(0,m.hp),0),ph=(x,u)=>x.m&&x.m[u]?x.m[u].hp:0;
   if(mh(b)<mh(a)){const crit=(b.b.log||[]).slice(-1).join('').includes('치명');sfxRaidHit(crit)}
@@ -2660,7 +2679,7 @@ function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();rai
   if(mode==='online')rcUnsub=rcRef(id).onSnapshot(sn=>{const prev=RCHAT.length;RCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='raid'){const l=$('#rcLog');if(l){l.innerHTML=rcLogHTML();if(RCHAT.length>prev)l.scrollTop=l.scrollHeight}}},()=>{});
   raidUnsub=raidRef(id).onSnapshot(s=>{if(raidWid!==id)return;if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
     if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
-    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel()}},()=>{})}
+    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel();raidAnimRun()}},()=>{})}
 // a lobby stays listed while anyone in it is still sending the 15-second heartbeat (however long they have been waiting); silent for 3 min → hidden
 let RAIDS_ALL=[];const lobbyAlive=v=>raidNow()-Math.max(+v.at||0,...Object.values(v.hb||{}).map(Number))<3*60e3;
 function raidRefilter(){const before=RAIDS.map(v=>v.id).join();RAIDS.length=0;RAIDS_ALL.forEach(v=>{if(lobbyAlive(v))RAIDS.push(v)});return before!==RAIDS.map(v=>v.id).join()}
@@ -2707,15 +2726,32 @@ function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);ret
       <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn sm" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 부족'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
   ${raidRunListHTML()}
   <span class="lbl" style="display:block;margin-top:10px">Zone · 원정 구역</span><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>`}
+// the battle as a side-view stage: our crew on the left, the enemies on the right, each with name, level and HP above
+function raidStageHTML(r,z){const b=r.b,T=RAID_TERRAIN[z.id]||RAID_TERRAIN.r1,cur=b.cur||{};
+  const crew=r.ids.filter(u=>r.m[u]).map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="rbu rbp ${m.hp<=0||gone?'down':''} ${cur.k==='p'&&cur.id===u?'turn':''} ${u===uid?'me':''}" data-ru="p${u}"><div class="rbtag"><b>${esc(m.nick)}</b><small>Lv.${m.lvl}</small>${raidBar(m.hp,m.maxHp,'var(--green)')}</div><span class="rbspr">${meImg(4,whoP(u))}</span></div>`}).join('');
+  const foes=b.mons.map((m,i)=>`<button class="rbu rbm ${m.kind||''} ${m.hp<=0?'dead':''} ${raidTgt===i&&m.hp>0?'tgt':''} ${cur.k==='m'&&cur.id===i?'turn':''}" data-act="raidtgt" data-k="${i}" data-ru="m${i}" ${m.hp<=0?'disabled':''} aria-label="${esc(m.n)} Lv.${m.L} 체력 ${m.hp}/${m.max}"><div class="rbtag"><b>${esc(m.n)}</b><small>Lv.${m.L}<span class="rbkind">${m.kind==='boss'?' · 보스':m.kind==='mid'?' · 중간 보스':m.kind==='elite'?' · 정예':''}</span></small>${raidBar(m.hp,m.max,'var(--red)')}<small class="rbhp">${Math.max(0,m.hp)}/${m.max}</small></div><span class="rbspr">${img(MON_SPR,m.t,m.kind==='boss'?7:m.kind==='mid'?6:m.kind==='elite'?5:4)}</span></button>`).join('');
+  return`<div class="rbstage" style="--g1:${T.g[0]};--g2:${T.g[1]};--gp:${T.p[0]}"><span class="rbside l">우리팀</span><span class="rbside r">적</span><div class="rbteam rbl">${crew}</div><div class="rbteam rbr">${foes}</div></div>`}
+// attack motion: the attacker dashes to its target, strikes, and runs back; the target flashes and shows the damage
+let RAID_ANIM=[];
+function raidAnimNote(a,b){const c=a.b.cur;if(!c||!b.b)return;
+  if(c.k==='p'){const dm={};(b.b.mons||[]).forEach((m,i)=>{const o=(a.b.mons||[])[i];if(o&&Math.max(0,m.hp)<o.hp)dm['m'+i]=o.hp-Math.max(0,m.hp)});const ks=Object.keys(dm);if(ks.length)RAID_ANIM.push({from:'p'+c.id,to:ks[0],dm})}
+  else{const dm={};(b.ids||[]).forEach(u=>{const x=a.m&&a.m[u],y=b.m&&b.m[u];if(x&&y&&y.hp<x.hp)dm['p'+u]=x.hp-y.hp});const ks=Object.keys(dm);if(ks.length)RAID_ANIM.push({from:'m'+c.id,to:ks[0],dm})}}
+function raidAnimRun(){if(!RAID_ANIM.length)return;const q=RAID_ANIM;RAID_ANIM=[];if(tab!=='raid')return;
+  requestAnimationFrame(()=>q.forEach(o=>{const st=$('.rbstage');if(!st)return;const A=st.querySelector(`[data-ru="${o.from}"] .rbspr`),B=st.querySelector(`[data-ru="${o.to}"] .rbspr`);if(!A||!B||!A.animate)return;
+    const ra=A.getBoundingClientRect(),rb=B.getBoundingClientRect(),dir=o.from[0]==='p'?1:-1,dx=dir>0?rb.left-ra.right+rb.width*.3:rb.right-ra.left-rb.width*.3,dy=rb.bottom-ra.bottom,T=(f,y,d)=>`translate(${f}px,${y}px) rotate(${d||0}deg)`;
+    A.parentNode.classList.add('acting');
+    A.animate([{transform:T(0,0)},{transform:T(-dir*6,0,-dir*6),offset:.12},{transform:T(dx*.55,dy*.55-14),offset:.3},{transform:T(dx,dy),offset:.42},{transform:T(dx+dir*10,dy,dir*14),offset:.5},{transform:T(dx,dy),offset:.62},{transform:T(dx*.4,dy*.4-8),offset:.8},{transform:T(0,0)}],{duration:950,easing:'ease-in-out'}).onfinish=()=>A.parentNode.classList.remove('acting');
+    setTimeout(()=>Object.entries(o.dm).forEach(([k,d])=>{const u=st.isConnected?st.querySelector(`[data-ru="${k}"]`):$(`.rbstage [data-ru="${k}"]`);if(!u)return;const s=u.querySelector('.rbspr');
+      if(s&&s.animate)s.animate([{transform:'none',filter:'none'},{transform:`translateX(${dir*9}px)`,filter:'brightness(2.6) saturate(0)'},{transform:`translateX(${-dir*5}px)`,filter:'none'},{transform:`translateX(${dir*2}px)`},{transform:'none'}],{duration:360});
+      const n=document.createElement('span');n.className='rbdmg';n.textContent='-'+d;(s||u).appendChild(n);setTimeout(()=>n.remove(),1000)}),460)}))}
 function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='battle'&&b.cur&&b.cur.k==='p'&&b.cur.id===uid,curNick=b&&b.cur?(b.cur.k==='p'?(r.m[b.cur.id]||{}).nick:b.mons[b.cur.id].n):'';
   const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row rmhead" style="justify-content:space-between;gap:6px"><span class="rmname">${headImg(2,whoP(u))}<b>${esc(m.nick)}${u===uid?' (나)':''}</b></span><span class="rmjr"><span class="rmjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</span><span class="hint">Lv.${m.lvl}</span></span></div>${(()=>{const st=[gone?'이탈':m.hp<=0?'쓰러짐':'',b&&b.def[u]?'방어':'',b&&b.taunt&&b.taunt.u===u?'방패':'',b&&b.flee[u]?'도망 찬성':''].filter(Boolean);return st.length?`<div class="row" style="justify-content:flex-end"><span class="hint">${st.join(' · ')}</span></div>`:''})()}${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 민첩 ${m.agi}</span></div>`}).join('');
   let body='';
   if(r.state==='lobby')body=`<div class="card"><b>${esc(z.n)} 원정 대기실</b><p class="hint">파티장이 출발하면 원정이 시작됩니다. 출발한 뒤에는 새로 합류할 수 없습니다. (${r.ids.length}/${RAID_MAX}명)</p><div class="row" style="gap:6px">${r.host===uid?`<button class="btn" data-act="raidgo">출발</button>`:'<span class="hint">파티장을 기다리는 중…</span>'}<button class="btn ghost sm" data-act="raidleave">${r.host===uid?'파티 해산':'나가기'}</button></div></div>`;
   else if(r.phase==='battle'){
-    const mons=b.mons.map((m,i)=>`<button class="raidmon ${m.hp<=0?'dead':''} ${raidTgt===i&&m.hp>0?'tgt':''} ${m.kind}" data-act="raidtgt" data-k="${i}" ${m.hp<=0?'disabled':''}>${img(MON_SPR,m.t,m.kind==='boss'?5:m.kind==='mid'?4:3)}<b>${esc(m.n)}</b><span class="hint">Lv.${m.L}${m.kind==='boss'?' · 보스':m.kind==='mid'?' · 중간 보스':m.kind==='elite'?' · 정예':''}</span>${raidBar(m.hp,m.max,'var(--red)')}<span class="hint">${m.hp}/${m.max}</span></button>`).join('');
     const foods=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i].type==='food'&&(ITEMS[i].hp||0)>0),tgts=raidIn(r).filter(u=>!(r.left||{})[u]);if(raidPick&&!foods.includes(raidPick))raidPick=null;const pk=raidPick&&ITEMS[raidPick];
     body=`<div class="card raidbattle"><div class="row" style="justify-content:space-between"><b>${r.step>=RAID_STEPS?'보스전':'전투'} · ${b.round}라운드</b><span class="hint">${myTurn?`<b style="color:var(--gold)">내 턴</b> · 남은 시간 <b id="raidT"></b>`:`${esc(curNick||'')}의 턴${b.cur?` · <span id="raidT"></span>`:''}`}</span></div>
-     <div class="raidmons">${mons}</div>
+     ${raidStageHTML(r,z)}
      <div class="raidacts"><button class="btn" data-act="raidatk" ${myTurn?'':'disabled'}>공격</button><button class="btn alt" data-act="raiddef" ${myTurn?'':'disabled'}>방어</button><button class="btn alt" data-act="raidbag" aria-pressed="${raidBag}" ${me&&me.hp>0?'':'disabled'}>${raidBag?'아이템 닫기':'아이템 쓰기'}</button></div>
      ${me&&RSK[rJob(me)]?`<div class="raidsk"><span class="lbl">${JOBS[rJob(me)].n} 스킬</span><div class="raidacts">${RSK[rJob(me)].map((k,i)=>{const left=rskLeft(b,uid,i);return`<button class="btn ${left?'ghost':'gold'} sk" data-act="raidsk" data-k="${i}" title="${k.d}" ${myTurn&&!left?'':'disabled'}><b>${k.n}</b><small>${left?`${left}턴 뒤`:`${k.cd}턴마다`}</small></button>`}).join('')}</div>
       ${rJob(me)==='medic'?`<div class="row" style="gap:4px;flex-wrap:wrap"><span class="hint">응급 처치 대상</span>${tgts.map(u=>`<button class="qchip" data-act="raidto" data-k="${u}" aria-pressed="${(raidItemTo||uid)===u}">${esc(r.m[u].nick)}${u===uid?' (나)':''} ${r.m[u].hp}/${r.m[u].maxHp}</button>`).join('')}</div>`:''}
