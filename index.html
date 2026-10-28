@@ -945,6 +945,25 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 :root[data-skin="light"] .rklist li{background:#fff;border-color:#2a2418}:root[data-skin="light"] .rklist li:nth-child(even){background:#f7f1e4}
 :root[data-skin="light"] .rkhead .namebtn{background:#2a2418}:root[data-skin="light"] .rkhead .rk1{color:#c8901a;text-shadow:2px 2px 0 #2a2418}
 :root[data-skin="light"] .rklist li.me{background:color-mix(in srgb,var(--me-name) 12%,#fff)}
+
+.jobcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.jobcard{--jc:#e0a84a;position:relative;display:flex;flex-direction:column;padding:0;text-align:left;color:inherit;font:inherit;background:var(--deep);border:3px solid #07080e;outline:2px solid color-mix(in srgb,var(--jc) 45%,transparent);outline-offset:-5px;cursor:pointer;min-width:0;image-rendering:pixelated}
+.jobcard.jc-nav{--jc:#5fb8f0}.jobcard.jc-medic{--jc:#7ad07a}
+.jobcard:hover{outline-color:var(--jc)}
+.jobcard[aria-pressed="true"]{outline:2px solid var(--jc);background:color-mix(in srgb,var(--jc) 10%,var(--deep))}
+.jcart{position:relative;display:grid;place-items:center;height:96px;background:repeating-linear-gradient(0deg,transparent 0 6px,#ffffff08 6px 8px),linear-gradient(180deg,color-mix(in srgb,var(--jc) 30%,#0b0d1a),#0b0d1a);border-bottom:3px solid #07080e;overflow:hidden}
+.jcart img{position:relative;filter:drop-shadow(3px 3px 0 #07080e)}
+.jcglow{position:absolute;width:76px;height:76px;background:radial-gradient(circle,color-mix(in srgb,var(--jc) 45%,transparent) 0 40%,transparent 41%);opacity:.5}
+.jobcard[aria-pressed="true"] .jcart img{animation:jcbob 1.2s steps(2) infinite}@keyframes jcbob{50%{transform:translateY(-3px)}}
+.jcnow{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;padding:1px 6px;background:var(--jc);color:#07080e;filter:drop-shadow(2px 2px 0 #07080e)}
+.jcbody{display:flex;flex-direction:column;gap:5px;padding:9px 10px 11px}
+.jcn{font-family:var(--f-display);font-weight:400;font-size:18px;color:var(--jc);text-shadow:2px 2px 0 #07080e}
+.jcr{display:flex;gap:4px;flex-wrap:wrap}.jcr em{font-style:normal;font-size:11px;padding:0 6px;border:1px solid var(--jc);color:var(--jc)}
+.jcfx{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:12px;line-height:1.45;color:var(--ink2,var(--text))}
+.jcfx li{position:relative;padding-left:11px}.jcfx li::before{content:'';position:absolute;left:0;top:.55em;width:5px;height:5px;background:var(--jc)}
+:root[data-skin="light"] .jobcard{background:#fffaf0;border-color:#2a2418}:root[data-skin="light"] .jobcard.jc-mech{--jc:#b06008}:root[data-skin="light"] .jobcard.jc-nav{--jc:#1a6fc4}:root[data-skin="light"] .jobcard.jc-medic{--jc:#23883a}
+:root[data-skin="light"] .jobcard[aria-pressed="true"]{background:color-mix(in srgb,var(--jc) 8%,#fffaf0)}:root[data-skin="light"] .jcn{text-shadow:1px 1px 0 #2a241833}
+@media (max-width:620px){.jobcards{grid-template-columns:minmax(0,1fr)}.jobcard{flex-direction:row}.jcart{width:92px;height:auto;min-height:92px;border-bottom:0;border-right:3px solid #07080e;flex-shrink:0}}
 @media (max-width:900px){.rkgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}@media (max-width:620px){.rkgrid{grid-template-columns:minmax(0,1fr)}}
 :root[data-skin="light"] .relmap{background:radial-gradient(ellipse at 50% 50%,#fbfaf7 0 35%,var(--deep) 75%)}
 :root[data-skin="light"] .rellab{background:rgba(251,250,247,.94)}
@@ -2241,7 +2260,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
-   <section class="mecard"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="titles">${Object.entries(JOBS).map(([k,j])=>`<button class="ttl" data-act="setjob" data-k="${k}" aria-pressed="${P.job===k}"><b>${j.n} <small class="hint">${j.r}</small></b><span>${j.d}</span></button>`).join('')}</div></section>
+   <section class="mecard"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}"><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
    <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?t[1]:'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</section>`;
 }
 const LOG=[];
@@ -3421,6 +3440,13 @@ const NEONSET=new Set(NEON.map(n=>n[0]));const NEON_PRICE=800;let neonPick=null,
 const ownsNeon=c=>(P.own||[]).includes('neon'+c);
 function lookGlow(p){const l=lookOf(p);for(const k of ['suit','visor','helmet'])if(NEONSET.has(l[k]))return l[k];return null}
 const lookOf=p=>Object.assign({helmet:'#b9bccb',suit:'#5f5a80',visor:'#7c97a8'},p&&p.look);
+// job card art: a wrench for the engineer, a shield for the navigator, a med-kit for the medic
+const JOB_IC={mech:["..........kkk...",".........kHAAk..","........kAAk.k..","....kk..kAAkkAk.","...kAAk.kAAAAAk.","...kAAAkkAAAABk.","....kAAAAAAABk..",".....kAAAAABkk..","....kAAABBBk....","...kAAABk.......","..kAAABk........",".kAAABk.........","kHAABk..........","kAABk...........",".kBk............","..k............."],
+ nav:["..kkkkkkkkkkkk..",".kHHHAAAAAAAAAk.",".kHAAAAAAAAAABk.",".kHAAAAkkAAAABk.",".kAAAAkWWkAAABk.",".kAAAkWWWWkAABk.",".kAkkkWWWWkkkBk.",".kAkWWWWWWWWkBk.","..kAkkWWWWkkBk..","..kAAkWkkWkABk..","...kAkkAAkkBk...","....kAAAAABBk...",".....kAAABBk....","......kABBk.....",".......kkk......","................"],
+ medic:["................",".....kkkkkk.....","....kk....kk....",".kkkkkkkkkkkkkk.","kHHAAAAAAAAAAABk","kHAAAAkkkkAAAABk","kAAAAAkWWkAAAABk","kAAkkkkWWkkkkABk","kAAkWWWWWWWWkABk","kAAkWWWWWWWWkABk","kAAkkkkWWkkkkABk","kAAAAAkWWkAAAABk","kAAAAAkkkkAAAABk","kBBBBBBBBBBBBBBk",".kkkkkkkkkkkkkk.","................"]};
+// split a job's effects on ' · ' but never inside brackets
+const jobFx=d=>{const o=[];let cur='',dep=0;for(let i=0;i<d.length;i++){const c=d[i];if(c==='(')dep++;if(c===')')dep--;if(!dep&&d.startsWith(' · ',i)){o.push(cur);cur='';i+=2;continue}cur+=c}o.push(cur);return o};
+const JOB_PO={mech:{H:'#ffe0a8',A:'#e0a84a',B:'#9a6420',W:'#fff'},nav:{H:'#d8f0ff',A:'#5fb8f0',B:'#2a6aa8',W:'#ffe27a'},medic:{H:'#d8ffd8',A:'#7ad07a',B:'#3a8a44',W:'#ffffff'}};
 function lookPal(p){const l=lookOf(p),H=l.helmet,U=l.suit,V=l.visor;return{w:H,v:U,c:V,C:mix(V,'#07080e',.45),S:mix(U,'#07080e',.55),h:'#e2e3ea',
   1:shade(H,.42),2:H,3:shade(H,-.3),4:shade(H,-.55),5:shade(U,.22),6:U,7:shade(U,-.3),8:shade(U,-.52),9:mix(V,'#f4f8fb',.8),0:mix(V,'#e8f0f6',.42),L:'#c4c7d4',M:'#7e8193',N:'#41444f',T:'#bfae80',E:'#c0626d',F:'#8bbb90',...WPAL}}
 // neon wardrobe items glow: their visible neon pixels are copied onto a second layer that carries a pulsing light halo
