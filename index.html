@@ -4739,10 +4739,11 @@ const A={
   if(pl.seed&&isWet(pl)){toast('더 이상 물을 줄 필요는 없을 것 같다.');return}
   if(FARM.water<=0){toast('공용 물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}if(!spendKeep(1))return;let why='';
   podAct(i,cur=>{why='';if(!cur||!cur.til){why='gone';return null}if(cur.seed&&isWet(cur)){why='wet';return null}const q=Object.assign({},cur);if(q.seed)q.got=effG(q);q.wet=Date.now();return q},
-   q=>{sfxWater();FARM.water--;if(mode==='online'){if(FARM.wset)farmInc('farm/pods','water',-1).catch(()=>{});else farmMerge('farm/pods',{water:FARM.water}).catch(()=>{})}else farmSave();if(q.seed&&q.by&&q.by!==uid){gainXp(2);lxp('farm',2);stat('helpfarm')}},
+   q=>{sfxWater();FARM.water--;if(mode==='online'){if(FARM.wset)farmInc('farm/pods','water',-1).catch(()=>{});else farmMerge('farm/pods',{water:FARM.water}).catch(()=>{})}else farmSave();// the farm is shared: watering any growing crop pays the same, your own or someone else's
+    if(q.seed){gainXp(2);lxp('farm',3);if(q.by&&q.by!==uid)stat('helpfarm')}},
    ()=>{heal(0,1);toast(why==='wet'?'방금 다른 단원이 물을 줬다. 더 이상 물을 줄 필요는 없을 것 같다.':'포드 상태가 바뀌어 물을 주지 못했습니다.')})},
  fert(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}
-  podAct(i,cur=>{if(!cur||!cur.seed||cur.fert)return null;const it=ITEMS[cur.seed];return Object.assign({},cur,{got:Math.min(it.grow,(cur.got||0)+it.grow*.3),fert:1})},()=>log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`),()=>{add('moss',2);toast('다른 단원이 먼저 비료를 뿌렸습니다. 이끼는 돌려받았습니다.')})},
+  podAct(i,cur=>{if(!cur||!cur.seed||cur.fert)return null;const it=ITEMS[cur.seed];return Object.assign({},cur,{got:Math.min(it.grow,(cur.got||0)+it.grow*.3),fert:1})},()=>{gainXp(2);lxp('farm',3);log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`)},()=>{add('moss',2);toast('다른 단원이 먼저 비료를 뿌렸습니다. 이끼는 돌려받았습니다.')})},
  harvest(d){const i=+d.i,pl=fpod(i);if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
  fssel(d){fsSel=fsSel===d.id?null:d.id;fpSel=null;renderPanel()},
  fpsel(d){fpSel=fpSel===d.id?null:d.id;fsSel=null;renderPanel()},
