@@ -2275,7 +2275,9 @@ let abPend={};const pendSum=()=>Object.values(abPend).reduce((a,n)=>a+n,0),ptsFr
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
 // my 군번: the invite code I joined with, read from my own members record (the 선장's account was made without one)
 let MY_SN=null,SN_PUB='';
-function loadMySn(){if(mode!=='online'||!uid)return;db.doc('members/'+uid).get().then(s=>{const c=s&&s.exists?String((s.data()||{}).code||''):'';MY_SN=c.length===8?c.slice(0,4)+'-'+c.slice(4):c;SN_PUB=MY_SN||(isAdmin?'함장':'');if(SN_PUB&&P.nick&&P.sn!==SN_PUB)save();renderInfo()}).catch(()=>{MY_SN=''})}
+// the captain signed up without an invite code, so give them a fixed 군번 made from their account id (same format, never changes)
+const adminSn=()=>{const c=String(uid||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,8).padEnd(8,'0');return c.slice(0,4)+'-'+c.slice(4)};
+function loadMySn(){if(mode!=='online'||!uid)return;db.doc('members/'+uid).get().then(s=>{const c=s&&s.exists?String((s.data()||{}).code||''):'';MY_SN=c.length===8?c.slice(0,4)+'-'+c.slice(4):c;SN_PUB=MY_SN||(isAdmin?adminSn():'');if(!MY_SN&&isAdmin)MY_SN=SN_PUB;if(SN_PUB&&P.nick&&P.sn!==SN_PUB)save();renderInfo()}).catch(()=>{MY_SN=''})}
 const snHTML=sn=>sn?`<span class="mysn">군번 <b>${esc(sn)}</b></span>`:'';
 const mySnHTML=()=>MY_SN?`<span class="mysn">군번 <b>${esc(MY_SN)}</b></span>`:isAdmin&&mode==='online'&&MY_SN===''?'<span class="mysn">군번 <b>함장</b></span>':'';
 function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}if(meTab==='prof'){$('#infoBox').innerHTML=myPubHTML();return}
