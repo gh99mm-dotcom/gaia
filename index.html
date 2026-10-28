@@ -2878,7 +2878,7 @@ function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b
   // base = 1.5x a same-level raid boss (kill + clear bonus); contribution adds up to another 100% (full at 20% of the damage)
   const xp=Math.round(raidMonXp(src.lv||P.lvl,'boss')*1.5*1.5*(1+Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
   P.chests=[...(P.chests||[]),{gen:src.gen,name:src.name,share,xp,cr,relic:relicRoll(P.lvl),crystal:src.killer===uid?2:0}].slice(-5);
-  log(`${src.name}을(를) 쓰러뜨렸다! 탐사 화면에 보상 상자가 도착했다.`,'rare');sys(`[공지] ${src.name} 토벌 성공! 참여한 단원은 탐사 화면에서 보상 상자를 여십시오.`);commit()}
+  log(`${src.name}을(를) 쓰러뜨렸다! 탐사 화면에 보상 상자가 도착했다.`,'rare');commit()}
 // 탐사-only wardrobe drop: 3% base, rising with contribution to 10% at 20%+ of the damage
 const CHEST_EX=.03,CHEST_EX_MAX=.1,chestEx=c=>CHEST_EX+(CHEST_EX_MAX-CHEST_EX)*Math.min(1,(c&&c.share||0)*5);let chestOpen=null,chestAnim=0;
 const CHEST=["..kkkkkkkkkkkkkk..", ".k%@@@@@@@@@@@@%k.", "k%@||||||||||||@%k", "k@|////////////|@k", "k@|////////////|@k", "kkkkkkkkkkkkkkkkkk", "k%@@@@@kkkk@@@@@%k", "k@|////k**k////|@k", "k@|////k%%k////|@k", "k@|/////kk/////|@k", "k@|////////////|@k", "k%@@@@@@@@@@@@@@%k", ".kkkkkkkkkkkkkkkk."],CHEST_OPEN=["..kkkkkkkkkkkkkk..", ".k%@@@@@@@@@@@@%k.", "k%@||||||||||||@%k", "kkkkkkkkkkkkkkkkkk", "..*..*..**..*..*..", "k@**@*@****@*@**@k", "k%@@@@@kkkk@@@@@%k", "k@|////k**k////|@k", "k@|////k%%k////|@k", "k@|/////kk/////|@k", "k@|////////////|@k", "k%@@@@@@@@@@@@@@%k", ".kkkkkkkkkkkkkkkk."];
@@ -2946,6 +2946,8 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
   let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=bossBlow(b);heal(-hit,0);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
+  // one notice for everyone, posted by whoever landed the last blow
+  if(kill)sys(`[공지] 침략자 ${b.name}이(가) 물러났습니다! 토벌 성공. 참여한 단원은 탐사 화면에서 보상 상자를 여십시오.`);
   sfxBossHit(crit);if(kill)sfxBossKill();else sfxBossBack(bossLast&&bossLast.miss);
   log(`${two?'[연속 타격] ':''}${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
 /* 교류 lounge: a small live chat for whoever is on the 교류 tab right now, next to the PAD phone (last 40 lines kept) */
