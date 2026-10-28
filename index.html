@@ -2658,7 +2658,7 @@ function raidRefilter(){const before=RAIDS.map(v=>v.id).join();RAIDS.length=0;RA
 setInterval(()=>{if(mode==='online'&&raidRefilter()&&tab==='raid')renderPanel()},20e3);
 // parties already on their way: shown in the lobby to watch, listened to only while the 원정 lobby is open (each turn rewrites the party)
 let RAIDS_RUN=[];
-const runAlive=v=>v.phase!=='end'&&lobbyAlive(v);
+const runAlive=v=>v.phase!=='end'&&raidIn(v).length>0&&lobbyAlive(v);
 function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).sort((a,b)=>(b.at||0)-(a.at||0));
   return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),cur=Math.min(x.step||1,RAID_STEPS),mp=raidMapImg(zz.id,cur,false,RAID_STEPS,true),boss=cur===RAID_STEPS;
     return`<div class="pcard run"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">${cur}/${RAID_STEPS} 지점${boss?' · 보스':''}</span></div>
@@ -2678,7 +2678,10 @@ function raidJoin(id){const L=RAIDS.find(x=>x.id===id);if(!L||MYRAID)return;cons
   raidTx(id,r=>{if(!r||r.state!=='lobby'||r.ids.length>=RAID_MAX||r.ids.includes(uid))return null;r.ids.push(uid);r.m[uid]=me;r.hb=Object.assign({},r.hb,{[uid]:raidNow()});return r}).then(nx=>{if(nx){raidWatch(id);commit()}else{heal(0,RAID_EN);toast('참여할 수 없습니다. 이미 출발했거나 자리가 찼습니다.')}}).catch(()=>{heal(0,RAID_EN);toast('참여하지 못했습니다.')})}
 function raidLeave(){const r0=MYRAID;if(!r0)return;
   if(r0.state==='lobby'){if(r0.host===uid){raidRef(r0.id).delete().catch(()=>{})}else raidTx(r0.id,r=>{if(!r||r.state!=='lobby')return null;r.ids=r.ids.filter(u=>u!==uid);delete r.m[uid];return r}).catch(()=>{});heal(0,RAID_EN);raidWatch(null);commit();renderPanel();return}
-  if(r0.state==='run'&&r0.phase!=='end'){raidTx(r0.id,r=>{if(!r)return null;r.left=Object.assign({},r.left,{[uid]:1});r.seq++;if(r.phase==='battle'){if(!raidIn(r).length){r.phase='end';r.result='wipe';r.ev={n:'원정 중단',res:''};return r}if(r.b.cur&&r.b.cur.k==='p'&&r.b.cur.id===uid)raidNextTurn(r)}return r}).catch(()=>{});P.raidDone=[...(P.raidDone||[]),r0.id];{const me=r0.m&&r0.m[uid],cur=me?Math.min(maxHp(),me.hp):P.hp,cut=Math.round(maxHp()*.5);P.hp=Math.max(1,cur-cut)}log(`원정을 포기하고 돌아왔다. 최대 체력의 절반(-${Math.round(maxHp()*.5)})을 잃었고, 이번 원정의 보상은 받지 못한다.`,'bad');raidWatch(null);commit();renderPanel();return}
+  if(r0.state==='run'&&r0.phase!=='end'){raidTx(r0.id,r=>{if(!r)return null;r.left=Object.assign({},r.left,{[uid]:1});r.seq++;
+    // the last one out closes the expedition, whatever it was doing, so it stops showing as under way
+    if(!raidIn(r).length){r.phase='end';r.result='wipe';r.ev={n:'원정 중단',res:''};return r}
+    if(r.phase==='battle'&&r.b&&r.b.cur&&r.b.cur.k==='p'&&r.b.cur.id===uid)raidNextTurn(r);return r}).catch(()=>{});P.raidDone=[...(P.raidDone||[]),r0.id];{const me=r0.m&&r0.m[uid],cur=me?Math.min(maxHp(),me.hp):P.hp,cut=Math.round(maxHp()*.5);P.hp=Math.max(1,cur-cut)}log(`원정을 포기하고 돌아왔다. 최대 체력의 절반(-${Math.round(maxHp()*.5)})을 잃었고, 이번 원정의 보상은 받지 못한다.`,'bad');raidWatch(null);commit();renderPanel();return}
   raidWatch(null);renderPanel()}
 function raidStart(id){raidTx(id||MYRAID.id,r=>{if(!r||r.state!=='lobby'||r.host!==uid)return null;r.state='run';r.step=1;r.seq++;r.ids.forEach(u=>r.loot[u]={xp:0,cr:0,it:{}});return raidStep(r)}).catch(()=>toast('출발하지 못했습니다.'))}
 /* ---- views ---- */
