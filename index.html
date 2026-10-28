@@ -2236,7 +2236,7 @@ let MY_SN=null,SN_PUB='';
 function loadMySn(){if(mode!=='online'||!uid)return;db.doc('members/'+uid).get().then(s=>{const c=s&&s.exists?String((s.data()||{}).code||''):'';MY_SN=c.length===8?c.slice(0,4)+'-'+c.slice(4):c;SN_PUB=MY_SN||(isAdmin?'함장':'');if(SN_PUB&&P.nick&&P.sn!==SN_PUB)save();renderInfo()}).catch(()=>{MY_SN=''})}
 const snHTML=sn=>sn?`<span class="mysn">군번 <b>${esc(sn)}</b></span>`:'';
 const mySnHTML=()=>MY_SN?`<span class="mysn">군번 <b>${esc(MY_SN)}</b></span>`:isAdmin&&mode==='online'&&MY_SN===''?'<span class="mysn">군번 <b>함장</b></span>':'';
-function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}
+function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}if(meTab==='prof'){$('#infoBox').innerHTML=myPubHTML();return}
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${(k==='cook'?tastyPct():lifePct(k)).toFixed(1)}%</span></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
   const xpN=need(P.lvl),xpP=P.lvl>=MAX_LV?100:Math.min(100,(P.xp||0)/xpN*100),gearN=accOf().map(id=>accById(id)?.n).filter(Boolean).join(', ')||'없음';
@@ -4728,7 +4728,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(adminView&&isAdmin){if(!$('#stage #adminBox')){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll()}else adminRefresh();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
   if(secretView){$('#stage').innerHTML=secretHTML();startSecretScene();return}
-  if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
+  if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 정보</button><button role="tab" aria-selected="${meTab==='prof'}" data-act="metab" data-k="prof">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0,ps=document.querySelector('#stage .pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
   const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,req:renderReq,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
@@ -4939,7 +4939,7 @@ const A={
  okpt(){const n=pendSum();if(!n||n>ptsLeft()){abPend={};renderInfo();return}P.as=Object.assign({},P.as);Object.entries(abPend).forEach(([k,q])=>{if(ABIL.find(a=>a[0]===k))P.as[k]=AS(k)+q});abPend={};log(`능력치 ${n}포인트를 배분했다.`,'good');save();renderInfo();renderPilot()},
  resetpt(){abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
- metab(d){meTab=d.k==='look'?'look':'me';renderPanel()},
+ metab(d){meTab=d.k==='look'||d.k==='prof'?d.k:'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
  mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='ship';shipView='bench';benchTab='craft'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
  wprev(d){if(!wardById(d.id))return;if(wPrev[d.k]===d.id)delete wPrev[d.k];else wPrev[d.k]=d.id;renderPanel()},
@@ -5394,6 +5394,16 @@ async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const
   toast(id?`${whoP(id).nick||'단원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠습니다.`)}
 document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classList.contains('orgsel'))setRole(t.dataset.role,t.value)});
 let profId=null,profBio=false;
+// 내 프로필: my card exactly as other crew see it when they open me (likes and hates shown, since it is mine)
+function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
+  return`<div class="row" style="justify-content:space-between;margin-bottom:6px"><b class="dfloor">다른 단원에게 보이는 내 프로필</b><span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
+   <div class="card profcard"><div class="mehero ophero"><div class="meport">${withPet(meImg(6,p),p,6)}</div>
+    <div class="meid"><span class="lv">${esc(orgRole(uid))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2>${snHTML(SN_PUB||p.sn)}<span class="hint" style="color:var(--green)">● 접속 중</span>
+     <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${chips(p.likes,'var(--pink)')}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${chips(p.hates,'var(--red)')}</div></div></div>
+     <span class="hint">좋아하는·싫어하는 음식은 나에 대한 호감도가 30 이상인 단원에게만 보입니다.</span></div>
+    <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${jobOf(p)?esc(jobOf(p).n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div></div></div>
+    <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
+    <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
   const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',jobOf(p)?jobOf(p).n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
