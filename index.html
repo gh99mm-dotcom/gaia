@@ -169,6 +169,15 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .cookpot{display:inline-flex}.cookpot.on img{animation:cpot .5s steps(2) infinite}
 @keyframes cpot{50%{transform:translateY(-1px)}}
 .rtiles{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.rtile.unk{background:repeating-linear-gradient(45deg,var(--deep) 0 4px,color-mix(in srgb,var(--ink) 60%,var(--deep)) 4px 8px)}.rq{font-family:var(--f-pix,monospace);font-size:18px;color:var(--mute);line-height:1}.rq.big{font-size:28px;width:32px;text-align:center}
+.rcpop{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:#0008;animation:rcfade .2s ease-out}.rcpop.out{opacity:0;transition:opacity .2s}
+.rcbox{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:240px;max-width:calc(100vw - 32px);padding:18px 22px 16px;background:#1b1e33;color:#eef;border:4px solid #07080e;outline:4px solid #ffd65f;outline-offset:-8px;image-rendering:pixelated;animation:rcpop .45s steps(5) both;filter:drop-shadow(6px 6px 0 #0009)}
+.rct{font-family:var(--f-pix,monospace);font-size:22px;color:#ffd65f;letter-spacing:.06em;text-shadow:2px 2px 0 #07080e}.rcs{font-family:var(--f-pix,monospace);font-size:13px;color:#cfe;text-shadow:1px 1px 0 #07080e}
+.rcpic{display:grid;place-items:center;width:104px;height:104px;margin:4px 0;background:repeating-conic-gradient(#2a2f50 0 25%,#232741 0 50%) 0 0/16px 16px;border:3px solid #07080e;box-shadow:inset 0 0 0 2px #5a6090}.rcpic img{animation:rcbob 1s steps(2) infinite}
+.rcn{font-size:17px;color:#fff;text-shadow:2px 2px 0 #07080e}.rch{font-size:12px;color:#aab}
+.rcsp{position:absolute;width:6px;height:6px;background:#ffd65f;box-shadow:0 -6px 0 #ffd65f,0 6px 0 #ffd65f,-6px 0 0 #ffd65f,6px 0 0 #ffd65f;animation:rcsp 1.2s steps(3) infinite}.rcsp.s1{left:14px;top:14px}.rcsp.s2{right:14px;top:22px;animation-delay:.3s}.rcsp.s3{left:20px;bottom:46px;animation-delay:.6s}.rcsp.s4{right:18px;bottom:38px;animation-delay:.9s}
+@keyframes rcpop{0%{transform:scale(.3)}60%{transform:scale(1.08)}100%{transform:scale(1)}}@keyframes rcfade{from{opacity:0}}@keyframes rcbob{50%{transform:translateY(-4px)}}@keyframes rcsp{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
+:root[data-skin="light"] .rcbox{background:#fffaf0;color:#2a2418}:root[data-skin="light"] .rcn{color:#2a2418;text-shadow:none}:root[data-skin="light"] .rch{color:#6a6050}:root[data-skin="light"] .rcs{color:#3a5060;text-shadow:none}
 .rtile{position:relative;display:grid;place-items:center;aspect-ratio:1;padding:0;min-width:0;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
 .rtile[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--gold);background:var(--panel2)}
 .rtile.no img{opacity:.4;filter:grayscale(.7)}
@@ -1949,6 +1958,12 @@ const canCook=c=>c.need.every(([id,n])=>ingHave(id)>=n);
 function BUFF(k){const b=P.buff;if(!b||Date.now()>=b.until)return 0;return(b.fx&&b.fx[k])||0}
 function applyDish(id){const c0=COOK.find(x=>x.id===dishBase(id));if(!c0)return;const c=id===c0.id?c0:Object.assign({},c0,tastyOf(c0),{n:ITEMS[id].n});if(c.xp)gainXp(c.xp);if(c.buff){P.buff={id,fx:Object.assign({},c.buff),until:Date.now()+c.bmin*60e3};log(`${c.n} 덕분에 힘이 솟는다. ${Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(', ')} (${c.bmin}분)`,'rare')}}
 let cookSel='d_potRoast',cookN=1;
+const rcpKnown=id=>((P&&P.rcp)||[]).includes(id);
+// the first time a dish comes out of the pot: a pixel-art card names it and shows what it looks like
+function rcpPop(id){const c=COOK.find(x=>x.id===id),it=ITEMS[id];if(!c||!it)return;const old=$('#rcPop');if(old)old.remove();
+  const d=document.createElement('div');d.id='rcPop';d.className='rcpop';d.setAttribute('role','dialog');d.setAttribute('aria-label','레시피 해금');
+  d.innerHTML=`<div class="rcbox"><i class="rcsp s1"></i><i class="rcsp s2"></i><i class="rcsp s3"></i><i class="rcsp s4"></i><b class="rct">축하합니다!</b><span class="rcs">레시피를 해금했습니다!</span><div class="rcpic">${iicon(id,5)}</div><b class="rcn">${esc(it.n)}</b><span class="rch">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')} ${c.bmin}분`:''}</span><button class="btn gold sm" data-rcok>확인</button></div>`;
+  const close=()=>{d.classList.add('out');setTimeout(()=>d.remove(),200)};d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-rcok]'))close()});document.body.appendChild(d);sfxFanfare(false);d.querySelector('[data-rcok]').focus({preventScroll:true})}
 const cookMax=c=>Math.max(0,Math.min(20,...c.need.map(([id,n])=>Math.floor(ingHave(id)/n))));
 function sfxSizzle(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.9,'highpass',2600,4200,.035);noiseBurst(a,t+.15,.6,'bandpass',5200,3400,.02);tone(a,'triangle',220,180,t,.12,.03)}
 function sfxDing(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'sine',1318,0,t,.5,.07);tone(a,'sine',1760,0,t+.12,.6,.06);tone(a,'triangle',2637,0,t+.12,.25,.02)}
@@ -1958,15 +1973,15 @@ function renderCook(){const el=$('#cook');if(!el)return;const c=COOK.find(x=>x.i
   el.innerHTML=`<div class="cook-h"><span class="cookpot ${busy&&!done?'on':''}">${img(TPL.dPot,null,2)}</span><div style="min-width:0"><b class="cook-t">요리</b><span class="lbl">Galley · 조리실</span></div></div>
   <p class="hint tastyhint">요리 레벨 <b>LV.${lifeLv((P.lx||{}).cook)}</b> · 레벨이 오를수록 맛있는 음식을 만들게 될 확률이 높아집니다. <span class="tastytag">[맛있는!]</span> 요리는 효과가 1.5배입니다. (지금 ${tastyPct().toFixed(1)}%)</p>
   ${bf?`<div class="cbuff">${iicon(bf.id,1)}<span>${Object.entries(bf.fx).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' · ')}</span><b id="buffT">${fmtClock(bf.until-now)}</b></div>`:''}
-  ${busy?`<div class="card cooking"><div class="crow">${iicon(cur.id,2)}<div style="min-width:0;flex:1"><b>${esc(cur.n)}${(ck.n||1)>1?' ×'+ck.n:''}</b><span class="hint" id="cookT">${done?'완성됐습니다!':'조리 중 · '+fmtClock(left)}</span></div></div><div class="bar"><i id="cookB" style="--c:var(--gold);width:${done?100:Math.round((1-left/(cur.sec*(ck.n||1)*1e3))*100)}%"></i></div>${done?`<button class="btn gold sm" data-act="cookdone">꺼내기</button>`:''}</div>`:
-  `<div class="rtiles" role="group" aria-label="레시피">${COOK.map(x=>`<button type="button" class="rtile ${canCook(x)?'ok':'no'}" data-act="cooksel" data-k="${x.id}" aria-pressed="${x.id===c.id}" title="${esc(x.n)}" aria-label="${esc(x.n)}">${iicon(x.id,1.5)}</button>`).join('')}</div>
-  <div class="card csel"><b>${esc(c.n)} <span class="sellp">판매가 ${sellPrice(c.id).toLocaleString()} CR</span></b><span class="hint">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')} ${c.bmin}분`:''}</span>
+  ${busy?`<div class="card cooking"><div class="crow">${rcpKnown(cur.id)?iicon(cur.id,2):'<b class="rq big">?</b>'}<div style="min-width:0;flex:1"><b>${rcpKnown(cur.id)?esc(cur.n):'???'}${(ck.n||1)>1?' ×'+ck.n:''}</b><span class="hint" id="cookT">${done?'완성됐습니다!':'조리 중 · '+fmtClock(left)}</span></div></div><div class="bar"><i id="cookB" style="--c:var(--gold);width:${done?100:Math.round((1-left/(cur.sec*(ck.n||1)*1e3))*100)}%"></i></div>${done?`<button class="btn gold sm" data-act="cookdone">꺼내기</button>`:''}</div>`:
+  `<div class="rtiles" role="group" aria-label="레시피">${COOK.map(x=>{const k=rcpKnown(x.id);return`<button type="button" class="rtile ${canCook(x)?'ok':'no'} ${k?'':'unk'}" data-act="cooksel" data-k="${x.id}" aria-pressed="${x.id===c.id}" title="${k?esc(x.n):'아직 모르는 요리'}" aria-label="${k?esc(x.n):'아직 모르는 요리'}">${k?iicon(x.id,1.5):'<b class="rq">?</b>'}</button>`}).join('')}</div>
+  <div class="card csel">${rcpKnown(c.id)?`<b>${esc(c.n)} <span class="sellp">판매가 ${sellPrice(c.id).toLocaleString()} CR</span></b><span class="hint">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${k==='atk'?'공격':'방어'} +${v}`).join(' ')} ${c.bmin}분`:''}</span>`:`<b>??? <span class="hint">아직 만들어 보지 않은 요리</span></b><span class="hint">아래 재료로 한 번 만들어 보면 어떤 요리인지 알 수 있습니다.</span>`}
    <div class="cneed">${c.need.map(([id,n])=>ingChip(id,n)).join('')}</div>
    ${(()=>{const mx=cookMax(c),n=Math.max(1,Math.min(cookN,mx||1)),t=c.sec*n;return`<div class="row cookqty"><button class="btn sm ghost" data-act="cookq" data-k="-1" ${n>1?'':'disabled'} aria-label="하나 줄이기">−</button><b>${n}개</b><button class="btn sm ghost" data-act="cookq" data-k="1" ${n<mx?'':'disabled'} aria-label="하나 늘리기">+</button><button class="btn sm ghost" data-act="cookq" data-k="max" ${mx>1?'':'disabled'}>최대 ${mx||0}</button></div>
    <button class="btn sm" data-act="cook" ${mx>0?'':'disabled'}>요리하기 · ${t<60?t+'초':Math.floor(t/60)+'분'+(t%60?' '+t%60+'초':'')}</button>`})()}</div>`}
   ${dishes.length?`<div class="dlist">${dishes.map(x=>`<div class="drow">${iicon(x.id,1)}<span>${esc(x.n)} ×${P.inv[x.id]}</span><button class="btn ghost sm" data-act="use" data-id="${x.id}">먹기</button></div>`).join('')}</div>`:''}`}
 function tickCook(){const ck=P.cook;if(P.buff&&Date.now()>=P.buff.until){P.buff=null;log('요리 효과가 사라졌다.','');save();renderPilot();return}const bt=$('#buffT');if(bt&&P.buff)bt.textContent=fmtClock(P.buff.until-Date.now());if(!ck)return;const cur=COOK.find(x=>x.id===ck.id);if(!cur)return;const left=ck.end-Date.now();
-  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${cur.n} 완성! 가방의 요리 칸에서 꺼내 주십시오.`,'good');save();renderCook();return}
+  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${rcpKnown(cur.id)?cur.n:'새 요리'} 완성! 가방의 요리 칸에서 꺼내 주십시오.`,'good');save();renderCook();return}
   if(left>0){const t1=$('#cookT'),b=$('#cookB');if(t1)t1.textContent='조리 중 · '+fmtClock(left);if(b)b.style.width=Math.round((1-left/(cur.sec*(ck.n||1)*1e3))*100)+'%'}}
 
 /* ───────── admin: crew management ───────── */
@@ -2349,6 +2364,8 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
   if(!dim){x.fillStyle='#bfae80';x.fillRect(9,gap-1,2,1)}
   return MD[key]=c.toDataURL()}
 function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}
+  // recipes start hidden; players from before this keep the dishes they have in the bag as already known
+  if(!Array.isArray(P.rcp))P.rcp=COOK.filter(c=>(P.inv||{})[c.id]>0||(P.inv||{})[TASTY+c.id]>0).map(c=>c.id);
   // 머리·팔·발 장비 were retired for the two 장신구 slots: give back what each crafted piece cost, once
   if(!P.gearRef){P.gearRef=1;const old=(P.own||[]).filter(id=>craftById(id));if(old.length){let cr=0;const back={};old.forEach(id=>{const f=craftById(id);cr+=f.price;f.mat.forEach(([m,n])=>{back[m]=(back[m]||0)+n})});
     P.own=P.own.filter(id=>!craftById(id));P.cr=(P.cr||0)+cr;Object.entries(back).forEach(([m,n])=>{if(ITEMS[m])P.inv[m]=(P.inv[m]||0)+n});setTimeout(()=>log(`머리·팔·발 장비가 장신구로 바뀌어, 만든 장비 ${old.length}개의 값 ${cr.toLocaleString()} CR과 재료를 돌려받았다.`,'good'),0);save()}P.gear={}}if(P.job&&OLDJOB[P.job])P.job=OLDJOB[P.job];if(P.inv&&P.inv.relic>0){P.inv.relic6=(P.inv.relic6||0)+P.inv.relic;delete P.inv.relic}
@@ -4735,8 +4752,8 @@ const A={
  cookq(d){const c=COOK.find(x=>x.id===cookSel);if(!c)return;const mx=cookMax(c);cookN=d.k==='max'?mx:Math.max(1,Math.min(mx,cookN+(+d.k)));renderCook()},
  cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)ingTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;const n=ck.n||1,c=COOK.find(x=>x.id===ck.id);let t=0;for(let i=0;i<n;i++)if(Math.random()*100<tastyPct())t++;
-  if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(c.xp||6)*n);stat('cook',n);sfxCoin();
-  log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit()},
+  const fresh=!rcpKnown(ck.id);if(fresh)P.rcp=[...(P.rcp||[]),ck.id];if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(c.xp||6)*n);stat('cook',n);sfxCoin();
+  log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit();if(fresh)rcpPop(ck.id)},
  selpod(d){const i=+d.i,pl=fpod(i);if(podArmed(i)&&pl&&pl.seed){podArm=null;if(stage(pl)===3)harvestAt(i);else A.water({i});return}selPod=i;podArm=i;podArmAt=Date.now();renderPanel()},
  soil(d){const i=+d.i;podArm=null;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spendKeep(1))return;
   podAct(i,cur=>cur&&cur.til?null:{til:1,wet:0},()=>log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`),()=>{heal(0,1);toast('다른 단원이 먼저 배양토를 채웠습니다.')})},
