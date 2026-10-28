@@ -2488,7 +2488,7 @@ const RAID_ZONES=[
  {id:'r5',n:'얼어붙은 심연',min:34,max:44,t:'#d6d8e0',d:'영하 200도의 얼음 협곡. 극한에 적응한 괴물들이 삽니다.',mons:['서리 늑대','얼음 망령','빙결 거인','심연 박쥐','냉기 결정체'],mid:'얼음 동굴의 군주',boss:'심연의 서리용 「니블」'},
  {id:'r6',n:'붉은 별의 핵',min:40,max:60,t:'#ff5f6a',d:'행성 깊은 곳, 뜨거운 핵 근처. 가장 강한 존재들이 기다립니다.',mons:['용암 정령','화염 와이번','핵의 파수꾼','붉은 망령 기사','태양 벌레'],mid:'핵의 문지기 「이그니스」',boss:'붉은 별의 심장 「카를로스」'}];
 const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
-const RAID_MON_TURN=3e3;
+const RAID_MON_TURN=1e3;
 const RAID_STEPS=12,RAID_TURN=60e3,RAID_EN=8,RAID_MAX=4;
 const RAID_EVENTS=[
  {k:'chest',n:'보급 상자',t:'모래 속에서 구형 보급 상자를 찾았다.',cr:[20,50],item:['kit','drink']},
