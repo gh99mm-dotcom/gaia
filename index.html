@@ -1348,20 +1348,20 @@ document.querySelectorAll('[data-auth]').forEach(b=>b.addEventListener('click',(
 $('#authCode').addEventListener('input',e=>{const c=normCode(e.target.value).slice(0,8);e.target.value=c.length>4?c.slice(0,4)+'-'+c.slice(4):c});
 async function signup(id,pw,code){
   const admin=id===ADMIN_ID;
-  if(!admin){if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않거나 이미 사용됐습니다.'}}
+  if(!admin){if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않습니다.'}}
   const c=await createUserWithEmailAndPassword(auth,idEmail(id),pw);
   try{const bt=writeBatch(fs);bt.set(doc(fs,'members',c.user.uid),{id,code:admin?'':code,at:Date.now()});if(!admin)bt.delete(doc(fs,'invites',code));await bt.commit()}
-  catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'군번이 방금 다른 사람에게 사용됐습니다. 운영자에게 새 군번을 받아 주십시오.'}}
+  catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'다른 사람의 군번입니다. 함장에게 새 군번을 받아 주십시오.'}}
 }
 // signed in but no member record (records were reset, or the account was let go): rejoin with a fresh invite under the same ID
 let rejoinU=null;
 function showRejoin(u){rejoinU=u;modeA='rejoin';['#authId','#authPw','#authPw2'].forEach(q=>$(q).hidden=true);const tabs=document.querySelector('#authForm .dtabs');if(tabs)tabs.hidden=true;$('#authCode').hidden=false;$('#authCode').value='';
-  $('#authTitle').textContent='다시 합류';$('#authGo').textContent='새 군번으로 합류하기';$('#authGate').hidden=false;
+  $('#authTitle').textContent='다시 합류';$('#authGo').textContent='합류하기';$('#authGate').hidden=false;
   say(`${(u.email||'').split('@')[0]} 아이디의 승선 기록이 없습니다. 테스트가 끝나 기록이 초기화됐거나 운영자가 내보낸 계정입니다. 새 군번을 적으면 같은 아이디로 다시 합류할 수 있습니다.`,1);
   if(!$('#authOther')){const b=document.createElement('button');b.type='button';b.id='authOther';b.className='btn sm ghost';b.textContent='다른 아이디로 로그인';b.addEventListener('click',async()=>{await signOut(auth);location.reload()});$('#authGo').after(b)}
   setTimeout(()=>$('#authCode').focus(),50)}
-async function rejoin(code){const u=rejoinU;if(!u)return;if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않거나 이미 사용됐습니다.'};
-  try{const bt=writeBatch(fs);bt.set(doc(fs,'members',u.uid),{id:(u.email||'').split('@')[0],code,at:Date.now()});bt.delete(doc(fs,'invites',code));await bt.commit()}catch(e){throw{msg:'군번이 방금 다른 사람에게 사용됐습니다. 운영자에게 새 군번을 받아 주십시오.'}}}
+async function rejoin(code){const u=rejoinU;if(!u)return;if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않습니다.'};
+  try{const bt=writeBatch(fs);bt.set(doc(fs,'members',u.uid),{id:(u.email||'').split('@')[0],code,at:Date.now()});bt.delete(doc(fs,'invites',code));await bt.commit()}catch(e){throw{msg:'다른 사람의 군번입니다. 함장에게 새 군번을 받아 주십시오.'}}}
 $('#authForm').addEventListener('submit',async e=>{e.preventDefault();
   if(modeA==='rejoin'){const btn=$('#authGo');btn.disabled=true;say('합류하는 중…');try{await rejoin(normCode($('#authCode').value));say('합류했습니다! 정거장으로 들어갑니다.');setTimeout(()=>location.reload(),600)}catch(x){say(x.msg||'합류하지 못했습니다.',1);btn.disabled=false}return}
   const id=$('#authId').value.trim().toLowerCase(),pw=$('#authPw').value,btn=$('#authGo');
