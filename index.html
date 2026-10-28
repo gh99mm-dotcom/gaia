@@ -987,6 +987,12 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 :root[data-skin="light"] .pside{background:#fffaf0;color:#2a2418;border-color:#2a2418}:root[data-skin="light"] .pside-why{color:#2a2418}:root[data-skin="light"] .pside .hint{color:#6a6050}:root[data-skin="light"] .pside .ichip{background:#fff}
 @media (max-width:760px){.profwrap{grid-template-columns:minmax(0,1fr)}.pside-col{grid-template-rows:auto}.pside h4{font-size:12px;white-space:nowrap;gap:4px}.pside h4 span{width:16px;height:16px;font-size:10px}}
 
+.pnotes{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,4fr);gap:12px;margin-top:12px}
+.ps-trait{--pc:#6ad8b0}.ps-note{--pc:#ffa860}
+.pnotes .pside{min-height:96px}.pnotes textarea{width:100%;resize:vertical;min-height:64px;font:inherit;font-size:13px}
+:root[data-skin="light"] .ps-trait{--pc:#1f8a64}:root[data-skin="light"] .ps-note{--pc:#c0601a}
+@media (max-width:760px){.pnotes{grid-template-columns:minmax(0,1fr)}}
+
 .idc-ph .pfplock{top:4px;bottom:auto}
 .profunder{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .jobcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -4755,7 +4761,7 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
 let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
-const KEEP_FOCUS=new Set(['whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg']);
+const KEEP_FOCUS=new Set(['noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg']);
 function renderPanel(){tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
@@ -4984,6 +4990,8 @@ const A={
  okpt(){const n=pendSum();if(!n||n>ptsLeft()){abPend={};renderInfo();return}P.as=Object.assign({},P.as);Object.entries(abPend).forEach(([k,q])=>{if(ABIL.find(a=>a[0]===k))P.as[k]=AS(k)+q});abPend={};log(`능력치 ${n}포인트를 배분했다.`,'good');save();renderInfo();renderPilot()},
  resetpt(){abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
+ noteedit(d){noteEdit=noteEdit===d.k?null:d.k;renderInfo();if(noteEdit)setTimeout(()=>{const i=$('#noteIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},0)},
+ notesave(d){const i=$('#noteIn');if(!i||!PNOTE.some(x=>x[0]===d.k))return;P[d.k]=i.value.trim().slice(0,PNOTE_MAX);noteEdit=null;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
@@ -5470,9 +5478,15 @@ function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).fi
     :`<p class="pside-why">${p.why?esc(p.why):`<span class="hint">${mine?'아직 적지 않았습니다. 왜 이 개척단에 왔나요?':'아직 적지 않았습니다.'}</span>`}</p>${mine?`<button class="qchip" data-act="whyedit">${p.why?'고치기':'적기'}</button>`:''}`;
   const C=(cls,ic,t,b)=>`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${b}</section>`;
   return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-why','✎','프로젝트에 들어오게 된 이유',why)}${C('ps-aff','♡','호감도',aff)}</div>`}
+// free-text profile notes under the ID card (written on my own 내 프로필 tab, shown to everyone)
+const PNOTE=[['trait','성격 · 특징','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐'],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120;let noteEdit=null;
+function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,cls,ph])=>{const ed=mine&&noteEdit===k,v=p[k]||'';
+  const body=ed?`<div class="sendrow"><textarea id="noteIn" class="sel" maxlength="${PNOTE_MAX}" rows="3" placeholder="${ph}" aria-label="${t}">${esc(v)}</textarea></div><div class="row" style="gap:4px"><button class="btn sm" data-act="notesave" data-k="${k}">저장</button><button class="qchip" data-act="noteedit" data-k="${k}">취소</button><span class="hint">${PNOTE_MAX}자까지</span></div>`
+    :`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):`<span class="hint">아직 적지 않았습니다.</span>`}</p>${mine?`<button class="qchip" data-act="noteedit" data-k="${k}">${v?'고치기':'적기'}</button>`:''}`;
+  return`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${body}</section>`}).join('')}</div>`}
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
   return`<div class="row" style="justify-content:space-between;margin-bottom:6px"><b class="dfloor">다른 단원에게 보이는 내 프로필</b><span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
-   <div class="card profcard"><div class="profwrap">${idCardHTML(p,uid,!!p.pfp,false)}${profSideHTML(p,uid,true)}</div>
+   <div class="card profcard"><div class="profwrap">${idCardHTML(p,uid,!!p.pfp,false)}${profSideHTML(p,uid,true)}</div>${profNotesHTML(p,true)}
     <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 단원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
     ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}
     <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
@@ -5483,7 +5497,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
   if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up at 30
     const af=affOf(p,uid),open=af>=30,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 30 이상이면 보입니다</span>';
-    return`<div class="card profcard" id="profCard"><div class="profwrap">${idCardHTML(p,id,!!p.pfp&&open,!!p.pfp&&!open)}${profSideHTML(p,id,open)}</div>
+    return`<div class="card profcard" id="profCard"><div class="profwrap">${idCardHTML(p,id,!!p.pfp&&open,!!p.pfp&&!open)}${profSideHTML(p,id,open)}</div>${profNotesHTML(p,false)}
      <div class="profunder"><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
       <div class="row" style="gap:5px;flex-wrap:wrap"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
      <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
