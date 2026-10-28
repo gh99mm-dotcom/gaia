@@ -948,6 +948,30 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 
 .pfpbox{position:relative;overflow:hidden}.pfpimg{width:3cm;height:4cm;flex:none;object-fit:cover;object-position:center;display:block;margin:auto;cursor:zoom-in;image-rendering:auto}.pfpbox:has(.pfpimg){display:grid;place-items:center}
 .pfplock{position:absolute;left:4px;right:4px;bottom:4px;font-size:10px;line-height:1.35;white-space:normal;text-align:center;background:#07080ecc;color:#cfd3e0;padding:2px 4px}
+.idc{--nv:#0f1f4a;--nv2:#1a3270;--cy:#7fd4ff;--gd:#f2c66a;position:relative;max-width:560px;padding:10px;background:linear-gradient(160deg,#16296a,#0b1838 70%);border:3px solid #07080e;outline:3px solid var(--gd);outline-offset:-6px;color:#0f1f4a;overflow:hidden;image-rendering:auto;
+  background-image:radial-gradient(1.5px 1.5px at 72% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 88% 8%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 60% 92%,#fff 50%,transparent 51%),radial-gradient(2px 2px at 95% 88%,#ffe9a8 50%,transparent 51%),linear-gradient(160deg,#16296a,#0b1838 70%)}
+.idc-top{display:flex;align-items:center;gap:8px;padding:6px 10px 10px 8px;width:62%;clip-path:polygon(0 0,100% 0,88% 100%,0 100%);background:linear-gradient(90deg,#0b1838,#1c3a86);border-bottom:2px solid var(--cy)}
+.idc-tl img,.idc-logo img{width:38px;height:38px;image-rendering:pixelated;filter:drop-shadow(0 0 6px #7fd4ff88)}
+.idc-brand,.idc-logo span{display:flex;flex-direction:column;line-height:1.05}.idc-brand b,.idc-logo b{font-family:var(--f-pix);font-size:17px;letter-spacing:.12em;color:#fff;text-shadow:0 0 6px #7fd4ff}
+.idc-brand small,.idc-logo small{font-family:var(--f-pix);font-size:10px;letter-spacing:.3em;color:var(--cy)}
+.idc-panel{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;margin-top:6px;padding:14px 16px 18px 14px;
+  background:linear-gradient(115deg,#f6f9ff 0,#e9f0fd 55%,#cddcf7 100%);clip-path:polygon(0 0,62% 0,64% 10px,100% 10px,100% calc(100% - 14px),80% calc(100% - 14px),78% 100%,24% 100%,22% calc(100% - 14px),0 calc(100% - 14px))}
+.idc-panel::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 3px,#0f1f4a06 3px 4px);pointer-events:none}
+.idc-moto{position:absolute;right:16px;top:16px;font:italic 600 15px/1.05 "Segoe Script","Brush Script MT","Apple Chancery",cursive;color:#3a6ad8aa;text-align:right;transform:rotate(-12deg);pointer-events:none}
+.idc-bigp{position:absolute;right:-34px;bottom:-30px;opacity:.28;pointer-events:none}.idc-bigp img{width:150px;height:150px;image-rendering:pixelated}
+.idc-ph{position:relative;z-index:1;width:3cm;height:4cm;border:3px solid #0b1838;outline:2px solid var(--cy);box-shadow:none;background:linear-gradient(180deg,#1c2f6a,#3a3a8a);display:grid;place-items:center;overflow:hidden}
+.idc-ph .pfpimg{width:100%;height:100%;margin:0}.idc-av{display:grid;place-items:end center;width:100%;height:100%;line-height:0}.idc-av img{image-rendering:pixelated}
+.idc-dl{position:relative;z-index:1;margin:0;display:flex;flex-direction:column;gap:5px;min-width:0}
+.idc-row{display:grid;grid-template-columns:70px 14px minmax(0,1fr);align-items:baseline;padding-bottom:4px;border-bottom:2px solid #7fa4e866}
+.idc-row dt{font-size:12px;color:#3a5a9a;font-weight:700;white-space:nowrap}.idc-row dt i{font-style:normal;color:#5a8ae8;margin-right:4px}
+.idc-arr{color:#5a8ae8;font-weight:900}.idc-row dd{margin:0;font-size:15px;font-weight:900;color:#0f1f4a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.idc-row.big dd{font-family:var(--f-display);font-weight:400;font-size:22px;line-height:1.05}
+.idc-seal{position:absolute;z-index:2;left:calc(3cm - 40px);top:calc(4cm - 52px);width:80px;height:80px;color:#e0202e;opacity:.85;transform:rotate(-14deg);mix-blend-mode:multiply;pointer-events:none}
+.idc-bot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px 2px}
+.idc-ttl{display:flex;align-items:center;gap:8px;min-width:0}.idc-wing{font-size:22px;color:var(--cy);text-shadow:0 0 6px #7fd4ff}
+.idc-ttl span{display:flex;flex-direction:column;line-height:1.2;min-width:0}.idc-ttl b{font-family:var(--f-display);font-weight:400;font-size:19px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.idc-ttl small{font-size:12px;color:#cfe0ff}
+.idc-logo{display:flex;align-items:center;gap:8px}.idc-logo b{font-size:14px}
+@media (max-width:520px){.idc-top{width:88%}.idc-brand b{font-size:14px}.idc-ph{width:2.4cm;height:3.2cm}.idc-seal{left:calc(2.4cm - 30px);top:calc(3.2cm - 36px);width:62px;height:62px}.idc-row{grid-template-columns:50px 10px minmax(0,1fr)}.idc-row dt{font-size:11px}.idc-row dt i{display:none}.idc-row dd{font-size:13px}.idc-row.big dd{font-size:17px}.idc-logo span,.idc-moto{display:none}.idc-panel{gap:10px;padding:12px 10px 16px}}
 .jobcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .jobcard{--jc:#e0a84a;position:relative;display:flex;flex-direction:column;padding:0;text-align:left;color:inherit;font:inherit;background:var(--deep);border:3px solid #07080e;outline:2px solid color-mix(in srgb,var(--jc) 45%,transparent);outline-offset:-5px;cursor:pointer;min-width:0;image-rendering:pixelated}
 .jobcard.jc-nav{--jc:#5fb8f0}.jobcard.jc-medic{--jc:#7ad07a}
@@ -5403,14 +5427,23 @@ let profId=null,profBio=false;
 let pfpBusy=false;const pfpImg=id=>ASSET_ID.test(String(id))?`<img class="pfpimg" data-act="imgview" data-k="${id}" src="${window.__blobURL?window.__blobURL(id):'/_blob/'+id}" alt="프로필 사진">`:'';
 async function pfpUpload(f){if(!ASSETS||pfpBusy||!f)return;if(!IMG_TYPES.test(f.type)){toast('PNG·JPG·GIF·WEBP 이미지만 올릴 수 있습니다.');return}pfpBusy=true;renderInfo();
   try{const r=await ASSETS.upload(f,{type:f.type});const old=P.pfp;P.pfp=r.id;if(old&&old!==r.id)ASSETS.delete(old).catch(()=>{});save();toast('프로필 사진을 올렸습니다.')}catch(e){imgErr(e)}pfpBusy=false;renderInfo()}
+// the profile as a crew ID card: title over the photo, job · rank · levels on the right, name and 군번 below, the game logo in the corner
+const lifeSum=p=>LIFE.reduce((a,[q])=>a+lifeLv(((p&&p.lx)||{})[q]),0);
+function idCardHTML(p,id,photo,lock){const logo=($('.lg2-em img')||{}).src||'',sn=[id===uid?MY_SN:'',p.sn].find(x=>x&&x!=='함장')||'',j=jobOf(p),L=logo?`<img src="${logo}" alt="">`:'';
+  const row=(k,v,big)=>`<div class="idc-row${big?' big':''}"><dt><i>✦</i>${k}</dt><span class="idc-arr">»</span><dd>${v}</dd></div>`;
+  return`<div class="idc"><div class="idc-top"><span class="idc-tl">${L}</span><span class="idc-brand"><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div>
+   <div class="idc-panel"><span class="idc-moto">Together<br>We Rebuild<br>Gaia</span><span class="idc-bigp">${L}</span>
+    <div class="idc-ph">${photo?pfpImg(p.pfp):`<span class="idc-av">${meImg(5,p)}</span>`}${lock?'<span class="pfplock">🔒 사진은 호감도 30 이상</span>':''}</div>
+    <dl class="idc-dl">${row('이름',esc(p.nick||'단원'),1)}${row('직군',j?esc(j.n):'없음')}${row('직급',esc(orgRole(id)))}${row('레벨','LV.'+(p.lvl||1))}${row('생활레벨','LV.'+lifeSum(p))}</dl>
+    <svg class="idc-seal" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="sealT" d="M14 50 a36 36 0 0 1 72 0"/><path id="sealB" d="M10 50 a40 40 0 0 0 80 0"/></defs><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="3"/><text font-size="11.5" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealT" startOffset="50%">GAIA PROJECT</textPath></text><text font-size="10" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealB" startOffset="50%">★ SECTOR K-7 ★</textPath></text><circle cx="50" cy="50" r="12" fill="currentColor"/><ellipse cx="50" cy="51" rx="21" ry="6" fill="none" stroke="currentColor" stroke-width="3" transform="rotate(-18 50 50)"/></svg></div>
+   <div class="idc-bot"><div class="idc-ttl"><span class="idc-wing">❖</span><span><b>${esc(ttlOf(p))}</b>${sn?`<small>${esc(sn)}</small>`:''}</span></div>
+    <div class="idc-logo">${L}<span><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div></div></div>`}
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
   return`<div class="row" style="justify-content:space-between;margin-bottom:6px"><b class="dfloor">다른 단원에게 보이는 내 프로필</b><span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
-   <div class="card profcard"><div class="mehero ophero"><div class="meport pfpbox">${p.pfp?pfpImg(p.pfp):withPet(meImg(6,p),p,6)}</div>
-    <div class="meid"><span class="lv">${esc(orgRole(uid))} · ${esc(ttlOf(p))}</span><h2>${esc(p.nick||'단원')}</h2>${snHTML(SN_PUB||p.sn)}<span class="hint" style="color:var(--green)">● 접속 중</span>
-     <div class="optaste"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${chips(p.likes,'var(--pink)')}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${chips(p.hates,'var(--red)')}</div></div></div>
-     <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 단원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
-     ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}</div>
-    <div class="mequick"><div><span>레벨</span><b>${p.lvl||1}</b></div><div><span>직업</span><b>${jobOf(p)?esc(jobOf(p).n):'없음'}</b></div><div><span>어류 도감</span><b>${Object.keys(p.dex||{}).length}</b></div></div></div>
+   <div class="card profcard">${idCardHTML(p,uid,!!p.pfp,false)}
+    <div class="optaste" style="margin-top:10px"><div><span class="lbl" style="color:var(--pink)">♥ 좋아하는 음식</span><div class="jpicked">${chips(p.likes,'var(--pink)')}</div></div><div><span class="lbl" style="color:var(--red)">✕ 싫어하는 음식</span><div class="jpicked">${chips(p.hates,'var(--red)')}</div></div></div>
+    <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 단원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
+    ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}
     <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
