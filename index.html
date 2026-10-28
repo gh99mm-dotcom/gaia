@@ -4601,6 +4601,9 @@ function renderPanel(){tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP
   // the battle log holds only the last 7 lines, newest last: always show the newest (on phones they wrap past the box)
   {const l=document.getElementById('raidLog');if(l)l.scrollTop=l.scrollHeight}if(kf){const i=document.getElementById(kf);if(i){i.focus({preventScroll:true});if(pos!=null)try{i.setSelectionRange(pos,pos)}catch(e){}}}}
 let barWas=false;
+let stageTab=null,touchOn=false,scrollAt=0;
+let touchMoved=false;addEventListener('touchstart',()=>{touchOn=true;touchMoved=false},{passive:true,capture:true});addEventListener('touchmove',()=>{touchMoved=true},{passive:true,capture:true});addEventListener('touchend',()=>{touchOn=false;if(touchMoved)scrollAt=Date.now()},{passive:true,capture:true});addEventListener('touchcancel',()=>{touchOn=false},{passive:true,capture:true});addEventListener('scroll',()=>{scrollAt=Date.now()},{passive:true});
+const userScrolling=()=>touchOn||Date.now()-scrollAt<250;
 function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView;syncBgm()}
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox')){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll()}else adminRefresh();return}
@@ -4610,8 +4613,15 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0,ps=document.querySelector('#stage .pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
   const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,req:renderReq,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
-  $('#stage').innerHTML=f();
-  {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;const np=document.querySelector('#stage .pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;if(Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}
+  // redraws must not move the page: the stage keeps its old height while the new content goes in, then lets go only of what is not
+  // needed to stay where the reader is (so the browser never clamps the scroll); and the page is only pulled back while no finger
+  // or fling is moving it, since a stale position from mid-scroll would yank it upward
+  const sg=$('#stage'),same=stageTab===tab;stageTab=tab;
+  if(same){sg.style.minHeight=sg.offsetHeight+'px'}else sg.style.minHeight='';
+  sg.innerHTML=f();
+  if(same){const r0=sg.getBoundingClientRect(),last=sg.lastElementChild,nat=last?Math.ceil(last.getBoundingClientRect().bottom-r0.top+(parseFloat(getComputedStyle(sg).paddingBottom)||0)):0,
+    other=document.documentElement.scrollHeight-sg.offsetHeight,req=Math.ceil(sy+innerHeight-other);sg.style.minHeight=req>nat?Math.min(sg.offsetHeight,req)+'px':''}
+  {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;const np=document.querySelector('#stage .pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;if(Math.abs(window.scrollY-sy)>2&&!userScrolling())window.scrollTo(0,sy)}
   if(tab==='fish')drawLake();
   if(tab==='ship'){if(shipView==='room'){drawRoomCv();roomLabels()}else startShipScene()}
   if(!roomShown())leaveRoomSpace();
