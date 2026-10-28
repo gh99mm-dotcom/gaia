@@ -2034,7 +2034,9 @@ const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚
 const LIFE4=LIFE.slice(0,4);
 /* life levels cap at 30 (25*29^2 = 21,025 life XP). Gains are scaled per activity so a 6-hours-a-day player reaches 30 in about 10 days
    in each, assuming a mixed day of roughly 60 harvests, 50 robot pickups, 150 catches and 40 trail stops + 10 receiver scans. */
-const LX_RATE={farm:3.5,gather:10.5,fish:1.4,scan:3.75,cook:4};  // cook: ~40 dishes a day reaches 30 in about 10 days
+// cook: half the dish's own XP (3 for a potato roast, 13 for a curry). Cooking costs no energy and runs in the background, so even
+// non-stop cooking for 6 hours (about 0.15 life XP a second) takes 6-7 days, and with real ingredient limits about 10, like the others
+const LX_RATE={farm:3.5,gather:10.5,fish:1.4,scan:3.75,cook:.5};
 const LIFE_MAX=30,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
 // each life level adds 0.5% to that activity's bonus chance; wearing the 황금손 title (all four maxed) adds a further 1% to every one
 const goldHand=()=>LIFE4.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
@@ -4724,7 +4726,7 @@ const A={
  cookq(d){const c=COOK.find(x=>x.id===cookSel);if(!c)return;const mx=cookMax(c);cookN=d.k==='max'?mx:Math.max(1,Math.min(mx,cookN+(+d.k)));renderCook()},
  cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)ingTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;const n=ck.n||1,c=COOK.find(x=>x.id===ck.id);let t=0;for(let i=0;i<n;i++)if(Math.random()*100<tastyPct())t++;
-  if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(6+c.need.reduce((a,[,k])=>a+k*2,0))*n);stat('cook',n);sfxCoin();
+  if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(c.xp||6)*n);stat('cook',n);sfxCoin();
   log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit()},
  selpod(d){const i=+d.i,pl=fpod(i);if(podArmed(i)&&pl&&pl.seed){podArm=null;if(stage(pl)===3)harvestAt(i);else A.water({i});return}selPod=i;podArm=i;podArmAt=Date.now();renderPanel()},
  soil(d){const i=+d.i;podArm=null;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spendKeep(1))return;
