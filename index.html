@@ -4979,7 +4979,7 @@ function duelCatch(tr,id,sz){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id
 /* item name on hover: a floating label so scrolling bag panels can't clip it */
 {const tip=document.createElement('div');tip.className='itip';tip.hidden=true;document.body.appendChild(tip);
   const show=el=>{if(el.title){el.setAttribute('data-tip',el.title);el.removeAttribute('title')}const t=el.getAttribute('data-tip');if(!t){tip.hidden=true;return}tip.textContent=t;tip.hidden=false;const r=el.getBoundingClientRect(),w=tip.offsetWidth;tip.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+'px';tip.style.top=Math.max(6,r.top-tip.offsetHeight-6)+'px'};
-  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.bag .slot,.mlbag .slot,.stat[data-tip]');if(el)show(el);else tip.hidden=true});
+  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.bag .slot,.mlbag .slot,.jgrid .slot,.stat[data-tip]');if(el)show(el);else tip.hidden=true});
   document.addEventListener('scroll',()=>{tip.hidden=true},true);document.addEventListener('pointerdown',()=>{tip.hidden=true})}
 /* ───────── events ───────── */
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
