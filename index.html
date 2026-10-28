@@ -2504,7 +2504,9 @@ const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.06*({elite:1.5,mid:3,boss:6}[kin
    a normal monster soaks ~8 of their hits, elite ~14, mid boss ~22, boss ~34; a normal monster drops one of them in ~6 hits, elite ~4.5, mid ~3.5, boss ~2.5.
    Smaller parties face the same monsters, so going solo is meant to be very hard. */
 const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mid:[22,3.5,1.15],boss:[34,2.5,1.2]};
-function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],def=Math.round((1+L*.6)*k[2]),hp=Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)),atk=Math.round(typHp(L)/k[1]+typDef(L)*.5);
+// monsters are tuned for a full party of 4; smaller parties meet weaker ones (HP and attack) so the fight stays about as long
+const RAID_HPF=[0,.36,.57,.79,1],RAID_ATKF=[0,.77,.85,.92,1];
+function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]));
   return{n:name,L,kind:kind||'',hp,max:hp,atk,def,agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
@@ -2680,7 +2682,7 @@ const MON_SPR=["................","....kk....kk....","...kaak..kaak...","...kabb
 function raidBar(v,max,col){return`<div class="bar"><i style="--c:${col};width:${Math.max(0,v/max*100)}%"></i></div>`}
 function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><span class="zcost" title="입장할 때만 에너지 ${RAID_EN}을 씁니다. 원정 안에서는 에너지를 쓰지 않습니다.">${img(IC.bolt,null,1)}-${RAID_EN}</span><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 부족합니다</span>`}</button>`}).join('');
   const z=RAID_ZONES.find(x=>x.id===raidSel)||RAID_ZONES[0],list=RAIDS.filter(x=>x.ids.length<RAID_MAX);
-  return`<p class="lead">혼자 또는 최대 ${RAID_MAX}명의 파티로 원정을 떠납니다. ${RAID_STEPS}단계를 지나며 몬스터나 사건을 만나고, 마지막에는 보스가 기다립니다. 전투는 민첩이 높은 순서로 턴이 돌아오며, 한 사람의 턴은 ${RAID_TURN/1000}초입니다. 출발한 뒤에는 새로 합류할 수 없습니다.</p>
+  return`<p class="lead">혼자 또는 최대 ${RAID_MAX}명의 파티로 원정을 떠납니다. ${RAID_STEPS}단계를 지나며 몬스터나 사건을 만나고, 마지막에는 보스가 기다립니다. 몬스터는 4명 파티 기준이라 인원이 적을수록 약해집니다(혼자면 체력 36% · 공격력 77%). 전투는 민첩이 높은 순서로 턴이 돌아오며, 한 사람의 턴은 ${RAID_TURN/1000}초입니다. 출발한 뒤에는 새로 합류할 수 없습니다.</p>
   <div class="row" style="gap:6px;margin:8px 0"><button class="btn" data-act="raidnew" data-k="solo" ${raidFits(z)?'':'disabled'}>혼자 출발</button><button class="btn alt" data-act="raidnew" data-k="party" ${raidFits(z)?'':'disabled'}>파티 모집</button><span class="hint">선택 구역 · ${z.n}</span></div>
   <div class="card"><div class="stat-row"><span>모집 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),ok=raidFits(zz),mp=raidMapImg(zz.id,1,false,RAID_STEPS,true);
     return`<div class="pcard ${ok?'':'off'}"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">Lv.${zz.min}~${zz.id==='r6'?'':zz.max}${zz.id==='r6'?' 이상':''}</span></div>
