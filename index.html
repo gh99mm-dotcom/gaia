@@ -1640,7 +1640,7 @@ const COOK=[
  {id:'d_cornSoup',n:'유성 옥수수 수프',ic:'dBowl',t:'#f2d86a',need:[['corn',2],['pot',1]],sec:45,hp:90,en:30,xp:12,d:'부드럽고 고소한 옥수수 크림 수프.'},
  {id:'d_fishStew',n:'해물 무 냄비',ic:'dPot',t:'#5f8fb0',need:[['fish:r',1],['fish:c',2],['iceRadish',1]],sec:90,hp:150,en:40,xp:22,buff:{def:5},bmin:10,d:'생선을 아낌없이 넣고 끓인 냄비 요리.'},
  {id:'d_sashimi',n:'유니크 회 정식',ic:'dFish',t:'#ff8ab0',need:[['fish:u',2]],sec:120,hp:180,en:80,xp:30,buff:{atk:6,def:4},bmin:12,d:'귀한 생선을 얇게 떠 낸 한 상.'},
- {id:'d_feast',n:'성운 정식',ic:'dTray',t:'#bfae80',need:[['fish:u',1],['pump',1],['mistLotus',1],['crystalBean',1]],sec:180,hp:999,en:999,xp:40,buff:{atk:10,def:6},bmin:15,d:'개척단 최고의 한 상. 체력과 에너지가 가득 찹니다.'},
+ {id:'d_feast',n:'성운 정식',ic:'dTray',t:'#bfae80',need:[['fish:u',1],['pump',1],['mistLotus',1],['crystalBean',1]],sec:180,hp:220,en:100,xp:40,buff:{atk:10,def:6},bmin:15,d:'개척단 최고의 한 상. 든든하게 힘이 납니다.'},
 ];
 COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}});
 // [맛있는!] dishes: a cooking-level roll makes some come out extra good — 1.5x healing, buff strength and experience
