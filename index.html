@@ -2116,7 +2116,7 @@ async function connect(){
   mode='online';myRef=db.doc('players/'+uid);
   try{const s=await myRef.get();if(s.exists&&!s.data().deleted){seasonFromDoc=true;P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
-  renderNet();renderAll();seasonWatch();
+  renderNet();renderAll();seasonWatch();seenSync();
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
   let plT=null;const plDraw=()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()};
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
@@ -4921,11 +4921,15 @@ const ttlOf=p=>(TITLES.find(t=>t[0]===p.title)||TITLES[0])[1];
 const isOn=id=>id===uid||PEERS.some(x=>x.presence&&x.presence.uid===id);
 const socErr=e=>toast(e&&e.code==='quota_exceeded'?'저장 공간이 가득 찼습니다. 운영자에게 알려 주십시오.':'보내지 못했습니다. 잠시 뒤 다시 시도해 주십시오.');
 const shortAgo=t=>{const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금';if(m<60)return m+'분';const h=Math.floor(m/60);if(h<24)return h+'시간';return Math.floor(h/24)+'일'};
-function dmUnread(peer){return DMS.filter(d=>d.to===uid&&d.from===peer&&d.at>(dmRead[peer]||0)).length}
-function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>(dmRead[d.from]||0)).length}
-function socUnread(){if(mode!=='online')return 0;return POSTS.filter(p=>p.uid!==uid&&p.at>socSeen&&(!p.re||p.reUid===uid)).length+dmUnreadAll()}
-function markSoc(){const m=Math.max(socSeen,...POSTS.map(p=>p.at||0));if(m>socSeen){socSeen=m;try{localStorage.setItem(SOC_LS,String(m))}catch(e){}queueMicrotask(renderNav)}}
-function markDm(peer){const last=Math.max(0,...DMS.filter(d=>d.from===peer&&d.to===uid).map(d=>d.at||0));if(last>(dmRead[peer]||0)){dmRead[peer]=last;try{localStorage.setItem(DM_LS,JSON.stringify(dmRead))}catch(e){}queueMicrotask(renderNav)}}
+// what I've read is kept on the character (P.socSeen, P.dmRead) as well as in this browser, so reading on one device clears the badges on all of them
+const socSeenAt=()=>Math.max(socSeen,+(P&&P.socSeen)||0),dmReadAt=peer=>Math.max(dmRead[peer]||0,+((P&&P.dmRead)||{})[peer]||0);
+function dmUnread(peer){return DMS.filter(d=>d.to===uid&&d.from===peer&&d.at>dmReadAt(peer)).length}
+function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>dmReadAt(d.from)).length}
+function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>p.uid!==uid&&p.at>seen&&(!p.re||p.reUid===uid)).length+dmUnreadAll()}
+// first load on a device: whatever this browser had already read is copied onto the character
+function seenSync(){if(!P||!P.nick)return;let ch=false;if(socSeen>(+P.socSeen||0)){P.socSeen=socSeen;ch=true}const r=Object.assign({},P.dmRead);for(const k in dmRead)if((dmRead[k]||0)>(+r[k]||0)){r[k]=dmRead[k];ch=true}if(ch){P.dmRead=r;save()}}
+function markSoc(){const cur=socSeenAt(),m=Math.max(cur,...POSTS.map(p=>p.at||0));if(m>cur||m>socSeen||m>(+P.socSeen||0)){socSeen=m;try{localStorage.setItem(SOC_LS,String(m))}catch(e){}if(m>(+P.socSeen||0)){P.socSeen=m;save()}queueMicrotask(renderNav)}}
+function markDm(peer){const last=Math.max(0,...DMS.filter(d=>d.from===peer&&d.to===uid).map(d=>d.at||0));if(last>dmReadAt(peer)||last>(+((P.dmRead||{})[peer])||0)){dmRead[peer]=Math.max(dmRead[peer]||0,last);try{localStorage.setItem(DM_LS,JSON.stringify(dmRead))}catch(e){}if(last>(+((P.dmRead||{})[peer])||0)){P.dmRead=Object.assign({},P.dmRead,{[peer]:last});save()}queueMicrotask(renderNav)}}
 function socWho(id,nick,sc=2){return`<span class="phead">${headImg(sc,whoP(id))}<span class="who" style="color:${colorOf(id)}">${esc(nick||'단원')}</span>${id===uid?'<span class="hint">(나)</span>':''}</span>`}
 /* ---- PAD images ---- */
 let ASSETS=null,padImgs=[],replyImgs=[],padBusy=false;const IMG_MAX=4,IMG_TYPES=/^image\/(png|jpeg|gif|webp)$/,ASSET_ID=/^[A-Za-z0-9_-]{8,64}$/;
