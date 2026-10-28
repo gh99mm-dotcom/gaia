@@ -4958,12 +4958,12 @@ const A={
    .catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
  gift(d){openGift(d.k)},
  giftclose(){$('#giftModal').hidden=true},
- giftadd(d){if(!isDish(d.id))return;const have=P.inv[d.id]||0;if(giftCount()>=GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
+ giftadd(d){if(!isDish(d.id))return;const have=P.inv[d.id]||0;if(GIFT_MAX===1&&!giftSel[d.id])giftSel={};if(giftCount()>=GIFT_MAX){toast(`요리는 한 번에 ${GIFT_MAX}개만 보낼 수 있습니다.`);return}giftSel[d.id]=Math.min(have,(giftSel[d.id]||0)+1);renderGift()},
  giftreset(){giftSel={};renderGift()},
  giftcr(d){giftCr=+d.k;renderGift()},
- giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&isDish(i)&&(P.inv[i]||0)>=n);if(items.reduce((a,[,n])=>a+n,0)>GIFT_MAX){toast(`요리는 한 사람에게 ${GIFT_MAX}개까지 보낼 수 있습니다.`);return}const cr=Math.min(giftCr,P.cr||0),note=!items.length&&!cr;if(note&&!giftMsg.trim())return;if(!note&&giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 이미 선물했습니다. 쪽지는 언제든 보낼 수 있습니다.`);return}
+ giftsend(){const t=PLAYERS[giftTo];if(!t||mode!=='online')return;const items=Object.entries(giftSel).filter(([i,n])=>n>0&&isDish(i)&&(P.inv[i]||0)>=n);if(items.reduce((a,[,n])=>a+n,0)>GIFT_MAX){toast(`요리는 한 번에 ${GIFT_MAX}개만 보낼 수 있습니다.`);return}const cr=Math.min(giftCr,P.cr||0),note=!items.length&&!cr;if(note&&!giftMsg.trim())return;if(!note&&giftedToday(giftTo)){toast(`${t.nick} 님에게는 오늘 선물을 ${GIFT_DAY}번 모두 보냈습니다. 쪽지는 언제든 보낼 수 있습니다.`);return}
   items.forEach(([i,n])=>take(i,n));P.cr-=cr;const msg=giftMsg.trim().slice(0,40);save();
-  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items:items.map(([id,n])=>Object.assign({id,n},byField(id))),cr,msg,at:Date.now()}).then(()=>{if(!note){P.giftDay=Object.assign({},P.giftDay,{[gto]:dayKey()});const [dv,why]=giftAffDelta(items,t.likes,t.hates);addAff(gto,dv,why+'을 함')}sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
+  const gto=giftTo;db.collection('gifts').add({to:gto,from:uid,nick:P.nick,items:items.map(([id,n])=>Object.assign({id,n},byField(id))),cr,msg,at:Date.now()}).then(()=>{if(!note){P.giftDay=Object.assign({},P.giftDay,{[gto]:{d:dayKey(),n:giftsToday(gto)+1}});const [dv,why]=giftAffDelta(items,t.likes,t.hates);addAff(gto,dv,why+'을 함')}sfxCoin();log(`${t.nick} 님에게 ${note?'쪽지':'선물'}를 보냈다.`,'good');sys(`${P.nick} 님이 ${t.nick} 님에게 선물을 보냈습니다.`);$('#giftModal').hidden=true;commit()}).catch(()=>{items.forEach(([i,n])=>add(i,n));P.cr+=cr;toast('선물을 보내지 못했습니다. 다시 시도해 주십시오.');commit()})},
  duelstart(){if(mode!=='online'||duelOn())return;if(duelOpensLeft()<=0){toast(`오늘은 낚시 대결을 ${DUEL_DAILY}번 모두 열었습니다. 내일 다시 열 수 있습니다.`);return}const now=Date.now(),dk=duelDay();P.duelOpen={d:dk,n:(P.duelOpen&&P.duelOpen.d===dk?P.duelOpen.n:0)+1};save();db.doc('duel/current').set({id:'d'+now.toString(36),start:now+5000,end:now+5000+DUEL_MS,host:uid}).then(()=>sys(`${P.nick} 님이 3분 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)).catch(()=>toast('대결을 열지 못했습니다.'))},
  duelclaim(){if(!DUEL||duelOn()||(P.duel&&P.duel.claimed===DUEL.id))return;const rk=duelBoard(),top=rk[0];if(!top||!rk.some(r=>r.id===uid&&r.score===top.score&&top.score>0))return;P.duel=Object.assign({},P.duel,{claimed:DUEL.id});P.cr=(P.cr||0)+DUEL_PRIZE;sfxCoin();log(`낚시 대결 우승! 상금 ${DUEL_PRIZE} CR`,'rare');sys(`${P.nick} 님이 낚시 대결에서 우승했습니다!`);commit()},
  renameopen(){renaming=true;renderInfo();setTimeout(()=>{const i=$('#renameIn');if(i){i.focus();i.select()}},30)},
@@ -5097,14 +5097,14 @@ const A={
 /* ---- gifts ---- */
 let giftTo=null,giftSel={},giftCr=0,giftMsg='';
 function openGift(id){if(!PLAYERS[id])return;giftTo=id;giftSel={};giftCr=0;giftMsg='';renderGift();$('#giftModal').hidden=false}
-const GIFT_MAX=2,isDish=i=>COOK.some(c=>c.id===dishBase(i)),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
+const GIFT_MAX=1,isDish=i=>COOK.some(c=>c.id===dishBase(i)),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
 function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]&&isDish(i));const sel=Object.entries(giftSel);
   $('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2><span class="hint">${esc(t.nick)} 님의 나에 대한 호감도 ${affBadge(affOf(t,uid))}</span></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
   ${tasteHTML(t)||'<span class="hint">이 단원은 아직 취향을 정하지 않았습니다.</span>'}
-  <div class="info-sec"><span class="lbl">Dishes · 요리만, 한 사람에게 하루 ${GIFT_MAX}개까지 (${giftCount()}/${GIFT_MAX})</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,2)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">선물할 요리가 없습니다. 가방에서 요리를 만들어 보십시오.</p>'}</div></div>
+  <div class="info-sec"><span class="lbl">Dishes · 요리만, 한 번에 ${GIFT_MAX}개 · 한 사람에게 하루 ${GIFT_DAY}번 (오늘 ${giftsToday(giftTo)}/${GIFT_DAY}번)</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,2)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">선물할 요리가 없습니다. 가방에서 요리를 만들어 보십시오.</p>'}</div></div>
   <div class="info-sec"><span class="lbl">Credits · 크레딧</span><div class="row" style="gap:5px">${[0,50,100,500,1000,5000].map(v=>`<button class="qchip" data-act="giftcr" data-k="${v}" aria-pressed="${giftCr===v}" ${v>(P.cr||0)?'disabled':''}>${v?v.toLocaleString()+' CR':'없음'}</button>`).join('')}</div></div>
   <div class="info-sec"><span class="lbl">Message · 쪽지 (아이템 없이 쪽지만 보내도 됩니다)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
-  <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}${giftedToday(giftTo)&&(sel.length||giftCr)?'<span class="hint" style="color:var(--red)">오늘은 이미 선물했습니다</span>':''}<button class="btn sm gold" id="giftGo" data-act="giftsend" ${giftGoOk(sel)?'':'disabled'}>${sel.length||giftCr?'선물 보내기':'쪽지 보내기'}</button></div>`}
+  <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}${giftedToday(giftTo)&&(sel.length||giftCr)?`<span class="hint" style="color:var(--red)">오늘 선물 ${GIFT_DAY}번을 모두 보냈습니다</span>`:''}<button class="btn sm gold" id="giftGo" data-act="giftsend" ${giftGoOk(sel)?'':'disabled'}>${sel.length||giftCr?'선물 보내기':'쪽지 보내기'}</button></div>`}
 const giftGoOk=sel=>(sel.length||giftCr)?!giftedToday(giftTo):!!giftMsg.trim();
 /* ───────── mailbox: gifts and notes from crew, gifts from the admin; nothing is applied until opened ───────── */
 let MAILG=[],MAILA=[],mailView=false,mailNoted=new Set();
@@ -5323,7 +5323,8 @@ const affLabel=v=>AFF_TIERS[affTier(v)][1];
 const affColor=v=>`var(--rel${AFF_TIERS.length-1-affTier(v)})`;
 function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf(P,id),v=Math.max(AFF_MIN,Math.min(AFF_MAX,before+delta));P.aff=Object.assign({},P.aff,{[id]:v});
   const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'단원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
-const giftedToday=id=>(P.giftDay||{})[id]===dayKey();
+// gifts per person per day: GIFT_DAY sends, each carrying at most one dish (old saves stored just the day: that counts as one send)
+const GIFT_DAY=2,giftsToday=id=>{const v=(P.giftDay||{})[id];return !v?0:typeof v==='string'?(v===dayKey()?1:0):v.d===dayKey()?(+v.n||0):0},giftedToday=id=>giftsToday(id)>=GIFT_DAY;
 function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span class="hint">${affLabel(v)}</span>`}
 /* relationship map: the center person in the middle, everyone else on a ring; each link shows both directions */
 function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const others=orgAll().filter(([id])=>id!==cid);
