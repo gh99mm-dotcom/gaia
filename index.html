@@ -988,9 +988,9 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 @media (max-width:760px){.profwrap{grid-template-columns:minmax(0,1fr)}.pside-col{grid-template-rows:auto}.pside h4{font-size:12px;white-space:nowrap;gap:4px}.pside h4 span{width:16px;height:16px;font-size:10px}}
 
 .relkey{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 2px;font-size:12px;color:var(--mute)}.relkey span{display:inline-flex;align-items:center;gap:5px}.relkey i{width:18px;height:4px;display:inline-block}
-.pnotes{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,4fr);gap:12px;margin-top:12px}
+.pnotes{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}
 .ps-trait{--pc:#6ad8b0}.ps-feat{--pc:#7fb8ff}.ps-note{--pc:#ffa860}
-.pnotes .pside{min-height:96px}.pnotes textarea{width:100%;resize:vertical;min-height:64px;font:inherit;font-size:13px}
+.pnotes .pside{min-height:72px}.pnotes textarea{width:100%;resize:vertical;min-height:64px;font:inherit;font-size:13px}
 :root[data-skin="light"] .ps-trait{--pc:#1f8a64}:root[data-skin="light"] .ps-feat{--pc:#2a6ac8}:root[data-skin="light"] .ps-note{--pc:#c0601a}
 @media (max-width:760px){.pnotes{grid-template-columns:minmax(0,1fr)}}
 
@@ -5493,7 +5493,7 @@ function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).fi
   const C=(cls,ic,t,b)=>`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${b}</section>`;
   return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-why','✎','프로젝트에 들어오게 된 이유',why)}${C('ps-aff','♡','호감도',aff)}</div>`}
 // free-text profile notes under the ID card (written on my own 내 프로필 tab, shown to everyone)
-const PNOTE=[['trait','성격 · 특징','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐'],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120;let noteEdit=null;
+const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐'],['feat','특징','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 늘 공구를 들고 다님'],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120;let noteEdit=null;
 function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,cls,ph])=>{const ed=mine&&noteEdit===k,v=p[k]||'';
   const body=ed?`<div class="sendrow"><textarea id="noteIn" class="sel" maxlength="${PNOTE_MAX}" rows="3" placeholder="${ph}" aria-label="${t}">${esc(v)}</textarea></div><div class="row" style="gap:4px"><button class="btn sm" data-act="notesave" data-k="${k}">저장</button><button class="qchip" data-act="noteedit" data-k="${k}">취소</button><span class="hint">${PNOTE_MAX}자까지</span></div>`
     :`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):`<span class="hint">아직 적지 않았습니다.</span>`}</p>${mine?`<button class="qchip" data-act="noteedit" data-k="${k}">${v?'고치기':'적기'}</button>`:''}`;
