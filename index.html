@@ -987,6 +987,7 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 :root[data-skin="light"] .pside{background:#fffaf0;color:#2a2418;border-color:#2a2418}:root[data-skin="light"] .pside-why{color:#2a2418}:root[data-skin="light"] .pside .hint{color:#6a6050}:root[data-skin="light"] .pside .ichip{background:#fff}
 @media (max-width:760px){.profwrap{grid-template-columns:minmax(0,1fr)}.pside-col{grid-template-rows:auto}.pside h4{font-size:12px;white-space:nowrap;gap:4px}.pside h4 span{width:16px;height:16px;font-size:10px}}
 
+.relkey{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 2px;font-size:12px;color:var(--mute)}.relkey span{display:inline-flex;align-items:center;gap:5px}.relkey i{width:18px;height:4px;display:inline-block}
 .pnotes{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) minmax(0,4fr);gap:12px;margin-top:12px}
 .ps-trait{--pc:#6ad8b0}.ps-feat{--pc:#7fb8ff}.ps-note{--pc:#ffa860}
 .pnotes .pside{min-height:96px}.pnotes textarea{width:100%;resize:vertical;min-height:64px;font:inherit;font-size:13px}
@@ -5391,10 +5392,11 @@ function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const ot
     const dx=o.x-cx,dy=o.y-cy,L=Math.hypot(dx,dy)||1,nx=-dy/L*0.9,ny=dx/L*0.9;
     [[out,nx,ny,.32],[inn,-nx,-ny,.68]].forEach(([v,ox,oy,t])=>{if(!v)return;const col=affColor(v);
       lines+=`<line x1="${cx+ox}" y1="${cy+oy}" x2="${o.x+ox}" y2="${o.y+oy}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" stroke-opacity="${Math.abs(v)<20?.55:1}" vector-effect="non-scaling-stroke"/>`;
-      labels+=`<span class="rellab" style="left:${(cx+dx*t+ox*2.2)/W*100}%;top:${(cy+dy*t+oy*2.2)/H*100}%;color:${col};border-color:${col}">${esc(affLabel(v))}</span>`})});
+})});
   const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="profopen" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
   return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
-  <span class="hint">선 위 글자는 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>이고, 선 색깔이 관계를 나타냅니다${compact?'':'(아래 카드 참고)'}. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 한 번)</span>`}
+  <div class="relkey">${AFF_TIERS.map((t,i)=>`<span><i style="background:var(--rel${AFF_TIERS.length-1-i})"></i>${esc(t[1])}</span>`).join('')}</div>
+  <span class="hint">선 색깔이 관계를 나타냅니다. 선 두 줄 중 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>의 색이 그 사람 쪽에 그려집니다. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 두 번)</span>`}
 /* rankings: level, life level (sum of the four) and ship-repair contribution */
 const RANKS=[['lv','레벨 랭킹','var(--rk-lv)'],['life','생활레벨 랭킹','var(--rk-life)'],['don','기여도 랭킹','var(--rk-don)']];
 function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick);let rows;
