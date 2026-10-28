@@ -626,7 +626,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 :root[data-skin="light"] .fxc.atk{--c:#c0382a}:root[data-skin="light"] .fxc.def{--c:#2a6ab8}:root[data-skin="light"] .fxc.hp{--c:#c0306a}:root[data-skin="light"] .fxc.en{--c:#9a7400}:root[data-skin="light"] .fxc.crit{--c:#b8600a}:root[data-skin="light"] .fxc.luck{--c:#1f8a44}
 @media (prefers-reduced-motion:reduce){.accrow.ag3 .accico{animation:none}}
 .accpop img{image-rendering:pixelated;filter:drop-shadow(0 0 8px var(--skc))}
-.bossfx{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.bfxt{font-style:normal}.bossfxsum{color:var(--gold);font-size:13px;min-width:190px}.bossfxs{display:flex;flex-direction:column;gap:4px}.bosshp{font-family:var(--f-pix);font-size:11px;color:var(--mute);text-align:right}.bosspct{color:var(--red);font-size:14px;font-weight:700;margin-right:2px}
+.bossfx{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.bfxt{font-style:normal}.bossfxsum{color:var(--gold);font-size:13px;min-width:190px}.smfuel{display:inline-block;white-space:nowrap;margin-left:4px;font-size:10px;padding:0 4px;border:1px solid var(--green);color:var(--green);vertical-align:1px}.bossfxs{display:flex;flex-direction:column;gap:4px}.bosshp{font-family:var(--f-pix);font-size:11px;color:var(--mute);text-align:right}.bosspct{color:var(--red);font-size:14px;font-weight:700;margin-right:2px}
 .bossclock{font-family:var(--f-pix);font-size:11px;color:var(--gold)}.bossclock.urgent{color:var(--red);animation:blink 1s steps(2) infinite}
 .asigbtns{gap:8px;flex-wrap:wrap;margin-top:8px}.bossdim{padding-bottom:64px}.bossdim::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.38);pointer-events:none}.bossdim .bosssprite{filter:brightness(.8)}
 .bossretov{position:absolute;left:0;right:0;bottom:12px;z-index:1;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center;color:#e8e8f0;text-shadow:0 2px 4px #000}.bossretov p{margin:0;font-weight:700}.bossretT{font-family:var(--f-pix);font-size:30px;line-height:1;color:#fff;letter-spacing:.08em}
@@ -3539,13 +3539,14 @@ function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArri
 /* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
 // repaired strictly in this order: each section opens once the one before it is finished.
 // sized for ~30 crew: life support in about 3 days, then power→comms in about 11 more (see the gather tables)
+// every section also burns crops as bio-fuel: one station crop and one crop from the gathering site that section draws on
 const SHIP=[
- {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',1120],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',40]]},
- {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',185],['echoQuartz',65],['crystal',560],['mazeCore',60]]},
- {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',1060],['craterIron',75],['rustBolt',55],['sandSlate',55],['bogResin',70]]},
- {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',115],['crystal',510],['volcAsh',40],['dark',220],['wreckNozzle',80]]},
- {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',95],['brokenLens',35],['impactGlass',65],['abyssPrism',90]]},
- {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',380],['oldBoard',60],['iceShell',20],['marshFossil',20],['starHeart',100]]},
+ {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',1120],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',40],['pot',200],['mistLotus',120]]},
+ {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',185],['echoQuartz',65],['crystal',560],['mazeCore',60],['berry',200],['crystalBean',120]]},
+ {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',1060],['craterIron',75],['rustBolt',55],['sandSlate',55],['bogResin',70],['carrot',200],['dustPot',150]]},
+ {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',115],['crystal',510],['volcAsh',40],['dark',220],['wreckNozzle',80],['corn',200],['canyonPepper',120]]},
+ {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',95],['brokenLens',35],['impactGlass',65],['abyssPrism',90],['pump',150],['frozenTomato',120]]},
+ {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',380],['oldBoard',60],['iceShell',20],['marshFossil',20],['starHeart',100],['melon',120],['frostBerry',120]]},
 ];
 let SHIPDON=[],shipSel=null;
 /* repair totals live in one shared record (boss/ship: p = part → material → count, u = member → {n, nick}) kept with counters,
@@ -3556,7 +3557,7 @@ const shipTRef=()=>db.doc('boss/ship');
 function shipTotals(){if(SHIPT&&SHIPT.v)return{p:SHIPT.p||{},u:SHIPT.u||{}};if(shipTC)return shipTC;const p={},u={};
   SHIPDON.forEach(d=>{const n=+d.n||0;if(d.part){const q=p[d.part]=p[d.part]||{};q[d.id]=(q[d.id]||0)+n}if(d.uid){const r=u[d.uid]=u[d.uid]||{n:0,nick:d.nick};r.n+=n;if(d.nick)r.nick=d.nick}});return shipTC={p,u}}
 function shipSubscribe(){const redraw=()=>{if(tab==='ship'||(tab==='social'&&socTab==='rank'))renderPanel()};
-  shipTRef().onSnapshot(sn=>{SHIPT=sn.exists?sn.data():null;shipTC=null;
+  shipTRef().onSnapshot(sn=>{SHIPT=sn.exists?sn.data():null;shipTC=null;shipFuelMark();
     if(SHIPT&&SHIPT.v){if(shipSlipsUn){shipSlipsUn();shipSlipsUn=null;SHIPDON=[]}}
     else if(!shipSlipsUn)shipSlipsUn=db.collection('shipdon').onSnapshot(s=>{SHIPDON=s.docs.map(d=>d.data());shipTC=null;shipMigrate();redraw()},()=>{})||(()=>{});
     redraw()},()=>{})}
@@ -3566,7 +3567,13 @@ function shipMigrate(){if(!isAdmin||shipMig||(SHIPT&&SHIPT.v))return;shipMig=tru
     return bossTx(shipTRef(),cur=>cur&&cur.v?null:{v:1,p,u,at:Date.now()})}).catch(()=>{}).finally(()=>{shipMig=false})}
 const shipGot=part=>Object.assign({},shipTotals().p[part]||{});
 const shipLeft=(pt,id)=>Math.max(0,(pt.need.find(x=>x[0]===id)||[,0])[1]-(shipGot(pt.id)[id]||0));
-const shipPct=pt=>{const g=shipGot(pt.id);let a=0,b=0;pt.need.forEach(([id,n])=>{a+=Math.min(n,g[id]||0);b+=n});return a/b};
+// sections already repaired before crops joined the list stay repaired: the first client to see the totals after that change records
+// which ones had all their other materials (fuel.pre); until that record exists, a section counts as done on its other materials alone
+const shipOldDone=(pt,p)=>pt.need.filter(([id])=>!isCropId(id)).every(([id,n])=>((p||{})[pt.id]||{})[id]>=n);
+const shipKept=pt=>SHIPT&&SHIPT.v?(SHIPT.fuel?!!(SHIPT.fuel.pre||{})[pt.id]:shipOldDone(pt,SHIPT.p)):false;
+const shipPct=pt=>{if(shipKept(pt))return 1;const g=shipGot(pt.id);let a=0,b=0;pt.need.forEach(([id,n])=>{a+=Math.min(n,g[id]||0);b+=n});return a/b};
+function shipFuelMark(){if(!SHIPT||!SHIPT.v||SHIPT.fuel||shipFuelMark.busy)return;shipFuelMark.busy=1;
+  bossTx(shipTRef(),cur=>{if(!cur||!cur.v||cur.fuel)return null;const pre={};SHIP.forEach(pt=>{if(shipOldDone(pt,cur.p))pre[pt.id]=1});cur.fuel={at:Date.now(),pre};return cur}).catch(()=>{}).finally(()=>{shipFuelMark.busy=0})}
 const shipDone=pt=>shipPct(pt)>=1;
 const shipOpen=pt=>SHIP.slice(0,SHIP.indexOf(pt)).every(shipDone);
 const shipAll=()=>SHIP.reduce((a,pt)=>a+shipPct(pt),0)/SHIP.length;
@@ -4161,7 +4168,7 @@ function renderShip(){if(shipView==='bench')return benchHTML();if(shipView==='ro
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
   <div class="card shipdet"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div><b>${pt.n}</b> <span class="hint">${shipDone(pt)?'수리 완료':Math.floor(shipPct(pt)*100)+'%'}</span><p class="hint" style="margin:4px 0 0">${pt.d}</p>${open?'':`<p class="shiplock">🔒 ${esc(prevN)}을(를) 먼저 고쳐야 이 구역을 수리할 수 있습니다.</p>`}</div>
    ${shipDone(pt)?'':`<button class="btn sm" data-act="shipgive" data-k="${pt.id}" ${canAny?'':'disabled'}>가진 재료 모두 넣기</button>`}</div>
-   <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?(()=>{const mx=Math.min(left,my,1000),q=Math.max(1,Math.min(mx||1,shipQty[id]||mx||1));return`<span class="smq"><input class="sel" type="number" min="1" max="${mx||1}" value="${q}" data-shipq="${id}" aria-label="${esc(ITEMS[id].n)} 넣을 개수" ${my&&open?'':'disabled'}><button class="btn sm alt" data-act="shipgive" data-k="${pt.id}" data-i="${id}" ${my&&open?'':'disabled'}>넣기</button></span>`})():'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>
+   <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}${isCropId(id)?'<small class="smfuel">생체 연료</small>':''}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?(()=>{const mx=Math.min(left,my,1000),q=Math.max(1,Math.min(mx||1,shipQty[id]||mx||1));return`<span class="smq"><input class="sel" type="number" min="1" max="${mx||1}" value="${q}" data-shipq="${id}" aria-label="${esc(ITEMS[id].n)} 넣을 개수" ${my&&open?'':'disabled'}><button class="btn sm alt" data-act="shipgive" data-k="${pt.id}" data-i="${id}" ${my&&open?'':'disabled'}>넣기</button></span>`})():'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>
   <div class="card"><div class="stat-row"><span>수리 기여 순위</span><b>내 기여 ${mine}개</b></div>${top.length?`<ol class="shiprank">${top.map(([id,r],k)=>`<li><span>${k+1}</span><button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(id===uid?P.nick:(PLAYERS[id]&&PLAYERS[id].nick)||r.nick||'단원')}</button><b>${r.n}개</b></li>`).join('')}</ol>`:'<p class="hint">아직 아무도 재료를 넣지 않았습니다. 첫 번째 수리공이 되어 보십시오.</p>'}</div>`;
 }
 /* ship scene: a pixel-art crash site on an alien world; repaired parts show on the downed starfighter */
@@ -4561,7 +4568,7 @@ document.addEventListener('contextmenu',e=>{const s=e.target.closest('.slot[data
 const BAGCAT=[['farm','작물·씨앗'],['dish','요리'],['ship','재료'],['fish','물고기'],['etc','그 외']];
 // what a material goes into: ship repair and/or gear (gear, accessories, weapons, suits and weapon upgrades)
 let GEAR_MATS=null;const gearMats=()=>GEAR_MATS||(GEAR_MATS=new Set([...Object.values(CRAFT).flatMap(g=>g.list),...ACC,...WPNS,...SUITS].flatMap(f=>(f.mat||[]).map(([id])=>id)).concat(['ore','crystal','dark'])));
-const matUse=id=>[shipMatIds().includes(id)&&'우주선 수리',gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
+const matUse=id=>[shipMatIds().includes(id)&&(isCropId(id)?'우주선 수리 (생체 연료)':'우주선 수리'),gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
 function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(it.type!=='relic'&&matUse(id))return'ship';return'etc'}
 let bagF=null;
 function bagInner(){
