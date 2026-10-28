@@ -811,7 +811,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @media (max-width:520px){.orgdepts{flex-direction:column;align-items:stretch;border-top:0;border-left:2px solid var(--line);padding:6px 0 0 12px}.orgdept::before{top:50%;left:-14px;width:12px;height:2px}}
 /* relationship map */
 .relmap{position:relative;width:100%;max-width:640px;margin:0 auto;background:radial-gradient(ellipse at 50% 50%,#151b2e 0 35%,var(--deep) 75%);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
-.relmap svg{position:absolute;inset:0;width:100%;height:100%}
+.relmap svg{position:absolute;inset:0;width:100%;height:100%}.relmap .relhit{pointer-events:stroke;cursor:help}
 .reltiers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:640px;margin:12px auto 0}
 .reltier{--c:var(--rel4);display:flex;flex-direction:column;gap:2px;padding:8px 10px;background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--c)}
 .reltier b{color:var(--c);font-size:14px}.reltier .rng{font-family:var(--f-pix);font-size:10px;color:var(--mute)}.reltier .hint{font-size:11.5px}
@@ -5274,7 +5274,9 @@ function duelCatch(tr,id,sz){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id
 /* item name on hover: a floating label so scrolling bag panels can't clip it */
 {const tip=document.createElement('div');tip.className='itip';tip.hidden=true;document.body.appendChild(tip);
   const show=el=>{if(el.title){el.setAttribute('data-tip',el.title);el.removeAttribute('title')}const t=el.getAttribute('data-tip');if(!t){tip.hidden=true;return}tip.textContent=t;tip.hidden=false;const r=el.getBoundingClientRect(),w=tip.offsetWidth;tip.style.left=Math.max(6,Math.min(innerWidth-w-6,r.left+r.width/2-w/2))+'px';tip.style.top=Math.max(6,r.top-tip.offsetHeight-6)+'px'};
-  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.bag .slot,.mlbag .slot,.jgrid .slot,.stat[data-tip]');if(el)show(el);else tip.hidden=true});
+  const atMouse=e=>{const w=tip.offsetWidth;tip.style.left=Math.max(6,Math.min(innerWidth-w-6,e.clientX-w/2))+'px';tip.style.top=Math.max(6,e.clientY-tip.offsetHeight-14)+'px'};
+  document.addEventListener('mouseover',e=>{const rl=e.target.closest&&e.target.closest('.relhit');if(rl){tip.textContent=rl.getAttribute('data-tip')||'';tip.hidden=false;atMouse(e);return}const el=e.target.closest&&e.target.closest('.bag .slot,.mlbag .slot,.jgrid .slot,.stat[data-tip]');if(el)show(el);else tip.hidden=true});
+  document.addEventListener('mousemove',e=>{if(!tip.hidden&&e.target.closest&&e.target.closest('.relhit'))atMouse(e)});
   document.addEventListener('scroll',()=>{tip.hidden=true},true);document.addEventListener('pointerdown',()=>{tip.hidden=true})}
 /* ───────── events ───────── */
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t.classList&&t.classList.contains('logo')&&t.dataset.tab){e.preventDefault();t.click()}});
@@ -5395,13 +5397,18 @@ function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const ot
   let lines='',labels='';
   pos.forEach(o=>{const out=affOf(C,o.id),inn=affOf(o.p,cid);if(!out&&!inn){lines+=`<line x1="${cx}" y1="${cy}" x2="${o.x}" y2="${o.y}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3" vector-effect="non-scaling-stroke"/>`;return}
     const dx=o.x-cx,dy=o.y-cy,L=Math.hypot(dx,dy)||1,nx=-dy/L*0.9,ny=dx/L*0.9;
-    [[out,nx,ny,.32],[inn,-nx,-ny,.68]].forEach(([v,ox,oy,t])=>{if(!v)return;const col=affColor(v);
-      lines+=`<line x1="${cx+ox}" y1="${cy+oy}" x2="${o.x+ox}" y2="${o.y+oy}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" stroke-opacity="${Math.abs(v)<20?.55:1}" vector-effect="non-scaling-stroke"/>`;
+    // each feeling is its own line with an arrowhead pointing from the one who feels it to the one it is about; hover shows who, what and how much
+    [[out,nx,ny,1,C,o.p],[inn,-nx,-ny,-1,o.p,C]].forEach(([v,ox,oy,dir,from,to])=>{if(!v)return;const col=affColor(v),x1=cx+ox,y1=cy+oy,x2=o.x+ox,y2=o.y+oy;
+      const t=dir>0?.6:.4,mx=x1+(x2-x1)*t,my=y1+(y2-y1)*t,ux=dx/L*dir,uy=dy/L*dir,ah=2.4,aw=1.5,
+        tip=`${from.nick||'단원'} → ${to.nick||'단원'} · ${affLabel(v)} (${v})`;
+      lines+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" stroke-opacity="${Math.abs(v)<20?.55:1}" vector-effect="non-scaling-stroke"/>`
+        +`<polygon points="${mx+ux*ah},${my+uy*ah} ${mx-uy*aw},${my+ux*aw} ${mx+uy*aw},${my-ux*aw}" fill="${col}" fill-opacity="${Math.abs(v)<20?.6:1}"/>`
+        +`<line class="relhit" data-tip="${esc(tip)}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="transparent" stroke-width="12" vector-effect="non-scaling-stroke"/>`;
 })});
   const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="profopen" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
   return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
   <div class="relkey">${AFF_TIERS.map((t,i)=>`<span><i style="background:var(--rel${AFF_TIERS.length-1-i})"></i>${esc(t[1])}</span>`).join('')}</div>
-  <span class="hint">선 색깔이 관계를 나타냅니다. 선 두 줄 중 <b>가까운 쪽 사람이 상대에게 느끼는 감정</b>의 색이 그 사람 쪽에 그려집니다. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 두 번)</span>`}
+  <span class="hint">선 색깔이 관계를 나타냅니다. 화살표는 감정을 느끼는 사람에서 상대 쪽을 가리키고, 선에 마우스를 올리면 누가 누구에게 어떤 감정인지 보입니다. 가운데 사람을 누르면 프로필, 다른 사람을 누르면 그 사람 중심의 관계도가 열립니다. 구조 +${AFF.rescue} · 좋아하는 선물 +${AFF.like} · 싫어하는 선물 ${AFF.hate} · 그 밖의 선물 +${AFF.gift} (선물은 한 사람에게 하루 두 번)</span>`}
 /* rankings: level, life level (sum of the four) and ship-repair contribution */
 const RANKS=[['lv','레벨 랭킹','var(--rk-lv)'],['life','생활레벨 랭킹','var(--rk-life)'],['don','기여도 랭킹','var(--rk-don)']];
 function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick);let rows;
