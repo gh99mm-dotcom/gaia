@@ -2622,6 +2622,7 @@ function sfxPartyJoin(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.c
 function sfxPartyGo(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.07,'bandpass',2600,1800,.32,2);tone(a,'square',180,90,t,.06,.12);
   tone(a,'sine',1760,null,t+.08,.7,.18);tone(a,'sine',2637,null,t+.085,.55,.1);tone(a,'triangle',3520,null,t+.09,.35,.05)}
 function raidSfx(a,b){if(a&&b&&a.id===b.id&&a.state==='run'&&b.state==='run'&&(b.step||0)>(a.step||0))sfxSteps();
+  if(a&&b&&a.id===b.id&&a.phase==='battle'&&(b.phase==='won'||(b.phase==='end'&&b.result==='clear')))sfxRaidWin(b.phase==='end');
   if(!a||!b||!a.b||!b.b||a.id!==b.id||b.phase==='end'&&a.phase==='end')return;
   {const f=b.b.skfx,g=a.b.skfx;if(f&&(!g||g.id!==f.id)){sfxSkill(f.j);skillPop(f);return}}
   const mh=x=>(x.b.mons||[]).reduce((s,m)=>s+Math.max(0,m.hp),0),ph=(x,u)=>x.m&&x.m[u]?x.m[u].hp:0;
@@ -2637,6 +2638,11 @@ function sfxSkill(j){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curr
 function skillPop(f){const d=document.createElement('div');d.className='skpop sk-'+(f.j||'');d.innerHTML=`<b>${esc(f.n)}!</b><span>${esc(f.by||'')}</span>`;document.body.appendChild(d);setTimeout(()=>d.remove(),1500)}
 // moving on to the next stop: four footsteps on gravel — a soft low thump and a short gritty crunch, left and right alternating
 function sfxSteps(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;for(let i=0;i<4;i++){const at=t+i*.27,lo=i%2?1:.86;tone(a,'sine',95*lo,55*lo,at,.07,.05);noiseBurst(a,at,.08,'lowpass',1400*lo,380,.07,3);noiseBurst(a,at+.012,.05,'bandpass',2600*lo,1800,.018,2)}}
+// a battle won: a quick bright 8-bit jingle; the boss going down gets a longer fanfare. Starts just after the last hit's own sound
+function sfxRaidWin(boss){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.28;
+  const N=boss?[[523,0],[659,.1],[784,.2],[1046,.3],[784,.45],[1046,.55],[1318,.7]]:[[659,0],[784,.09],[1046,.18],[1318,.3]];
+  N.forEach(([f,d],i)=>{const last=i===N.length-1;tone(a,'square',f,0,t+d,last?(boss?.7:.4):.1,.035);tone(a,'triangle',f/2,0,t+d,last?(boss?.7:.4):.1,.03)});
+  const end=t+N[N.length-1][1];[1,1.25,1.5].forEach(m=>tone(a,'triangle',(boss?523:659)*m,0,end,boss?.8:.45,.018))}
 function sfxRaidHit(crit){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'square',1500,300,t,.11,.06);noiseBurst(a,t+.04,.16,'bandpass',2200,600,.28,2);tone(a,'sine',160,70,t+.05,.16,.22);if(crit){tone(a,'square',2400,900,t+.03,.1,.05);noiseBurst(a,t+.1,.2,'highpass',3500,1500,.12)}}
 function sfxRaidHurt(me){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.02,v=me?1:.5;noiseBurst(a,t,.22,'lowpass',900,120,.42*v,1.6);tone(a,'sawtooth',150,55,t,.22,.12*v);tone(a,'square',90,45,t+.03,.2,.07*v)}
 /* party chat: one small doc per party (last 40 lines), shown under the party list while more than one member is along */
