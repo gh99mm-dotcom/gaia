@@ -824,6 +824,7 @@ img.pix.tasty{filter:drop-shadow(0 0 2px #ffcf4a) drop-shadow(0 0 1px #ffcf4a)}:
 .fkempty{margin:10px 0 4px;text-align:center;font-size:12px}.fkreset{font-size:10px;opacity:.75;text-align:center}
 .fabbot{display:inline-block;width:64px;height:64px}.fabbot img{image-rendering:pixelated}
 .mailitem.read{opacity:.88}.mailitem.read .mailmsg{opacity:.9}
+.mysn{display:inline-block;align-self:flex-start;font-size:12px;color:var(--mute);margin:-2px 0 2px}.mysn b{font-family:var(--f-pix);font-size:12px;letter-spacing:.12em;color:var(--gold);margin-left:4px}
 .sellp{display:block;margin-top:2px;font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
 .tmaker{margin-top:1.1em}
 .rkgrid{--rk-lv:#e0606a;--rk-life:var(--green);--rk-don:var(--cyan);--rk2:#c9d1dc;--rk3:#d49a6a;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
@@ -2120,6 +2121,10 @@ const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 // points are placed first and only applied when 확인 is pressed
 let abPend={};const pendSum=()=>Object.values(abPend).reduce((a,n)=>a+n,0),ptsFree=()=>ptsLeft()-pendSum();
 function titleName(){const t=TITLES.find(x=>x[0]===P.title)||TITLES[0];return t[1]}
+// my 군번: the invite code I joined with, read from my own members record (the 선장's account was made without one)
+let MY_SN=null;
+function loadMySn(){if(mode!=='online'||!uid)return;db.doc('members/'+uid).get().then(s=>{const c=s&&s.exists?String((s.data()||{}).code||''):'';MY_SN=c.length===8?c.slice(0,4)+'-'+c.slice(4):c;renderInfo()}).catch(()=>{MY_SN=''})}
+const mySnHTML=()=>MY_SN?`<span class="mysn">군번 <b>${esc(MY_SN)}</b></span>`:isAdmin&&mode==='online'&&MY_SN===''?'<span class="mysn">군번 <b>함장</b></span>':'';
 function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${(k==='cook'?tastyPct():lifePct(k)).toFixed(1)}%</span></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
@@ -2131,7 +2136,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <div class="meport">${withPet(meImg(6),P,6)}</div>
     <div class="meid"><span class="lv">${esc(titleName())}</span>
      ${renaming?`<form class="renamef" id="renameForm"><input id="renameIn" class="sel" maxlength="12" value="${esc(P.nick)}" aria-label="새 이름"><button class="btn sm" type="submit">저장</button><button class="qchip" type="button" data-act="renamecancel">취소</button></form>`:`<h2>${esc(P.nick)} <button class="qchip" data-act="renameopen" style="vertical-align:middle">이름 바꾸기</button></h2>`}
-     <span class="hint">LV.${P.lvl} · 직업 ${P.job?esc(JOBS[P.job].n):'없음'}</span>
+     ${mySnHTML()}<span class="hint">LV.${P.lvl} · 직업 ${P.job?esc(JOBS[P.job].n):'없음'}</span>
      ${meter('경험치',P.lvl>=MAX_LV?'MAX':`${(P.xp||0).toLocaleString()} / ${xpN.toLocaleString()}`,xpP,'var(--violet)')}
      <div class="memeters">${meter('체력',`${P.hp}/${maxHp()}`,P.hp/maxHp()*100,'var(--pink)')}${meter('에너지',`${P.en}/${maxEn()}`,P.en/maxEn()*100,'var(--gold)')}</div></div>
     <div class="mequick"><div><span>공격력</span><b>${atk()}</b></div><div><span>방어력</span><b>${def()}</b></div><div><span>크레딧</span><b>${(P.cr||0).toLocaleString()}</b></div><button class="btn sm alt" data-act="relopen">관계도 보기</button></div></div>
@@ -2186,7 +2191,7 @@ async function connect(){
   mode='online';myRef=db.doc('players/'+uid);
   try{const s=await myRef.get();if(s.exists&&!s.data().deleted){seasonFromDoc=true;P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
-  renderNet();renderAll();seasonWatch();seenSync();
+  renderNet();renderAll();seasonWatch();seenSync();loadMySn();
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
   let plT=null;const plDraw=()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()};
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
