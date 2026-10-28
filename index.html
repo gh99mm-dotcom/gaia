@@ -3572,7 +3572,7 @@ let SHIPDON=[],shipSel=null;
 let SHIPT=null,shipTC=null,shipSlipsUn=null,shipMig=false;
 const shipTRef=()=>db.doc('boss/ship');
 function shipTotals(){if(SHIPT&&SHIPT.v)return{p:SHIPT.p||{},u:SHIPT.u||{}};if(shipTC)return shipTC;const p={},u={};
-  SHIPDON.forEach(d=>{const n=+d.n||0;if(d.part){const q=p[d.part]=p[d.part]||{};q[d.id]=(q[d.id]||0)+n}if(d.uid){const r=u[d.uid]=u[d.uid]||{n:0,nick:d.nick};r.n+=n;if(d.nick)r.nick=d.nick}});return shipTC={p,u}}
+  SHIPDON.forEach(d=>{const n=+d.n||0;if(d.part){const q=p[d.part]=p[d.part]||{};q[d.id]=(q[d.id]||0)+n}if(d.uid&&!isCropId(d.id)){const r=u[d.uid]=u[d.uid]||{n:0,nick:d.nick};r.n+=n;if(d.nick)r.nick=d.nick}});return shipTC={p,u}}
 function shipSubscribe(){const redraw=()=>{if(tab==='ship'||(tab==='social'&&socTab==='rank'))renderPanel()};
   shipTRef().onSnapshot(sn=>{SHIPT=sn.exists?sn.data():null;shipTC=null;shipFuelMark();
     if(SHIPT&&SHIPT.v){if(shipSlipsUn){shipSlipsUn();shipSlipsUn=null;SHIPDON=[]}}
@@ -3580,7 +3580,7 @@ function shipSubscribe(){const redraw=()=>{if(tab==='ship'||(tab==='social'&&soc
     redraw()},()=>{})}
 // one-time, admin only: add up the old slips and write them as the starting totals
 function shipMigrate(){if(!isAdmin||shipMig||(SHIPT&&SHIPT.v))return;shipMig=true;
-  db.collection('shipdon').get().then(s=>{const p={},u={};s.docs.forEach(x=>{const d=x.data(),n=+d.n||0;if(d.part){const q=p[d.part]=p[d.part]||{};q[d.id]=(q[d.id]||0)+n}if(d.uid){const r=u[d.uid]=u[d.uid]||{n:0,nick:d.nick};r.n+=n;if(d.nick)r.nick=d.nick}});
+  db.collection('shipdon').get().then(s=>{const p={},u={};s.docs.forEach(x=>{const d=x.data(),n=+d.n||0;if(d.part){const q=p[d.part]=p[d.part]||{};q[d.id]=(q[d.id]||0)+n}if(d.uid&&!isCropId(d.id)){const r=u[d.uid]=u[d.uid]||{n:0,nick:d.nick};r.n+=n;if(d.nick)r.nick=d.nick}});
     return bossTx(shipTRef(),cur=>cur&&cur.v?null:{v:1,p,u,at:Date.now()})}).catch(()=>{}).finally(()=>{shipMig=false})}
 const shipGot=part=>Object.assign({},shipTotals().p[part]||{});
 const shipLeft=(pt,id)=>Math.max(0,(pt.need.find(x=>x[0]===id)||[,0])[1]-(shipGot(pt.id)[id]||0));
@@ -4326,7 +4326,8 @@ function shipGive(partId,only,qty){
   const cnt=list.reduce((a,[,n])=>a+n,0);
   gainXp(cnt*2);commit();
   const at=Date.now();
-  const tm={['u.'+uid+'.n']:cnt};list.forEach(([id,n])=>{tm['p.'+pt.id+'.'+id]=n});
+  // bio-fuel crops fill the section but do not count toward the giver's contribution (기여도)
+  const ctb=list.reduce((a,[id,n])=>a+(isCropId(id)?0:n),0),tm=ctb?{['u.'+uid+'.n']:ctb}:{};list.forEach(([id,n])=>{tm['p.'+pt.id+'.'+id]=n});
   Promise.all([...list.map(([id,n])=>db.collection('shipdon').add({part:pt.id,id,n,uid,nick:P.nick,at})),docInc(shipTRef(),tm,{['u.'+uid+'.nick']:P.nick})]).then(()=>{
     sfxCoin();log(`별무리호 ${pt.n}에 ${list.map(([id,n])=>ITEMS[id].n+' '+n).join(', ')}을(를) 넣었다. 경험치 +${cnt*2}.`,'good');
     if(finish){sys(`${P.nick} 님의 손으로 별무리호 ${pt.n} 수리가 끝났습니다!`);if(SHIP.every(x=>x===pt||shipDone(x)))sys('별무리호의 모든 구역이 수리되었습니다. 개척선이 다시 날아오를 준비를 마쳤습니다!')}
