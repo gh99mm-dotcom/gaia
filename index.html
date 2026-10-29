@@ -1203,6 +1203,7 @@ b.no{color:var(--red)}
 .uptable td.upw{display:flex;align-items:center;gap:4px;white-space:nowrap}.uptable td.upw .wpnimg{image-rendering:auto}
 @media (max-width:480px){.upnow .wpnimg{width:48px;height:48px}}
 .uptable td.upw .wpnfx::after{display:none}
+.upboost{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.upboost .hint{flex:1;min-width:140px}.upodds small{color:var(--gold);font-size:11px}
 .upodds{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px}.upodds b{color:var(--gold);font-weight:400}.upodds span{color:var(--mute)}.upodds .drop{color:var(--red)}
 .uptable summary{cursor:pointer;font-size:12px;color:var(--mute)}.uptable table{width:100%;margin-top:6px;border-collapse:collapse;font-size:12px}.uptable th,.uptable td{padding:2px 4px;text-align:left;border-bottom:1px solid var(--line)}.uptable th{color:var(--mute);font-weight:400}.uptable tr.now td{color:var(--gold)}
 .cost-list{display:flex;flex-direction:column;gap:4px;font-size:12px}
@@ -1729,6 +1730,7 @@ const ITEMS={
  moss:{n:'성운 이끼',ic:'goo',t:'#7dff9b',type:'food',hp:8,en:2},
  ore:{n:'운석 파편',ic:'rock',t:'#a9a4c8',type:'mat',d:'무기 강화의 기본 재료.'},
  crystal:{n:'은하 결정',ic:'gem',t:'#5fd8ff',type:'mat',d:'에너지를 품은 결정. 무기 강화에 씁니다.'},
+ upcat:{n:'공명 촉매',ic:'gem',t:'#ffd65f',type:'mat',sv:300,d:'무기를 강화할 때 하나 쓰면 성공 확률이 10%p 오릅니다. 조사의 마지막 지점을 조사하면 반드시 하나 나오고, 다른 지점에서도 가끔 나옵니다.'},
  dark:{n:'암흑물질 조각',ic:'gem',t:'#7a4ff0',type:'mat',d:'무게가 느껴지지 않는 검은 조각. 상급 강화 재료.'},
  drink:{n:'성운 에너지 음료',ic:'bottle',t:'#8aa9bd',type:'food',hp:0,en:20},
  kit:{n:'응급 수리 키트',ic:'kit',t:'#a8626b',type:'food',hp:40,en:0},
@@ -1919,6 +1921,8 @@ const CR_RATE=.3,crs=n=>Math.max(1,Math.round(n*CR_RATE));
 const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자',
  '중성자 도끼','감마선 활','타키온 소총','블랙홀 해머','웜홀 절단기','암흑에너지 검','성간 창','엔트로피 낫','시공 절단자','다중우주 지팡이','빅뱅 건틀릿','창세의 별'];
 // chance to go from +n to +n+1; from +5 on, a failed attempt drops the weapon one step
+const UP_BOOST=10;let upBoost=false;
+const upUseB=()=>upBoost&&(P.inv.upcat||0)>0,upPct=n=>Math.min(100,UP_P[n]+(upUseB()?UP_BOOST:0));
 const UP_P=[100,95,90,85,80,75,70,65,60,55,50,47,44,41,39,37,35,32,30,28],UP_DROP=5;
 // credits per attempt, paid win or lose
 const UP_CR=[20,40,60,90,120,160,200,260,330,400,500,600,700,850,1000,1200,1400,1600,1900,2200];
@@ -3766,6 +3770,8 @@ function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.
 function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;const T=TRAILS[sc.t],k=sc.at,first=sc.pend===2;sc.pend=0;
   const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();if(k>=2)got.push([T.it,ri(1,k-1)]);
   {const rl=relicRoll(P.lvl,RELIC_SCAN_P);if(rl)got.push([rl,1])}const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
+  // 공명 촉매 (upgrade booster): always one at a trail's last stop, now and then elsewhere
+  if(k>=SC_N||Math.random()<.03+.005*k){add('upcat',1);got.push(['upcat',1]);if(k>=SC_N)log('길의 끝에서 공명 촉매를 찾았다!','rare')}
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   // 1% of searches turn up a 마이룸 piece found nowhere else
@@ -4811,14 +4817,14 @@ document.addEventListener('contextmenu',e=>{const s=e.target.closest('.slot[data
 const BAGCAT=[['farm','작물·씨앗'],['dish','요리'],['ship','재료'],['fish','물고기'],['etc','그 외']];
 // what a material goes into: ship repair and/or gear (gear, accessories, weapons, suits and weapon upgrades)
 let GEAR_MATS=null;const gearMats=()=>GEAR_MATS||(GEAR_MATS=new Set([...Object.values(CRAFT).flatMap(g=>g.list),...ACC,...WPNS,...SUITS].flatMap(f=>(f.mat||[]).map(([id])=>id)).concat(['ore','crystal','dark'])));
-const matUse=id=>[shipMatIds().includes(id)&&(isCropId(id)?'우주선 수리 (생체 연료)':'우주선 수리'),gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
+const matUse=id=>[id==='upcat'&&'무기 강화 (성공 확률 +10%p)',shipMatIds().includes(id)&&(isCropId(id)?'우주선 수리 (생체 연료)':'우주선 수리'),gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
 function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(it.type!=='relic'&&matUse(id))return'ship';return'etc'}
 let bagF=null;
 // 제작대 › 무기 강화
 function upCardHTML(){const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n];
   return`<div class="card upcard" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
    <div class="upnow">${wpnImg(n,64)}<div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화 · 최대 +${WEAPONS.length-1}</div>${n<WEAPONS.length-1?`<div class="upnext">${wpnImg(n+1,32)}<span class="hint">다음 · ${WEAPONS[n+1]} +${n+1}</span></div>`:''}</div></div>
-   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${UP_P[n]}%</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
+   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${upPct(n)}%${upUseB()?` <small>(+${UP_BOOST}%p 촉매)</small>`:''}</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div><div class="upboost">${iicon('upcat',2)}<span class="hint">공명 촉매 ${P.inv.upcat||0}개 · 한 번에 1개 써서 성공 확률 +${UP_BOOST}%p</span><button class="btn sm ${upUseB()?'gold':'ghost'}" data-act="upboost" ${(P.inv.upcat||0)>0?'':'disabled'} aria-pressed="${upUseB()}">${upUseB()?'사용 ON':'사용 OFF'}</button></div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
    <details class="uptable" ${upTblOpen?"open":""}><summary>단계별 성공 확률 보기</summary><table><thead><tr><th>강화</th><th>무기</th><th>성공</th><th>크레딧</th><th>실패 시</th></tr></thead><tbody>${UP_P.map((p,i)=>`<tr class="${i===n?'now':''}"><td>+${i} → +${i+1}</td><td class="upw">${wpnImg(i+1,24)}${WEAPONS[i+1]}</td><td>${p}%</td><td>${UP_CR[i].toLocaleString()}</td><td>${i>=UP_DROP?'1단계 하락':'유지'}</td></tr>`).join('')}</tbody></table></details>
   </div>`}
 function bagInner(){
@@ -5311,12 +5317,13 @@ const A={
  sel(d){selItem=d.id;renderPanel()},
  bagtoggle(){bagShow(!bagOpen)},
  use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){const mk=P.job==='medic'?1.5:1,hh=Math.round(it.hp*mk),ee=Math.round(it.en*mk);heal(hh,ee);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${hh}, 에너지 +${ee}${mk>1?' (의무원)':''}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
- upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;if((P.cr||0)<UP_CR[n]){toast(`크레딧이 모자랍니다. (${UP_CR[n].toLocaleString()} CR 필요)`);return}c.forEach(([id,k])=>take(id,k));P.cr-=UP_CR[n];
-  if(Math.random()*100<UP_P[n]){P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');toast(`강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`);sfxFanfare(false);
+ upboost(){upBoost=!upBoost&&(P.inv.upcat||0)>0;renderPanel()},
+ upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;if((P.cr||0)<UP_CR[n]){toast(`크레딧이 모자랍니다. (${UP_CR[n].toLocaleString()} CR 필요)`);return}c.forEach(([id,k])=>take(id,k));P.cr-=UP_CR[n];const pct=upPct(n),usedB=upUseB();if(usedB){take('upcat',1);if(!(P.inv.upcat>0))upBoost=false}
+  if(Math.random()*100<pct){P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}${usedB?' (공명 촉매 사용)':''}`,'rare');toast(`강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`);sfxFanfare(false);
    // announce only a new personal best from +10, so falling back and climbing again does not flood the ticker
    if(P.wlv>=10&&P.wlv>(P.wmax||0))sys(`${P.nick} 님이 「${WEAPONS[P.wlv]} +${P.wlv}」을 완성했습니다.`);P.wmax=Math.max(P.wmax||0,P.wlv)}
-  else if(n>=UP_DROP){P.wlv--;log(`무기 강화 실패… 무기가 1단계 내려갔다. ${WEAPONS[P.wlv]} +${P.wlv}`,'bad');toast(`강화 실패 · +${n} → +${P.wlv}`);sfxStatic()}
-  else{log(`무기 강화 실패… 재료만 사라지고 +${n} 그대로다.`,'bad');toast(`강화 실패 · +${n} 유지`);sfxStatic()}
+  else if(n>=UP_DROP){P.wlv--;log(`무기 강화 실패… 무기가 1단계 내려갔다. ${WEAPONS[P.wlv]} +${P.wlv}${usedB?' (공명 촉매 사용)':''}`,'bad');toast(`강화 실패 · +${n} → +${P.wlv}`);sfxStatic()}
+  else{log(`무기 강화 실패… 재료만 사라지고 +${n} 그대로다.${usedB?' (공명 촉매 사용)':''}`,'bad');toast(`강화 실패 · +${n} 유지`);sfxStatic()}
   commit()},
 };
 
