@@ -164,6 +164,13 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .farmcook{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:8px 12px;align-items:start}
 .farmcook>.cook-h,.farmcook>.cbuff,.farmcook>.dlist,.farmcook>.cooking{grid-column:1/-1}
 .farmcook .rtiles{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
+.benchcook{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"h h" "t t" "b b" "r s" "d d";gap:10px 16px;padding:14px}
+.benchcook>.cook-h{grid-area:h}.benchcook>.tastyhint{grid-area:t;margin:0}.benchcook>.cbuff{grid-area:b}.benchcook>.rtiles{grid-area:r;align-self:start}.benchcook>.csel{grid-area:s;align-self:start;position:sticky;top:8px}.benchcook>.cooking{grid-area:r/r/s/s}
+.benchcook>.dlist{grid-area:d;border-top:1px dashed var(--line);padding-top:10px}
+.benchcook .rtiles{grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:5px}.benchcook .rtile{aspect-ratio:1}
+.benchcook .dlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}.benchcook .drow{background:var(--deep);border:1px solid var(--line);padding:4px 6px}
+@container (max-width:620px){.benchcook{grid-template-columns:minmax(0,1fr);grid-template-areas:"h" "t" "b" "s" "r" "d"}.benchcook>.csel{position:static}}
+@media (max-width:620px){.benchcook{grid-template-columns:minmax(0,1fr);grid-template-areas:"h" "t" "b" "s" "r" "d"}.benchcook>.csel{position:static}}
 .farmcook .dlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 10px}
 @media (max-width:560px){.farmcook{grid-template-columns:minmax(0,1fr)}}
 /* inside the (resizable) bag window the cooker follows the window's width: when narrow, the recipe card sits on top and the dish tiles flow below */
@@ -4604,7 +4611,7 @@ const FAB_PNG=["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzen
 function benchHTML(){const tabs=[['wpn','보조무기'],['up','무기 강화'],['craft','우주복·장신구'],['cook','요리']];
   return head()+shipSubTabs()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot fabbot"><img class="pix keepc" src="${FAB_PNG[1]}" width="64" height="64" alt="SF 제작 스테이션"></span><div class="sinfo"><b>제작대 · 가이아 정비실</b><p class="say">보조무기를 사고, 주무기를 강화하고, 우주복과 장신구를 만들고, 요리를 하는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${benchTab===k}" data-act="benchtab" data-k="${k}">${n}</button>`).join('')}</div>
-   ${benchTab==='cook'?'<section class="card cook farmcook" id="cook" aria-label="요리"></section>':`<div class="benchlay"><div class="benchmain">${benchTab==='up'?upCardHTML():`<div class="slist">${benchRows(benchTab)}</div>`}</div>${benchWornHTML()}</div>`}</div>`}
+   ${benchTab==='cook'?'<section class="card cook farmcook benchcook" id="cook" aria-label="요리"></section>':`<div class="benchlay"><div class="benchmain">${benchTab==='up'?upCardHTML():`<div class="slist">${benchRows(benchTab)}</div>`}</div>${benchWornHTML()}</div>`}</div>`}
 // right-hand panel: what I have on right now
 function benchWornHTML(){const w=WPNS.find(x=>x.id===P.wpn),su=SUITS[P.suit||0]||SUITS[0];
   const row=(icon,slot,name,d,off)=>`<div class="bwrow ${off?'off':''}">${icon}<div class="sinfo"><span class="hint">${slot}</span><b>${esc(name)}</b>${d?`<span class="hint">${esc(d)}</span>`:''}</div></div>`;
