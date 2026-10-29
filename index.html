@@ -859,7 +859,7 @@ img.pix.tasty{filter:drop-shadow(0 0 2px #ffcf4a) drop-shadow(0 0 1px #ffcf4a)}:
 .fklist .namebtn{font-size:12px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fklist b{font-family:var(--f-pix);font-size:10px;white-space:nowrap}
 .fkempty{margin:10px 0 4px;text-align:center;font-size:12px}.fkreset{font-size:10px;opacity:.75;text-align:center}
 .fabbot{display:inline-block;width:64px;height:64px}.fabbot img{image-rendering:pixelated}
-.mailitem.read{opacity:.88}.mailitem.read .mailmsg{opacity:.9}
+.mailitem.read{opacity:.88}.rdb{display:inline-block;margin-left:4px;padding:0 5px;border:1px solid currentColor;font-size:11px;font-weight:400;line-height:16px;vertical-align:1px}.rdb.no{color:var(--gold)}.rdb.ok{color:var(--mute)}.mailitem.read .mailmsg{opacity:.9}
 .mysn{display:block;width:max-content;align-self:flex-start;font-size:12px;color:var(--mute);margin:-2px 0 2px}.mysn b{font-family:var(--f-pix);font-size:12px;letter-spacing:.12em;color:var(--gold);margin-left:4px}
 header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outline:2px dashed var(--gold);outline-offset:4px}
 .sellp{display:block;margin-top:2px;font-size:12px;font-weight:400;color:var(--gold);white-space:nowrap}
@@ -2385,7 +2385,7 @@ async function connect(){
     else if(r.adm&&isFaint()&&r.at>=(P.faintAt||0))wake(r.nick||'누군가',r.med);
     db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
-  db.collection('gifts').where('from','==',uid).onSnapshot(sn=>{MYTR=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>g.kind==='trade').sort((a,b)=>(+b.at||0)-(+a.at||0));if(mailView)renderPanel()},()=>{});
+  db.collection('gifts').where('from','==',uid).onSnapshot(sn=>{MYTR=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>g.kind==='trade').sort((a,b)=>(+b.at||0)-(+a.at||0));MYOUT=new Set(sn.docs.filter(d=>d.data().kind==='letter').map(d=>d.id));sentSync();if(mailView)renderPanel()},()=>{});
   farmLoad();
   shipSubscribe();
   tabSub(()=>tab==='fish',()=>db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{}));
@@ -5152,6 +5152,7 @@ const A={
  profile(){meView=true;mailView=false;secretView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
  mailopen(){mailView=true;secretView=false;meView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
+ sentdel(d){if(d.x&&d.k){P.sent=(P.sent||[]).filter(m=>m.id!==d.k);sentDelArm=null;save()}else sentDelArm=d.k||null;renderPanel()},
  mailclose(){mailView=false;secretView=false;renderPanel()},
  secretopen(){if(!(P.inv.invite>0))return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}secretView=true;meView=false;mailView=false;adminView=false;barLine=0;if(bagOpen)bagShow(false);sfxCoin();renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  secretclose(){secretView=false;renderPanel()},
@@ -5159,7 +5160,7 @@ const A={
   P.cr-=PET_PRICE;P.pet={id:p.id,at:Date.now()};petArm=false;sfxCoin();log(`비밀상점에서 「${p.n}」을(를) 데려왔다. (${Object.entries(p.fx).map(([k,v])=>PET_FX[k]+' +'+v+'%').join(' · ')})`,'rare');toast(`${p.n}이(가) 새 가족이 되었습니다!`);commit()},
  petrel(d){if(!myPet())return;if(d.k==='no'){petArm=false;renderPanel();return}if(!petArm){petArm=true;renderPanel();return}const p=myPet();petArm=false;P.pet=null;log(`「${p.n}」을(를) 떠나보냈다. 잘 지내렴.`);commit()},
  bartalk(){barLine=(barLine+1)%BAR_LINES.length;renderPanel()},
- mailtab(d){mailTab=['in','write','trade'].includes(d.k)?d.k:'in';renderPanel()},
+ mailtab(d){mailTab=['in','write','sent','trade'].includes(d.k)?d.k:'in';renderPanel()},
  mlatt(d){const o=mlAtt;if(o[d.id]){delete o[d.id]}else{if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=Math.min(ML_EACH,P.inv[d.id]||0,1)}renderPanel()},
  trgive(d){const o=trGive;if(o[d.id]){delete o[d.id]}else{if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=1}renderPanel()},
  trwantadd(){const id=($('#trPick')||{}).value||trPick;if(!ITEMS[id]||trWant[id])return;if(attList(trWant).length>=ML_TYPES){toast(`${ML_TYPES}종류까지 고를 수 있습니다.`);return}trWant[id]=1;trPick='';renderPanel()},
@@ -5167,7 +5168,7 @@ const A={
  mlsend(){if(mode!=='online'||mlBusy)return;const to=($('#mlTo')||{}).value||mlTo,msg=String(($('#mlMsg')||{}).value??mlMsg).trim().slice(0,200),items=attList(mlAtt);
   if(!PLAYERS[to]){toast('받는 사람을 고르십시오.');return}if(!msg&&!items.length){toast('편지 내용을 쓰거나 아이템을 넣으십시오.');return}if(!haveAll(items,0)){toast('넣은 아이템이 가방에 모자랍니다.');return}
   mlBusy=true;items.forEach(x=>take(x.id,x.n));items.forEach(x=>Object.assign(x,byField(x.id)));const nick=PLAYERS[to].nick||'단원';
-  db.collection('gifts').add({to,from:uid,nick:P.nick,kind:'letter',items,cr:0,msg,at:Date.now()}).then(()=>{mlBusy=false;mlAtt={};mlMsg='';log(`${nick} 님에게 편지를 보냈다.${items.length?' 첨부: '+items.map(x=>ITEMS[x.id].n+'×'+x.n).join(', '):''}`,'good');toast(`${nick} 님에게 편지를 보냈습니다.`);commit()})
+  const sat=Date.now();db.collection('gifts').add({to,from:uid,nick:P.nick,kind:'letter',items,cr:0,msg,at:sat}).then(ref=>{P.sent=[{id:ref.id,to,nick:String(nick).slice(0,16),msg,items:items.map(x=>({id:x.id,n:x.n})),at:sat},...(P.sent||[])].slice(0,MBOX_MAX);mlBusy=false;mlAtt={};mlMsg='';log(`${nick} 님에게 편지를 보냈다.${items.length?' 첨부: '+items.map(x=>ITEMS[x.id].n+'×'+x.n).join(', '):''}`,'good');toast(`${nick} 님에게 편지를 보냈습니다.`);commit()})
    .catch(()=>{mlBusy=false;items.forEach(x=>add(x.id,x.n));toast('편지를 보내지 못했습니다. 아이템은 그대로 돌려놓았습니다.');commit()})},
  trsend(){if(mode!=='online'||mlBusy)return;const to=($('#trTo')||{}).value||trTo,give=attList(trGive),want=attList(trWant),gc=Math.max(0,Math.floor(trGiveCr||0)),wc=Math.max(0,Math.floor(trWantCr||0)),msg=String(trMsg||'').trim().slice(0,120);
   if(!PLAYERS[to]){toast('거래할 단원을 고르십시오.');return}if(!give.length&&!gc){toast('내가 줄 것을 넣으십시오.');return}if(!haveAll(give,gc)){toast('줄 물건이나 크레딧이 모자랍니다.');return}
@@ -5280,6 +5281,15 @@ function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
 const MBOX_MAX=60;let mbDelArm=null;
 function mboxKeep(m){const e={id:m.id,from:m.from||'',nick:String(m.nick||'').slice(0,16),sys:m.sys?1:0,kind:m.kind||'',msg:String(m.msg||'').slice(0,200),at:+m.at||Date.now(),items:(m.items||[]).slice(0,ML_TYPES+2),cr:+m.cr||0,got:Date.now()};
   P.mbox=[e,...(P.mbox||[]).filter(x=>x.id!==e.id)].slice(0,MBOX_MAX)}
+/* letters I sent: the receiver deletes the gifts doc when they open it, so a letter missing from my outgoing snapshot has been read */
+let MYOUT=null,sentDelArm=null;
+function sentSync(){if(!MYOUT)return;let ch=false;(P.sent||[]).forEach(m=>{if(!m.rd&&!MYOUT.has(m.id)){m.rd=Date.now();ch=true}});if(ch)save()}
+const sentUnread=()=>(P.sent||[]).filter(m=>!m.rd).length;
+function mailSentHTML(){const S=P.sent||[];if(!S.length)return'<p class="empty" style="padding:24px 0">아직 보낸 편지가 없습니다. 편지 쓰기에서 보낸 편지가 여기에 남습니다.</p>';
+  return`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">받는 사람이 편지를 열면 <b class="rdb ok">읽음</b>으로 바뀝니다.</span><span class="hint">최근 ${MBOX_MAX}통</span></div>
+  <div class="maillist">${S.map(m=>{const rd=!!m.rd,wait=!MYOUT&&!rd,chips=mlChips(m.items||[],0),arm=sentDelArm===m.id,who=(PLAYERS[m.to]||{}).nick||m.nick||'단원';
+    return`<div class="mailitem ${rd?'read':''}"><div class="mailfrom">${headImg(3,whoP(m.to))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">님에게</span> <span class="rdb ${rd?'ok':'no'}">${wait?'확인 중':rd?'읽음':'안 읽음'}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(m.msg)}”</p>`:''}${chips?`<div class="chips">${chips}<span class="hint">첨부</span></div>`:''}${rd?`<span class="hint">${fbTime(m.rd)} 무렵 읽음</span>`:''}</div>
+     <div class="sbtns" style="flex-direction:column">${arm?`<button class="btn sm alt" data-act="sentdel" data-k="${esc(m.id)}" data-x="1">정말 지우기</button><button class="btn sm ghost" data-act="sentdel" data-k="">취소</button>`:`<button class="btn sm ghost" data-act="sentdel" data-k="${esc(m.id)}" title="내 목록에서만 지웁니다">지우기</button>`}</div></div>`}).join('')}</div>`}
 const canReply=m=>!m.sys&&!m.grant&&m.from&&m.from!==uid&&!!PLAYERS[m.from];
 /* ---- 우편: letters with attachments and item trades between members (both ride on the gifts collection) ---- */
 const ML_TYPES=3,ML_EACH=10;
@@ -5328,10 +5338,10 @@ function mailTradeHTML(){if(mode!=='online')return'<p class="hint" style="paddin
    <textarea id="trMsg" class="sel mltext" maxlength="120" placeholder="한마디 (선택)" aria-label="거래 메시지">${esc(trMsg)}</textarea>
    <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="trsend" ${mlBusy?'disabled':''}>거래 제안 보내기</button></div></div>
   <span class="lbl" style="display:block;margin-top:12px">보낸 거래 제안 · 답을 기다리는 중</span>${MYTR.length?`<div class="maillist">${MYTR.map(t=>`<div class="mailitem trade"><div class="mailfrom">${headImg(3,whoP(t.to))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc((PLAYERS[t.to]||{}).nick||t.toNick||'단원')} <span class="hint">· 답을 기다리는 중</span></b><time class="hint">${fbTime(+t.at||0)}</time></div><div class="trbox"><div><span class="lbl">줄 것</span><div class="chips">${mlChips(t.give||[],+t.giveCr||0)||'<span class="hint">없음</span>'}</div></div><div><span class="lbl">받을 것</span><div class="chips">${mlChips(t.want||[],+t.wantCr||0)||'<span class="hint">없음</span>'}</div></div></div></div><button class="btn sm ghost" data-act="trcancel" data-k="${esc(t.id)}">취소</button></div>`).join('')}</div>`:'<p class="hint">보낸 거래 제안이 없습니다.</p>'}`}
-function mailHTML(){const L=mailList();const tabs=[['in',`받은 우편${L.length?' <em>'+L.length+'</em>':''}`],['write','편지 쓰기'],['trade',`거래${MYTR.length?' <em>'+MYTR.length+'</em>':''}`]];
+function mailHTML(){const L=mailList();const tabs=[['in',`받은 우편${L.length?' <em>'+L.length+'</em>':''}`],['write','편지 쓰기'],['sent',`보낸 편지${sentUnread()?' <em>'+sentUnread()+'</em>':''}`],['trade',`거래${MYTR.length?' <em>'+MYTR.length+'</em>':''}`]];
   return`<div class="stage-head mehead"><button class="qchip" data-act="mailclose">← 돌아가기</button><h2>우편함</h2><span class="loc">${L.length?L.length+'통 도착':(P.mbox||[]).length?'새 우편 없음':'비어 있음'}</span></div>
   <div class="dtabs" role="tablist" style="margin-top:8px">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${mailTab===k}" data-act="mailtab" data-k="${k}">${n}</button>`).join('')}</div>
-  ${mailTab==='write'?mailWriteHTML():mailTab==='trade'?mailTradeHTML():mailInHTML()}`}
+  ${mailTab==='write'?mailWriteHTML():mailTab==='sent'?mailSentHTML():mailTab==='trade'?mailTradeHTML():mailInHTML()}`}
 // typed drafts survive the redraws snapshots cause
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='mlMsg')mlMsg=t.value;else if(t.id==='trMsg')trMsg=t.value;else if(t.id==='trGiveCr')trGiveCr=Math.max(0,Math.floor(+t.value||0));else if(t.id==='trWantCr')trWantCr=Math.max(0,Math.floor(+t.value||0));
   else if(t.dataset&&t.dataset.q){const k=t.dataset.k,v=Math.max(1,Math.min(ML_EACH,Math.floor(+t.value||1))),o=t.dataset.q==='ml'?mlAtt:t.dataset.q==='tg'?trGive:trWant;if(o[k]){o[k]=t.dataset.q==='tw'?v:Math.min(v,P.inv[k]||0);if(t.value!==''&&+t.value!==o[k])t.value=o[k]}}});
