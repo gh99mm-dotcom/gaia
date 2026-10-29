@@ -1921,10 +1921,10 @@ const RELIC_P=.03,RELIC_SCAN_P=.08,relicFor=L=>'relic'+(L>=50?1:L>=40?2:L>=30?3:
 const CR_RATE=.3,crs=n=>Math.max(1,Math.round(n*CR_RATE));
 const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자',
  '중성자 도끼','감마선 활','타키온 소총','블랙홀 해머','웜홀 절단기','암흑에너지 검','성간 창','엔트로피 낫','시공 절단자','다중우주 지팡이','빅뱅 건틀릿','창세의 별'];
-// chance to go from +n to +n+1; from +5 on, a failed attempt drops the weapon one step
+// chance to go from +n to +n+1; +0~+5 always succeed, +5~+10 can fail but keep the stage, from +10 on a failed attempt drops the weapon one step
 const UP_BOOST=10;let upBoost=false;
 const upUseB=()=>upBoost&&(P.inv.upcat||0)>0,upPct=n=>Math.min(100,UP_P[n]+(upUseB()?UP_BOOST:0));
-const UP_P=[100,95,90,85,80,75,70,65,60,55,50,47,44,41,39,37,35,32,30,28],UP_DROP=5;
+const UP_P=[100,100,100,100,100,75,70,65,60,55,50,47,44,41,39,37,35,32,30,28],UP_DROP=10;
 // credits per attempt, paid win or lose
 const UP_CR=[20,40,60,90,120,160,200,260,330,400,500,600,700,850,1000,1200,1400,1600,1900,2200];
 // one 64px pixel picture per weapon stage, drawn to match its name (orbit trails and glints grow with the stage)
