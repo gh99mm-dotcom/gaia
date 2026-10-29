@@ -313,9 +313,9 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .pod.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;min-height:150px}
 .frow{display:grid;gap:10px;align-items:start;margin-bottom:10px}.frow.r1{align-items:stretch}.frow.r1>.farmcol:first-child{container-type:inline-size}.frow.r1{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}.frow.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .farmcol{display:flex;flex-direction:column;gap:9px;min-width:0}
-.frow .bay{width:100%;height:100%;min-height:60cqw;padding:3.9% 4.6% 7.3%}
+.frow .bay{width:100%;height:100%;min-height:84cqw;padding:3.9% 4.6% 7.3%}
 .frow .bay .dome-label{bottom:calc(2.9cqw - 4px)}
-.frow .pods{height:100%;width:100%;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:2px}
+.frow .pods{height:100%;width:100%;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:2px}
 .frow .ptile{width:100%;height:100%;background-size:100% 100%}
 .frow .ptile .plant{bottom:calc(var(--pw,56px) * .2)}
 /* the thirsty (drop) and ready (star) badges scale with the pod and sit on a coloured chip so they read at a glance */
@@ -2544,7 +2544,7 @@ let lastGather=null,lastScan=null,fish={ph:'idle'},lastFish=null,selItem=null;
 // the green zone for the next cast is picked ahead of time and shown while idle, so it never jumps when the lever starts
 let nextZc=ri(-68,68);const shownZc=()=>['aim','wait','bite'].includes(fish.ph)?(fish.zc||0):nextZc;
 
-const FIELD_N=45;
+const FIELD_N=30;
 const BAYF={};
 // the dome frame is redrawn for whatever height the farm column ends up, so its pixels never stretch
 /* 우주모드 OFF: lift the dark metal of the farm bay and pods to pale steel, keeping each shade's order so bevels still read */
