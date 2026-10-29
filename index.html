@@ -5848,7 +5848,7 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
   $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
 
 /* ───────── bgm ───────── */
-const bgm=new Audio('bgm.mp3');bgm.loop=true;bgm.preload='auto';
+const bgm=new Audio('bgm.mp3?v=storm');bgm.loop=true;bgm.preload='auto';
 // the secret bar has its own record on (Tony Balluff - Block Party); loaded only when someone walks in
 let barBgm=null;const barMusic=()=>{if(!barBgm){barBgm=new Audio('bar.mp3');barBgm.loop=true}return barBgm};
 let bgmOn=true,bgmVol=35;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off';const v=localStorage.getItem('nebula-bgmv');if(v!=null)bgmVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
