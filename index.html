@@ -679,10 +679,10 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .raidacts{display:flex;gap:6px;flex-wrap:wrap}.raidsk{display:flex;flex-direction:column;gap:5px;margin-top:6px}.raidsk .btn.sk{flex-direction:column;gap:1px;line-height:1.2}.raidsk .btn.sk small{font-size:11px;opacity:.8}.raidacts .btn{flex:1;justify-content:center}.raiditems{display:flex;flex-direction:column;gap:4px}
 .skpop{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:90;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 28px;background:color-mix(in srgb,var(--ink) 82%,transparent);border:2px solid var(--skc,var(--gold));box-shadow:0 0 0 4px color-mix(in srgb,var(--skc,var(--gold)) 30%,transparent),0 0 40px var(--skc,var(--gold));animation:skpop 1.5s ease-out forwards}
 .skpop b{font-family:var(--f-display);font-size:30px;font-weight:400;color:var(--skc,var(--gold));text-shadow:0 0 12px var(--skc,var(--gold))}.skpop span{font-size:13px;color:var(--mute)}
-.skpop.sk-medic{--skc:#7dff9b}.skpop.sk-mech{--skc:#ffb347}.skpop.sk-nav{--skc:#6fd6ff}
+.skpop.sk-medic{--skc:#7dff9b}.skpop.sk-warn{--skc:#ff6a5a}.skpop.sk-mech{--skc:#ffb347}.skpop.sk-nav{--skc:#6fd6ff}
 @keyframes skpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
 @media (prefers-reduced-motion:reduce){.skpop{animation:none}}
-.raidlog li.lg-sk{color:var(--gold);font-weight:700}.raidlog li.lg-atk{color:var(--cyan)}.raidlog li.lg-hurt{color:var(--red)}.raidlog li.lg-heal{color:var(--green)}
+.raidlog li.lg-warn{color:#ff7a6a;font-weight:700;animation:lgwarn 1s steps(2) 3}@keyframes lgwarn{50%{opacity:.45}}.raidlog li.lg-sk{color:var(--gold);font-weight:700}.raidlog li.lg-atk{color:var(--cyan)}.raidlog li.lg-hurt{color:var(--red)}.raidlog li.lg-heal{color:var(--green)}
 .rchat{min-height:0}.rchat .bosslog{height:200px;max-height:200px;flex:none}
 .raidlog{list-style:none;margin:0;padding:6px 8px;background:var(--ink);border:1px solid var(--line);font-size:12.5px;display:flex;flex-direction:column;gap:2px;max-height:150px;overflow:auto}
 .pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:8px;margin-top:8px}
@@ -2798,6 +2798,11 @@ const raidFits=z=>P.lvl>=z.min;
 const raidNow=()=>Date.now();
 function raidTx(id,fn){const r=raidRef(id);if(r.tx)return r.tx(fn);return r.get().then(s=>{const nx=fn(s.exists?JSON.parse(JSON.stringify(s.data())):null);return nx?r.set(nx).then(()=>nx):null})}
 function raidLog(b,t){b.log=[...(b.log||[]),t].slice(-7)}
+// the name of a monster's area attack, fixed per monster so it always winds up the same way
+const RAID_AOE=['발구르기','몸통 회전','포효','독안개 뿜기','충격파','꼬리 휘두르기','지진 내려찍기','촉수 휩쓸기'];
+// 이/가, 을/를: look at the last Hangul syllable (names may end in 」)
+const jo=(w,a,b)=>{const c=[...String(w)].reverse().find(ch=>ch>='가'&&ch<='힣');return c&&(c.charCodeAt(0)-0xac00)%28?a:b};
+const raidAoeMove=m=>RAID_AOE[[...String(m.n||'')].reduce((a,c)=>a+c.charCodeAt(0),0)%RAID_AOE.length];
 // party members still in the run (not left), and of those the ones still standing
 const raidIn=r=>r.ids.filter(u=>!(r.left||{})[u]);
 const raidUp=r=>raidIn(r).filter(u=>r.m[u]&&r.m[u].hp>0);
@@ -2835,7 +2840,7 @@ const RSK={medic:[{n:'응급 처치',d:'동료 한 명의 체력을 전부 회�
 const rJob=m=>m?(OLDJOB[m.job]||m.job||''):'';
 const rskLeft=(b,u,i)=>((b.cd||{})[u]||{})['s'+i]||0;
 // log line colours: skills gold, crew hitting monsters cyan, monsters hitting crew red, healing green
-function raidLogKind(r,l){if(l[0]==='[')return'sk';if(/회복|치료/.test(l))return'heal';const i=l.indexOf(' → ');if(i<0)return'';const who=l.slice(0,i);return Object.values(r.m||{}).some(m=>m&&m.nick&&who.startsWith(m.nick))?'atk':'hurt'}
+function raidLogKind(r,l){if(l[0]==='⚠')return'warn';if(l[0]==='[')return'sk';if(/회복|치료/.test(l))return'heal';const i=l.indexOf(' → ');if(i<0)return'';const who=l.slice(0,i);return Object.values(r.m||{}).some(m=>m&&m.nick&&who.startsWith(m.nick))?'atk':'hurt'}
 // monsters single out the tank: a navigator (항해사) is twice as likely as anyone else to be the target
 const RAID_TANK_W=3;
 function raidAggro(r,tg){const w=tg.map(u=>rJob(r.m[u])==='nav'?RAID_TANK_W:1),sum=w.reduce((a,b)=>a+b,0);let x=Math.random()*sum;for(let i=0;i<tg.length;i++){x-=w[i];if(x<0)return tg[i]}return tg[tg.length-1]}
@@ -2875,8 +2880,10 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
       else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:Math.round((it.hp||0)*(me.job==='medic'?1.5:1));if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
       else{const live=b.mons.map((m,i)=>m.hp>0?i:-1).filter(i=>i>=0),ti=live.includes(arg)?arg:live[0],m=b.mons[ti];const [d,c]=raidHit(me.atk,m.def,me.crit||0);m.hp=Math.max(0,m.hp-d);raidLog(b,`${me.nick}${kind==='auto'?'(자동)':''} → ${m.n} ${d} 피해${c?' · 치명타!':''}${m.hp<=0?' · 쓰러뜨렸다!':''}`)}}
     else{const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
-      const aoe=(m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15),tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=tz?[tz]:aoe?tg:[raidAggro(r,tg)];
-      hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?'의 광역 공격':''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)})}
+      // area attacks are telegraphed: the turn before, a boss or elite announces the move (and still hits one target), so the party can brace
+      const aoe=!!m.chg,mv=m.chg,tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=tz?[tz]:aoe?tg:[raidAggro(r,tg)];m.chg=null;
+      hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?`의 ${mv}`:''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)});
+      if(!aoe&&m.hp>0&&((m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15))){const mv2=raidAoeMove(m);m.chg=mv2;raidLog(b,`⚠ ${m.kind==='boss'?'보스':'정예'} ${m.n}${jo(m.n,'이','가')} ${mv2}${jo(mv2,'을','를')} 준비합니다! 다음 턴에 파티 전원을 공격합니다.`);b.skfx={n:mv2+' 준비',j:'warn',by:`${m.n} · 다음 턴 전체 공격`,id:((b.skfx&&b.skfx.id)||0)+1}}}
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
   const all=raidUp(r).every(u=>r.b.flee[u]);if(all){const boss=r.b.mons.some(m=>m.kind==='boss');raidUp(r).forEach(u=>{r.m[u].hp=Math.max(1,Math.round(r.m[u].hp/2))});raidLog(r.b,'모두 동의해 전투에서 빠져나왔다. 도망치느라 모두 체력이 절반으로 줄었다.');if(boss){r.phase='end';r.result='fled';r.ev={n:'보스에게서 도망쳤다',res:'지금까지 모은 보상만 가지고 돌아갑니다. 모두 체력이 절반으로 줄었습니다.'}}else{r.phase='won';r.ev={n:'도망쳤다!',res:'이 전투의 보상은 없고, 모두 체력이 절반으로 줄었습니다.'}}}return r}).catch(()=>{})}
@@ -2909,7 +2916,8 @@ function raidSfx(a,b){if(a&&b&&a.id===b.id&&a.state==='run'&&b.state==='run'&&(b
   if(meHurt)sfxRaidHurt(true);else if(otherHurt)sfxRaidHurt(false)}
 // a skill's own sound: the medic's rising chime, the engineer's electric zap, the navigator's shield hum
 function sfxSkill(j){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.02;
-  if(j==='medic'){[523,659,784,1046].forEach((f,i)=>{tone(a,'sine',f,0,t+i*.08,.45,.13);tone(a,'triangle',f*2,0,t+i*.08,.25,.03)})}
+  if(j==='warn'){tone(a,'sawtooth',70,45,t,.7,.18);[0,.22].forEach(d=>tone(a,'square',520,520,t+d,.12,.05));noiseBurst(a,t,.6,'lowpass',300,120,.2)}
+  else if(j==='medic'){[523,659,784,1046].forEach((f,i)=>{tone(a,'sine',f,0,t+i*.08,.45,.13);tone(a,'triangle',f*2,0,t+i*.08,.25,.03)})}
   else if(j==='mech'){tone(a,'sawtooth',180,1400,t,.18,.1);tone(a,'square',1400,200,t+.16,.2,.07);noiseBurst(a,t+.05,.3,'bandpass',3000,800,.25,3);tone(a,'sawtooth',90,60,t+.2,.3,.12)}
   else{tone(a,'triangle',110,220,t,.5,.2);tone(a,'sine',660,880,t+.05,.45,.06);tone(a,'sine',990,1320,t+.12,.4,.04);noiseBurst(a,t,.4,'highpass',5000,2000,.06)}}
 // a big name card over the screen when anyone in the party uses a skill
