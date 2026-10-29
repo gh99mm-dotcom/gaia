@@ -317,7 +317,8 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .frow .bay .dome-label{bottom:calc(2.9cqw - 4px)}
 .frow .pods{height:100%;width:100%;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:2px}
 .frow .ptile{width:100%;height:100%;background-size:100% 100%}
-.frow .ptile .plant{bottom:calc(var(--pw,56px) * .2)}
+.frow .ptile .plant{bottom:calc(var(--pw,56px) * .22);width:calc(var(--pw,56px) * .42);height:auto}
+.frow .ptile .pn{bottom:calc(var(--pw,56px) * .07)}
 /* the thirsty (drop) and ready (star) badges scale with the pod and sit on a coloured chip so they read at a glance */
 .frow .ptile .tb{animation:tbpop .9s steps(2) infinite;top:calc(var(--pw,56px) * .03);right:calc(var(--pw,56px) * .03);line-height:0;padding:calc(var(--pw,56px) * .04);background:rgba(5,6,11,.85);border:2px solid var(--cyan);box-shadow:0 0 0 1px #05060b,0 0 6px rgba(138,169,189,.55)}
 .frow .ptile .tb img{width:calc(var(--pw,56px) * .34);height:auto;image-rendering:pixelated;filter:brightness(1.5) saturate(1.4)}
@@ -2580,7 +2581,7 @@ function fitBay(){const b=document.querySelector('.frow .bay');if(!b||!b.clientW
 const MD={};let domeH=20;
 // drawn for the pod cell's own height (H rows on a 20-wide grid) so tall cells get a taller dome rather than stretched pixels
 function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])return MD[key];
-  // a cute little bell jar: tinted glass with a bright highlight, a knob on top, sitting in a round terracotta pot
+  // a little bell jar: tinted glass with a highlight and a knob on top, sitting in a muted metal planter
   const W=20,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),L=isLight(),dim=kind==='lock'||kind==='add';
   const base=H-5,soil=base-2,cx=9.5,rx=7.6,gap=Math.max(2,Math.round((H-20)*.35)+2),cy=Math.min(soil-1,gap+rx),ry=cy-gap;
   const inG=(i,j)=>j<base&&j>=gap&&i>=2&&i<=W-3&&(j>=cy||((i-cx)/rx)**2+((j-cy)/ry)**2<=1);
@@ -2590,20 +2591,19 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
   const soilC={dirt:['#9a6a44','#6e4a30'],wet:['#5e4232','#43302a'],ready:['#9a6a44','#6e4a30']}[kind];
   for(let j=0;j<H;j++)for(let i=0;i<W;i++){
     if(inG(i,j)){const e=!inG(i-1,j)||!inG(i+1,j)||!inG(i,j-1);
-      if(e){px(i,j,dim?(L?'#c6ccd8':'#2c3446'):(L?'#7ab8d8':'#9fe2ff'));continue}
+      if(e){px(i,j,dim?(L?'#c6ccd8':'#2c3446'):(L?'#7aa2bc':'#8ab4cc'));continue}
       if(soilC&&j>=soil){px(i,j,soilC[j===soil?0:1]);if(kind==='wet'&&j===soil+1&&(i===6||i===12))px(i,j,'#7fd8ff');continue}
-      x.fillStyle=dim?'rgba(120,140,170,.06)':(L?'rgba(120,200,240,.22)':'rgba(130,210,255,.16)');x.fillRect(i,j,1,1);
+      x.fillStyle=dim?'rgba(120,140,170,.06)':(L?'rgba(120,170,200,.18)':'rgba(130,180,210,.11)');x.fillRect(i,j,1,1);
       // highlight arc on the upper left of the glass
       const d=Math.sqrt(((i-cx)/rx)**2+((j-cy)/ry)**2);if(!dim&&i<cx-1&&j<cy+2&&d>.62&&d<.8)px(i,j,'rgba(255,255,255,.75)')}
     else if(inP(i,j)){const[a,b]=potW(j),e=i===a||i===b||j===H-1;const rim=j===base;
-      px(i,j,e?(dim?OL:L?'#8a4a32':'#5a2a1e'):dim?(L?'#d4d8e0':'#2a2f3c'):rim?(L?'#ffc8a0':'#ffb88a'):j===base+1&&i<cx?(L?'#f0a078':'#f2a070'):i>b-3?(L?'#c8704c':'#b8603e'):(L?'#e08a60':'#e07e54'))}}
+      px(i,j,e?(dim?OL:L?'#4a5266':'#141824'):dim?(L?'#d4d8e0':'#2a2f3c'):rim?(L?'#c8ccd6':'#8a94a8'):j===base+1&&i<cx?(L?'#aab2c0':'#6e788c'):i>b-3?(L?'#8a92a4':'#454c5e'):(L?'#9aa2b2':'#5a6276'))}}
   // dark outline around the glass for a chunky, toy-like silhouette
   const od=document.createElement('canvas');od.width=W;od.height=H;
   for(let j=0;j<H;j++)for(let i=0;i<W;i++)if(!inG(i,j)&&!inP(i,j)&&(inG(i-1,j)||inG(i+1,j)||inG(i,j-1)||inG(i,j+1)))px(i,j,OL);
-  if(!dim){px(9,gap-2,'#ff8fb0');px(10,gap-2,'#ff8fb0');px(9,gap-3,'#ffd0e0');px(10,gap-3,OL);px(8,gap-2,OL);px(11,gap-2,OL);px(9,gap-1,OL);px(10,gap-1,OL);
-    px(5,gap+3,'#ffffff');px(14,cy+1,'rgba(255,255,255,.55)');
+  if(!dim){px(9,gap-2,'#9aa4b6');px(10,gap-2,'#6e788c');px(9,gap-3,OL);px(10,gap-3,OL);px(8,gap-2,OL);px(11,gap-2,OL);px(9,gap-1,OL);px(10,gap-1,OL);
     if(kind==='ready'){px(15,gap+2,'#ffe27a');px(14,gap+2,'rgba(255,226,122,.6)');px(16,gap+2,'rgba(255,226,122,.6)');px(15,gap+1,'rgba(255,226,122,.6)');px(15,gap+3,'rgba(255,226,122,.6)')}
-    px(5,base+1,'#ffe6d0');px(14,base+2,'rgba(255,230,210,.5)')}
+  }
   return MD[key]=c.toDataURL()}
 function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}
   // recipes start hidden; players from before this keep the dishes they have in the bag as already known
