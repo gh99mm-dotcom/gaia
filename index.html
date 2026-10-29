@@ -4777,7 +4777,7 @@ function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q
    <span class="preward">${img(IC.coin,null,2)}${q.cr.toLocaleString()} CR</span><span class="phave ${ok?'ok':''}">가진 것 ${Math.min(have,999)}/${q.n}</span>
    ${done?'<span class="pstamp">완료</span>':`<button class="btn sm ${ok?'gold':''}" data-act="reqgo" data-k="${i}" ${ok?'':'disabled'}>납품하기</button>`}</div>`}).join('')}${reqSpecialHTML(R)}</div>
   <p class="hint">포스터는 매일 오전 8시와 오후 8시에 새로 붙습니다. 다음 교체까지 <b id="reqT">${fmtClock(reqLeft())}</b> · 남은 의뢰 ${R.list.length-R.done.length}개.</p>`}
-function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
+function upCost(n){const c=[['ore',2+n],['crystal',1+(n>>1)]];if(n>=2)c.push(['dark',Math.ceil((n-1)/2)]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
 // the odds table stays open across the redraws an upgrade causes
 let upTblOpen=false;document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('uptable'))upTblOpen=e.target.open},true);
 function renderBag(){return head()+bagInner()}
