@@ -4911,11 +4911,11 @@ const A={
  fssel(d){fsSel=fsSel===d.id?null:d.id;fpSel=null;renderPanel()},
  fpsel(d){fpSel=fpSel===d.id?null:d.id;fsSel=null;renderPanel()},
  fsq(d){const e=$('#fsQty-'+d.q);if(!e)return;const mx=+e.max||1,v=d.k==='max'?mx:(+e.value||1)+(+d.k);e.value=Math.max(1,Math.min(mx,v));fsQ[e.dataset.fsqk]=+e.value},
- fstake(d){const have=FSTORE[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-store')||{}).value)||1)));if(n<1||have<n)return;storeAdd(d.id,-n);add(d.id,n);storeLogAdd('take',d.id,n);log(`공용 창고에서 ${ITEMS[d.id].n} ${n}개를 꺼냈다.`);commit()},
+ fstake(d){const have=FSTORE[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-store')||{}).value)||1)));if(n<1||have<n)return;storeAdd(d.id,-n);add(d.id,n);storeLogAdd('take',d.id,n);delete fsQ['store:'+d.id];log(`공용 창고에서 ${ITEMS[d.id].n} ${n}개를 꺼냈다.`);commit()},
  // every seed and crop in my bag goes into the shared store in one go (second press confirms)
  fsputall(d){if(d.k==='no'){fsAllArm=false;renderPanel();return}const mine=ORDER.filter(id=>P.inv[id]>0&&storable(id));if(!mine.length){fsAllArm=false;return}if(!fsAllArm){fsAllArm=true;renderPanel();return}fsAllArm=false;
   let tot=0;mine.forEach(id=>{const n=P.inv[id];if(take(id,n)){storeAdd(id,n);storeLogAdd('put',id,n);tot+=n}});fpSel=null;log(`공용 창고에 가방의 씨앗·작물 ${mine.length}종 ${tot}개를 모두 넣었다.`,'good');toast(`${tot}개를 공용 창고에 넣었습니다.`);commit()},
- fsput(d){const have=P.inv[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-bag')||{}).value)||1)));if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);storeLogAdd('put',d.id,n);log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
+ fsput(d){const have=P.inv[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-bag')||{}).value)||1)));if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);storeLogAdd('put',d.id,n);delete fsQ['bag:'+d.id];log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
  shipsel(d){shipSel=d.k;renderPanel()},
  shipgive(d){const inp=d.i&&document.querySelector(`[data-shipq="${d.i}"]`);shipGive(d.k,d.i,inp?Math.max(1,Math.floor(+inp.value||1)):0)},
  refill(){if(FARM.water>=FARM.cap)return;if(Date.now()<FARM.refCd){toast(`아직 물을 채울 수 없습니다. ${fmtClock(FARM.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+3600e3;sfxWater();
