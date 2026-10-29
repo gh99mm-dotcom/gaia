@@ -3760,7 +3760,7 @@ function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(ren
   const cards=TRAILS.map((t,i)=>{const here=!mv&&sc.t===i,lock=mv||sc.pend||(sc.t>=0&&sc.t!==i),nk=sc.t===i?sc.at:0;
     return`<div class="card sctr"><div class="tn"><span class="sw" style="background:${t.c}"></span>${esc(t.n)} <small class="hint">${t.dir}쪽</small></div><div class="scdots">${t.m.map((_,k)=>`<i class="${here&&sc.at===k+1?'here':k<sc.far[i]?'on':''}" style="--r:${SC_ROUGH_C[scTier(k+1)]}" title="${k+1}지점 · ${SC_ROUGH[scTier(k+1)]} · EN ${scEn(k+1)}${k<sc.far[i]?' · '+esc(t.nodes[k]):' · 미탐색'}"></i>`).join('')}</div>
       <div class="hint">${SC_N}지점 · 구간마다 ${SC_MIN}분 · 깊을수록 길이 험해져 에너지 ${scEn(1)}→${scEn(SC_N)}</div>${nk<SC_N?`<p class="scway">${scRoughTag(nk+1)} ${scWay(i,nk+1)}</p>`:''}${lock?'':nk<SC_N?`<button class="btn sm" data-act="scgo" data-t="${i}">${nk?'더 깊이':'출발'} <small>${t.m[nk]}분 · EN ${scEn(nk+1)}</small></button>`:''}</div>`}).join('');
-  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 멀리 갈수록 더 귀한 것을 찾습니다. 깊이 들어갈수록 길이 험해져서, 이동할 때 드는 에너지가 ${scEn(1)}에서 ${scEn(SC_N)}까지 늘어납니다.</p>
+  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 나가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 멀리 갈수록 더 귀한 것을 찾습니다. 깊이 들어갈수록 길이 험해져서, 이동할 때 드는 에너지가 ${scEn(1)}에서 ${scEn(SC_N)}까지 늘어납니다. 길의 끝(${SC_N}지점)을 조사하면 무기 강화 성공 확률을 올려 주는 <b style="color:var(--gold)">공명 촉매</b>를 반드시 하나 얻고, 다른 지점에서도 가끔 나옵니다.</p>
   ${scoutMapHTML()}${status}
   ${lastScan?`<div class="card result">${img(IC.scan,null,2)}<div><p>${esc(lastScan.t)}</p>${lastScan.got.length||lastScan.extra?chipsOf(lastScan.got,lastScan.extra):''}</div></div>`:''}
   <div class="sctrails">${cards}</div>`;
