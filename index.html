@@ -5851,10 +5851,14 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
 const bgm=new Audio('bgm.mp3?v=storm');bgm.loop=true;bgm.preload='auto';
 // the secret bar has its own record on (Tony Balluff - Block Party); loaded only when someone walks in
 let barBgm=null;const barMusic=()=>{if(!barBgm){barBgm=new Audio('bar.mp3');barBgm.loop=true}return barBgm};
+// 원정 battle music (battle_intro): plays while I'm out on a running expedition
+let raidBgm=null,raidBgmOn=false;const raidMusic=()=>{if(!raidBgm){raidBgm=new Audio('raid.mp3');raidBgm.loop=true;raidBgm.preload='auto'}return raidBgm};
+const raidBgmWant=()=>!secretView&&bgmOn&&bgmVol>0&&raidLocked();
 let bgmOn=true,bgmVol=35;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off';const v=localStorage.getItem('nebula-bgmv');if(v!=null)bgmVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 function syncBgm(){bgm.volume=bgmVol/100;const bar=secretView&&bgmOn&&bgmVol>0,boss=!bar&&bossBgmWant();if(boss)bossBgmStart();else bossBgmStop();
   if(bar){const m=barMusic();m.volume=bgmVol/100;bgm.pause();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(barBgm)barBgm.pause();
+  raidBgmOn=raidBgmWant();if(raidBgmOn){const m=raidMusic();m.volume=bgmVol/100;bgm.pause();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(raidBgm)raidBgm.pause();
   if(bgmOn&&bgmVol>0&&!boss){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
 /* invader theme: a flat, droning loop made on the fly while an invader is up and you're on 탐사 */
 let BBGM=null;
@@ -5916,7 +5920,7 @@ setInterval(()=>{if(tab==='fish'&&DUEL){const e=$('#duelT');if(e&&duelOn())e.tex
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(tab==='fish'){lakePh+=.18;drawLake()}},160);
 addEventListener('resize',()=>{if(tab==='fish')drawLake();if(tab==='farm'){fitSide();fitBay()}});
 setInterval(()=>{
-  scoutTick();if(!!BBGM!==(bossBgmWant()&&!secretView))syncBgm();if(tab==='req'){const sk=(spresNow()||{}).id||'';if((P.req&&P.req.day!==reqKey())||sk!==(window.__spk||'')){window.__spk=sk;renderPanel()}else{const e=$('#reqT');if(e)e.textContent=fmtClock(reqLeft());const t=$('#spresT'),x=spresNow();if(t&&x)t.textContent=fmtClock(x.end-Date.now())}}{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
+  scoutTick();if(!!BBGM!==(bossBgmWant()&&!secretView)||raidBgmOn!==raidBgmWant())syncBgm();if(tab==='req'){const sk=(spresNow()||{}).id||'';if((P.req&&P.req.day!==reqKey())||sk!==(window.__spk||'')){window.__spk=sk;renderPanel()}else{const e=$('#reqT');if(e)e.textContent=fmtClock(reqLeft());const t=$('#spresT'),x=spresNow();if(t&&x)t.textContent=fmtClock(x.end-Date.now())}}{const k=(bossAlive(BOSS)?0:asigState().n)+'';if(k!==window.__asn){window.__asn=k;renderNav()}}
   if(P.faint&&Date.now()>=P.faint)wake();else if(isFaint()){const t1=$('#faintT'),t2=$('#faintT2'),v=fmtClock(P.faint-Date.now());if(t1)t1.textContent=v+' 뒤 깨어납니다';if(t2)t2.textContent=v}
   if(mode==='online'&&tab){const anyF=Object.values(PLAYERS).some(p=>p.faint&&Math.abs(Date.now()-p.faint)<1500);if(anyF)renderCrew()}
   tickPilot();
