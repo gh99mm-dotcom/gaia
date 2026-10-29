@@ -2583,7 +2583,7 @@ const MD={};let domeH=20;
 function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])return MD[key];
   // a little bell jar: tinted glass with a highlight and a knob on top, sitting in a muted metal planter
   const W=20,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),L=isLight(),dim=kind==='lock'||kind==='add';
-  const base=H-5,soil=base-2,cx=9.5,rx=7.6,gap=Math.max(2,Math.round((H-20)*.35)+2),cy=Math.min(soil-1,gap+rx),ry=cy-gap;
+  const base=H-5,soil=base-2,cx=9.5,rx=7.6,gap=Math.max(4,Math.round((H-20)*.35)+4),cy=Math.min(soil-1,gap+rx),ry=cy-gap;
   const inG=(i,j)=>j<base&&j>=gap&&i>=2&&i<=W-3&&(j>=cy||((i-cx)/rx)**2+((j-cy)/ry)**2<=1);
   const potW=j=>{const k=j-base;return k===0?[1,W-2]:k===1?[2,W-3]:k<4?[3,W-4]:[4,W-5]},inP=(i,j)=>{if(j<base||j>=H)return false;const[a,b]=potW(j);return i>=a&&i<=b};
   const px=(i,j,col)=>{x.fillStyle=col;x.fillRect(i,j,1,1)};
