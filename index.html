@@ -1201,7 +1201,7 @@ b.no{color:var(--red)}
 @keyframes wfShine{0%{background-position:100% 0}60%,100%{background-position:-50% 0}}
 @media (prefers-reduced-motion:reduce){.wf2::after,.wf3::after,.wf4::after{display:none}}
 .uptable td.upw{display:flex;align-items:center;gap:4px;white-space:nowrap}.uptable td.upw .wpnimg{image-rendering:auto}
-@media (max-width:480px){.upnow .wpnimg{width:96px;height:96px}}
+@media (max-width:480px){.upnow .wpnimg{width:48px;height:48px}}
 .uptable td.upw .wpnfx::after{display:none}
 .upodds{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px}.upodds b{color:var(--gold);font-weight:400}.upodds span{color:var(--mute)}.upodds .drop{color:var(--red)}
 .uptable summary{cursor:pointer;font-size:12px;color:var(--mute)}.uptable table{width:100%;margin-top:6px;border-collapse:collapse;font-size:12px}.uptable th,.uptable td{padding:2px 4px;text-align:left;border-bottom:1px solid var(--line)}.uptable th{color:var(--mute);font-weight:400}.uptable tr.now td{color:var(--gold)}
@@ -1928,7 +1928,7 @@ const WPN_GLOW=["#d4dcff", "#dc48bc", "#38c4ee", "#7448da", "#38c4ee", "#38c4ee"
 // the higher the stage, the showier: glow (+5) · breathing aura and shine (+10) · turning light rays and stars (+15) · rainbow rays and a halo (+20)
 const wpnFx=n=>n>=20?'wf4':n>=15?'wf3':n>=10?'wf2':n>=5?'wf1':'';
 const wpnImg=(n,px=32)=>{n=Math.max(0,Math.min(WPN_PNG.length-1,n|0));const fx=wpnFx(n),src=WPN_PNG[n],im=`<img class="wpnimg" src="${src}" width="${px}" height="${px}" alt="">`;
-  const big=px>=64;// the big picture gets pixel aura/rays/stars drawn on a canvas; small icons just get a hard pixel glow
+  const big=px>=48;// the big picture gets pixel aura/rays/stars drawn on a canvas; small icons just get a hard pixel glow
   return fx?`<span class="wpnfx ${fx}${big?' big':''}" style="--wg:${WPN_GLOW[n]};--wga:${WPN_GLOW[n]}99;--ws:url(${src})">${big?`<canvas class="wfc" width="128" height="128" data-n="${n}" data-fx="${fx}" aria-hidden="true"></canvas>`:''}${im}</span>`:im};
 /* pixel effects: one canvas pixel = one sprite pixel, so the aura, rays and stars share the weapon's own grid */
 const WFX_M={},WFX_RB=['#ffd65f','#ff7fb8','#8fd0ff','#8dffa6'],WFX_B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
@@ -4817,7 +4817,7 @@ let bagF=null;
 // 제작대 › 무기 강화
 function upCardHTML(){const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n];
   return`<div class="card upcard" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
-   <div class="upnow">${wpnImg(n,128)}<div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화 · 최대 +${WEAPONS.length-1}</div>${n<WEAPONS.length-1?`<div class="upnext">${wpnImg(n+1,32)}<span class="hint">다음 · ${WEAPONS[n+1]} +${n+1}</span></div>`:''}</div></div>
+   <div class="upnow">${wpnImg(n,64)}<div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화 · 최대 +${WEAPONS.length-1}</div>${n<WEAPONS.length-1?`<div class="upnext">${wpnImg(n+1,32)}<span class="hint">다음 · ${WEAPONS[n+1]} +${n+1}</span></div>`:''}</div></div>
    ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${UP_P[n]}%</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
    <details class="uptable" ${upTblOpen?"open":""}><summary>단계별 성공 확률 보기</summary><table><thead><tr><th>강화</th><th>무기</th><th>성공</th><th>크레딧</th><th>실패 시</th></tr></thead><tbody>${UP_P.map((p,i)=>`<tr class="${i===n?'now':''}"><td>+${i} → +${i+1}</td><td class="upw">${wpnImg(i+1,24)}${WEAPONS[i+1]}</td><td>${p}%</td><td>${UP_CR[i].toLocaleString()}</td><td>${i>=UP_DROP?'1단계 하락':'유지'}</td></tr>`).join('')}</tbody></table></details>
   </div>`}
