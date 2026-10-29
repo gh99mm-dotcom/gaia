@@ -3724,7 +3724,8 @@ const TRAILS=[
 // ten stops on every trail, 5 minutes between each
 const SC_N=10,SC_MIN=5;
 // XP per search as a share of what my level needs: [revisit, first visit] by stop
-const SC_XP=[[.025,.05],[.04,.075],[.05,.10],[.06,.125],[.07,.15],[.08,.175],[.09,.20],[.10,.225],[.11,.25],[.12,.275]];TRAILS.forEach(t=>{t.m=Array(SC_N).fill(SC_MIN)});
+// (scaled to 2/3 by SC_XP_K)
+const SC_XP_K=2/3,SC_XP=[[.025,.05],[.04,.075],[.05,.10],[.06,.125],[.07,.15],[.08,.175],[.09,.20],[.10,.225],[.11,.25],[.12,.275]];TRAILS.forEach(t=>{t.m=Array(SC_N).fill(SC_MIN)});
 // the deeper the stop, the rougher the way: energy per move climbs stop by stop (the stretches still name the road)
 const SC_EN=[3,4,5,7,10,12,18,24,32,40],scEn=k=>SC_EN[Math.max(1,Math.min(SC_N,k))-1],scTier=k=>k<=3?0:k<=6?1:k<=9?2:3;
 const SC_ROUGH=['완만한 길','험한 길','가파른 길','극한의 길'],SC_ROUGH_C=['var(--green)','var(--gold)','#e0904a','var(--red)'];
@@ -3822,7 +3823,7 @@ function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;cons
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   // 1% of searches turn up a 마이룸 piece found nowhere else
   {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했습니다.`)}}
-  const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0])+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
+  const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0]*SC_XP_K)+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
   stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,got,extra};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
 // 귀중품 도감: every one found so far; the rest show as black silhouettes
 function junkDexHTML(){const got=new Set([...(P.jdex||[]),...JUNK.map(j=>j[0]).filter(id=>P.inv[id]>0)]);
