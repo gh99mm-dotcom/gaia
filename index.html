@@ -1218,6 +1218,7 @@ b.no{color:var(--red)}
 .jdex{margin-top:12px}.jdexn{font-family:var(--f-pix);color:var(--gold)}.jdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.jdc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;background:var(--deep);border:1px solid var(--line)}.jdc span{font-size:11px;text-align:center;line-height:1.2;word-break:keep-all}.jdc.no img{filter:brightness(0) drop-shadow(0 0 1px #8a9ab466)!important}:root[data-skin="light"] .jdc.no img{filter:brightness(0) opacity(.7)!important}.jdc.no span{color:var(--dim)}
 /* every item picture in the shop sits in the same 32×32 box (2× the 16px art) */
 .shop .srow>img.pix,.shop .srow .spcico img,.shop .slot img.pix{width:32px!important;height:32px!important;object-fit:contain;flex:none}.shop .spcico{width:32px;height:32px;display:grid;place-items:center}
+.padmore{display:block;width:100%;margin:6px 0 2px}
 .upboost{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.upboost .hint{flex:1;min-width:140px}.upodds small{color:var(--gold);font-size:11px}
 .upodds{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px}.upodds b{color:var(--gold);font-weight:400}.upodds span{color:var(--mute)}.upodds .drop{color:var(--red)}
 .uptable summary{cursor:pointer;font-size:12px;color:var(--mute)}.uptable table{width:100%;margin-top:6px;border-collapse:collapse;font-size:12px}.uptable th,.uptable td{padding:2px 4px;text-align:left;border-bottom:1px solid var(--line)}.uptable th{color:var(--mute);font-weight:400}.uptable tr.now td{color:var(--gold)}
@@ -5527,6 +5528,8 @@ document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id=
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset,e)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
+// the feed shows the newest PAD_PAGE posts and grows a page at a time (on phones the screen is not a scroll box, so it would run all the way to the first post)
+const PAD_PAGE=10;let padShow=PAD_PAGE;
 let socTab='pad',padView='all',padTag='',padThread=null,THR=[],THRP=null,THRA=[],thrTok=0,thrUnsub=[],POSTS=[],GUEST=[],DMS=[],dmPeer=null,editBio=false,padDraft='',replyDraft='',bioDraft='',dmDraft='',socPend=false,lastPost=0,pdelArm=null;
 const socBoot=Date.now(),socNoted=new Set(),SOC_LS='nebula-soc-seen',DM_LS='nebula-dm-read',PAD_MAX=200;let socSeen=0,dmRead={};try{socSeen=+localStorage.getItem(SOC_LS)||0;dmRead=JSON.parse(localStorage.getItem(DM_LS)||'{}')||{}}catch(e){}
 const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
@@ -5587,7 +5590,7 @@ function socPad(){
   const me=new RegExp('@'+P.nick.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![^\\s@#])');
   const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&me.test(s.text||'');return true});
   return padCompose()+`<div class="dtabs padtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
-  <div class="twfeed">${list.length?list.map(p=>twHTML(p)).join(''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
+  <div class="twfeed">${list.length?list.slice(0,padShow).map(p=>twHTML(p)).join('')+(list.length>padShow?`<button class="btn sm ghost padmore" data-act="padmore">이전 글 더 보기 <small>${Math.min(PAD_PAGE,list.length-padShow)}개</small></button>`:''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
 // a reply opened as a thread shows the conversation above it: walk up the re chain (from the feed, else from the server)
 async function loadAnc(start){const tok=++thrTok,out=[];let re=start&&start.re;
   for(let n=0;re&&n<12;n++){let q=POSTS.find(x=>x.id===re)||THRA.find(x=>x.id===re);if(!q&&mode==='online'){try{const d=await db.doc('posts/'+re).get();q=d.exists?Object.assign({id:re},d.data()):null}catch(e){q=null}}
@@ -5794,8 +5797,9 @@ function socSubscribe(){
     renderNav();if(tab==='social'&&!viewing)renderPanel()},()=>{})}
 const SA={
  sotab(d){socTab=d.k;pdelArm=null;profId=null;profBio=false;if(d.k!=='pad'&&padThread)openThread(null);renderPanel();if(d.k==='dm'&&dmPeer)setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
- padview(d){padView=d.k;padTag='';renderPanel()},
- padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
+ padview(d){padView=d.k;padTag='';padShow=PAD_PAGE;renderPanel()},
+ padmore(){padShow+=PAD_PAGE;renderPanel()},
+ padtag(d){padTag=d.k||'';padShow=PAD_PAGE;if(padThread)openThread(null);renderPanel()},
  notigo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;secretView=false;adminView=false;socTab='pad';if(tab!=='social'){tab='social';renderNav();setPresence()}openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();window.scrollTo({top:$('#stage').offsetTop-8,behavior:'smooth'})},
  padback(){openThread(null);renderPanel()},
