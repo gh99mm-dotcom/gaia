@@ -1193,7 +1193,7 @@ b.no{color:var(--red)}
 /* hard 1px pixel glow (no blur) for every glowing stage; the big picture adds the canvas effects behind it */
 .wpnfx .wpnimg{filter:drop-shadow(1px 0 0 var(--wga)) drop-shadow(-1px 0 0 var(--wga)) drop-shadow(0 1px 0 var(--wga)) drop-shadow(0 -1px 0 var(--wga))}
 .wpnfx.big .wpnimg{filter:none}
-.upcard{overflow:hidden;position:relative}.upcard>*{position:relative;z-index:2}.upcard>.upnow{z-index:1}.upnow>div{position:relative;z-index:1}.upcard .lbl,.upnow b,.upnow .hint,.upodds{text-shadow:0 0 2px #000,0 0 5px #000,0 0 8px #000}.upnow .wpnfx{z-index:0}
+.upcard{overflow:hidden;position:relative}.upcard>*{position:relative;z-index:2}.upcard>.upnow{z-index:1}.upnow>div{position:relative;z-index:1}:root:not([data-skin="light"]) :is(.upcard .lbl,.upnow b,.upnow .hint,.upodds){text-shadow:0 0 2px #000,0 0 5px #000,0 0 8px #000}.upnow .wpnfx{z-index:0}
 .wfc{position:absolute;left:-50%;top:-50%;width:200%;height:200%;z-index:0;pointer-events:none;image-rendering:pixelated}
 /* a hard-edged band of light sweeps across the weapon in steps */
 .wf2::after,.wf3::after,.wf4::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(120deg,transparent 45%,rgba(255,255,255,.45) 45% 50%,transparent 50% 53%,rgba(255,255,255,.25) 53% 55%,transparent 55%) 0 0/300% 100% no-repeat;-webkit-mask:var(--ws) center/100% 100% no-repeat;mask:var(--ws) center/100% 100% no-repeat;image-rendering:pixelated;animation:wfShine 3s steps(18) infinite}
