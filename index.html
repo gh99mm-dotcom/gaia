@@ -1188,8 +1188,8 @@ b.no{color:var(--red)}
 .slot em{position:absolute;right:3px;bottom:0;font-style:normal;font-family:var(--f-pix);font-size:10px;text-shadow:1px 1px 0 var(--ink)}
 .two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}
 @media (max-width:700px){.two{grid-template-columns:minmax(0,1fr)}}
-.wpnimg{image-rendering:pixelated;display:block;flex:none}.upnow{display:flex;align-items:center;gap:12px}
-.wpnfx{position:relative;display:block;flex:none;line-height:0;isolation:isolate}.wpnfx .wpnimg{position:relative;z-index:1}
+.wpnimg{image-rendering:pixelated;display:block;flex:none}.upnow{display:flex;align-items:center;gap:12px}.upnext{display:flex;align-items:center;gap:6px;margin-top:6px}
+.wpnfx{position:relative;display:block;flex:none;width:max-content;height:max-content;line-height:0;isolation:isolate}.wpnfx .wpnimg{position:relative;z-index:1}
 /* hard 1px pixel glow (no blur) for every glowing stage; the big picture adds the canvas effects behind it */
 .wpnfx .wpnimg{filter:drop-shadow(1px 0 0 var(--wga)) drop-shadow(-1px 0 0 var(--wga)) drop-shadow(0 1px 0 var(--wga)) drop-shadow(0 -1px 0 var(--wga))}
 .wpnfx.big .wpnimg{filter:none}
@@ -1952,7 +1952,7 @@ function wfxDraw(cv,t){const n=+cv.dataset.n,L={wf1:0,wf2:1,wf3:2,wf4:3}[cv.data
     for(let i=0;i<4096;i++){const d=m.dist[i];if(!d||d>reach)continue;const x=i%64+32,y=(i/64|0)+32;if(d===reach&&WFX_B[(y&3)*4+(x&3)]>=8)continue;
       const c=L===3?WFX_RB[(d+(t>>1))%4]:col;px(x,y,c,d===1?.55:d===reach?.18:.32)}}
   // twinkling plus-shaped stars
-  if(L>=2){const S=L===3?14:9;for(let i=0;i<S;i++){const a=(i*137.5+n*31)%360*Math.PI/180,r=26+((i*53+n*17)%30),x=Math.round(64+Math.cos(a)*r),y=Math.round(64+Math.sin(a)*r),ph=(t+i*3)%8;if(ph>4)continue;
+  if(L>=2){const S=L===3?14:9;for(let i=0;i<S;i++){const a=(i*137.5+n*31)%360*Math.PI/180,r=22+((i*53+n*17)%18),x=Math.round(64+Math.cos(a)*r),y=Math.round(64+Math.sin(a)*r),ph=(t+i*3)%8;if(ph>4)continue;
     const c=L===3&&i%3===0?WFX_RB[i%4]:'#ffffff',arm=ph===2?2:ph===4?0:1;px(x,y,c,.75);for(let k=1;k<=arm;k++){const al=k===arm&&arm>1?.35:.6;px(x+k,y,c,al);px(x-k,y,c,al);px(x,y+k,c,al);px(x,y-k,c,al)}}}
   g.globalAlpha=1}
 {let wt=0;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;setInterval(()=>{const cs=document.querySelectorAll('canvas.wfc');if(!cs.length)return;wt++;cs.forEach(c=>{if(calm&&c.dataset.d)return;c.dataset.d=1;wfxDraw(c,calm?0:wt)})},90)}
