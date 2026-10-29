@@ -2171,7 +2171,7 @@ function renderCook(){const el=$('#cook');if(!el)return;const c=COOK.find(x=>x.i
    <button class="btn sm" data-act="cook" ${mx>0?'':'disabled'}>요리하기 · ${t<60?t+'초':Math.floor(t/60)+'분'+(t%60?' '+t%60+'초':'')}</button>`})()}</div>`}
   ${dishes.length?`<div class="dlist">${dishes.map(x=>`<div class="drow">${iicon(x.id,1)}<span>${esc(x.n)} ×${P.inv[x.id]}</span><button class="btn ghost sm" data-act="use" data-id="${x.id}">먹기</button></div>`).join('')}</div>`:''}`}
 function tickCook(){const ck=P.cook;if(P.buff&&Date.now()>=P.buff.until){P.buff=null;log('요리 효과가 사라졌다.','');save();renderPilot();return}const bt=$('#buffT');if(bt&&P.buff)bt.textContent=fmtClock(P.buff.until-Date.now());if(!ck)return;const cur=COOK.find(x=>x.id===ck.id);if(!cur)return;const left=ck.end-Date.now();
-  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${rcpKnown(cur.id)?cur.n:'새 요리'} 완성! 가방의 요리 칸에서 꺼내 주십시오.`,'good');save();renderCook();return}
+  if(left<=0&&!ck.rang){P.cook=Object.assign({},ck,{rang:1});sfxDing();log(`${rcpKnown(cur.id)?cur.n:'새 요리'} 완성! 우주선 › 제작대의 요리 탭에서 꺼내 주십시오.`,'good');save();renderCook();return}
   if(left>0){const t1=$('#cookT'),b=$('#cookB');if(t1)t1.textContent='조리 중 · '+fmtClock(left);if(b)b.style.width=Math.round((1-left/(cur.sec*(ck.n||1)*1e3))*100)+'%'}}
 
 /* ───────── admin: crew management ───────── */
@@ -3616,7 +3616,7 @@ function myLookHTML(){const lk=lookOf(P),of=outfitOf(P),tabs=[['color','색상']
   let body='';
   if(mlTab==='color')body=Object.entries(LOOKS).map(([k,g])=>{const mine=[...g.opts,...NEON.filter(([c])=>ownsNeon(c))];return`<div class="mlsec"><span class="lbl">${g.n}</span><div class="swatches">${mine.map(([col,nm])=>`<button class="sw ${NEONSET.has(col)?'neonsw':''}" style="background:${col};--g:${col}" data-act="setlook" data-k="${k}" data-c="${col}" aria-pressed="${lk[k]===col}" title="${esc(nm)}" aria-label="${g.n} ${esc(nm)}"></button>`).join('')}</div></div>`}).join('')+`<span class="hint">가지고 있는 네온 색도 여기에 함께 나옵니다. 새 네온 색은 마이룸의 옷장에서 살 수 있습니다.</span>`;
   else if(mlTab==='gear'){const card=(ic,n,d,on,act,k,id)=>`<div class="eqitem ${on?'on':''}" ${on?'':`data-act="${act}" data-k="${k}"${id?` data-id="${id}"`:''} role="button" tabindex="0"`} aria-pressed="${on}">${ic}<div><b>${esc(n)}</b><span class="hint">${esc(d)}</span></div><span class="eqst">${on?'착용 중':'착용'}</span></div>`;
-    body=`<div class="mlsec"><span class="lbl">주무기</span><div class="eqitem on static">${wpnImg(P.wlv,40)}<div><b>${esc(WEAPONS[P.wlv])} +${P.wlv}</b><span class="hint">주무기는 하나를 계속 강화합니다. 가방에서 강화할 수 있습니다.</span></div></div></div>
+    body=`<div class="mlsec"><span class="lbl">주무기</span><div class="eqitem on static">${wpnImg(P.wlv,40)}<div><b>${esc(WEAPONS[P.wlv])} +${P.wlv}</b><span class="hint">주무기는 하나를 계속 강화합니다. 우주선 › 제작대의 무기 강화 탭에서 강화할 수 있습니다.</span></div></div></div>
      <div class="mlsec"><span class="lbl">보조무기</span>${(()=>{const w=P.wpn&&wpnById(P.wpn);return w?`<div class="eqitem on static">${img(TPL[w.ic],w.t,2)}<div><b>${esc(w.n)}</b><span class="hint">${esc(w.d.replace(' · 채집에서만 발견',''))}</span></div></div>`:'<p class="hint">장착한 보조무기가 없습니다. 우주선 → 제작대에서 사서 장착할 수 있습니다.</p>'})()}</div>
      <div class="mlsec"><span class="lbl">우주복</span><div class="eqlist">${SUITS.slice(0,suitMax()+1).map((u,lv)=>card(suitImg(lv),u.n+' · '+SUIT_MK[lv],u.d,(P.suit||0)===lv,'eqsuit',lv)).join('')}</div></div>
      <div class="mlsec"><span class="lbl">낚싯대</span><div class="eqlist">${RODS.slice(0,rodMax()+1).map((r,lv)=>card(img(IC.rod,r.t,2),r.n,r.d,(P.rod||0)===lv,'eqrod',lv)).join('')}</div></div>
@@ -4582,10 +4582,10 @@ function benchRows(k){const cr=P.cr||0;
   return rows}
 // the workbench header: a pixel SF fabricator (fabgen.py); the lit frame is shown, standing still
 const FAB_PNG=["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACQUlEQVR42uVXPUjrUBT+LNJBsGSoU4uIk2hAKcWpBAeHoiIdCpaS2aGigviKiGMQkS5NsZNjKAoiIg7iICF0eQ8JClH6HlIej+ekgz/g4GAdakJtk+beetXBb8nNubn5vnvOycm5wHdHm9OEnwtWWBLd3P5vIxbg54KVA1VlRi7LmzjaVWxFtDst0oon7ya+zWfApRabPtNO8qKdrQIAIJ5I0o1dyJuGIC1lmIXgVD+lD4G5kAUu/1y0FoJmC+OJpG2YaNFUQKn8FxntDACwKAzC7Vkn9PX2OM55SFTWk3t5Aev7RfyYmYI6GsX6fhFeXiDacX198dCS12L89x0RaTyRRFrKwM8FK9djk29EeGhjZu50WJYsmzl28sLOVgFCJIwDVcXP9AJ9HbAj/zW3gidDs+ymzcsLlp0EVB54MjT4YiJKx6XGJDwuwRcTHcknRkagFU8gy5utewAAbqRpeHkBvpgIxETLfr+nEO18KDSEo10FLedALaHdmGkdMLGyvGw/8fz67U9G3l5fIa2ushHAqiRTC5iIjr3r5eb6lv4FQiQMIRJm1pCUDZ1OgNmQuMXRMT9Y1oH5q1nbcS0eZh6qXdDFEgDgXJwiyiciAdlADvNXs+DzIWQDOfD5UIOQzo1OAADXvwYAGFC2iZKZuBBlAzlrbKR0GCmdqB+o7xuoBZDG2I2Iyb/gUw4mfi5YuT7srsZRfKwmlNLB5L4r+q/hkOLoAdbk5n19Z2zrgV4+9CHuLhu6u4CPOBe6nQ+/FC+eQvlH72dHJAAAAABJRU5ErkJggg==", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACN0lEQVR42mNgGOmAEZeEiIDMf2pa9ObDE0aiHSAiIPN/y4EDVLN80qQ5DLvWLcHqCBZcmg4dOUOxxaXHDjF0W9nhVcNCjEFrVixjYGBgYAiJiCKJzRARRV4aEBGQ+V/W0kO1KLhw7gLpUQDTSA1w59Y18qIAn8YQtOCFBzuJAK8Dbtx7wNBz6CIDAwMDQ4mdPgMhtbiAhpICTjkmYlyJbjmHmQ9Dz55LDKXZ4QxXY8IZevZcYuAw8yHKx+jlCxOplpMDQiKiGMpaehhEBGT+v14wB8URTKQaBvOp54JWhoSPDHA2shy2bGxnY8Kw5cABhpMKKqRHATbLtydUM6zX0mdYr6XPsD2hmqAjKEoDMPDj1BYGkYQ0htMHHmLInT7wkEEkIY3hx6ktWPX6ODgwHDpyhmHSpDmkl4TI4EmWHwOHmQ+DSEIaA0NCGqKyWTALp+XIwMDIgGHXuiUMZKcBZAuxsalaDsBATVUVjuA4AaFd9FBpKGhpa6OOA6hVJJPsAB8PL4oMh+knqy6wszFhsLMxoVqD5N6Vc6Q5ANYgIRSPONMHNcuB/Ke5WNnI4HP2Z0gryG4SAwMDA8PVmHCi0hNRiXCi9GS4xehsGOCdysvAwMDA0H0oj4GBgYFBe8lKohIz0QURsmXIbELtgRACzTIWsssAEi2iSl1Al46JiIDM/9c75CDxGPMNkqCWcFGFL+rxCKOTgjMEqG05jI/eMsYaAko6RjQJ7ntXzhF2AC36hYT6hwMKAAdO8ZdKUSQNAAAAAElFTkSuQmCC"];
-function benchHTML(){const tabs=[['wpn','보조무기'],['craft','우주복·장신구']];
-  return head()+shipSubTabs()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot fabbot"><img class="pix keepc" src="${FAB_PNG[1]}" width="64" height="64" alt="SF 제작 스테이션"></span><div class="sinfo"><b>제작대 · 가이아 정비실</b><p class="say">보조무기를 사고, 우주복과 채집 재료로 만드는 장비를 마련하는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
+function benchHTML(){const tabs=[['wpn','보조무기'],['up','무기 강화'],['craft','우주복·장신구'],['cook','요리']];
+  return head()+shipSubTabs()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot fabbot"><img class="pix keepc" src="${FAB_PNG[1]}" width="64" height="64" alt="SF 제작 스테이션"></span><div class="sinfo"><b>제작대 · 가이아 정비실</b><p class="say">보조무기를 사고, 주무기를 강화하고, 우주복과 장신구를 만들고, 요리를 하는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${benchTab===k}" data-act="benchtab" data-k="${k}">${n}</button>`).join('')}</div>
-   <div class="benchlay"><div class="benchmain"><div class="slist">${benchRows(benchTab)}</div></div>${benchWornHTML()}</div></div>`}
+   ${benchTab==='cook'?'<section class="card cook farmcook" id="cook" aria-label="요리"></section>':`<div class="benchlay"><div class="benchmain">${benchTab==='up'?upCardHTML():`<div class="slist">${benchRows(benchTab)}</div>`}</div>${benchWornHTML()}</div>`}</div>`}
 // right-hand panel: what I have on right now
 function benchWornHTML(){const w=WPNS.find(x=>x.id===P.wpn),su=SUITS[P.suit||0]||SUITS[0];
   const row=(icon,slot,name,d,off)=>`<div class="bwrow ${off?'off':''}">${icon}<div class="sinfo"><span class="hint">${slot}</span><b>${esc(name)}</b>${d?`<span class="hint">${esc(d)}</span>`:''}</div></div>`;
@@ -4814,6 +4814,13 @@ let GEAR_MATS=null;const gearMats=()=>GEAR_MATS||(GEAR_MATS=new Set([...Object.v
 const matUse=id=>[shipMatIds().includes(id)&&(isCropId(id)?'우주선 수리 (생체 연료)':'우주선 수리'),gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
 function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(it.type!=='relic'&&matUse(id))return'ship';return'etc'}
 let bagF=null;
+// 제작대 › 무기 강화
+function upCardHTML(){const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n];
+  return`<div class="card upcard" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
+   <div class="upnow">${wpnImg(n,128)}<div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화 · 최대 +${WEAPONS.length-1}</div>${n<WEAPONS.length-1?`<div class="upnext">${wpnImg(n+1,32)}<span class="hint">다음 · ${WEAPONS[n+1]} +${n+1}</span></div>`:''}</div></div>
+   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${UP_P[n]}%</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
+   <details class="uptable" ${upTblOpen?"open":""}><summary>단계별 성공 확률 보기</summary><table><thead><tr><th>강화</th><th>무기</th><th>성공</th><th>크레딧</th><th>실패 시</th></tr></thead><tbody>${UP_P.map((p,i)=>`<tr class="${i===n?'now':''}"><td>+${i} → +${i+1}</td><td class="upw">${wpnImg(i+1,24)}${WEAPONS[i+1]}</td><td>${p}%</td><td>${UP_CR[i].toLocaleString()}</td><td>${i>=UP_DROP?'1단계 하락':'유지'}</td></tr>`).join('')}</tbody></table></details>
+  </div>`}
 function bagInner(){
   // grouped in the legend's order; items keep their catalogue order inside each group
   const cix=Object.fromEntries(BAGCAT.map(([k],i)=>[k,i])),all=ORDER.filter(id=>P.inv[id]).sort((a,b)=>cix[bagCat(a)]-cix[bagCat(b)]);
@@ -4821,17 +4828,12 @@ function bagInner(){
   if(bagF&&!all.some(id=>bagCat(id)===bagF))bagF=null;const ids=bagF?all.filter(id=>bagCat(id)===bagF):all;
   if(selItem&&!P.inv[selItem])selItem=null;
   const it=selItem&&ITEMS[selItem];
-  const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n];
-  return`<div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+  return`<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
    ${ids.length?`<div class="bagkey" role="group" aria-label="종류별로 보기"><button class="bk bk-all" data-act="bagf" data-k="" aria-pressed="${!bagF}">전체 <small>${all.length}</small></button>${BAGCAT.map(([k,n])=>{const c=all.filter(id=>bagCat(id)===k).length;return`<button class="bk bk-${k}" data-act="bagf" data-k="${k}" aria-pressed="${bagF===k}" ${c?'':'disabled'}><i></i>${n} <small>${c}</small></button>`}).join('')}</div><div class="bag">${ids.map(id=>`<button class="slot bc-${bagCat(id)}" data-act="sel" data-id="${id}" data-tip="${esc(ITEMS[id].n)} ×${P.inv[id]}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
    <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}${isBound(selItem)?'':` <span class="sellp">판매가 ${sellPrice(selItem).toLocaleString()} CR</span>`}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}${it.tasty?(()=>{const mk=tmkView(selItem);return mk.length?`<span class="hint tmaker">제작자: ${mk.map(([k,n])=>esc(k)+(mk.length>1||n>1?` ×${n}`:'')).join(' · ')}</span>`:''})():''}
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
-  <div class="card upcard" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
-   <div class="upnow">${wpnImg(n,128)}<div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화 · 최대 +${WEAPONS.length-1}</div>${n<WEAPONS.length-1?`<div class="upnext">${wpnImg(n+1,32)}<span class="hint">다음 · ${WEAPONS[n+1]} +${n+1}</span></div>`:''}</div></div>
-   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${UP_P[n]}%</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
-   <details class="uptable" ${upTblOpen?"open":""}><summary>단계별 성공 확률 보기</summary><table><thead><tr><th>강화</th><th>무기</th><th>성공</th><th>크레딧</th><th>실패 시</th></tr></thead><tbody>${UP_P.map((p,i)=>`<tr class="${i===n?'now':''}"><td>+${i} → +${i+1}</td><td class="upw">${wpnImg(i+1,24)}${WEAPONS[i+1]}</td><td>${p}%</td><td>${UP_CR[i].toLocaleString()}</td><td>${i>=UP_DROP?'1단계 하락':'유지'}</td></tr>`).join('')}</tbody></table></details>
-  </div></div><section class="card cook farmcook" id="cook" aria-label="요리"></section>`;
+  </div>`;
 }
 let meView=false,adminView=false,meTab='me',mlTab='color',secretView=false;
 const adminShown=()=>adminView&&!!$('#adminBox');
@@ -4841,7 +4843,7 @@ function holdScroll(y){const st=$('#stage');st.style.minHeight='';const need=y+i
 let bagOpen=false;const bagWin=document.createElement('div');bagWin.id='bagWin';bagWin.className='bagwin px';bagWin.hidden=true;bagWin.setAttribute('role','dialog');bagWin.setAttribute('aria-label','가방');
 bagWin.innerHTML='<div class="bw-head" id="bwHead"><span class="lbl">Bag · 가방</span><span class="hint">끌어서 옮기기</span><button class="qchip" type="button" data-act="bagtoggle" aria-label="가방 닫기">닫기</button></div><div class="bw-body" id="bwBody"></div><span class="bw-grip" id="bwGrip" title="끌어서 크기 바꾸기" aria-hidden="true"></span>';document.body.appendChild(bagWin);
 function bagPlace(x,y){const w=bagWin.offsetWidth,h=bagWin.offsetHeight;x=Math.max(4,Math.min(innerWidth-Math.min(w,innerWidth)-4,x));y=Math.max(4,Math.min(innerHeight-48,y));bagWin.style.left=x+'px';bagWin.style.top=y+'px';return[x,y]}
-function bagWinRender(){if(!bagOpen||!P)return;const b=$('#bwBody');if(!b)return;const st=b.scrollTop;b.innerHTML=bagInner();renderCook();b.scrollTop=st}
+function bagWinRender(){if(!bagOpen||!P)return;const b=$('#bwBody');if(!b)return;const st=b.scrollTop;b.innerHTML=bagInner();b.scrollTop=st}
 function bagShow(on){bagOpen=on;bagWin.hidden=!on;if(on){bagWinRender();let pos=null;try{pos=JSON.parse(localStorage.getItem('gaia-bagpos')||'null')}catch(e){}let sz=null;try{sz=JSON.parse(localStorage.getItem('gaia-bagsize')||'null')}catch(e){}if(sz)bagSize(sz[0],sz[1]);bagPlace(pos?pos[0]:innerWidth-bagWin.offsetWidth-24,pos?pos[1]:90)}renderPilot()}
 function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Math.min(innerHeight-8,h));bagWin.style.width=w+'px';bagWin.style.height=h+'px';return[w,h]}
 {let drag=null;$('#bwHead').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=bagWin.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};$('#bwHead').setPointerCapture(e.pointerId);e.preventDefault()});
@@ -4889,7 +4891,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(tab==='ship'){if(shipView==='room'){drawRoomCv();roomLabels()}else startShipScene()}
   if(!roomShown())leaveRoomSpace();
   if(tab==='gather')startGatherScene();
-  if(tab==='bag')renderCook();else if(bagOpen)renderCook();
+  if(tab==='ship'&&shipView==='bench'&&benchTab==='cook')renderCook();
   if(tab==='farm'){fitSide();fitBay()}
   if(tab==='adv'){const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
@@ -5099,7 +5101,7 @@ const A={
  roomhome(){visit=null;renderPanel()},
  emote(d){if(!EMOTES[d.k])return;myEmote={k:d.k,at:Date.now()};pushRoomPresence();drawRoomCv()},
  bossskill(){bossSkill()},
- benchtab(d){benchTab=d.k==='craft'?'craft':'wpn';renderPanel()},
+ benchtab(d){benchTab=['craft','up','cook'].includes(d.k)?d.k:'wpn';renderPanel()},
  chestopen(){openChest()},
  chestok(){chestOpen=null;renderPanel()},
  raidbag(){raidBag=!raidBag;renderPanel()},
@@ -5326,7 +5328,7 @@ const GIFT_MAX=1,isDish=i=>COOK.some(c=>c.id===dishBase(i)),giftCount=()=>Object
 function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]&&isDish(i));const sel=Object.entries(giftSel);
   $('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2><span class="hint">${esc(t.nick)} 님의 나에 대한 호감도 ${affBadge(affOf(t,uid))}</span></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
   ${tasteHTML(t)||'<span class="hint">이 단원은 아직 취향을 정하지 않았습니다.</span>'}
-  <div class="info-sec"><span class="lbl">Dishes · 요리만, 한 번에 ${GIFT_MAX}개 · 한 사람에게 하루 ${GIFT_DAY}번 (오늘 ${giftsToday(giftTo)}/${GIFT_DAY}번)</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,2)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">선물할 요리가 없습니다. 가방에서 요리를 만들어 보십시오.</p>'}</div></div>
+  <div class="info-sec"><span class="lbl">Dishes · 요리만, 한 번에 ${GIFT_MAX}개 · 한 사람에게 하루 ${GIFT_DAY}번 (오늘 ${giftsToday(giftTo)}/${GIFT_DAY}번)</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,2)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">선물할 요리가 없습니다. 우주선 › 제작대의 요리 탭에서 요리를 만들어 보십시오.</p>'}</div></div>
   <div class="info-sec"><span class="lbl">Credits · 크레딧</span><div class="row" style="gap:5px">${[0,50,100,500,1000,5000].map(v=>`<button class="qchip" data-act="giftcr" data-k="${v}" aria-pressed="${giftCr===v}" ${v>(P.cr||0)?'disabled':''}>${v?v.toLocaleString()+' CR':'없음'}</button>`).join('')}</div></div>
   <div class="info-sec"><span class="lbl">Message · 쪽지 (아이템 없이 쪽지만 보내도 됩니다)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
   <div class="row"><span class="hint" style="flex:1;min-width:0">${sel.length?sel.map(([i,n])=>ITEMS[i].n+'×'+n).join(', '):'아이템 없음'}${giftCr?' · '+giftCr.toLocaleString()+' CR':''}</span>${sel.length?'<button class="qchip" data-act="giftreset">비우기</button>':''}${giftedToday(giftTo)&&(sel.length||giftCr)?`<span class="hint" style="color:var(--red)">오늘 선물 ${GIFT_DAY}번을 모두 보냈습니다</span>`:''}<button class="btn sm gold" id="giftGo" data-act="giftsend" ${giftGoOk(sel)?'':'disabled'}>${sel.length||giftCr?'선물 보내기':'쪽지 보내기'}</button></div>`}
