@@ -3620,7 +3620,7 @@ const TRAILS=[
 // ten stops on every trail, 5 minutes between each
 const SC_N=10,SC_MIN=5;
 // XP per search as a share of what my level needs: [revisit, first visit] by stop
-const SC_XP=[[.05,.10],[.08,.15],[.10,.20],[.12,.25],[.14,.30],[.16,.35],[.18,.40],[.20,.45],[.22,.50],[.24,.55]];TRAILS.forEach(t=>{t.m=Array(SC_N).fill(SC_MIN)});
+const SC_XP=[[.025,.05],[.04,.075],[.05,.10],[.06,.125],[.07,.15],[.08,.175],[.09,.20],[.10,.225],[.11,.25],[.12,.275]];TRAILS.forEach(t=>{t.m=Array(SC_N).fill(SC_MIN)});
 // the deeper the stop, the rougher the way: energy per move climbs stop by stop (the stretches still name the road)
 const SC_EN=[3,4,5,7,10,12,18,24,32,40],scEn=k=>SC_EN[Math.max(1,Math.min(SC_N,k))-1],scTier=k=>k<=3?0:k<=6?1:k<=9?2:3;
 const SC_ROUGH=['완만한 길','험한 길','가파른 길','극한의 길'],SC_ROUGH_C=['var(--green)','var(--gold)','#e0904a','var(--red)'];
