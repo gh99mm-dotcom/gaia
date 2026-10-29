@@ -1190,35 +1190,18 @@ b.no{color:var(--red)}
 @media (max-width:700px){.two{grid-template-columns:minmax(0,1fr)}}
 .wpnimg{image-rendering:pixelated;display:block;flex:none}.upnow{display:flex;align-items:center;gap:12px}
 .wpnfx{position:relative;display:block;flex:none;line-height:0;isolation:isolate}.wpnfx .wpnimg{position:relative;z-index:1}
-.wpnfx i{position:absolute;pointer-events:none;display:block}
-.wf1 .wpnimg{filter:drop-shadow(0 0 3px var(--wg)) drop-shadow(0 0 1px var(--wg))}
-.wf2 .wpnimg{animation:wfPulse 2s ease-in-out infinite}
-.wf3 .wpnimg{animation:wfPulse2 1.3s ease-in-out infinite}
-.wf4 .wpnimg{animation:wfRainbow 2.4s linear infinite}
-/* aura / rays behind */
-.wfr{inset:-20%;z-index:0;border-radius:50%;background:radial-gradient(circle,var(--wg) 0,transparent 64%);opacity:.5;animation:wfBreath 2s ease-in-out infinite}
-.wf3 .wfr{inset:-42%;opacity:.9;background:repeating-conic-gradient(from 0deg,var(--wg) 0 7deg,transparent 7deg 24deg),radial-gradient(circle,var(--wg) 0,transparent 55%);-webkit-mask:radial-gradient(circle,#000 18%,transparent 66%);mask:radial-gradient(circle,#000 18%,transparent 66%);animation:wfSpin 9s linear infinite,wfBreath 1.3s ease-in-out infinite}
-.wf4 .wfr{inset:-55%;opacity:1;background:repeating-conic-gradient(from 0deg,#ffd65f 0 6deg,transparent 6deg 15deg,#ff7fb8 15deg 21deg,transparent 21deg 30deg,#8fd0ff 30deg 36deg,transparent 36deg 45deg,#8dffa6 45deg 51deg,transparent 51deg 60deg),radial-gradient(circle,#fff6c8 0,#ffd65f88 22%,transparent 56%);-webkit-mask:radial-gradient(circle,#000 16%,transparent 68%);mask:radial-gradient(circle,#000 16%,transparent 68%);animation:wfSpin 6s linear infinite,wfBreath 1.2s ease-in-out infinite}
-.wf4 .wfr::after{content:"";position:absolute;inset:24%;border-radius:50%;border:2px solid #fff3b0;box-shadow:0 0 10px #ffd65f,inset 0 0 10px #ffd65f;opacity:.75;animation:wfRing 1.8s ease-out infinite}
-/* sweeping shine on the weapon itself */
-.wf2::after,.wf3::after,.wf4::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.9) 50%,transparent 60%) 0 0/300% 100% no-repeat;-webkit-mask:var(--ws) center/100% 100% no-repeat;mask:var(--ws) center/100% 100% no-repeat;animation:wfShine 3s ease-in-out infinite}
+/* hard 1px pixel glow (no blur) for every glowing stage; the big picture adds the canvas effects behind it */
+.wpnfx .wpnimg{filter:drop-shadow(1px 0 0 var(--wga)) drop-shadow(-1px 0 0 var(--wga)) drop-shadow(0 1px 0 var(--wga)) drop-shadow(0 -1px 0 var(--wga))}
+.wpnfx.big .wpnimg{filter:none}
+.wfc{position:absolute;left:-50%;top:-50%;width:200%;height:200%;z-index:0;pointer-events:none;image-rendering:pixelated}
+/* a hard-edged band of light sweeps across the weapon in steps */
+.wf2::after,.wf3::after,.wf4::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(120deg,transparent 45%,rgba(255,255,255,.8) 45% 50%,transparent 50% 53%,rgba(255,255,255,.5) 53% 55%,transparent 55%) 0 0/300% 100% no-repeat;-webkit-mask:var(--ws) center/100% 100% no-repeat;mask:var(--ws) center/100% 100% no-repeat;image-rendering:pixelated;animation:wfShine 3s steps(18) infinite}
 .wf3::after{animation-duration:2.2s}.wf4::after{animation-duration:1.5s}
-/* twinkling stars around */
-.wfs{inset:-14%;z-index:3;background:radial-gradient(circle at 12% 22%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 84% 14%,#fff 0 2px,transparent 3px),radial-gradient(circle at 90% 70%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 26% 88%,#fff 0 2px,transparent 3px),radial-gradient(circle at 55% 6%,#fff 0 1.2px,transparent 2.2px),radial-gradient(circle at 4% 56%,#fff 0 1.2px,transparent 2.2px);animation:wfTwinkle 1.6s steps(2) infinite;filter:drop-shadow(0 0 3px var(--wg))}
-.wfs::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 34%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 36% 12%,#fff 0 1.2px,transparent 2.2px),radial-gradient(circle at 70% 94%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 96% 44%,#fff 0 1.2px,transparent 2.2px),radial-gradient(circle at 10% 76%,#fff 0 1.5px,transparent 2.5px);animation:wfTwinkle 1.6s steps(2) .8s infinite}
-.wf4 .wfs{filter:drop-shadow(0 0 3px #ffd65f) drop-shadow(0 0 2px #ff7fb8)}
-@keyframes wfPulse{0%,100%{filter:drop-shadow(0 0 3px var(--wg))}50%{filter:drop-shadow(0 0 10px var(--wg)) drop-shadow(0 0 2px #fff)}}
-@keyframes wfPulse2{0%,100%{filter:drop-shadow(0 0 5px var(--wg)) drop-shadow(0 0 1px #fff)}50%{filter:drop-shadow(0 0 14px var(--wg)) drop-shadow(0 0 4px #fff)}}
-@keyframes wfRainbow{0%{filter:drop-shadow(0 0 8px #ffd65f) drop-shadow(0 0 3px #fff)}25%{filter:drop-shadow(0 0 12px #ff7fb8) drop-shadow(0 0 3px #fff)}50%{filter:drop-shadow(0 0 8px #8fd0ff) drop-shadow(0 0 3px #fff)}75%{filter:drop-shadow(0 0 12px #8dffa6) drop-shadow(0 0 3px #fff)}100%{filter:drop-shadow(0 0 8px #ffd65f) drop-shadow(0 0 3px #fff)}}
 @keyframes wfShine{0%{background-position:100% 0}60%,100%{background-position:-50% 0}}
-@keyframes wfBreath{0%,100%{opacity:.45}50%{opacity:1}}
-@keyframes wfSpin{to{transform:rotate(360deg)}}
-@keyframes wfRing{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.25);opacity:0}}
-@keyframes wfTwinkle{0%{opacity:1}100%{opacity:.15}}
-@media (prefers-reduced-motion:reduce){.wpnfx .wpnimg,.wpnfx .wfr,.wpnfx .wfs,.wpnfx .wfs::before,.wf4 .wfr::after{animation:none}.wf2::after,.wf3::after,.wf4::after{display:none}}
+@media (prefers-reduced-motion:reduce){.wf2::after,.wf3::after,.wf4::after{display:none}}
 .uptable td.upw{display:flex;align-items:center;gap:4px;white-space:nowrap}.uptable td.upw .wpnimg{image-rendering:auto}
 @media (max-width:480px){.upnow .wpnimg{width:96px;height:96px}}
-.uptable td.upw .wpnfx::after,.uptable td.upw .wfs,.uptable td.upw .wfr{display:none}
+.uptable td.upw .wpnfx::after{display:none}
 .upodds{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px}.upodds b{color:var(--gold);font-weight:400}.upodds span{color:var(--mute)}.upodds .drop{color:var(--red)}
 .uptable summary{cursor:pointer;font-size:12px;color:var(--mute)}.uptable table{width:100%;margin-top:6px;border-collapse:collapse;font-size:12px}.uptable th,.uptable td{padding:2px 4px;text-align:left;border-bottom:1px solid var(--line)}.uptable th{color:var(--mute);font-weight:400}.uptable tr.now td{color:var(--gold)}
 .cost-list{display:flex;flex-direction:column;gap:4px;font-size:12px}
@@ -1944,8 +1927,34 @@ const WPN_GLOW=["#d4dcff", "#dc48bc", "#38c4ee", "#7448da", "#38c4ee", "#38c4ee"
 // the higher the stage, the showier: glow (+5) · breathing aura and shine (+10) · turning light rays and stars (+15) · rainbow rays and a halo (+20)
 const wpnFx=n=>n>=20?'wf4':n>=15?'wf3':n>=10?'wf2':n>=5?'wf1':'';
 const wpnImg=(n,px=32)=>{n=Math.max(0,Math.min(WPN_PNG.length-1,n|0));const fx=wpnFx(n),src=WPN_PNG[n],im=`<img class="wpnimg" src="${src}" width="${px}" height="${px}" alt="">`;
-  const big=px>=64;// rays and stars only around the big picture, small icons just glow
-  return fx?`<span class="wpnfx ${fx}" style="--wg:${WPN_GLOW[n]};--ws:url(${src})">${big&&fx!=='wf1'?'<i class="wfr"></i>':''}${im}${big&&(fx==='wf3'||fx==='wf4')?'<i class="wfs"></i>':''}</span>`:im};
+  const big=px>=64;// the big picture gets pixel aura/rays/stars drawn on a canvas; small icons just get a hard pixel glow
+  return fx?`<span class="wpnfx ${fx}${big?' big':''}" style="--wg:${WPN_GLOW[n]};--wga:${WPN_GLOW[n]}99;--ws:url(${src})">${big?`<canvas class="wfc" width="128" height="128" data-n="${n}" data-fx="${fx}" aria-hidden="true"></canvas>`:''}${im}</span>`:im};
+/* pixel effects: one canvas pixel = one sprite pixel, so the aura, rays and stars share the weapon's own grid */
+const WFX_M={},WFX_RB=['#ffd65f','#ff7fb8','#8fd0ff','#8dffa6'],WFX_B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+const WFX_G=(()=>{const a=new Float32Array(16384),r=new Float32Array(16384);for(let i=0;i<16384;i++){const x=(i&127)-63.5,y=(i>>7)-63.5;a[i]=Math.atan2(y,x);r[i]=Math.hypot(x,y)}return{a,r}})();
+function wfxMask(n){if(WFX_M[n])return WFX_M[n];const o=WFX_M[n]={};const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,64,64).data;
+  const dist=new Uint8Array(4096).fill(255);let cur=[];for(let i=0;i<4096;i++)if(d[i*4+3]>40){dist[i]=0;cur.push(i)}
+  for(let r=1;r<=6;r++){const nx=[];for(const i of cur){const x0=i%64,y0=i/64|0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]){if(r>3&&dx&&dy)continue;const X=x0+dx,Y=y0+dy;if(X<0||Y<0||X>63||Y>63)continue;const j=Y*64+X;if(dist[j]===255){dist[j]=r;nx.push(j)}}}cur=nx}
+  o.dist=dist};im.src=WPN_PNG[n];return o}
+function wfxDraw(cv,t){const n=+cv.dataset.n,L={wf1:0,wf2:1,wf3:2,wf4:3}[cv.dataset.fx]||0,m=wfxMask(n),g=cv.getContext('2d'),col=WPN_GLOW[n];g.clearRect(0,0,128,128);
+  const px=(x,y,c,a)=>{if(x<0||y<0||x>127||y>127)return;g.globalAlpha=a;g.fillStyle=c;g.fillRect(x,y,1,1)};
+  // light rays turning behind the weapon, fading out with a dither
+  if(L>=1){const N=L===3?12:L===2?10:8,Rm=L===3?64:L===2?58:44,sec=Math.PI*2/N,off=t*(L===3?.07:.04),wd=L===1?.22:.3,A=WFX_G.a,Rr=WFX_G.r;
+    // a dithered disc of light at the centre
+    const Rc=Rm*.42;for(let i=0;i<16384;i++){const r=Rr[i];if(r>=Rc)continue;const x=i&127,y=i>>7;if(WFX_B[(y&3)*4+(x&3)]>=(1-r/Rc)*17)continue;px(x,y,L===3?'#fff3b0':col,L===1?.3:.42)}
+    for(let i=0;i<16384;i++){const r=Rr[i];if(r<6||r>=Rm)continue;let q=(A[i]-off)/sec;q-=Math.floor(q);const k=Math.floor((A[i]-off)/sec);if(Math.abs(q-.5)>wd/2)continue;
+      const x=i&127,y=i>>7,lvl=1-Math.pow(r/Rm,1.8);if(WFX_B[(y&3)*4+(x&3)]>=lvl*17)continue;px(x,y,L===3?WFX_RB[((k%4)+4)%4]:col,L===1?.45:L===2?.62:.75)}}
+  // an expanding pixel ring at +20
+  if(L===3){const ph=t%14,rr=8+ph*3.4;for(let i=0;i<64;i++){const a=i/64*Math.PI*2;px(Math.round(64+Math.cos(a)*rr),Math.round(64+Math.sin(a)*rr),'#fff3b0',Math.max(0,1-ph/14))}}
+  // breathing aura hugging the silhouette, in steps
+  if(m.dist){const ph=t%(L===3?6:8),half=L===3?3:4,lv=ph<half?ph:2*half-ph,reach=L?Math.min(6,1+L+lv*(L>1?1:.5)|0):1;
+    for(let i=0;i<4096;i++){const d=m.dist[i];if(!d||d>reach)continue;const x=i%64+32,y=(i/64|0)+32;if(d===reach&&WFX_B[(y&3)*4+(x&3)]>=8)continue;
+      const c=L===3?WFX_RB[(d+(t>>1))%4]:col;px(x,y,c,d===1?.95:d===reach?.45:.7)}}
+  // twinkling plus-shaped stars
+  if(L>=2){const S=L===3?14:9;for(let i=0;i<S;i++){const a=(i*137.5+n*31)%360*Math.PI/180,r=26+((i*53+n*17)%30),x=Math.round(64+Math.cos(a)*r),y=Math.round(64+Math.sin(a)*r),ph=(t+i*3)%8;if(ph>4)continue;
+    const c=L===3&&i%3===0?WFX_RB[i%4]:'#ffffff',arm=ph===2?2:ph===4?0:1;px(x,y,c,1);for(let k=1;k<=arm;k++){const al=k===arm&&arm>1?.6:1;px(x+k,y,c,al);px(x-k,y,c,al);px(x,y+k,c,al);px(x,y-k,c,al)}}}
+  g.globalAlpha=1}
+{let wt=0;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;setInterval(()=>{const cs=document.querySelectorAll('canvas.wfc');if(!cs.length)return;wt++;cs.forEach(c=>{if(calm&&c.dataset.d)return;c.dataset.d=1;wfxDraw(c,calm?0:wt)})},90)}
 const BOSS_IC=['................','.....kkkkkk.....','...kkuuuuuukk...','..kuuuurruuuwk..','.kuruukkkkuuuwk.','.kuuukmmmmkuuwk.','kuuukmzkkzmkuuwk','kurukmkkhkmkruwk','kuuukmkkkkmkuuwk','kuuukmzkkzmkuwwk','.kuuukmmmmkuuwk.','.kwruukkkkuurwk.','..kwwuuuuuuwwk..','...kkwwwwwwkk...','.....kkkkkk.....','................'];
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
