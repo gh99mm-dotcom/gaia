@@ -4634,13 +4634,13 @@ function reqRng(seed){let x=seed%2147483647||1;return()=>(x=(x*16807)%2147483647
 // posters change twice a day, at 08:00 and 20:00 Korea time (UTC+9): one 12-hour window per key
 const REQ_WIN=12*3600e3,reqKey=()=>'r'+Math.floor((Date.now()+3600e3)/REQ_WIN),reqLeft=()=>REQ_WIN-((Date.now()+3600e3)%REQ_WIN);
 // request pay is a fixed multiple of what the shop pays for the same goods, at any level: posters 2.5×, the special request 4×
-const REQ_X=2.5,REQ_SP_X=4;
+const REQ_X=5,REQ_SP_X=4;
 const reqUnit=id=>id.startsWith('fish:')?crs(FSELL[id.slice(5)]||1):ITEMS[id]?sellPrice(id):1;
 const reqPay=(id,n,x)=>Math.max(1,Math.round(reqUnit(id)*n*x));
-function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list)){reqDropCrops();if(P.req.v!==2){P.req.v=2;P.req.list.forEach(q=>q.cr=reqPay(q.id,q.n,REQ_X));if(P.req.sp)P.req.sp.cr=reqPay(P.req.sp.id,P.req.sp.n,REQ_SP_X);save()}return P.req}
+function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list)){reqDropCrops();if(P.req.v!==3){P.req.v=3;P.req.list.forEach(q=>q.cr=reqPay(q.id,q.n,REQ_X));if(P.req.sp)P.req.sp.cr=reqPay(P.req.sp.id,P.req.sp.n,REQ_SP_X);save()}return P.req}
   let h=0;for(const c of day+uid)h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+7),pool=REQ_POOL.slice(),list=[];
   for(let k=0;k<5&&pool.length;k++){const [id,a,b,per,who]=pool.splice(Math.floor(rnd()*pool.length),1)[0],n=a+Math.floor(rnd()*(b-a+1));list.push({id,n,cr:reqPay(id,n,REQ_X),who})}
-  P.req={day,list,done:[],v:2};save();return P.req}
+  P.req={day,list,done:[],v:3};save();return P.req}
 const reqName=id=>id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id);
 const reqIcon=(id,sc)=>id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],sc):iicon(id,sc);
 let brokerLine=0,brokerSeen=false;
