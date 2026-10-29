@@ -579,9 +579,9 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bossmain{display:flex;flex-direction:column;gap:10px;min-width:0}
 .bossstage{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px;background:radial-gradient(ellipse at 30% 50%,var(--violetd),var(--deep) 70%);border:2px solid var(--ink)}
 .bosssprite{animation:bossbob 2.4s steps(4) infinite;flex:none;position:relative}
-.bosssprite::before{content:"";position:absolute;inset:-14% -10%;background:radial-gradient(ellipse at 50% 55%,rgba(150,10,30,.38),rgba(40,0,20,.22) 45%,transparent 70%);animation:bossaura 3.2s ease-in-out infinite;pointer-events:none}
+.bosssprite::before{content:"";position:absolute;inset:-14% -10% 0;background:radial-gradient(ellipse at 50% 55%,rgba(150,10,30,.38),rgba(40,0,20,.22) 45%,transparent 70%);animation:bossaura 3.2s ease-in-out infinite;pointer-events:none}
 @keyframes bossaura{50%{transform:scale(1.08);opacity:.65}}
-.bossart{position:relative;display:inline-block;line-height:0;filter:drop-shadow(0 6px 6px rgba(0,0,0,.7))}.bossart>img.beye{position:absolute;left:0;top:0;filter:drop-shadow(0 0 3px var(--eye)) drop-shadow(0 0 8px var(--eye));animation:bosseye 2.8s steps(1) infinite}
+.bossart{position:relative;display:inline-block;line-height:0;filter:drop-shadow(0 0 4px rgba(0,0,0,.6))}.bossart>img.beye{position:absolute;left:0;top:0;filter:drop-shadow(0 0 3px var(--eye)) drop-shadow(0 0 8px var(--eye));animation:bosseye 2.8s steps(1) infinite}
 @keyframes bosseye{0%,86%,100%{opacity:1}88%{opacity:.25}90%{opacity:1}92%{opacity:.4}}
 .bosspick .bossart{filter:none}.bosspick .bossart>img.beye{filter:drop-shadow(0 0 2px var(--eye));animation:none}.bossstage{position:relative}.bossstage.hitback{animation:bshake .35s steps(3) 2}@keyframes bshake{33%{transform:translateX(-4px)}66%{transform:translateX(4px)}}
 .bosscb{position:absolute;left:14px;top:6px;z-index:1;text-shadow:1px 1px 0 var(--ink);font-family:var(--f-display);font-size:15px;color:var(--red);animation:bcbup 1.6s ease-out forwards}.bosscb.miss{color:var(--cyan)}@keyframes bcbup{from{transform:translateY(8px);opacity:0}15%{transform:none;opacity:1}80%{opacity:1}to{opacity:0}}
