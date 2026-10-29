@@ -320,8 +320,8 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .frow .ptile .plant{bottom:calc(var(--pw,56px) * .22);width:calc(var(--pw,56px) * .42);height:auto}
 .frow .ptile .pn{bottom:calc(var(--pw,56px) * .07)}
 /* the thirsty (drop) and ready (star) badges scale with the pod and sit on a coloured chip so they read at a glance */
-.frow .ptile .tb{animation:tbpop .9s steps(2) infinite;top:calc(var(--pw,56px) * .03);right:calc(var(--pw,56px) * .03);line-height:0;padding:calc(var(--pw,56px) * .04);background:rgba(5,6,11,.85);border:2px solid var(--cyan);box-shadow:0 0 0 1px #05060b,0 0 6px rgba(138,169,189,.55)}
-.frow .ptile .tb img{width:calc(var(--pw,56px) * .34);height:auto;image-rendering:pixelated;filter:brightness(1.5) saturate(1.4)}
+.frow .ptile .tb{animation:tbpop .9s steps(2) infinite;top:calc(var(--pw,56px) * .03);right:calc(var(--pw,56px) * .03);line-height:0;padding:calc(var(--pw,56px) * .03);background:rgba(5,6,11,.85);border:2px solid var(--cyan);box-shadow:0 0 0 1px #05060b,0 0 6px rgba(138,169,189,.55)}
+.frow .ptile .tb img{width:calc(var(--pw,56px) * .22);height:auto;image-rendering:pixelated;filter:brightness(1.5) saturate(1.4)}
 .frow .ptile[data-dome="ready"] .tb{border-color:var(--gold);box-shadow:0 0 0 1px #05060b,0 0 8px rgba(191,174,128,.75);animation:tbpop 1.2s steps(2) infinite}
 @keyframes tbpop{50%{transform:translateY(calc(var(--pw,56px) * -.06))}}
 .frow .ptile.add .plus{top:32%}
