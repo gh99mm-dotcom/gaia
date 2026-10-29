@@ -987,6 +987,21 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 :root[data-skin="light"] .pside{background:#fffaf0;color:#2a2418;border-color:#2a2418}:root[data-skin="light"] .pside-why{color:#2a2418}:root[data-skin="light"] .pside .hint{color:#6a6050}:root[data-skin="light"] .pside .ichip{background:#fff}
 @media (max-width:760px){.profwrap{grid-template-columns:minmax(0,1fr)}.pside-col{grid-template-rows:auto}.pside h4{font-size:12px;white-space:nowrap;gap:4px}.pside h4 span{width:16px;height:16px;font-size:10px}}
 
+.opn{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#000;padding:16px;box-sizing:border-box;color:#e8eeff;animation:opnIn .5s steps(5) both}
+.opn.out{opacity:0;transition:opacity .4s}@keyframes opnIn{from{opacity:0}}
+.opn-stage{position:relative;width:min(100%,1000px);aspect-ratio:16/9;border:3px solid #1a2250;outline:2px solid #0a0e24;background:#000;overflow:hidden;cursor:pointer}
+.opn-stage.fade{animation:opnIn .6s steps(6) both}
+.opn-stage canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+.opn-txt{position:absolute;left:3%;right:3%;bottom:4%;padding:1.4% 2%;background:rgba(6,9,30,.78);border:3px solid #07080e;outline:2px solid #2a3a80;outline-offset:-6px;text-align:left}
+.opn-act{font-family:var(--f-pix);font-size:clamp(9px,1.3vw,12px);letter-spacing:.2em;color:#7fd4ff}
+.opn-ttl{display:block;margin:2px 0 6px;font-size:clamp(14px,2.1vw,20px);font-weight:700;color:#f2c66a;text-shadow:2px 2px 0 #000}
+.opn-body{font-size:clamp(11px,1.55vw,15px);line-height:1.65;white-space:pre-wrap;min-height:3.3em;text-shadow:1px 1px 0 #000;color:#e8eeff}
+.opn-body::after{content:'▌';color:#7fd4ff;animation:blink .8s steps(2) infinite}.opn-body.done::after{content:''}
+.opn-next{position:absolute;right:12px;bottom:6px;font-size:11px;color:#8a9ad8}.opn-next[hidden]{display:none}
+.opn-dots{display:flex;gap:6px}.opn-dots i{width:10px;height:10px;background:#1a2250;border:2px solid #07080e}.opn-dots i.on{background:#f2c66a}
+.opn-skip{position:absolute;top:8px;right:10px;z-index:2;font:inherit;font-size:12px;color:#aab8e8;background:rgba(11,16,48,.85);border:2px solid #2a3a80;padding:3px 9px;cursor:pointer}
+@keyframes blink{50%{opacity:0}}
+
 .relkey{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 2px;font-size:12px;color:var(--mute)}.relkey span{display:inline-flex;align-items:center;gap:5px}.relkey i{width:18px;height:4px;display:inline-block}
 .pnotes{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}
 .ps-trait{--pc:#6ad8b0}.ps-feat{--pc:#7fb8ff}.ps-note{--pc:#ffa860}
@@ -2315,6 +2330,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></section></div>
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
+    <section class="mecard"><span class="lbl">Story · 이야기</span><button class="btn sm ghost" data-act="opreplay">▶ 오프닝 다시 보기</button></section>
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · 언제든 바꿀 수 있습니다</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}"><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
@@ -2359,7 +2375,7 @@ async function connect(){
   mode='online';myRef=db.doc('players/'+uid);
   try{const s=await myRef.get();if(s.exists&&!s.data().deleted){seasonFromDoc=true;P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
-  renderNet();renderAll();seasonWatch();seenSync();loadMySn();
+  renderNet();renderAll();seasonWatch();seenSync();loadMySn();setTimeout(openingOnce,400);
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
   let plT=null;const plDraw=()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()};
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
@@ -4807,6 +4823,73 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(tab==='adv'){const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
 }
+
+/* ───────── opening: the first time a member arrives, three pixel-art acts tell how the 가이아 got here ───────── */
+function playOpening(done){if($('#opening'))return;const op=document.createElement('div');op.id='opening';op.className='opn';op.setAttribute('role','dialog');op.setAttribute('aria-label','오프닝');
+  op.innerHTML=`<div class="opn-stage" id="opnStage"><canvas id="opnCv" width="256" height="144"></canvas><button class="opn-skip" type="button">건너뛰기 ▶▶</button>
+   <div class="opn-txt"><span class="opn-act"></span><b class="opn-ttl"></b><div class="opn-body"></div><span class="opn-next" hidden>▼ 클릭 / Space</span></div></div><div class="opn-dots"></div>`;
+  document.body.appendChild(op);
+  const ACTS=[
+ ['ACT 1 · 발견','우주에서 보내오는 SOS','탐사선은 규칙적으로 반복되는 신호를 포착한다. 신호에는 인간의 통신 체계와 일치하는 패턴이 있지만, 발신 위치는 알려진 항성계 바깥이다.'],
+ ['ACT 2 · 침입','우주의 법칙이 깨지는 순간','신호의 근처에서 중력과 전파의 이상 현상이 나타난다. 계측기는 데이터를 분석하지만, 쌓일수록 기존의 물리 모델과 맞지 않는다. 그 순간, 공간의 균열이 열리고 탐사선은 그 안으로 빨려 들어간다.'],
+ ['ACT 3 · 불시착','이름 모를 암석 행성','균열을 빠져나온 탐사선은 통제를 잃고 낯선 행성으로 떨어진다. 붉은 바위와 먼지뿐인, 어느 성도에도 없는 암석형 행성. 대기는 호흡에 적합하지 않고, 탐사선은 그대로 지표에 처박힌다.']];
+  // the ship as it flies (the game's own hull, seen from above, nose to the right) and the crash site from the 우주선 tab
+  const IMG={};{const st={};SHIP.forEach(q=>st[q.id]=true);const Wd=56,Hd=56,c=document.createElement('canvas');c.width=Wd;c.height=Hd;const x=c.getContext('2d'),M=new Map();
+    for(let y=0;y<Hd;y++)for(let i=0;i<Wd;i++){const vx=i+.5-Wd/2,vy=y+.5-Hd/2,X=20+vy/1.05,Y=22-vx/1.05,col=shipColorAt(X,Y,st);if(col)M.set(y*Wd+i,col)}
+    M.forEach((col,k)=>{x.fillStyle=col;x.fillRect(k%Wd,(k-k%Wd)/Wd,1,1)});M.forEach((_,k)=>{const i=k%Wd,y=(k-i)/Wd;[[0,-1,1],[-1,0,1],[1,0,0],[0,1,0]].forEach(([a,b,lt])=>{if(!M.has((y+b)*Wd+i+a)){x.fillStyle=lt?'#8d7fbf':'#0d0f16';x.fillRect(i+a,y+b,1,1)}})});
+    IMG.fly=c;const bk={};SHIP.forEach(q=>bk[q.id]=false);try{IMG.crash=shipSceneBuild(bk).c}catch(e){IMG.crash=null}}
+  const cv=op.querySelector('#opnCv'),g=cv.getContext('2d'),W=256,H=144,TOP=92;g.imageSmoothingEnabled=false;
+  const R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x|0,y|0,w|0,h|0)},P=(x,y,c)=>R(x,y,1,1,c);
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const STARS=Array.from({length:170},()=>({x:rnd()*W,y:rnd()*H,b:rnd(),s:rnd()<.12}));
+function stars(t,speed=0,warp=0,cx=W/2,cy=TOP/2){STARS.forEach(s=>{let x=(s.x-t*speed*(s.b+.3))%W;if(x<0)x+=W;const tw=(Math.sin(t*3+s.x)+1)/2>.15,c=s.b>.7?'#ffffff':s.b>.4?'#aab8e8':'#4a5890';
+  if(warp){const dx=x-cx,dy=s.y-cy,L=Math.hypot(dx,dy)||1,k=Math.min(16,warp*L/18);g.strokeStyle=c;g.beginPath();g.moveTo(x|0,s.y|0);g.lineTo((x+dx/L*k)|0,(s.y+dy/L*k)|0);g.stroke();return}
+  if(tw)P(x,s.y,c);if(s.s&&tw){P(x-1,s.y,'#4a5890');P(x+1,s.y,'#4a5890')}})}
+// 별무리호: the game's own ship, drawn nose-right; engine glow behind it
+function ship(x,y,flame,rot,k='fly',sc=1){const im=IMG[k];if(!im)return;g.save();g.translate(x|0,y|0);if(rot)g.rotate(rot);if(flame){const f=(performance.now()/90|0)%2;R(-im.width/2-6-f,-2,6+f,4,'#ffd65f');R(-im.width/2-3,-3,3,6,'#4fb8e8')}
+  g.drawImage(im,-im.width*sc/2|0,-im.height*sc/2|0,im.width*sc,im.height*sc);g.restore()}
+function sosWave(x,y,t,col){for(let k=0;k<4;k++){const r=Math.max(.5,(t*16+k*10)%40);g.strokeStyle=col;g.globalAlpha=Math.max(0,1-r/40);g.beginPath();g.arc(x,y,r,Math.PI*.72,Math.PI*1.28);g.stroke()}g.globalAlpha=1}
+function text(s,x,y,c){g.fillStyle=c;g.font='7px monospace';g.fillText(s,x,y)}
+function rift(cx,cy,h,open,t){for(let y=-h;y<=h;y++){const w=Math.max(0,open*(1-Math.abs(y)/h)*12)+Math.sin(y*.9+t*6)*1.2,x=cx+Math.sin(y*.37)*5;
+  R(x-w-1,cy+y,1,1,'#ff9aff');R(x-w,cy+y,w*2,1,'#1a0628');R(x-w*.4,cy+y,w*.8,1,'#3a1060');if(w>3&&((y+t*20|0)%7===0))P(x,cy+y,'#ffffff')}}
+
+  const SCENES=[
+ t=>{R(0,0,W,H,'#03040c');stars(t,3);const sx=236,sy=22,on=(t*2|0)%2===0;R(sx-1,sy-1,3,3,on?'#ff5f6a':'#5a1a20');sosWave(sx,sy,t,'#ff8a92');
+   ship(80+Math.sin(t*.8)*4,46+Math.sin(t*1.3)*2,1);for(let i=0;i<14;i++){const h=(i%4===((t*4)|0)%4)?7:2;R(10+i*4,84-h,2,h,'#7fd4ff')}text('· · · — — — · · ·',150,84,on?'#ff8a92':'#5a2a30')},
+ t=>{R(0,0,W,H,'#05030e');const k=Math.min(1,t/3);stars(t,0,k*2,190,44);const open=Math.min(1,t/2.2);rift(190,44,40,open,t);
+   const m=Math.min(1,Math.max(0,(t-1.2)/2.6)),px=60+m*130,sh=Math.sin(t*40)*1.3;ship(px,44+sh,1,Math.sin(t*10)*.06,'fly',1-m*.55);
+   for(let i=0;i<34;i++){const v=Math.sin(i*.6+t*5)*4+(t>1.5?(rnd()*10-5)*k:0);R(8+i*2,22+v,2,1,'#ffd65f')}text('GRAV ??',8,13,'#ffd65f')},
+ t=>{// crash landing: a nameless rocky planet rushes up, the ship burns in, a flash, then the wreck in settling dust
+   const T1=2.6,T2=3.0;
+   if(t<T1){const k=t/T1,shk=k*2.2,ox=(Math.random()-.5)*shk,oy=(Math.random()-.5)*shk;g.save();g.translate(ox,oy);
+     R(0,0,W,H,'#05040a');stars(0,0);
+     // the planet: a huge cratered limb rising from the bottom, closer every moment
+     const pr=210+k*260,pcx=128,pcy=TOP+pr-30-k*40;
+     for(let y=0;y<H;y++)for(let x=0;x<W;x+=2){const d=Math.hypot(x-pcx,y-pcy);if(d>pr)continue;const e=(pr-d)/pr,n=((x*13+y*7)%11)/11;
+       let c=e<.02?'#e8a070':n>.82?'#5a3a2a':n>.55?'#8a5a3c':'#a06a44';if(((x*31+y*17)%97)<3)c='#3a2418';R(x,y,2,1,c)}
+     g.globalAlpha=.25;R(0,0,W,H,'#ff8a4a');g.globalAlpha=1;
+     // the ship diving in, nose first, with a fire trail
+     const sx=40+k*120,sy=10+k*70;for(let i=0;i<26;i++){const f=i/26,w=9-f*6;g.globalAlpha=(1-f)*.95;R(sx-10-i*3.4-w/2,sy-8-i*2.5-w/2,w,w*.8,i<5?'#fff6c0':i<12?'#ffb050':'#d0582a');g.globalAlpha=1}
+     ship(sx,sy,0,.62);g.restore();return}
+   if(t<T2){R(0,0,W,H,'#ffffff');g.globalAlpha=1-(t-T1)/(T2-T1);R(0,0,W,H,'#ffe0b0');g.globalAlpha=1;return}
+   // aftermath: the game's crash site, shaking less and less, dust rolling out and settling
+   const a=t-T2,shk=Math.max(0,2.5-a*1.4),im=IMG.crash;g.save();g.translate((Math.random()-.5)*shk,(Math.random()-.5)*shk);
+   R(0,0,W,H,'#2a2418');if(im)g.drawImage(im,0,0,256,128);R(0,126,W,18,'#3a2e22');g.restore();
+   g.globalAlpha=Math.max(0,.45-a*.08);R(0,0,W,H,'#c08a5a');g.globalAlpha=1;
+   for(let i=0;i<14;i++){const r=a*22+i*4,ang=i/14*Math.PI*2;g.globalAlpha=Math.max(0,.5-a*.1);R(128+Math.cos(ang)*r*1.6,92+Math.sin(ang)*r*.35,7,4,'#b08860');g.globalAlpha=1}
+   for(let i=0;i<6;i++){const r=(a*10+i*9)%54;g.globalAlpha=Math.max(0,.6-r/90);R(122+Math.sin(i+a)*4,56-r,5,4,'#5a5450');g.globalAlpha=1}
+   if(((a*8)|0)%3===0)for(let i=0;i<3;i++)P(110+((a*97+i*41)%40),70+((a*53+i*17)%18),'#ffd65f')}];
+  const q=sel=>op.querySelector(sel);let act=0,t0=performance.now(),done1=false,raf=0,over=false;
+  function show(i){act=i;t0=performance.now();done1=false;q('.opn-act').textContent=ACTS[i][0];q('.opn-ttl').textContent=ACTS[i][1];q('.opn-body').textContent='';q('.opn-body').classList.remove('done');q('.opn-next').hidden=true;
+    q('.opn-dots').innerHTML=ACTS.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');const s=q('#opnStage');s.classList.remove('fade');void s.offsetWidth;s.classList.add('fade')}
+  function loop(now){if(over)return;const t=Math.max(0,(now-t0)/1000);g.globalAlpha=1;try{SCENES[act](t)}catch(e){}const full=ACTS[act][2];
+    if(!done1){const n=Math.min(full.length,Math.floor(t*28));q('.opn-body').textContent=full.slice(0,n);if(n>=full.length){done1=true;q('.opn-body').classList.add('done');q('.opn-next').hidden=false}}raf=requestAnimationFrame(loop)}
+  function next(){if(!done1){done1=true;q('.opn-body').textContent=ACTS[act][2];q('.opn-body').classList.add('done');q('.opn-next').hidden=false;return}if(act<ACTS.length-1)show(act+1);else finish()}
+  function finish(){if(over)return;over=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done()}
+  const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'){e.preventDefault();finish()}};
+  op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.opn-skip')){finish();return}next()});document.addEventListener('keydown',key,true);
+  show(0);raf=requestAnimationFrame(loop)}
+function openingOnce(){if(!P||P.opSeen||!$('#joinModal').hidden)return;playOpening(()=>{P.opSeen=1;save()})}
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat()}
 
 /* ───────── crew & chat ───────── */
@@ -5001,6 +5084,7 @@ const A={
  notesave(d){const i=$('#noteIn');if(!i||!PNOTE.some(x=>x[0]===d.k))return;P[d.k]=i.value.trim().slice(0,noteMax(d.k));noteEdit=null;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
+ opreplay(){playOpening()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
  metab(d){meTab=d.k==='look'||d.k==='prof'?d.k:'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
@@ -5649,7 +5733,7 @@ setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;
   if(P.joined&&P.nick!=='새 단원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
-  $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence()});
+  $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
 
 /* ───────── bgm ───────── */
 const bgm=new Audio('bgm.mp3');bgm.loop=true;bgm.preload='auto';
