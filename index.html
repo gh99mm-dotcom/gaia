@@ -5882,9 +5882,10 @@ function syncBgm(){bgm.volume=bgmVol/100;const bar=secretView&&bgmOn&&bgmVol>0,b
   if(bar){const m=barMusic();m.volume=bgmVol/100;bgm.pause();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(barBgm)barBgm.pause();
   raidBgmOn=raidBgmWant();if(raidBgmOn){const m=raidMusic();m.volume=bgmVol/100;bgm.pause();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(raidBgm)raidBgm.pause();
   if(bgmOn&&bgmVol>0&&!boss){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
-/* invader theme: a flat, droning loop made on the fly while an invader is up and you're on 탐사 */
+/* invader theme: a flat, droning loop made on the fly while an invader is up */
 let BBGM=null;
-const bossBgmWant=()=>tab==='adv'&&bossAlive(BOSS)&&bgmOn&&bgmVol>0;
+// while an invader is up its theme is the music everywhere (the 원정 battle music and the secret bar still take over in their own places)
+const bossBgmWant=()=>bossAlive(BOSS)&&bgmOn&&bgmVol>0&&!secretView&&!raidLocked();
 function bossBgmStart(){const a=ac();if(!a)return;if(BBGM){BBGM.g.gain.setTargetAtTime(bgmVol/100*.55,a.currentTime,.1);return}
   const g=a.createGain();g.gain.setValueAtTime(.0001,a.currentTime);g.gain.setTargetAtTime(bgmVol/100*.55,a.currentTime,.8);g.connect(a.destination);
   const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=260;lp.Q.value=4;lp.connect(g);const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.07;lg.gain.value=120;lfo.connect(lg).connect(lp.frequency);
