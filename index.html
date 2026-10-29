@@ -3050,8 +3050,8 @@ function bossSubscribe(){
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
   if(!src||(P.bossGot||0)>=src.gen)return;const tot=Object.values(src.dmg).reduce((a,v)=>a+(v.d||0),0)||1,mine=src.dmg[uid].d||0,share=mine/tot;
   // the reward waits in a chest on the 탐사 screen; what is inside is fixed now, the 1% wardrobe roll happens when it is opened
-  // base = 1.5x a same-level raid boss (kill + clear bonus); contribution adds up to another 100% (full at 20% of the damage)
-  const xp=Math.round(raidMonXp(src.lv||P.lvl,'boss')*1.5*1.5*(1+Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
+  // base = 15% of what my current level needs; contribution doubles it up to 30% (full at 20% of the damage)
+  const xp=Math.round(need(P.lvl)*.15*(1+Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
   P.chests=[...(P.chests||[]),{gen:src.gen,name:src.name,share,xp,cr,relic:relicRoll(P.lvl),crystal:src.killer===uid?2:0}].slice(-5);
   log(`${src.name}을(를) 쓰러뜨렸다! 탐사 화면에 보상 상자가 도착했다.`,'rare');commit()}
 // 탐사-only wardrobe drop: 3% base, rising with contribution to 10% at 20%+ of the damage
@@ -3241,7 +3241,7 @@ function bossMainHTML(){const b=BOSS;
     :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
-    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(기본은 같은 레벨 원정 보스의 1.5배, 기여도에 따라 최대 2배까지)와 크레딧(기여도만큼 더)을 받고, 3% 확률로 레벨에 맞는 등급의 고대 신호 기록을 얻습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
+    <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(한 번만 때려도 내 레벨업에 필요한 경험치의 15%, 기여도가 높으면 최대 30%)와 크레딧(기여도만큼 더)을 받고, 3% 확률로 레벨에 맞는 등급의 고대 신호 기록을 얻습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
 // admin page: pick one of the 14 invaders and a level, then summon it
 let bossPick=0;
 function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
