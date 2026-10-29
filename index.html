@@ -1203,7 +1203,7 @@ b.no{color:var(--red)}
 .uptable td.upw{display:flex;align-items:center;gap:4px;white-space:nowrap}.uptable td.upw .wpnimg{image-rendering:auto}
 @media (max-width:480px){.upnow .wpnimg{width:48px;height:48px}}
 .uptable td.upw .wpnfx::after{display:none}
-.jdex{margin-top:12px}.jdexn{font-family:var(--f-pix);color:var(--gold)}.jdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.jdc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;background:var(--deep);border:1px solid var(--line)}.jdc span{font-size:11px;text-align:center;line-height:1.2;word-break:keep-all}.jdq{display:grid;place-items:center;width:32px;height:32px;font-style:normal;font-family:var(--f-pix);font-size:18px;color:var(--dim);border:1px dashed var(--line)}.jdc.no span{color:var(--dim)}
+.jdex{margin-top:12px}.jdexn{font-family:var(--f-pix);color:var(--gold)}.jdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.jdc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;background:var(--deep);border:1px solid var(--line)}.jdc span{font-size:11px;text-align:center;line-height:1.2;word-break:keep-all}.jdc.no img{filter:brightness(0) drop-shadow(0 0 1px #8a9ab466)}.jdc.no span{color:var(--dim)}
 .upboost{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.upboost .hint{flex:1;min-width:140px}.upodds small{color:var(--gold);font-size:11px}
 .upodds{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px}.upodds b{color:var(--gold);font-weight:400}.upodds span{color:var(--mute)}.upodds .drop{color:var(--red)}
 .uptable summary{cursor:pointer;font-size:12px;color:var(--mute)}.uptable table{width:100%;margin-top:6px;border-collapse:collapse;font-size:12px}.uptable th,.uptable td{padding:2px 4px;text-align:left;border-bottom:1px solid var(--line)}.uptable th{color:var(--mute);font-weight:400}.uptable tr.now td{color:var(--gold)}
@@ -3786,11 +3786,11 @@ function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;cons
   {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했습니다.`)}}
   const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0])+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
   stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,got,extra};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
-// 귀중품 도감: every one found so far; the rest stay hidden behind a ? tile
+// 귀중품 도감: every one found so far; the rest show as black silhouettes
 function junkDexHTML(){const got=new Set([...(P.jdex||[]),...JUNK.map(j=>j[0]).filter(id=>P.inv[id]>0)]);
   return`<section class="card jdex"><div class="row" style="justify-content:space-between;gap:8px"><span class="lbl">Field guide · 귀중품 도감</span><b class="jdexn">${got.size} / ${JUNK.length}</b></div>
    <p class="hint" style="margin:4px 0 8px">조사할 때 8% 확률로 귀중품을 줍습니다. 처음 주운 귀중품은 도감에 기록되고, 상점에서 50~120 CR에 팔 수 있습니다.</p>
-   <div class="jdgrid">${JUNK.map(([id,n])=>{const k=got.has(id);return`<div class="jdc${k?'':' no'}" title="${k?esc(n)+' · 판매가 '+sellPrice(id)+' CR':'아직 찾지 못한 귀중품'}">${k?iicon(id,2):'<i class="jdq">?</i>'}<span>${k?esc(n):'???'}</span></div>`}).join('')}</div></section>`}
+   <div class="jdgrid">${JUNK.map(([id,n])=>{const k=got.has(id);return`<div class="jdc${k?'':' no'}" title="${k?esc(n)+' · 판매가 '+sellPrice(id)+' CR':'아직 찾지 못한 귀중품'}">${iicon(id,2)}<span>${k?esc(n):'???'}</span></div>`}).join('')}</div></section>`}
 function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArrive();return}if(tab==='scan'&&sc.mv){const e=$('#scT');if(e)e.textContent=fmtClock(scoutLeft());const me=$('#scMe');if(me){const[x,y]=scoutPos();me.style.left=(x+.5)/SC_W*100+'%';me.style.top=(y-5)/SC_H*100+'%'}}}
 /* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
 // repaired strictly in this order: each section opens once the one before it is finished.
