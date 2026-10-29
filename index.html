@@ -3115,7 +3115,7 @@ const BOSS_KINDS=[
  {n:"황금 군단의 눈 「옴니스」",g:BOSS_G2.omnis,po:{B:'#bfae80',D:'#6a5a34',E:'#ff5f6a',F:'#7a2028',X:'#3a2a12'},hp:1.05,atk:1.05},
  {n:"밤의 사냥꾼 「아비스」",g:BOSS_G2.abyss,po:{B:'#3a3450',D:'#1a1628',E:'#b48ae6',F:'#5a3a8a',X:'#7a6fa0'},hp:1,atk:1.2},
  {n:"불꽃의 화신 「이그나」",g:BOSS_G2.igna,po:{B:'#e0904a',D:'#8a3a1a',E:'#ffffaa',F:'#ffb05f',X:'#4a1a10'},hp:0.9,atk:1.3},
- {n:"세계수를 갉는 자 「니드호그」",g:BOSS_G2.nidhogg,po:{B:'#4a6a3a',D:'#243a1c',E:'#d6ff7f',F:'#6a8a2a',X:'#b0906f'},hp:1.35,atk:1}];
+ {n:"행성핵을 갉아먹는 자 「니드호그」",g:BOSS_G2.nidhogg,po:{B:'#4a6a3a',D:'#243a1c',E:'#d6ff7f',F:'#6a8a2a',X:'#b0906f'},hp:1.35,atk:1}];
 let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='',bossLast=null;
 const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
 const bossKind=b=>BOSS_KINDS[(b&&b.kind)|0]||BOSS_KINDS[0];
