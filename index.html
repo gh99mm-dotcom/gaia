@@ -690,6 +690,8 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .pp-screen{border:3px solid var(--ph-line);background:var(--panel);padding:10px;height:min(640px,72vh);overflow-y:auto;overscroll-behavior:contain;min-width:0;scrollbar-width:thin;scrollbar-color:var(--ph-hi) transparent}.pp-screen::-webkit-scrollbar{width:6px}.pp-screen::-webkit-scrollbar-thumb{background:var(--ph-hi)}
 .pp-bot{height:52px;display:flex;align-items:center;justify-content:center}.pp-home{width:26px;height:26px;border:3px solid var(--ph-line);border-radius:50%;background:var(--ph-hole)}
 @media (max-width:480px){.padphone{border-radius:22px;padding:0 7px}.pp-screen{padding:6px}}
+/* on touch screens the phone's screen grows with its feed instead of trapping the finger in a second scroller */
+@media (pointer:coarse){.pp-screen{height:auto;min-height:min(420px,60vh);overflow:visible}.lounge .bosslog{overscroll-behavior:auto}}
 .crpop{position:fixed;z-index:60;pointer-events:none;font-family:var(--f-pix);font-size:13px;color:var(--gold);text-shadow:1px 1px 0 var(--ink);white-space:nowrap;animation:crpop 1.25s ease-out forwards}
 @keyframes crpop{0%{opacity:0;transform:translateY(6px)}15%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-26px)}}
 @media (prefers-reduced-motion:reduce){.crpop{animation-duration:.01s}}
@@ -2147,6 +2149,12 @@ function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div c
   <div class="row" style="gap:6px"><input id="invMemo" class="sel" maxlength="20" placeholder="누구에게 줄지 메모 (선택)" style="flex:1;min-width:140px"><button class="btn sm gold" data-act="invnew">초대장 발급</button></div>
   ${INV.length?`<div class="fblist">${INV.map(v=>`<div class="fbitem"><div class="row"><b class="invcode">${fmtCode(v.id)}</b><span class="hint">${fbTime(v.at||0)}</span></div>${v.memo?`<span class="hint">${esc(v.memo)}</span>`:''}<div class="row" style="justify-content:flex-end;gap:5px"><button class="btn sm alt" data-act="invcopy" data-k="${esc(v.id)}">안내문 복사</button><button class="btn sm ghost" data-act="invdel" data-k="${esc(v.id)}">취소</button></div></div>`).join('')}</div>`:'<span class="hint">아직 쓰지 않은 초대장이 없습니다.</span>'}</div>${invUsedHTML()}</div></div>`}
 // keep what the admin is typing when snapshots redraw the panel
+let stageTab=null,touchOn=false,scrollAt=0;
+let touchMoved=false;addEventListener('touchstart',()=>{touchOn=true;touchMoved=false},{passive:true,capture:true});addEventListener('touchmove',()=>{touchMoved=true},{passive:true,capture:true});addEventListener('touchend',()=>{touchOn=false;if(touchMoved)scrollAt=Date.now()},{passive:true,capture:true});addEventListener('touchcancel',()=>{touchOn=false},{passive:true,capture:true});addEventListener('scroll',()=>{scrollAt=Date.now()},{passive:true});
+const userScrolling=()=>touchOn||Date.now()-scrollAt<250;
+// on touch screens a redraw under a moving finger cuts the swipe short: background redraws wait until the page has settled
+const TOUCHY=matchMedia('(pointer:coarse)').matches;let scrollWaitT=null;const scrollWaits=new Set();
+function waitScroll(fn){if(!TOUCHY||!userScrolling())return false;scrollWaits.add(fn);if(!scrollWaitT){const go=()=>{if(userScrolling()){scrollWaitT=setTimeout(go,200);return}scrollWaitT=null;const L=[...scrollWaits];scrollWaits.clear();L.forEach(f=>f())};scrollWaitT=setTimeout(go,200)}return true}
 function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},ae=document.activeElement,fid=ae&&box.contains(ae)&&ae.id?ae.id:null,sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   box.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{if(el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value});
   renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
@@ -2155,7 +2163,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
 // background updates (another member saving, new feedback…) must not redraw the admin page under my fingers:
 // while I'm in one of its inputs, selects or textareas — or composing Korean — the redraw waits until I leave the field
 let admPend=false;
-function adminRefresh(){if(!adminShown())return;const ae=document.activeElement,box=$('#adminBox');if(box&&ae&&box.contains(ae)&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){admPend=true;return}admPend=false;renderAdminAll()}
+function adminRefresh(){if(!adminShown()||waitScroll(adminRefresh))return;const ae=document.activeElement,box=$('#adminBox');if(box&&ae&&box.contains(ae)&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){admPend=true;return}admPend=false;renderAdminAll()}
 document.addEventListener('focusout',e=>{if(!admPend)return;const box=$('#adminBox');if(!box||!box.contains(e.target))return;setTimeout(()=>{if(admPend&&!(imeOn))adminRefresh()},0)});
 // the admin page is split into tabs: tools, member management, deleted members; sections say which tab they belong to
 let admTab='tools';
@@ -4784,7 +4792,7 @@ let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
 const KEEP_FOCUS=new Set(['noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg']);
-function renderPanel(){tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
+function renderPanel(){if(waitScroll(renderPanel))return;tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
   renderPanel0();
@@ -4793,9 +4801,6 @@ function renderPanel(){tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP
   // the battle log holds only the last 7 lines, newest last: always show the newest (on phones they wrap past the box)
   {const l=document.getElementById('raidLog');if(l)l.scrollTop=l.scrollHeight}if(kf){const i=document.getElementById(kf);if(i){i.focus({preventScroll:true});if(pos!=null)try{i.setSelectionRange(pos,pos)}catch(e){}}}}
 let barWas=false;
-let stageTab=null,touchOn=false,scrollAt=0;
-let touchMoved=false;addEventListener('touchstart',()=>{touchOn=true;touchMoved=false},{passive:true,capture:true});addEventListener('touchmove',()=>{touchMoved=true},{passive:true,capture:true});addEventListener('touchend',()=>{touchOn=false;if(touchMoved)scrollAt=Date.now()},{passive:true,capture:true});addEventListener('touchcancel',()=>{touchOn=false},{passive:true,capture:true});addEventListener('scroll',()=>{scrollAt=Date.now()},{passive:true});
-const userScrolling=()=>touchOn||Date.now()-scrollAt<250;
 function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView;syncBgm()}
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox')){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll()}else adminRefresh();return}
