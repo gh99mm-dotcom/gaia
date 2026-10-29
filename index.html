@@ -1740,7 +1740,8 @@ const ITEMS={
  relic4:{n:'고대 신호 기록 4급',ic:'scroll',t:'#7fb0d8',type:'relic',xp:1000,sv:80,d:'Lv.20~29에서 발견되는 기록. 해독하면 경험치 +1,000.'},
  relic3:{n:'고대 신호 기록 3급',ic:'scroll',t:'#b090e0',type:'relic',xp:2500,sv:150,d:'Lv.30~39에서 발견되는 기록. 해독하면 경험치 +2,500.'},
  relic2:{n:'고대 신호 기록 2급',ic:'scroll',t:'#ffd65f',type:'relic',xp:6000,sv:300,d:'Lv.40~49에서 발견되는 기록. 해독하면 경험치 +6,000.'},
- invite:{n:'고물상 수제 초대장',ic:'scroll',t:'#c9b98a',type:'keep',bound:1,once:1,d:'고물상 로봇 녹슨 7호가 고철을 두드려 손수 만든 초대장. 산 사람에게 귀속되어 팔거나 보낼 수 없고, 한 계정에 한 장만 살 수 있습니다.'},
+ invite:{n:'고물상 수제 초대장',ic:'scroll',t:'#c9b98a',type:'keep',bound:1,once:1,d:'고물상 로봇 녹슨 7호가 고철을 두드려 손수 만든 초대장. 산 사람에게 귀속되어 팔거나 보낼 수 없고, 한 계정에 한 장만 살 수 있습니다. 오른쪽 버튼을 눌러 사용할 수 있습니다.'},
+ statreset:{n:'능력치 초기화권',ic:'scroll',t:'#8fb8e8',type:'keep',bound:1,once:1,d:'녹슨 7호가 고쳐 쓴 낡은 재조정 칩. 내 정보의 능력치 칸에서 초기화를 누르면 한 장을 써서 능력치 포인트를 모두 돌려받습니다. 귀속 · 한 계정에 한 장만 살 수 있습니다.'},
  relic1:{n:'고대 신호 기록 1급',ic:'scroll',t:'#ff8a5a',type:'relic',xp:12000,sv:600,d:'Lv.50~60에서 발견되는 기록. 해독하면 경험치 +12,000.'},
 };
 /* gather-only materials & crops */
@@ -2399,7 +2400,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
    <div class="megrid"><div class="mecol">
     <section class="mecard"><div class="stat-row"><span class="lbl">Ability · 능력치</span><b class="${ptsFree()?'ptsgo':''}">남은 포인트 ${ptsFree()}</b></div>
      <div class="abrows">${ABIL.map(([k,n,d])=>{const q=abPend[k]||0;return`<div class="abrow${q?' pend':''}"><b>${n}</b><span class="abv">${AS(k)+q}${q?`<small>+${q}</small>`:''}</span><span class="hint">${d}</span><span class="abbtn"><button class="btn sm ghost" data-act="subpt" data-k="${k}" ${q?'':'disabled'} aria-label="${n} 내리기">−1</button><button class="btn sm" data-act="addpt" data-k="${k}" ${ptsFree()?'':'disabled'} aria-label="${n} 올리기">+1</button></span></div>`}).join('')}</div>
-     <div class="row abfoot"><span class="hint" style="flex:1;min-width:160px">${pendSum()?`${pendSum()}포인트를 배분했습니다. 확인을 눌러야 적용됩니다.`:'기본 2씩 + 15포인트로 시작하고 레벨마다 2포인트를 받습니다.'}</span>${pendSum()?'<button class="qchip" data-act="cancelpt">취소</button><button class="btn sm gold" data-act="okpt">확인</button>':''}<button class="qchip" data-act="resetpt">초기화</button></div></section>
+     <div class="row abfoot"><span class="hint" style="flex:1;min-width:160px">${pendSum()?`${pendSum()}포인트를 배분했습니다. 확인을 눌러야 적용됩니다.`:'기본 2씩 + 15포인트로 시작하고 레벨마다 2포인트를 받습니다.'}</span>${pendSum()?'<button class="qchip" data-act="cancelpt">취소</button><button class="btn sm gold" data-act="okpt">확인</button>':''}${P.inv.statreset>0?(resetArm?'<button class="qchip" data-act="resetpt" data-k="no">취소</button><button class="btn sm alt" data-act="resetpt" data-k="go">정말 초기화 (초기화권 1장)</button>':'<button class="qchip" data-act="resetpt">초기화권으로 초기화</button>'):'<button class="qchip" disabled title="상점 › 특별상점에서 능력치 초기화권을 사야 초기화할 수 있습니다.">초기화 (초기화권 필요)</button>'}</div>${P.inv.statreset>0?'':'<span class="hint" style="display:block;margin-top:4px">능력치 초기화는 상점 › 특별상점의 <b>능력치 초기화권</b>(계정당 1장, 1,000 CR)이 있어야 할 수 있습니다.</span>'}</section>
     <section class="mecard"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></section></div>
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',`${WEAPONS[P.wlv]} +${P.wlv}`],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
@@ -4572,7 +4573,7 @@ const DISH_X=1.5,dishSell=id=>{if(ITEMS[id]&&ITEMS[id].tasty)return Math.round(d
 const KEEPER=['어서 와. 오늘도 손님은 너 하나뿐이네.','오, 또 왔구나. 기다리고 있었다고는 안 할게.','어제는 별이 하나 꺼졌어. 너도 봤니?','내 부품도 하나씩 녹슬고 있어. 그래도 장사는 해야지.','크레딧은 충분해? 없으면 구경만 해도 돼.','저 낚싯대, 나도 한번 잡아보고 싶었어.','조용한 게 좋아. 그런데 너무 조용하면 조금 슬퍼.','오늘 입고된 물건? 어제랑 똑같아. 항상 똑같아.','먼지 털어 둔 거야. 거의.','이 궤도엔 신호가 잘 안 잡혀. 그래도 물건은 있어.','팔 거 있으면 줘. 뭐든 언젠가는 쓸모가 있으니까.','예전엔 여기도 붐볐지. 다들 어디로 갔을까.','물고기는 신선할 때 팔아. 냄새가 오래 남거든.','내 이름은 7호야. 1호부터 6호는 본 적 없어.','밤이 길어. 여기선 늘 밤이지만.','창밖 행성은 오늘도 그대로야. 나처럼.','가끔 내 회로에서 옛날 노래가 흘러나와. 가사는 기억 안 나.','손님이 오면 전원을 아껴 둔 보람이 있어.','고장 난 건 고치면 돼. 잊힌 건… 잘 모르겠어.','이 상자는 누가 맡기고 간 거야. 아직 안 찾아갔어.','네가 마지막으로 웃은 게 언제야? 난 웃는 법을 몰라서.','별빛은 아주 오래전에 출발한 거래. 우리가 받는 건 늘 늦은 인사야.','재고 조사를 했어. 세 번. 할 일이 없었거든.','오늘은 운석이 안 떨어졌으면 좋겠다.','기름칠을 좀 해야 하는데. 다음에, 다음에.','나도 언젠가 저 창밖으로 날아가 보고 싶어.','거래 기록을 보면 네 이름이 제일 많아. 고마워.','이 가게 문은 닫힌 적이 없어. 열 사람이 없었거든.','메탄 비가 그치면 조금 덜 외로워져.','네 우주복에 흠집이 늘었네. 조심해.','방금 한 말, 저장해 둘게. 오래 기억하려고.','누군가 여기 있다는 게 좋아. 그게 너라서 더 좋아.','전원이 깜빡여도 놀라지 마. 원래 그래.','지구는 어떤 곳이었을까. 사진으로만 봤어.','싸게 해 줄 수는 없어. 대신 오래 이야기해 줄게.','너무 무리하지 마. 쓰러지면 내가 구해 줄 수가 없어.','오늘 하늘 색은 회색 37번. 어제는 38번이었어.','가끔 빈 선반을 정리해. 정리할 게 없어도.','물건은 많은데, 이야기할 상대는 적어.','다녀와. 기다리는 건 내가 제일 잘하니까.','또 와 줄 거지? 대답 안 해도 알아.','나는 꿈을 꾸지 않아. 대신 대기 모드에서 너를 기다려.','신호가 하나 잡혔다 사라졌어. 누구였을까.','이 볼트, 내 몸에서 빠진 거야. 팔지는 않을 거야.','모든 게 천천히 식어 가. 이 가게도, 저 별도.','네가 산 물건이 네 방을 따뜻하게 해 주면 좋겠어.','한때는 이 궤도에 불빛이 가득했대. 지금은 우리 둘이야.','좋은 하루 보내. 하루라는 게 여기에도 있다면.','안녕, 또 보자. 아마 내일도 여기 있을 거야.'];
 let shopTab='sup',keeperLine=0;
 // 특별상점: one-of-a-kind goods the junk-shop robot makes by hand
-const SPECIAL=[['invite',10000]];
+const SPECIAL=[['invite',10000],['statreset',1000]];
 function itemDesc(id){const it=ITEMS[id];return it.type==='food'?[it.hp?`체력 +${it.hp}`:'',it.en?`에너지 +${it.en}`:''].filter(Boolean).join(' · ')+(it.tier?` · ${it.tier}`:''):(it.d||'')}
 /* ───────── 제작대 (workbench, under the 우주선 tab): weapons, suits and crafted gear moved here from the shop ───────── */
 let benchTab='wpn';
@@ -4841,6 +4842,7 @@ function bagInner(){
   </div>
   </div>`;
 }
+let resetArm=false;
 let meView=false,adminView=false,meTab='me',mlTab='color',secretView=false;
 const adminShown=()=>adminView&&!!$('#adminBox');
 // switching to a shorter tab would shrink the page and snap the view upward; pad the stage just enough to stay put
@@ -5157,7 +5159,9 @@ const A={
  subpt(d){if(!(abPend[d.k]>0))return;abPend=Object.assign({},abPend,{[d.k]:abPend[d.k]-1});if(!abPend[d.k])delete abPend[d.k];renderInfo()},
  cancelpt(){abPend={};renderInfo()},
  okpt(){const n=pendSum();if(!n||n>ptsLeft()){abPend={};renderInfo();return}P.as=Object.assign({},P.as);Object.entries(abPend).forEach(([k,q])=>{if(ABIL.find(a=>a[0]===k))P.as[k]=AS(k)+q});abPend={};log(`능력치 ${n}포인트를 배분했다.`,'good');save();renderInfo();renderPilot()},
- resetpt(){abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
+ resetpt(d){if(!(P.inv.statreset>0)){resetArm=false;toast('상점 › 특별상점에서 능력치 초기화권을 사야 초기화할 수 있습니다.');return}
+  if(d&&d.k==='no'){resetArm=false;renderInfo();return}if(!d||d.k!=='go'){resetArm=true;renderInfo();return}
+  resetArm=false;take('statreset',1);log('능력치 초기화권을 써서 능력치 포인트를 모두 돌려받았다.','good');abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
  noteedit(d){noteEdit=noteEdit===d.k?null:d.k;renderInfo();if(noteEdit)setTimeout(()=>{const i=$('#noteIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},0)},
  notesave(d){const i=$('#noteIn');if(!i||!PNOTE.some(x=>x[0]===d.k))return;P[d.k]=i.value.trim().slice(0,noteMax(d.k));noteEdit=null;save();renderInfo()},
