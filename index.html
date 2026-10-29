@@ -1188,6 +1188,8 @@ b.no{color:var(--red)}
 .slot em{position:absolute;right:3px;bottom:0;font-style:normal;font-family:var(--f-pix);font-size:10px;text-shadow:1px 1px 0 var(--ink)}
 .two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}
 @media (max-width:700px){.two{grid-template-columns:minmax(0,1fr)}}
+.upodds{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px}.upodds b{color:var(--gold);font-weight:400}.upodds span{color:var(--mute)}.upodds .drop{color:var(--red)}
+.uptable summary{cursor:pointer;font-size:12px;color:var(--mute)}.uptable table{width:100%;margin-top:6px;border-collapse:collapse;font-size:12px}.uptable th,.uptable td{padding:2px 4px;text-align:left;border-bottom:1px solid var(--line)}.uptable th{color:var(--mute);font-weight:400}.uptable tr.now td{color:var(--gold)}
 .cost-list{display:flex;flex-direction:column;gap:4px;font-size:12px}
 .cost-list div{display:flex;align-items:center;gap:6px}
 .cost-list .ok{color:var(--green)} .cost-list .no{color:var(--red)}
@@ -1899,7 +1901,10 @@ const ORDER=Object.keys(ITEMS);
 const RELIC_P=.03,RELIC_SCAN_P=.08,relicFor=L=>'relic'+(L>=50?1:L>=40?2:L>=30?3:L>=20?4:L>=10?5:6),relicRoll=(L,p=RELIC_P)=>Math.random()<p?relicFor(L):null;
 // credits: everything that pays out CR (except invader chests and admin gifts) is scaled by this
 const CR_RATE=.3,crs=n=>Math.max(1,Math.round(n*CR_RATE));
-const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자'];
+const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','중력 해머','퀘이사 랜스','펄서 캐논','초신성 대검','특이점 건틀릿','은하 파괴자',
+ '중성자 도끼','감마선 활','타키온 소총','블랙홀 해머','웜홀 절단기','암흑에너지 검','성간 창','엔트로피 낫','시공 절단자','다중우주 지팡이','빅뱅 건틀릿','창세의 별'];
+// chance to go from +n to +n+1; from +5 on, a failed attempt drops the weapon one step
+const UP_P=[100,95,90,85,80,75,70,65,60,55,50,48,46,44,42,40,38,36,34,32],UP_DROP=5;
 const BOSS_IC=['................','.....kkkkkk.....','...kkuuuuuukk...','..kuuuurruuuwk..','.kuruukkkkuuuwk.','.kuuukmmmmkuuwk.','kuuukmzkkzmkuuwk','kurukmkkhkmkruwk','kuuukmkkkkmkuuwk','kuuukmzkkzmkuwwk','.kuuukmmmmkuuwk.','.kwruukkkkuurwk.','..kwwuuuuuuwwk..','...kkwwwwwwkk...','.....kkkkkk.....','................'];
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
@@ -4703,6 +4708,8 @@ function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q
    ${done?'<span class="pstamp">완료</span>':`<button class="btn sm ${ok?'gold':''}" data-act="reqgo" data-k="${i}" ${ok?'':'disabled'}>납품하기</button>`}</div>`}).join('')}${reqSpecialHTML(R)}</div>
   <p class="hint">포스터는 매일 오전 8시와 오후 8시에 새로 붙습니다. 다음 교체까지 <b id="reqT">${fmtClock(reqLeft())}</b> · 남은 의뢰 ${R.list.length-R.done.length}개.</p>`}
 function upCost(n){const c=[['ore',3+2*n],['crystal',1+n]];if(n>=2)c.push(['dark',n-1]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
+// the odds table stays open across the redraws an upgrade causes
+let upTblOpen=false;document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('uptable'))upTblOpen=e.target.open},true);
 function renderBag(){return head()+bagInner()}
 /* ───────── 비밀상점: right-click (or long-press) the handmade invitation and the junk robot, now a bartender, lets you in ───────── */
 const BAR_LINES=['어서 오세요, 손님. …아니, 처음 보는 로봇이라고 해 두죠.','초대장을 가진 분만 들어올 수 있는 곳입니다. 고물상이요? 무슨 말씀이신지.','이 콧수염은 진짜입니다. 정말로요.','오늘 밤은 조용하네요. 비밀 이야기 하기 딱 좋은 날입니다.','메뉴는 곧 준비됩니다. 좋은 물건은 원래 늦게 오는 법이죠.'];
@@ -4770,8 +4777,9 @@ function bagInner(){
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
-   <div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화</div></div>
-   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]}</div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
+   <div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화 · 최대 +${WEAPONS.length-1}</div></div>
+   ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="hint">다음 단계 · ${WEAPONS[n+1]} +${n+1}</div><div class="upodds"><b>성공 확률 ${UP_P[n]}%</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}</div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
+   <details class="uptable" ${upTblOpen?"open":""}><summary>단계별 성공 확률 보기</summary><table><thead><tr><th>강화</th><th>성공</th><th>실패 시</th></tr></thead><tbody>${UP_P.map((p,i)=>`<tr class="${i===n?'now':''}"><td>+${i} → +${i+1}</td><td>${p}%</td><td>${i>=UP_DROP?'1단계 하락':'유지'}</td></tr>`).join('')}</tbody></table></details>
   </div></div><section class="card cook farmcook" id="cook" aria-label="요리"></section>`;
 }
 let meView=false,adminView=false,meTab='me',mlTab='color',secretView=false;
@@ -5250,7 +5258,13 @@ const A={
  sel(d){selItem=d.id;renderPanel()},
  bagtoggle(){bagShow(!bagOpen)},
  use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){const mk=P.job==='medic'?1.5:1,hh=Math.round(it.hp*mk),ee=Math.round(it.en*mk);heal(hh,ee);applyDish(d.id);log(`${it.n}을 먹었다. 체력 +${hh}, 에너지 +${ee}${mk>1?' (의무원)':''}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
- upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');if(P.wlv>=5)sys(`${P.nick} 님이 「${WEAPONS[P.wlv]}」을 완성했습니다.`);commit()},
+ upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;c.forEach(([id,k])=>take(id,k));
+  if(Math.random()*100<UP_P[n]){P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`,'rare');toast(`강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`);sfxFanfare(false);
+   // announce only a new personal best from +10, so falling back and climbing again does not flood the ticker
+   if(P.wlv>=10&&P.wlv>(P.wmax||0))sys(`${P.nick} 님이 「${WEAPONS[P.wlv]} +${P.wlv}」을 완성했습니다.`);P.wmax=Math.max(P.wmax||0,P.wlv)}
+  else if(n>=UP_DROP){P.wlv--;log(`무기 강화 실패… 무기가 1단계 내려갔다. ${WEAPONS[P.wlv]} +${P.wlv}`,'bad');toast(`강화 실패 · +${n} → +${P.wlv}`);sfxStatic()}
+  else{log(`무기 강화 실패… 재료만 사라지고 +${n} 그대로다.`,'bad');toast(`강화 실패 · +${n} 유지`);sfxStatic()}
+  commit()},
 };
 
 /* ═════════ realtime: gifts · fishing duel ═════════ */
