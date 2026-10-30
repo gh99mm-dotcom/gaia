@@ -388,6 +388,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .dtabs{display:flex;gap:4px;flex-wrap:wrap}
 .dtabs button{background:var(--panel2);border:2px solid var(--ink);padding:4px 9px;font-size:12.5px;cursor:pointer}
 .dtabs button em{font-style:normal;font-family:var(--f-pix);font-size:10px;color:var(--gold)}
+.dtabs button .ndot{display:inline-block;width:6px;height:6px;background:#ff4458;border-radius:50%;vertical-align:top;margin-left:2px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 .dtabs button[aria-selected="true"]{background:var(--violetd);box-shadow:inset 0 0 0 1px var(--cyan)}
 .dex div{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-align:center;background:var(--deep);border:2px solid var(--ink);padding:8px 4px}
 .srow .pix.no{filter:brightness(0) opacity(.35)}
@@ -5668,6 +5669,13 @@ function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>dmReadAt(d.from)).l
 function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>p.uid!==uid&&p.at>seen&&(!p.re||p.reUid===uid)).length+dmUnreadAll()}
 // first load on a device: whatever this browser had already read is copied onto the character
 function seenSync(){if(!P||!P.nick)return;let ch=false;if(socSeen>(+P.socSeen||0)){P.socSeen=socSeen;ch=true}const r=Object.assign({},P.dmRead);for(const k in dmRead)if((dmRead[k]||0)>(+r[k]||0)){r[k]=dmRead[k];ch=true}if(ch){P.dmRead=r;save()}}
+// a red dot on the PAD / 만남 tabs while there are posts by others I haven't opened that tab since
+const MEMO_LS='nebula-memo-seen';let memoSeen=0;try{memoSeen=+localStorage.getItem(MEMO_LS)||0}catch(e){}
+const memoSeenAt=()=>Math.max(memoSeen,+(P&&P.memoSeen)||0);
+const socNew=k=>mode==='online'&&!!P&&(k==='pad'?POSTS.some(p=>p.uid!==uid&&p.at>socSeenAt()&&(!p.re||p.reUid===uid)):MEMOS.some(m=>m.uid!==uid&&(+m.at||0)>memoSeenAt()));
+const socDot=k=>socNew(k)?'<i class="ndot" aria-label="새 글"></i>':'';
+function socDots(){['pad','memo'].forEach(k=>{const b=document.querySelector(`[data-act="sotab"][data-k="${k}"]`);if(!b)return;const d=b.querySelector('.ndot'),on=socNew(k)&&!(tab==='social'&&socTab===k);if(on&&!d)b.insertAdjacentHTML('beforeend',socDot(k));else if(!on&&d)d.remove()})}
+function markMemo(){const cur=memoSeenAt(),m=Math.max(cur,...MEMOS.map(x=>+x.at||0));if(m>memoSeen){memoSeen=m;try{localStorage.setItem(MEMO_LS,String(m))}catch(e){}}if(P&&m>(+P.memoSeen||0)){P.memoSeen=m;save()}}
 function markSoc(){const cur=socSeenAt(),m=Math.max(cur,...POSTS.map(p=>p.at||0));if(m>cur||m>socSeen||m>(+P.socSeen||0)){socSeen=m;try{localStorage.setItem(SOC_LS,String(m))}catch(e){}if(m>(+P.socSeen||0)){P.socSeen=m;save()}queueMicrotask(renderNav)}}
 function markDm(peer){const last=Math.max(0,...DMS.filter(d=>d.from===peer&&d.to===uid).map(d=>d.at||0));if(last>dmReadAt(peer)||last>(+((P.dmRead||{})[peer])||0)){dmRead[peer]=Math.max(dmRead[peer]||0,last);try{localStorage.setItem(DM_LS,JSON.stringify(dmRead))}catch(e){}if(last>(+((P.dmRead||{})[peer])||0)){P.dmRead=Object.assign({},P.dmRead,{[peer]:last});save()}queueMicrotask(renderNav)}}
 function socWho(id,nick,sc=2){return`<span class="phead">${headImg(sc,whoP(id))}<span class="who" style="color:${colorOf(id)}">${esc(nick||'단원')}</span>${id===uid?'<span class="hint">(나)</span>':''}</span>`}
@@ -5938,8 +5946,8 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
 </div>`}
 function renderSocial(){
   if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
-  markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['memo','만남'],['crew','조직도'],['rel','관계도'],['rank','랭킹']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['memo','만남'+socDot('memo')],['crew','조직도'],['rel','관계도'],['rank','랭킹']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='rank'?socRank():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>${loungeHTML()}</div>`;
@@ -5966,7 +5974,7 @@ function notiToggle(open){notiPop.hidden=!open;const b=$('#bellBtn');if(b)b.setA
 const notiSnd=new Audio('noti.mp3');notiSnd.preload='auto';let notiSndAt=socBoot;
 function notiChime(){const t=Math.max(0,...padNotis().map(p=>+p.at||0),...memoNotis().map(n=>n.at));if(t<=notiSndAt||t<=(P&&P.notiSeen||0))return;notiSndAt=t;
   sfxNotice(()=>{try{notiSnd.volume=sfxVol/100;notiSnd.currentTime=0;notiSnd.play().catch(()=>{})}catch(e){}})}
-function bellRefresh(keep){const b=$('#bellBtn');if(!b)return;notiChime();const n=notiUnread();b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n);if(!keep&&!notiPop.hidden)notiPop.innerHTML=notiHTML()}
+function bellRefresh(keep){socDots();const b=$('#bellBtn');if(!b)return;notiChime();const n=notiUnread();b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n);if(!keep&&!notiPop.hidden)notiPop.innerHTML=notiHTML()}
 document.addEventListener('click',e=>{if(e.target.closest('#bellBtn')){e.stopPropagation();notiToggle(notiPop.hidden);return}if(!notiPop.hidden&&!e.target.closest('#notiPop'))notiToggle(false)},true);
 addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener('scroll',()=>{if(!notiPop.hidden)notiPlace()},{passive:true});
 function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'단원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'단원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'단원'} 님이 PAD에서 나를 언급했습니다.`)})}
