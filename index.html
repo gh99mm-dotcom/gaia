@@ -1364,7 +1364,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 #socStage .padwrap>.padphone{background:none;border:0;box-shadow:none;padding:0;max-width:none;width:100%;margin:0;border-radius:0}
 #socStage .padphone .pp-top,#socStage .padphone .pp-bot{display:none}
 #socStage .padphone .pp-screen{border:0;height:auto;overflow:visible;padding:0;background:none}
-#socStage .padwrap>.lounge{flex:none;max-width:none;contain:none;min-height:220px}
+#socStage .lounge{flex:none;max-width:none;contain:none;height:min(600px,calc(100vh - 230px));min-height:260px;margin-top:6px}
 .sochandle{pointer-events:auto;position:relative;align-self:center;width:26px;height:112px;margin-left:-3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#111217;border:3px solid #000;border-left:none;border-radius:0 12px 12px 0;color:#a8b0c8;cursor:pointer;padding:0;box-shadow:inset 0 0 0 2px #2a2d38,3px 2px 0 rgba(0,0,0,.35)}
 .sochandle:hover{color:#e6e9f4}
 .shgrip{width:10px;height:6px;background:repeating-linear-gradient(0deg,#4a4e60 0 1px,transparent 1px 3px)}
@@ -2593,7 +2593,7 @@ addEventListener('pagehide',flushNow);document.addEventListener('visibilitychang
 async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();if(SN_PUB&&P.sn!==SN_PUB)P.sn=SN_PUB;await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
 // adm marks a notice sent from the admin side: it pins to the ticker and rings the chime for everyone
 function sys(text,adm,snd){if(mode!=='online'||!TICK_RE.test(text))return;const d={uid,nick:P.nick,text,at:Date.now(),sys:true};if(adm&&isAdmin)d.adm=true;if(snd)d.snd=snd;db.collection('chat').add(d).catch(()=>{})}
-function setPresence(){if(room&&mode==='online')room.presence({uid,nick:P.nick,act:TABS.find(t=>t.id===tab).n}).catch(()=>{})}
+function setPresence(){if(room&&mode==='online')room.presence({uid,nick:P.nick,act:socOpen&&socTab==='chat'?'교류':TABS.find(t=>t.id===tab).n}).catch(()=>{})}
 function goSolo(msg,why){mode='solo';isAdmin=true;$('#adminBtn').hidden=false;FB=P&&P.sugg?[{id:'me',nick:P.nick,list:P.sugg}]:[];setTimeout(updFbBadge,0);if(why){const b=$('#soloBanner');b.innerHTML=`<b>⚠ 진행 상황이 공용 서버에 저장되지 않습니다</b><span>${esc(why)}</span><span>지금은 이 브라우저에만 임시로 저장돼서, 다른 기기로 들어오거나 브라우저 기록이 지워지면 사라질 수 있습니다. 새로고침해도 계속되면 운영자(선장)에게 알려 주십시오.</span>`;b.hidden=false}try{const s=localStorage.getItem(LS);if(s){const o=JSON.parse(s);P=Object.assign(newPlayer('단원'),o);P.fv=o.fv||0}}catch(e){}if(msg)toast(msg);renderNet();renderAll();if(!P.joined||P.nick==='새 단원')showJoin()}
 
 async function connect(){
@@ -2677,7 +2677,7 @@ function renderPilot(){if(pilotBusy())return;
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 /* ───────── 교류 단말기: a terminal that slides out from the left edge; the screen behind stays as it is ───────── */
 let socOpen=false;
-function socDrawer(open,keep){socOpen=!!open;const d=$('#socDock');if(d){d.classList.toggle('open',socOpen);d.querySelector('.sochandle').setAttribute('aria-expanded',socOpen)}if(socOpen){renderSoc();if(!keep){const t=$('#socStage');if(t)t.scrollTop=0}}socBadge()}
+function socDrawer(open,keep){const was=socOpen;socOpen=!!open;if(was!==socOpen)setPresence();const d=$('#socDock');if(d){d.classList.toggle('open',socOpen);d.querySelector('.sochandle').setAttribute('aria-expanded',socOpen)}if(socOpen){renderSoc();if(!keep){const t=$('#socStage');if(t)t.scrollTop=0}}socBadge()}
 const socTop=()=>{const t=$('#socStage');if(t)t.scrollTo({top:0,behavior:'smooth'})};
 function socBadge(){const b=$('#socBadge');if(!b)return;const n=socUnread();b.textContent=n?String(Math.min(99,n)):'';b.hidden=!n||socOpen}
 // redraw the terminal (not while someone is typing in it: that waits for the field to lose focus)
@@ -3296,7 +3296,7 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
 function bossSubscribe(){
   bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint()},()=>{});
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
-  tabSub(()=>socOpen&&socTab==='pad',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='pad')loungePaint()},()=>{}));
+  tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
   staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
@@ -3388,11 +3388,11 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
 /* 교류 lounge: a small live chat for whoever is on the 교류 tab right now, next to the PAD phone (last 40 lines kept) */
 const LOUNGE_MAX=40,loungeRef=()=>db.doc('boss/lounge');let LCHAT=[],loungeDraft='';
 const loungeHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='교류').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
-function loungeLogHTML(){return LCHAT.length?LCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 교류 탭에 있는 단원에게 말을 걸어 보십시오.</li>'}
+function loungeLogHTML(){return LCHAT.length?LCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 대화 탭에 있는 단원에게 말을 걸어 보십시오.</li>'}
 function loungeHTML(){const h=loungeHere();return`<div class="card bosschat lounge"><div class="stat-row"><span>교류 대화</span><b id="lgHere">${h.length}명</b></div><span class="hint" id="lgWho">${h.map(esc).join(', ')}</span>
   <ol class="bosslog" id="lgLog">${loungeLogHTML()}</ol>
-  <form class="bossform" id="lgForm"><input id="lgIn" value="${esc(loungeDraft)}" maxlength="120" autocomplete="off" placeholder="교류 중인 단원에게 말하기" aria-label="교류 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
-  <span class="hint">교류 탭에 있는 단원끼리 이야기합니다. 최근 ${LOUNGE_MAX}개만 남습니다.</span></div>`}
+  <form class="bossform" id="lgForm"><input id="lgIn" value="${esc(loungeDraft)}" maxlength="120" autocomplete="off" placeholder="대화 중인 단원에게 말하기" aria-label="교류 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
+  <span class="hint">대화 탭을 연 단원끼리 이야기합니다. 최근 ${LOUNGE_MAX}개만 남습니다.</span></div>`}
 function loungePaint(){const l=$('#lgLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=loungeLogHTML();if(end)l.scrollTop=l.scrollHeight;const h=loungeHere(),hc=$('#lgHere'),hw=$('#lgWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 function loungeSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t||mode!=='online')return;const m={uid,n:P.nick,t,at:Date.now()};
   return bossTx(loungeRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-LOUNGE_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
@@ -6022,11 +6022,11 @@ function renderSocial(){
   if(mode!=='online')return head('social')+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   if((socTab==='crew'&&!profId)||socTab==='dm'||socTab==='rank')socTab='pad';
   if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],['memo','만남'+socDot('memo')],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
-  return head('social')+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],['chat','대화'],['memo','만남'+socDot('memo')],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  return head('social')+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='chat'?loungeHTML():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
-const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>${loungeHTML()}</div>`;
-function afterSocialRender(){if(socOpen&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}if(socOpen&&socTab==='pad'){const l=$('#lgLog');if(l)l.scrollTop=l.scrollHeight}}
+const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div></div>`;
+function afterSocialRender(){if(socOpen&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}if(socOpen&&socTab==='chat'){const l=$('#lgLog');if(l)l.scrollTop=l.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
     if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'단원'} 님이 인사를 건넸다.`,'good');addAff(g.from,1,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸습니다!`);ch=true}});
@@ -6073,7 +6073,7 @@ const SA={
  memocmdel(d){if(!d.k){memoCmDel=null;renderPanel();return}if(!d.x){memoCmDel=d.k+'|'+d.c;renderPanel();return}memoCmDel=null;memoCmDelete(d.k,d.c)},
  memocm(d){memoOpen=memoOpen===d.k?null:d.k;memoReply=null;renderPanel();if(memoOpen)setTimeout(()=>{const i=$('#memoCmIn');if(i)i.focus()},30)},
  async memodel(d){if(!d.k){memoDelArm=null;renderPanel();return}if(!d.x){memoDelArm=d.k;renderPanel();return}memoDelArm=null;try{await memoRef().doc(d.k).delete()}catch(e){toast('삭제하지 못했습니다.')}renderPanel()},
- sotab(d){socTab=d.k;pdelArm=null;profId=null;profBio=false;if(d.k!=='pad'&&padThread)openThread(null);renderPanel();if(d.k==='dm'&&dmPeer)setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
+ sotab(d){const was=socTab;socTab=d.k;if((was==='chat')!==(d.k==='chat'))setPresence();pdelArm=null;profId=null;profBio=false;if(d.k!=='pad'&&padThread)openThread(null);renderPanel();if(d.k==='dm'&&dmPeer)setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
  padview(d){padView=d.k;padTag='';renderPanel()},
  padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
  memogo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;secretView=false;adminView=false;socTab='memo';socDrawer(true,1);
