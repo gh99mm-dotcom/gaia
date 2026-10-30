@@ -1344,30 +1344,32 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .scfpacts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 @media (max-width:760px){.scui{grid-template-columns:minmax(0,1fr)}.scui .scmap{aspect-ratio:16/10}.scui:not(.on) .scside{position:static}.scui:not(.on) .sclist{position:static}}
 
-/* 교류 단말기: a handle on the left edge; the terminal slides out over the page */
-.socdock{position:fixed;left:0;top:0;bottom:0;z-index:60;display:flex;align-items:center;pointer-events:none;transform:translateX(calc(-1 * min(560px,calc(100vw - 30px))));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+/* 교류 휴대폰: a handle on the left edge; the phone (the same body as the old PAD handset) slides out over the page */
+.socdock{position:fixed;left:0;top:0;bottom:0;z-index:60;display:flex;align-items:center;pointer-events:none;transform:translateX(calc(-1 * min(460px,calc(100vw - 30px)) - 12px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .socdock.open{transform:none}
-.socterm{pointer-events:auto;width:min(560px,calc(100vw - 30px));height:calc(100% - 20px);margin:10px 0;display:flex;flex-direction:column;background:linear-gradient(180deg,#0d1430,#0a0f24);border:2px solid #2e3c74;border-left:none;border-radius:0 14px 14px 0;box-shadow:0 0 0 1px #070a18,6px 0 28px rgba(0,0,0,.55),inset 0 0 0 1px rgba(120,150,255,.08)}
-.stbar{display:flex;align-items:center;gap:7px;padding:8px 12px;border-bottom:1px solid #253064;font-family:var(--f-pix);font-size:11px;color:#8fa4e0;letter-spacing:.5px}
-.stbar b{color:#cdd8ff;font-size:12px}.stbar span{opacity:.75;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stbar .led{width:6px;height:6px;border-radius:50%;background:#3a4a7a}.stbar .led.a{background:#5ae08a;box-shadow:0 0 6px #5ae08a}.stbar .led.b{background:#e0c05a}.stbar .led.c{background:#e06a6a}
-.stclose{background:none;border:1px solid #33407a;color:#9fb0e8;font:inherit;padding:1px 7px;cursor:pointer;border-radius:4px}
-.stglass{position:relative;flex:1;min-height:0;margin:8px;border:1px solid #2a3668;border-radius:8px;background:#0b1024;overflow:hidden;box-shadow:inset 0 0 24px rgba(60,90,200,.12)}
-.stglass::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px);border-radius:8px}
-.socstage{height:100%;overflow-y:auto;overscroll-behavior:contain;border:0!important;background:transparent!important;box-shadow:none!important;margin:0!important;min-height:0!important}
-#socStage .padwrap{flex-direction:column;align-items:stretch}#socStage .padwrap>.padphone{flex:none;width:100%;max-width:420px;margin:0 auto}#socStage .padwrap>.lounge{flex:none;max-width:none;contain:none;min-height:220px}
-.stfoot{display:flex;justify-content:space-between;padding:0 14px 8px;font-family:var(--f-pix);font-size:10px;color:#56669c}
-.sochandle{pointer-events:auto;position:relative;align-self:center;width:28px;height:118px;margin-left:-1px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(180deg,#14204a,#0e1736);border:2px solid #2e3c74;border-left:none;border-radius:0 10px 10px 0;color:#a8b8f0;cursor:pointer;padding:0;box-shadow:3px 0 12px rgba(0,0,0,.45)}
-.sochandle:hover{border-color:#4a5ca8;color:#dfe6ff}
-.shgrip{width:10px;height:6px;background:repeating-linear-gradient(0deg,#4a5a9a 0 1px,transparent 1px 3px)}
-.shico{width:12px;height:12px;border:2px solid currentColor;border-radius:50%;box-shadow:0 0 6px rgba(140,170,255,.5)}
+.socdock .socterm{pointer-events:auto;flex:none;width:min(460px,calc(100vw - 30px));max-width:none;height:calc(100% - 24px);margin:12px 0 12px 12px;display:flex;flex-direction:column;box-sizing:border-box}
+.socterm .pp-top{position:relative;flex:none}
+.stclose{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--ph-line);opacity:.8;font:inherit;font-size:14px;padding:2px 6px;cursor:pointer}
+:root:not([data-skin="light"]) .stclose{color:#6a6e80}
+.stglass{flex:1;min-height:0;border:3px solid var(--ph-line);background:var(--panel);overflow:hidden}
+.socstage{height:100%;overflow-y:auto;overscroll-behavior:contain;border:0!important;background:transparent!important;box-shadow:none!important;margin:0!important;min-height:0!important;padding:10px!important;scrollbar-width:thin}
+.socterm .pp-bot{flex:none;height:46px}
+.socterm .pp-home{cursor:pointer;padding:0}
+/* inside the phone the PAD feed is the screen itself: no second handset */
+#socStage .padwrap{flex-direction:column;align-items:stretch;margin-top:6px}
+#socStage .padwrap>.padphone{background:none;border:0;box-shadow:none;padding:0;max-width:none;width:100%;margin:0;border-radius:0}
+#socStage .padphone .pp-top,#socStage .padphone .pp-bot{display:none}
+#socStage .padphone .pp-screen{border:0;height:auto;overflow:visible;padding:0;background:none}
+#socStage .padwrap>.lounge{flex:none;max-width:none;contain:none;min-height:220px}
+.sochandle{pointer-events:auto;position:relative;align-self:center;width:26px;height:112px;margin-left:-3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#111217;border:3px solid #000;border-left:none;border-radius:0 12px 12px 0;color:#a8b0c8;cursor:pointer;padding:0;box-shadow:inset 0 0 0 2px #2a2d38,3px 2px 0 rgba(0,0,0,.35)}
+.sochandle:hover{color:#e6e9f4}
+.shgrip{width:10px;height:6px;background:repeating-linear-gradient(0deg,#4a4e60 0 1px,transparent 1px 3px)}
+.shico{width:11px;height:11px;border:2px solid currentColor;border-radius:50%}
 .shtxt{writing-mode:vertical-rl;font-family:var(--f-pix);font-size:11px;letter-spacing:2px}
-.sochandle em{position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:#ff4458;color:#fff;font:700 10px/16px var(--f-pix);font-style:normal}
-.socdock.open .sochandle{color:#dfe6ff}
-:root[data-skin="light"] .socterm{background:linear-gradient(180deg,#eef0f6,#e4e7f0);border-color:#b8c0d8}
-:root[data-skin="light"] .stglass{background:#f6f7fb;border-color:#c8cee0}
-:root[data-skin="light"] .stbar{color:#5a6690;border-color:#c8cee0}:root[data-skin="light"] .stbar b{color:#2a3460}
-:root[data-skin="light"] .sochandle{background:linear-gradient(180deg,#e8ebf4,#dde1ec);border-color:#b8c0d8;color:#4a5684}
+.sochandle em{position:absolute;top:-7px;right:-7px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:#ff4458;color:#fff;font:700 10px/16px var(--f-pix);font-style:normal}
+:root[data-skin="light"] .sochandle{background:#fbfaf7;border-color:#8b877f;color:#6a665e;box-shadow:inset 0 0 0 2px #fff}
+:root[data-skin="light"] .shgrip{background:repeating-linear-gradient(0deg,#b8b4ac 0 1px,transparent 1px 3px)}
+@media (max-width:760px){.socdock .socterm{border-radius:22px}}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -1421,7 +1423,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
   </div>
 </div>
 
-<div class="socdock" id="socDock"><aside class="socterm" aria-label="교류 단말기"><div class="stbar"><i class="led a"></i><i class="led b"></i><i class="led c"></i><b>GAIA·COMM</b><span>교류 단말기 · 채널 01</span><button type="button" class="stclose" data-act="socdock" aria-label="단말기 닫기">✕</button></div><div class="stglass"><section class="px stage socstage" id="socStage" aria-live="polite"></section></div><div class="stfoot"><span>SIG ▮▮▮▯</span><span>개척단 공용 회선</span></div></aside><button type="button" class="sochandle" data-act="socdock" aria-expanded="false" aria-label="교류 단말기 열기"><span class="shgrip"></span><span class="shico"></span><span class="shtxt">교류</span><em id="socBadge" hidden></em><span class="shgrip"></span></button></div>
+<div class="socdock" id="socDock"><aside class="socterm padphone" aria-label="교류 휴대폰"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i><button type="button" class="stclose" data-act="socdock" aria-label="교류 닫기">✕</button></div><div class="stglass"><section class="px stage socstage" id="socStage" aria-live="polite"></section></div><div class="pp-bot"><button type="button" class="pp-home" data-act="socdock" aria-label="교류 닫기"></button></div></aside><button type="button" class="sochandle" data-act="socdock" aria-expanded="false" aria-label="교류 열기"><span class="shgrip"></span><span class="shico"></span><span class="shtxt">교류</span><em id="socBadge" hidden></em><span class="shgrip"></span></button></div>
 <div class="modal" id="suggModal" hidden><div class="px infobox" id="suggBox" role="dialog" aria-label="건의함"></div></div>
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <main class="joinpage" id="joinModal" hidden>
