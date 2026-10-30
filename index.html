@@ -5034,7 +5034,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(secretView){$('#stage').innerHTML=secretHTML();startSecretScene();return}
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 정보</button><button role="tab" aria-selected="${meTab==='prof'}" data-act="metab" data-k="prof">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   if(tab==='social'){if(isField(document.activeElement)){socPend=true;return}socPend=false}
-  const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0,ps=document.querySelector('#stage .pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
+  const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0,sds=[...document.querySelectorAll('#stage .seeds')].map(e=>{const b=e.querySelector('[data-i]');return[b?b.dataset.i:'',e.scrollTop]}).filter(x=>x[1]>0),ps=document.querySelector('#stage .pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
   const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,req:renderReq,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
   // redraws must not move the page: the stage keeps its old height while the new content goes in, then lets go only of what is not
   // needed to stay where the reader is (so the browser never clamps the scroll); and the page is only pulled back while no finger
@@ -5050,7 +5050,8 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(!roomShown())leaveRoomSpace();
   if(tab==='gather')startGatherScene();
   if(tab==='bag')renderCook();else if(bagOpen)renderCook();
-  if(tab==='farm'){fitSide();fitBay()}
+  // the seed lists only get their height in fitSide, so their scroll goes back after it
+  if(tab==='farm'){fitSide();fitBay();sds.forEach(([k,t])=>{const b=document.querySelector(`#stage .seeds [data-i="${k}"]`),e=b&&b.closest('.seeds');if(e)e.scrollTop=t})}
   if(tab==='adv'){const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='social')afterSocialRender();
 }
