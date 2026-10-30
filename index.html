@@ -678,7 +678,15 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 @keyframes exglow{50%{border-color:var(--pink)}}
 .asigcard{display:flex;flex-direction:column;gap:8px}.asigcard .sigbox .btn{margin-left:auto}
 .bossact{gap:10px;align-items:center}.bossact .btn{min-width:120px;justify-content:center}
-.bossrank{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:3px}.bossrank li{display:grid;grid-template-columns:22px 1fr auto 52px;gap:6px;align-items:center;font-size:13px}.bossrank li.me{color:var(--gold)}.bossrank em{font-style:normal;font-family:var(--f-pix);font-size:11px;color:var(--mute)}.bossrank small{text-align:right;color:var(--mute)}
+.bossrank{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:3px}.bossrank li{display:grid;grid-template-columns:22px 1fr auto 52px;gap:6px;align-items:center;font-size:13px}.bossrank li.me{color:var(--gold)}
+.bossjobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:6px 0}
+.bossjob{border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:6px 8px;min-width:0}
+.bossjob .bossrank{margin:4px 0 0}
+.bossjob .bossrank li{grid-template-columns:18px minmax(0,1fr) auto 44px}
+.bossjob .bossrank span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bjhd{display:flex;justify-content:space-between;align-items:baseline;gap:6px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.bjhd b{color:var(--jc)}
+.bjhd span{font-size:12px;color:var(--mute)}.bossrank em{font-style:normal;font-family:var(--f-pix);font-size:11px;color:var(--mute)}.bossrank small{text-align:right;color:var(--mute)}
 .bosschat{display:flex;flex-direction:column;gap:6px;min-width:0;min-height:420px}
 .bosslog{list-style:none;margin:0;padding:6px 8px;flex:1;min-height:240px;max-height:440px;overflow:auto;background:var(--deep);border:2px solid var(--ink);display:flex;flex-direction:column;gap:4px;font-size:13px}
 .bosslog li{display:flex;flex-wrap:wrap;gap:0 6px;align-items:baseline;overflow-wrap:anywhere}.bosslog li b{color:var(--cyan);font-weight:400;display:inline-flex;align-items:center;gap:5px}.bosslog li b img{flex:none}.bosslog li.me b{color:var(--gold)}.bosslog li span{flex:1 1 100%}.bosslog time{font-size:11px;color:var(--dim);margin-left:auto}.bosslog li span{order:3}
@@ -3375,7 +3383,7 @@ function bossMainHTML(){const b=BOSS;
     :b.gone?`<div class="card"><b>침략자가 물러났습니다</b><p class="hint">운영자가 ${esc(b.name)}을(를) 심연으로 돌려보냈습니다. 다음 침략자를 기다리십시오.</p></div>`
     :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
-    ${rk.length?`<ol class="bossrank">${rk.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
+    ${rk.length?bossJobRank(rk,tot):'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
     <p class="hint">쓰러뜨리면 공격한 모든 단원이 경험치(한 번만 때려도 내 레벨업에 필요한 경험치의 15%, 기여도가 높으면 최대 30%)와 크레딧(기여도만큼 더)을 받고, 3% 확률로 레벨에 맞는 등급의 고대 신호 기록을 얻습니다. 마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
 // admin page: pick one of the 14 invaders and a level, then summon it
 let bossPick=0;
@@ -3386,6 +3394,10 @@ function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(
     <div class="row" style="gap:6px;align-items:center"><span class="hint">레벨</span><input id="admBossLv" class="sel" type="number" min="1" max="99" value="${lv}" style="width:70px" aria-label="침략자 레벨"><span class="hint" id="admBossHp">체력 ${bossHpFor(lv,bossPick).toLocaleString()}</span><button class="btn sm gold" data-act="admboss">소환</button></div>
     <span class="hint">소환하면 2시간 안에 토벌해야 합니다. 실패하면 모든 단원의 체력과 에너지가 1이 됩니다.</span>`}</div>`}
 function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 단원에게 인사해 보십시오.</li>'}
+// damage ranking split by job: each column ranks its own crew, with the job's share of all damage in the header
+function bossJobRank(rk,tot){const jobOf=u=>{const j=u===uid?P.job:(PLAYERS[u]||{}).job;return OLDJOB[j]||j||''},G=['mech','nav','medic'].map(j=>[j,rk.filter(([u])=>jobOf(u)===j)]),etc=rk.filter(([u])=>!JOBS[jobOf(u)]);if(etc.length)G.push(['',etc]);
+  return`<div class="bossjobs">${G.map(([j,L])=>{const sum=L.reduce((a,[,v])=>a+v.d,0);return`<div class="bossjob" style="--jc:${j?`var(--job-${j})`:'var(--mute)'}"><div class="bjhd"><b>${j?JOBS[j].n:'직업 미정'}</b><span>${L.length}명 · ${(sum/tot*100).toFixed(1)}%</span></div>
+    ${L.length?`<ol class="bossrank">${L.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">아직 없습니다.</p>'}</div>`}).join('')}</div>`}
 function renderBoss(){const here=bossHere();
   return head()+`<div class="bossgrid"><div class="bossmain" id="bossMain">${chestHTML()}${bossMainHTML()}</div>
    <div class="card bosschat"><div class="stat-row"><span>탐사 대화</span><b id="bossHere">${here.length}명</b></div><span class="hint" id="bossWho">${here.map(esc).join(', ')}</span>
