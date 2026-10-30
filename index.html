@@ -1222,6 +1222,7 @@ b.no{color:var(--red)}
 .mav{flex:none;display:grid;place-items:center;width:30px;height:30px;background:var(--panel2);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),1px 1px 0 var(--ink)}.mav img{image-rendering:pixelated;max-width:26px;max-height:26px}
 .memohd time,.mcmh time,.memodate{font-family:var(--f-pix);letter-spacing:.03em}.memocmbtn b{font-family:var(--f-pix)}
 .memohd{display:flex;align-items:center;gap:8px;min-width:0}.memohd b{font-size:14px}.memohd time{font-size:11px}.memohd #memoCnt{margin-left:auto}.memodate{margin-left:auto}
+.memopager{display:flex;justify-content:center;gap:4px;margin:10px 0 2px;flex-wrap:wrap}.mpg{font-family:var(--f-pix);font-size:12px;min-width:28px;padding:4px 7px;background:var(--deep);color:var(--mute);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}.mpg:hover:not(:disabled){color:var(--text)}.mpg.on{color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}.mpg:disabled{opacity:.35;cursor:default}
 .mlink{background:none;border:0;padding:0 2px;font:inherit;font-size:12px;color:var(--mute);cursor:pointer}.mlink:hover{color:var(--text);text-decoration:underline}.mlink.red{color:var(--red)}.memomod{display:inline-flex;align-items:center;gap:3px;font-size:12px}.memomod i,.memobar i{font-style:normal;color:var(--dim);font-size:10px}
 .memobar{display:flex;align-items:center;gap:6px;margin:8px 0 0}.memocmbtn{font-size:13px}.memocmbtn b{color:var(--red);font-weight:700}.memocmbtn.on{color:var(--text)}
 .mcm{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-bottom:1px dashed var(--line)}.mcm:last-child{border-bottom:0}.mcm.rep{padding-left:26px}.mcmarr{color:var(--dim);font-size:12px;margin-top:4px}.mcmb{flex:1;min-width:0}
@@ -5623,15 +5624,15 @@ function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.fr
   // each message carries its sender's portrait; a run of messages from the same person shows it once
   return ms.length?ms.map((d,i)=>{const me=d.from===uid,first=!i||ms[i-1].from!==d.from;return`<div class="dmrow ${me?'me':''}"><span class="dmav">${first?headImg(3,whoP(d.from)):''}</span><div class="dmb ${me?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div></div>`}).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
 /* ---- 만남 (memo board): a memo board like a Naver cafe's, newest first, with short comments under each memo ---- */
-const MEMO_MAX=1500,MEMO_CM=1500,MEMO_N=60;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false,memoReply=null,memoCmDel=null,memoEdit=null,memoSort='old';
+const MEMO_MAX=1500,MEMO_CM=1500,MEMO_N=100,MEMO_PG=5;let memoPage=0;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false,memoReply=null,memoCmDel=null,memoEdit=null,memoSort='old';
 // comments are kept flat on the memo ({id,pid,...}); pid points at the comment being answered, so replies can go as deep as people like
 const memoCms=m=>(m.cm||[]).map((c,i)=>c&&Object.assign({id:'o'+i},c)).filter(Boolean);
 const memoRef=()=>db.collection('memos');
 tabSub(()=>tab==='social'&&socTab==='memo',()=>memoRef().orderBy('at','desc').limit(MEMO_N).onSnapshot(sn=>{MEMOS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='social'&&socTab==='memo'&&!isField(document.activeElement))renderPanel()},()=>{}));
 function memoStamp(t){const d=new Date(+t||0);return`${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
 function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">만남은 온라인에 접속했을 때 쓸 수 있습니다.</p>';
-  const L=MEMOS.filter(m=>m&&m.text);
-  return`<p class="lead">만남 게시판입니다. 인사나 하고 싶은 이야기를 남기고, 다른 단원의 메모에 댓글을 달 수 있습니다. 최근 ${MEMO_N}개가 보입니다.</p>
+  const A=MEMOS.filter(m=>m&&m.text),pages=Math.max(1,Math.ceil(A.length/MEMO_PG));if(memoPage>=pages)memoPage=pages-1;const L=A.slice(memoPage*MEMO_PG,memoPage*MEMO_PG+MEMO_PG);
+  return`<p class="lead">만남 게시판입니다. 인사나 하고 싶은 이야기를 남기고, 다른 단원의 메모에 댓글을 달 수 있습니다. 한 쪽에 ${MEMO_PG}개씩 보입니다.</p>
   <div class="card memonew"><div class="memohd"><span class="mav">${headImg(2,P)}</span><b>${esc(P.nick)}</b><span class="hint" id="memoCnt">${memoDraft.length}/${MEMO_MAX}</span></div>
    <textarea id="memoIn" class="sel memota" maxlength="${MEMO_MAX}" placeholder="메모를 남겨 주세요. (${MEMO_MAX}자까지 · Ctrl+Enter로 등록)" aria-label="메모 내용">${esc(memoDraft)}</textarea>
    <div class="row" style="justify-content:flex-end"><button class="btn sm gold" data-act="memopost" ${memoBusy?'disabled':''}>등록</button></div></div>
@@ -5641,9 +5642,13 @@ function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px
       ${ed?memoEditBox(m.id,'',m.text,MEMO_MAX):`<p class="memotx">${esc(m.text)}</p>`}
       <div class="memobar"><button class="mlink memocmbtn${op?' on':''}" data-act="memocm" data-k="${esc(m.id)}" aria-expanded="${op}">${op?'⌃':'⌄'} 댓글 <b>${live}</b></button>${op?`<i>|</i><button class="mlink" data-act="memosort">${memoSort==='new'?'최신순':'등록순'} ▾</button>`:''}</div>
       ${op?`<div class="memocms">${memoThread(m,cms)}${memoReply===null||!cms.some(c=>c.id===memoReply)?memoCmBox(m.id,'',false):''}</div>`:''}
-    </article>`}).join(''):'<p class="empty" style="padding:18px">아직 글이 없습니다. 첫 글을 남겨 보십시오.</p>'}</div>`}
+    </article>`}).join(''):'<p class="empty" style="padding:18px">아직 글이 없습니다. 첫 글을 남겨 보십시오.</p>'}</div>${pages>1?memoPager(pages):''}`}
+// page numbers under the board, cafe style: ‹ 1 2 3 … ›
+function memoPager(n){const cur=memoPage,lo=Math.max(0,Math.min(cur-2,n-5)),hi=Math.min(n,lo+5);let h=`<button class="mpg" data-act="memopage" data-k="${cur-1}" ${cur>0?'':'disabled'} aria-label="이전 쪽">‹ 이전</button>`;
+  for(let i=lo;i<hi;i++)h+=`<button class="mpg${i===cur?' on':''}" data-act="memopage" data-k="${i}" aria-current="${i===cur?'page':'false'}">${i+1}</button>`;
+  return`<nav class="memopager" aria-label="쪽 이동">${h}<button class="mpg" data-act="memopage" data-k="${cur+1}" ${cur<n-1?'':'disabled'} aria-label="다음 쪽">다음 ›</button></nav>`}
 async function memoPost(){if(mode!=='online'||memoBusy)return;const t=String(($('#memoIn')||{}).value??memoDraft).trim().slice(0,MEMO_MAX);if(!t){toast('메모 내용을 적어 주십시오.');return}
-  const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});memoDraft='';stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
+  const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});memoDraft='';memoPage=0;stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
 function memoCmBox(mid,pid,reply){return`<div class="memocmin${reply?' rep':''}"><span class="mav">${headImg(2,P)}</span><textarea id="memoCmIn" class="sel" rows="2" maxlength="${MEMO_CM}" data-k="${esc(mid)}" data-p="${esc(pid)}" placeholder="${reply?'답글':'댓글'}을 남겨 보세요 (${MEMO_CM}자까지 · Enter로 등록, Shift+Enter 줄바꿈)" aria-label="${reply?'답글':'댓글'}">${esc(memoCm[mid+'|'+pid]||'')}</textarea><button class="btn sm" data-act="memocmpost" data-k="${esc(mid)}" data-p="${esc(pid)}">등록</button>${reply?`<button class="mlink" data-act="memoreply" data-k="">취소</button>`:''}</div>`}
 function memoEditBox(mid,cid,text,max){return`<div class="memoedit"><textarea id="memoEdIn" class="sel memota" maxlength="${max}" data-k="${esc(mid)}" data-c="${esc(cid)}" aria-label="수정할 내용">${esc(text)}</textarea><div class="row" style="justify-content:flex-end;gap:5px"><button class="mlink" data-act="memoedit" data-k="">취소</button><button class="btn sm gold" data-act="memosave" data-k="${esc(mid)}" data-c="${esc(cid)}">저장</button></div></div>`}
 // cafe-style thread: top-level comments, and every answer below its top-level comment one step in, tagged with whom it answers
@@ -5859,6 +5864,7 @@ const SA={
  memocmpost(d){memoCmPost(d.k,d.p||'')},
  memoedit(d){memoEdit=d.k?d.k+'|'+(d.c||''):null;renderPanel();if(memoEdit)setTimeout(()=>{const i=$('#memoEdIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},30)},
  memosave(d){memoSave(d.k,d.c||'')},
+ memopage(d){memoPage=Math.max(0,+d.k||0);memoOpen=null;memoReply=null;memoEdit=null;renderPanel();const l=document.querySelector('.memolist');if(l)l.scrollIntoView({block:'nearest'})},
  memosort(){memoSort=memoSort==='new'?'old':'new';renderPanel()},
  memoreply(d){memoReply=d.k||null;renderPanel();setTimeout(()=>{const i=$('#memoCmIn');if(i)i.focus()},30)},
  memocmdel(d){if(!d.k){memoCmDel=null;renderPanel();return}if(!d.x){memoCmDel=d.k+'|'+d.c;renderPanel();return}memoCmDel=null;memoCmDelete(d.k,d.c)},
