@@ -453,8 +453,13 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .sclbl{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-pix);font-size:11px;line-height:1;color:#fff;background:rgba(5,6,11,.62);padding:2px 4px;white-space:nowrap;pointer-events:none}
 @media (max-width:480px){.sclbl{display:none}}
 @keyframes scpulse{50%{outline-color:rgba(240,199,90,.25)}}@media (prefers-reduced-motion:reduce){.scn.go{animation:none}}
-.sctrails{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}.sctr{display:flex;flex-direction:column;gap:4px;padding:8px 10px}.sctr .tn{display:flex;align-items:center;gap:6px;font-weight:700}.sctr .sw{width:10px;height:10px;border:1px solid var(--ink);flex:none}
-.scdots{display:flex;gap:3px}.scdots i{width:14px;height:6px;background:var(--line,#333);display:block;box-shadow:0 2px 0 var(--r,transparent)}
+.sctrails{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:8px}
+/* phones: the five trails stay on one row and slide sideways */
+@media (max-width:760px){.sctrails{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(168px,46%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}.sctrails>.sctr{scroll-snap-align:start}}.sctr{display:flex;flex-direction:column;gap:4px;padding:8px 10px;min-width:0}
+.sctr .tn{flex-wrap:wrap;row-gap:0}.sctr .tn small{font-weight:400}
+.sctr>.hint{font-size:11px;line-height:1.45}
+.sctr>.btn{margin-top:auto;align-self:flex-start}.sctr .tn{display:flex;align-items:center;gap:6px;font-weight:700}.sctr .sw{width:10px;height:10px;border:1px solid var(--ink);flex:none}
+.scdots{display:flex;gap:2px}.scdots i{flex:1;min-width:0;max-width:14px;height:6px;background:var(--line,#333);display:block;box-shadow:0 2px 0 var(--r,transparent)}
 .scrough{display:inline-block;font-size:11px;font-weight:700;padding:0 5px;margin-left:4px;color:var(--c);border:1px solid var(--c);vertical-align:middle}
 .scway{margin:4px 0 0;font-size:12px;color:var(--text);opacity:.85;line-height:1.5}.scway .scrough{margin:0 4px 0 0}.scdots i.on{background:#f0c75a}.scdots i.here{background:#fff;outline:1px solid #f0c75a}
 .scmove{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.scmove b{font-family:var(--f-pix)}
