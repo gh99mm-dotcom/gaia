@@ -1372,6 +1372,25 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 :root[data-skin="light"] .sochandle{background:#fbfaf7;border-color:#8b877f;color:#6a665e;box-shadow:inset 0 0 0 2px #fff}
 :root[data-skin="light"] .shgrip{background:repeating-linear-gradient(0deg,#b8b4ac 0 1px,transparent 1px 3px)}
 @media (max-width:760px){.socdock .socterm{border-radius:22px}}
+
+/* the ranking inside the 교류 phone: one compact card per ranking, stacked */
+#socStage .rkgrid{grid-template-columns:minmax(0,1fr);gap:8px;margin-top:6px}
+#socStage .rkcard{padding:7px 8px;gap:5px}
+#socStage .rkbn b{font-size:13px}
+#socStage .rktop{grid-template-columns:62px minmax(0,1fr);gap:8px}
+#socStage .rkport{height:70px;padding-bottom:4px}
+#socStage .rkthrone{height:64px}
+#socStage .rkchar{margin-bottom:3px}#socStage .rkchar img{max-height:44px}
+#socStage .rksp{width:8px;height:8px}
+#socStage .rkhead{gap:3px}#socStage .rkhead .rk1{font-size:13px;padding-bottom:3px}#socStage .rkhead .namebtn{font-size:13px}#socStage .rkhead .rkv{font-size:11px}
+#socStage .rklist li{grid-template-columns:30px 22px minmax(0,1fr) auto;gap:5px;padding:1px 5px;font-size:12px}
+#socStage .rkface{width:22px;height:22px}#socStage .rkface img{height:17px}
+#socStage .rkmine{font-size:12px;padding-top:4px}
+#socStage .rklist li,#socStage .rklist li:nth-child(-n+2){grid-template-columns:42px 22px minmax(0,1fr) auto;padding:1px 5px}
+#socStage .rklist .no,#socStage .rklist li:nth-child(-n+2) .no{font-size:11px;white-space:nowrap}
+#socStage .rklist .rkmd img{height:12px;width:auto}
+#socStage .rklist .namebtn,#socStage .rklist li:nth-child(-n+2) .namebtn{font-size:12px;font-weight:400}
+#socStage .rklist b,#socStage .rklist li:nth-child(-n+2) b{font-size:11px}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
