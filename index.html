@@ -1082,9 +1082,11 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 @media (max-width:900px){.rkgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}@media (max-width:620px){.rkgrid{grid-template-columns:minmax(0,1fr)}}
 :root[data-skin="light"] .relmap{background:radial-gradient(ellipse at 50% 50%,#fbfaf7 0 35%,var(--deep) 75%)}
 :root[data-skin="light"] .rellab{background:rgba(251,250,247,.94)}
-.relnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel);border:2px solid var(--ink);padding:3px 5px 2px;cursor:pointer;color:var(--text);font:inherit;z-index:2}
-.relnode:hover{box-shadow:inset 0 0 0 1px var(--cyan)}
-.relnode.center{border-color:var(--gold);z-index:3}.relnode.me .nm{color:var(--gold)}
+/* relation-map people: just the face and the name, no box; a dark halo keeps the name readable over the lines */
+.relnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;background:none;border:0;padding:1px 2px;cursor:pointer;color:var(--text);font:inherit;z-index:2}
+.relnode:hover .nm{color:var(--cyan)}
+.relnode .nm{text-shadow:0 0 2px var(--deep),0 0 3px var(--deep),1px 1px 0 var(--deep),-1px -1px 0 var(--deep),1px -1px 0 var(--deep),-1px 1px 0 var(--deep)}
+.relnode.center{z-index:3}.relnode.center .nm{color:var(--gold);font-weight:700;background:color-mix(in srgb,var(--deep) 82%,transparent);padding:0 5px;border-radius:3px}.relnode.center .orgface{filter:drop-shadow(0 0 4px rgba(255,214,95,.55))}.relnode.me .nm{color:var(--gold)}
 .relnode .orgface{height:20px;background:none}.relnode .nm{font-size:11px;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rellab{position:absolute;transform:translate(-50%,-50%);font-size:11.5px;line-height:1.3;padding:0 4px;background:rgba(6,7,13,.88);border:1px solid var(--line);white-space:nowrap;pointer-events:none;z-index:1}
 .relmap.compact .relnode .nm{max-width:54px}
