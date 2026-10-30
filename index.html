@@ -4752,7 +4752,7 @@ function benchHTML(){const tabs=[['wpn','보조무기'],['up','무기 강화'],[
 function benchWornHTML(){const w=WPNS.find(x=>x.id===P.wpn),su=SUITS[P.suit||0]||SUITS[0];
   const row=(icon,slot,name,d,off)=>`<div class="bwrow ${off?'off':''}">${icon}<div class="sinfo"><span class="hint">${slot}</span><b>${esc(name)}</b>${d?`<span class="hint">${esc(d)}</span>`:''}</div></div>`;
   return`<aside class="card benchworn"><span class="lbl">착용 중</span>
-   ${row(wpnImg(P.wlv||0,32),'주무기',`${WEAPONS[P.wlv||0]} +${P.wlv||0}`,`공격 +${(P.wlv||0)*5}`)}
+   ${row(wpnImg(P.wlv||0,32),'주무기',`${WEAPONS[P.wlv||0]} +${P.wlv||0}`,`공격 +${wAtk(P.wlv||0)}`)}
    ${row(w?img(TPL[w.ic],w.t,2):'<i class="bwnone"></i>','보조무기',w?w.n:'없음',w?w.d.replace(' · 채집에서만 발견',''):'보조무기 탭에서 사서 장착할 수 있습니다.',!w)}
    ${row(suitImg(P.suit||0),'우주복 · '+SUIT_MK[P.suit||0],su.n,su.def?`방어 +${su.def}${su.en?` · EN +${Math.round(su.en*100)}%`:''}`:su.d)}
    ${accOf().map((id,k)=>{const f=accById(id);return row(accImg(id),'장신구'+(k+1),f?f.n:'없음',f?f.d:'우주복·장신구 탭에서 만들어 낄 수 있습니다.',!f)}).join('')}
