@@ -1476,7 +1476,7 @@ window.claude={use:async n=>{const api=await window.__fb;return api[n]||null}};
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,deleteUser,connectAuthEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {initializeFirestore,doc,collection,getDoc,getDocs,setDoc,addDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,writeBatch,increment,runTransaction,connectFirestoreEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {initializeFirestore,doc,collection,getDoc,getDocs,setDoc,addDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,writeBatch,increment,runTransaction,serverTimestamp,connectFirestoreEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {getStorage,ref as sref,uploadBytes,deleteObject,connectStorageEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig={
@@ -1540,15 +1540,19 @@ function makeQuery(path,w=[],o=null,l=0){
 const db={doc:makeDoc,collection:p=>makeQuery(p)};
 
 /* ---- room: presence + short-lived events, kept in Firestore ---- */
-const ROOMS=new Set(),STALE=150e3;let ME=null;
+// liveness is judged on the server's clock: every heartbeat also carries a server timestamp (st), and each client learns how far
+// its own clock is off from the echo of its own heartbeat, so a phone or PC whose clock is minutes off no longer shows people offline
+const ROOMS=new Set(),STALE=150e3;let ME=null,clockOff=0;
+const stMs=d=>d&&d.st&&typeof d.st.toMillis==='function'?d.st.toMillis():0;
 function makeRoom(name){
   const peersC=collection(fs,'rooms',name,'peers'),evC=collection(fs,'rooms',name,'events'),me=doc(peersC,ME.uid);
   let state={},wT=null,lastW=0,peerFns=[],peerDocs=[],unE=null,handlers={},left=false;const seen=new Set(),joined=Date.now();
-  const emitPeers=()=>{const now=Date.now(),peers=peerDocs.filter(d=>d.id===ME.uid||now-(d.ts||0)<STALE).map(d=>({id:d.id,presence:d.p||{},isMe:d.id===ME.uid}));peerFns.forEach(f=>{try{f({peers})}catch(e){console.error(e)}})};
-  const flush=()=>{lastW=Date.now();return setDoc(me,{p:state,ts:Date.now()}).catch(()=>{})};
+  const emitPeers=()=>{const now=Date.now(),sNow=now+clockOff,peers=peerDocs.filter(d=>d.id===ME.uid||(stMs(d)?sNow-stMs(d):now-(d.ts||0))<STALE).map(d=>({id:d.id,presence:d.p||{},isMe:d.id===ME.uid}));peerFns.forEach(f=>{try{f({peers})}catch(e){console.error(e)}})};
+  const flush=()=>{lastW=Date.now();return setDoc(me,{p:state,ts:Date.now(),st:serverTimestamp()}).catch(()=>{})};
   const write=()=>{if(left)return;clearTimeout(wT);wT=setTimeout(flush,Math.max(0,1200-(Date.now()-lastW)))};
   const hb=setInterval(()=>{if(!left)flush()},60e3),tick=setInterval(emitPeers,30e3);
-  const unP=onSnapshot(peersC,qs=>{peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));emitPeers()},()=>{});
+  const unP=onSnapshot(peersC,{includeMetadataChanges:true},qs=>{peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));const mine=qs.docs.find(d=>d.id===ME.uid&&!d.metadata.hasPendingWrites);if(mine){const v=mine.data(),st=stMs(v);if(st&&v.ts&&Date.now()-v.ts<30e3)clockOff=st-v.ts}emitPeers()},()=>{});
+  const onVis=()=>{if(!left&&document.visibilityState==='visible'){flush();emitPeers()}};document.addEventListener('visibilitychange',onVis);
   const api={
     presence:async patch=>{for(const k in patch){if(patch[k]==null)delete state[k];else state[k]=patch[k]}write()},
     onPeers:fn=>{peerFns.push(fn);if(peerDocs.length)fn&&emitPeers();return()=>{peerFns=peerFns.filter(f=>f!==fn)}},
@@ -1556,9 +1560,11 @@ function makeRoom(name){
     on:(topic,fn)=>{(handlers[topic]=handlers[topic]||[]).push(fn);
       if(!unE)unE=onSnapshot(query(evC,orderBy('ts','desc'),limit(40)),qs=>{qs.docChanges().forEach(ch=>{if(ch.type!=='added')return;const v=ch.doc.data();if(seen.has(ch.doc.id)||(v.ts||0)<joined-3000)return;seen.add(ch.doc.id);(handlers[v.t]||[]).forEach(h=>{try{h({topic:v.t,data:v.d,from:v.from})}catch(e){console.error(e)}})})},()=>{});
       return()=>{handlers[topic]=(handlers[topic]||[]).filter(f=>f!==fn)}},
-    leave:async()=>{if(left)return;left=true;ROOMS.delete(api);clearTimeout(wT);clearInterval(hb);clearInterval(tick);unP();if(unE)unE();try{await deleteDoc(me)}catch(e){}}};
+    leave:async()=>{if(left)return;left=true;ROOMS.delete(api);clearTimeout(wT);clearInterval(hb);clearInterval(tick);unP();document.removeEventListener('visibilitychange',onVis);if(unE)unE();try{await deleteDoc(me)}catch(e){}}};
   ROOMS.add(api);return api}
 addEventListener('pagehide',()=>ROOMS.forEach(r=>r.leave()));
+// a page brought back from the back-forward cache already left its rooms on pagehide: reload so it joins again
+addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
 
 /* ---- assets: PAD images in Cloud Storage ---- */
 const ID_CH='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
