@@ -5790,7 +5790,7 @@ function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const ot
     const dx=o.x-cx,dy=o.y-cy,L=Math.hypot(dx,dy)||1,nx=-dy/L*0.9,ny=dx/L*0.9;
     // each feeling is its own line with an arrowhead pointing from the one who feels it to the one it is about; hover shows who, what and how much
     [[out,nx,ny,1,C,o.p],[inn,-nx,-ny,-1,o.p,C]].forEach(([v,ox,oy,dir,from,to])=>{if(!v)return;const col=affColor(v),x1=cx+ox,y1=cy+oy,x2=o.x+ox,y2=o.y+oy;
-      const t=dir>0?.6:.4,mx=x1+(x2-x1)*t,my=y1+(y2-y1)*t,ux=dx/L*dir,uy=dy/L*dir,ah=2.4,aw=1.5,
+      const t=dir>0?.6:.4,mx=x1+(x2-x1)*t,my=y1+(y2-y1)*t,ux=dx/L*dir,uy=dy/L*dir,ah=1.3,aw=.8,
         tip=`${from.nick||'단원'} → ${to.nick||'단원'} · ${affLabel(v)} (${v})`;
       lines+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" stroke-opacity="${Math.abs(v)<20?.55:1}" vector-effect="non-scaling-stroke"/>`
         +`<polygon points="${mx+ux*ah},${my+uy*ah} ${mx-uy*aw},${my+ux*aw} ${mx+uy*aw},${my-ux*aw}" fill="${col}" fill-opacity="${Math.abs(v)<20?.6:1}"/>`
