@@ -392,6 +392,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .rankbtn{font-size:11px;padding:2px 7px;white-space:nowrap}
 .crewbtns{display:flex;gap:3px;flex:none}
 .crewhd .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.padmore{display:block;margin:10px auto 4px;min-width:120px}
 .dtabs button .ndot{display:inline-block;width:6px;height:6px;background:#ff4458;border-radius:50%;vertical-align:top;margin-left:2px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 .dtabs button[aria-selected="true"]{background:var(--violetd);box-shadow:inset 0 0 0 1px var(--cyan)}
 .dex div{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-align:center;background:var(--deep);border:2px solid var(--ink);padding:8px 4px}
@@ -5792,7 +5793,7 @@ function socPad(){
   const me=new RegExp('@'+P.nick.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![^\\s@#])');
   const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&me.test(s.text||'');return true});
   return padCompose()+`<div class="dtabs padtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
-  <div class="twfeed">${list.length?list.map(p=>twHTML(p)).join(''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
+  <div class="twfeed">${list.length?list.slice(0,padShow).map(p=>twHTML(p)).join('')+(list.length>padShow||padMore?`<button class="btn sm alt padmore" data-act="padmore">더보기</button>`:''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
 // a reply opened as a thread shows the conversation above it: walk up the re chain (from the feed, else from the server)
 async function loadAnc(start){const tok=++thrTok,out=[];let re=start&&start.re;
   for(let n=0;re&&n<12;n++){let q=POSTS.find(x=>x.id===re)||THRA.find(x=>x.id===re);if(!q&&mode==='online'){try{const d=await db.doc('posts/'+re).get();q=d.exists?Object.assign({id:re},d.data()):null}catch(e){q=null}}
@@ -6053,8 +6054,11 @@ function bellRefresh(keep){socDots();const b=$('#bellBtn');if(!b)return;notiChim
 document.addEventListener('click',e=>{if(e.target.closest('#bellBtn')){e.stopPropagation();notiToggle(notiPop.hidden);return}if(!notiPop.hidden&&!e.target.closest('#notiPop'))notiToggle(false)},true);
 addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener('scroll',()=>{if(!notiPop.hidden)notiPlace()},{passive:true});
 function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'단원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'단원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'단원'} 님이 PAD에서 나를 언급했습니다.`)})}
+// PAD keeps every post: the feed shows 20 at a time behind a 더보기 button, and when the loaded posts run out it asks the server for 150 more
+let padShow=20,padLoad=150,padUnsub=null,padMore=false;
+function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padUnsub=db.collection('posts').orderBy('at','desc').limit(padLoad).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLoad;notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
 function socSubscribe(){
-  db.collection('posts').orderBy('at','desc').limit(150).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));notePosts();renderNav();if(socOpen)renderPanel()},()=>{});
+  padListen();
   db.collection('guest').orderBy('at','desc').limit(150).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
   db.doc('org/roles').onSnapshot(sn=>{ROLES=sn.exists?Object.assign({},sn.data()):{};if(socOpen)renderPanel()},()=>{});
   db.collection('dm').where('users','array-contains',uid).orderBy('at','desc').limit(300).onSnapshot(sn=>{DMS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));
@@ -6074,8 +6078,9 @@ const SA={
  memocm(d){memoOpen=memoOpen===d.k?null:d.k;memoReply=null;renderPanel();if(memoOpen)setTimeout(()=>{const i=$('#memoCmIn');if(i)i.focus()},30)},
  async memodel(d){if(!d.k){memoDelArm=null;renderPanel();return}if(!d.x){memoDelArm=d.k;renderPanel();return}memoDelArm=null;try{await memoRef().doc(d.k).delete()}catch(e){toast('삭제하지 못했습니다.')}renderPanel()},
  sotab(d){const was=socTab;socTab=d.k;if((was==='chat')!==(d.k==='chat'))setPresence();pdelArm=null;profId=null;profBio=false;if(d.k!=='pad'&&padThread)openThread(null);renderPanel();if(d.k==='dm'&&dmPeer)setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
- padview(d){padView=d.k;padTag='';renderPanel()},
- padtag(d){padTag=d.k||'';if(padThread)openThread(null);renderPanel()},
+ padview(d){padView=d.k;padTag='';padShow=20;renderPanel()},
+ padmore(){padShow+=20;if(mode==='online'&&padMore&&padShow*2>POSTS.length){padLoad+=150;padListen()}renderPanel()},
+ padtag(d){padTag=d.k||'';padShow=20;if(padThread)openThread(null);renderPanel()},
  memogo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;secretView=false;adminView=false;socTab='memo';socDrawer(true,1);
   const A=MEMOS.filter(m=>m&&m.text),i=A.findIndex(m=>m.id===d.k);if(i>=0)memoPage=Math.floor(i/MEMO_PG);memoOpen=d.k;memoReply=null;memoEdit=null;renderPanel();setTimeout(()=>{const a=[...document.querySelectorAll('[data-act="memocm"]')].find(b=>b.dataset.k===d.k);if(a)a.closest('.memo').scrollIntoView({block:'start',behavior:'smooth'})},60)},
  notigo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;secretView=false;adminView=false;socTab='pad';socDrawer(true,1);openThread(d.k);renderPanel();socTop()},
