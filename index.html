@@ -2323,22 +2323,26 @@ const OLDJOB={fighter:'mech',engineer:'mech',guard:'nav',scout:'nav',angler:'nav
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan],['cook','요리',TPL.dPot]];
 // titles that ask for "every life skill" keep meaning the original four, so nobody loses one now that cooking counts too
 const LIFE4=LIFE.slice(0,4);
-/* life levels cap at 30 (25*29^2 = 21,025 life XP). Gains are scaled per activity so a 6-hours-a-day player reaches 30 in about 10 days
+/* life XP gains are scaled per activity so a 6-hours-a-day player tops out in about 10 days
    in each, assuming a mixed day of roughly 60 harvests, 50 robot pickups, 150 catches and 40 trail stops + 10 receiver scans. */
 // cook: 0.8x the dish's own XP (5 for a potato roast, 21 for a curry). Cooking costs no energy and runs in the background, so
 // non-stop cooking for 6 hours (about 0.24 life XP a second) takes about 4 days, and with real ingredient limits about a week
 const LX_RATE={farm:3.5,gather:10.5,fish:1.4,scan:3.75,cook:.8};
 // farming: planting, harvesting, watering and fertilising each give the same +3 XP and +25 farming life XP
 const FARM_LX=25/LX_RATE.farm;
-const LIFE_MAX=30,lifeLv=xp=>Math.min(LIFE_MAX,1+Math.floor(Math.sqrt((xp||0)/25)));
+/* life levels cap at 60. The total to the top stays about the old Lv.30 total (~21,000 life XP, roughly 10 days of 6-hour play per activity),
+   but each level costs more than the last: about 5 XP early on, ~310 around Lv.30 and ~930 for the last few */
+const LIFE_MAX=60,lifeNext=l=>Math.round(2.5*l*l+.0604*l*l*l),lifeLv=xp=>{let l=1;while(l<LIFE_MAX&&(xp||0)>=lifeNext(l))l++;return l};
+// characters saved before the change (no lxv) count on the old 25·l² curve: carry their level and the share of it they had across
+const lxConv=x=>{x=x||0;const ol=Math.min(30,1+Math.floor(Math.sqrt(x/25))),lo=25*(ol-1)**2,hi=25*ol*ol,f=ol>=30?0:Math.max(0,Math.min(1,(x-lo)/(hi-lo)));return Math.round(lifeNext(ol-1)+f*(lifeNext(ol)-lifeNext(ol-1)))};
+const lxOf=p=>{const lx=(p&&p.lx)||{};if(p&&p.lxv===2)return lx;const o={};for(const k in lx)o[k]=lxConv(lx[k]);return o};
 // each life level adds 0.5% to that activity's bonus chance; wearing the 황금손 title (all four maxed) adds a further 1% to every one
 const goldHand=()=>LIFE4.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
 const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(P.title==='gold'&&goldHand()?1:0);
 const lifeHit=k=>Math.random()*100<lifePct(k);
 const LIFE_FX={farm:'수확 +1 확률',gather:'로봇 채집 재료 추가 확률',fish:'레어 이상 어종 확률 +',scan:'조사 보상 2배 확률',cook:'[맛있는!] 요리 확률'};
-// chance a dish comes out [맛있는!]: 5% to start, +0.5% per cooking level (20% at Lv.30)
+// chance a dish comes out [맛있는!]: 5% to start, +0.5% per cooking level (35% at Lv.60)
 const tastyPct=()=>TASTY_BASE+lifePct('cook');
-const lifeNext=l=>25*l*l;
 function stat(k,n=1){P.st=P.st||{};P.st[k]=(P.st[k]||0)+n}
 function lxp(k,n){P.lx=P.lx||{};n=Math.round(n*(LX_RATE[k]||1));const before=lifeLv(P.lx[k]);P.lx[k]=(P.lx[k]||0)+n;const after=lifeLv(P.lx[k]);if(after>before){const nm=LIFE.find(l=>l[0]===k)[1];log(`${nm} 생활 레벨 ${after} 달성!`,'rare')}}
 const TITLES=[
@@ -2374,10 +2378,10 @@ const TITLES=[
  ['adv2','심연을 닫은 자','침략자 처치에 3번 참여',()=>st('bosskill')>=3],
  ['dm1','속삭이는 별','귓속말 30번 보내기',()=>st('dm')>=30],
  ['all5','만능 개척자','생활 레벨 네 가지 모두 10 이상',()=>LIFE4.every(([k])=>lifeLv(P.lx?.[k])>=10)],
- ['farmmax','풍요의 지배자','농사 생활 레벨 30',()=>lifeLv(P.lx?.farm)>=30],
- ['gathermax','행성의 발굴자','채집 생활 레벨 30',()=>lifeLv(P.lx?.gather)>=30],
- ['fishmax','심연의 낚시꾼','낚시 생활 레벨 30',()=>lifeLv(P.lx?.fish)>=30],
- ['scanmax','별의 해독자','조사 생활 레벨 30',()=>lifeLv(P.lx?.scan)>=30],
+ ['farmmax','풍요의 지배자','농사 생활 레벨 '+LIFE_MAX,()=>lifeLv(P.lx?.farm)>=LIFE_MAX],
+ ['gathermax','행성의 발굴자','채집 생활 레벨 '+LIFE_MAX,()=>lifeLv(P.lx?.gather)>=LIFE_MAX],
+ ['fishmax','심연의 낚시꾼','낚시 생활 레벨 '+LIFE_MAX,()=>lifeLv(P.lx?.fish)>=LIFE_MAX],
+ ['scanmax','별의 해독자','조사 생활 레벨 '+LIFE_MAX,()=>lifeLv(P.lx?.scan)>=LIFE_MAX],
  ['rcp15','행성급 요리사','요리 레시피 15개 해금',()=>(P.rcp||[]).length>=15],
  ['rcp30','항성급 요리사','요리 레시피 30개 해금',()=>(P.rcp||[]).length>=30],
  ['rcp45','초신성급 요리사','요리 레시피 45개 해금',()=>(P.rcp||[]).length>=45],
@@ -2660,7 +2664,7 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
     if(kind==='ready'){px(15,gap+2,'#ffe27a');px(14,gap+2,'rgba(255,226,122,.6)');px(16,gap+2,'rgba(255,226,122,.6)');px(15,gap+1,'rgba(255,226,122,.6)');px(15,gap+3,'rgba(255,226,122,.6)')}
   }
   return MD[key]=c.toDataURL()}
-function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}
+function migrate(){if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.lxv!==2){P.lx=lxOf(P);P.lxv=2}
   // recipes start hidden; players from before this keep the dishes they have in the bag as already known
   if(!Array.isArray(P.rcp))P.rcp=COOK.filter(c=>(P.inv||{})[c.id]>0||(P.inv||{})[TASTY+c.id]>0).map(c=>c.id);
   // 머리·팔·발 장비 were retired for the two 장신구 slots: give back what each crafted piece cost, once
@@ -5799,7 +5803,7 @@ function relMapHTML(cid,compact){const C=whoP(cid);if(!cid||!C)return'';const ot
 const RANKS=[['lv','레벨 랭킹','var(--rk-lv)'],['life','생활레벨 랭킹','var(--rk-life)'],['don','기여도 랭킹','var(--rk-don)']];
 function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick);let rows;
   if(k==='lv')rows=all.map(([id,p])=>[id,p,(p.lvl||1)*1e9+(p.xp||0),`LV.${p.lvl||1}`]);
-  else if(k==='life')rows=all.map(([id,p])=>{const lx=p.lx||{},s=LIFE.reduce((a,[q])=>a+lifeLv(lx[q]),0),x=LIFE.reduce((a,[q])=>a+(lx[q]||0),0);return[id,p,s*1e9+x,`생활 LV.${s}`]});
+  else if(k==='life')rows=all.map(([id,p])=>{const lx=lxOf(p),s=LIFE.reduce((a,[q])=>a+lifeLv(lx[q]),0),x=LIFE.reduce((a,[q])=>a+(lx[q]||0),0);return[id,p,s*1e9+x,`생활 LV.${s}`]});
   else if(k==='don'){const u=shipTotals().u,m={};for(const id in u)m[id]=+u[id].n||0;rows=all.filter(([id])=>m[id]>0).map(([id,p])=>[id,p,m[id],`재료 ${m[id].toLocaleString()}개`])}
   return rows.sort((a,b)=>b[2]-a[2])}
 // gold thrones for the #1 stage, velvet in the card's colour (throne.py)
@@ -5857,7 +5861,7 @@ let pfpBusy=false;const pfpImg=id=>ASSET_ID.test(String(id))?`<img class="pfpimg
 async function pfpUpload(f){if(!ASSETS||pfpBusy||!f)return;if(!IMG_TYPES.test(f.type)){toast('PNG·JPG·GIF·WEBP 이미지만 올릴 수 있습니다.');return}pfpBusy=true;renderInfo();
   try{const r=await ASSETS.upload(f,{type:f.type});const old=P.pfp;P.pfp=r.id;if(old&&old!==r.id)ASSETS.delete(old).catch(()=>{});save();toast('프로필 사진을 올렸습니다.')}catch(e){imgErr(e)}pfpBusy=false;renderInfo()}
 // the profile as a crew ID card: title over the photo, job · rank · levels on the right, name and 군번 below, the game logo in the corner
-const lifeSum=p=>LIFE.reduce((a,[q])=>a+lifeLv(((p&&p.lx)||{})[q]),0);
+const lifeSum=p=>{const lx=lxOf(p);return LIFE.reduce((a,[q])=>a+lifeLv(lx[q]),0)};
 function idCardHTML(p,id,photo,lock){const logo=($('.lg2-em img')||{}).src||'',sn=[id===uid?MY_SN:'',p.sn].find(x=>x&&x!=='함장')||'',j=jobOf(p),L=logo?`<img src="${logo}" alt="">`:'';
   const row=(k,v,big)=>`<div class="idc-row${big?' big':''}"><dt><i>✦</i>${k}</dt><span class="idc-arr">»</span><dd>${v}</dd></div>`;
   return`<div class="idc"><div class="idc-top"><span class="idc-tl">${L}</span><span class="idc-brand"><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div>
