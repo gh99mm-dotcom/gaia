@@ -2906,8 +2906,10 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
 const raidMyTurn=()=>{const r=MYRAID,c=r&&r.b&&r.b.cur;return!!(r&&r.phase==='battle'&&c&&c.k==='p'&&c.id===uid)};
 // whose turn it is is compared by its fields: Firestore may hand the same map back with its keys in another order
 const turnKey=c=>c?c.k+':'+c.id:'';
-let raidBusyAt=0;
-function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e3)raidBusy=false;if(!r0||raidBusy)return Promise.resolve(null);raidBusy=true;raidBusyAt=Date.now();const want=turnKey(r0.b&&r0.b.cur),seq=r0.seq;
+let raidBusyAt=0,raidQ=null;
+// a click that lands while the previous move (often the monster turn this client drives) is still saving waits for it instead of being dropped
+function raidQRun(){const q=raidQ;if(!q||raidBusy)return;if(Date.now()-q.at>5e3){raidQ=null;q.res(null);return}if(!raidMyTurn())return;raidQ=null;raidAct(q.kind,q.arg).then(q.res)}
+function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e3)raidBusy=false;if(r0&&raidBusy&&['atk','def','item','sk'].includes(kind)){if(raidQ)raidQ.res(null);return new Promise(res=>{raidQ={kind,arg,res,at:Date.now()}})}if(!r0||raidBusy)return Promise.resolve(null);raidBusy=true;raidBusyAt=Date.now();const want=turnKey(r0.b&&r0.b.cur),seq=r0.seq;
   return raidTx(r0.id,r=>{if(!r||r.seq!==seq||r.phase!=='battle'||turnKey(r.b.cur)!==want)return null;const b=r.b,a=b.cur;
     // only the member whose turn it is may attack, defend or use an item; monsters and timeouts act only on their own turns
     if(!a||(['atk','def','item','sk'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;
@@ -2929,13 +2931,13 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
       const aoe=!!m.chg,mv=m.chg,tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=tz?[tz]:aoe?tg:[raidAggro(r,tg)];m.chg=null;
       hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?`의 ${mv}`:''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)});
       if(!aoe&&m.hp>0&&((m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15))){const mv2=raidAoeMove(m);m.chg=mv2;raidLog(b,`⚠ ${m.kind==='boss'?'보스':'정예'} ${m.n}${jo(m.n,'이','가')} ${mv2}${jo(mv2,'을','를')} 준비합니다! 다음 턴에 파티 전원을 공격합니다.`);b.skfx={n:mv2+' 준비',j:'warn',by:`${m.n} · 다음 턴 전체 공격`,id:((b.skfx&&b.skfx.id)||0)+1}}}
-    return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false})}
+    return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false;setTimeout(raidQRun)})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
   const all=raidUp(r).every(u=>r.b.flee[u]);if(all){const boss=r.b.mons.some(m=>m.kind==='boss');raidUp(r).forEach(u=>{r.m[u].hp=Math.max(1,Math.round(r.m[u].hp/2))});raidLog(r.b,'모두 동의해 전투에서 빠져나왔다. 도망치느라 모두 체력이 절반으로 줄었다.');if(boss){r.phase='end';r.result='fled';r.ev={n:'보스에게서 도망쳤다',res:'지금까지 모은 보상만 가지고 돌아갑니다. 모두 체력이 절반으로 줄었습니다.'}}else{r.phase='won';r.ev={n:'도망쳤다!',res:'이 전투의 보상은 없고, 모두 체력이 절반으로 줄었습니다.'}}}return r}).catch(()=>{})}
 function raidNext(){const r0=MYRAID;if(!r0||(r0.phase!=='event'&&r0.phase!=='won'))return;const st=r0.step;raidTx(r0.id,r=>{if(!r||r.step!==st||(r.phase!=='event'&&r.phase!=='won'))return null;r.seq++;r.step++;return raidStep(r)}).catch(()=>{})}
 /* ---- the driver plays monsters and timeouts; everyone keeps a heartbeat ---- */
 let raidHbAt=0;
-function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();
+function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();raidQRun();
   if(now-raidHbAt>15e3&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:{[uid]:now}}).catch(()=>{})}
   if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
@@ -5546,6 +5548,9 @@ function duelCatch(tr,id,sz){if(!duelOn())return;if(!P.duel||P.duel.id!==DUEL.id
 /* ───────── events ───────── */
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t.classList&&t.classList.contains('logo')&&t.dataset.tab){e.preventDefault();t.click()}});
 document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.value==='s10'?'s10':+e.target.value;renderPanel()}});
+// a battle snapshot can redraw the raid buttons between press and release, which swallows the click: hand it to the button now under the pointer
+let raidPd=null;addEventListener('pointerdown',e=>{const a=e.target.closest&&e.target.closest('[data-act]');raidPd=a&&/^raid(atk|def|sk|item|tgt|to|pick|bag)$/.test(a.dataset.act)?{el:a,act:a.dataset.act,k:a.dataset.k}:null},{capture:true,passive:true});
+addEventListener('pointerup',e=>{const d=raidPd;raidPd=null;if(!d||d.el.isConnected)return;setTimeout(()=>{const t=document.elementFromPoint(e.clientX,e.clientY),a=t&&t.closest('[data-act]');if(a&&a!==d.el&&a.dataset.act===d.act&&a.dataset.k===d.k&&!a.disabled)a.click()})},{capture:true,passive:true});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
 const SAFE_ACT=new Set(['bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
