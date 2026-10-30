@@ -2115,11 +2115,14 @@ function wfxDraw(cv,t){const n=+cv.dataset.n,L={wf1:0,wf2:1,wf3:2,wf4:3}[cv.data
     const c=L===3&&i%3===0?WFX_RB[i%4]:'#ffffff',arm=ph===2?2:ph===4?0:1;px(x,y,c,.75);for(let k=1;k<=arm;k++){const al=k===arm&&arm>1?.35:.6;px(x+k,y,c,al);px(x-k,y,c,al);px(x,y+k,c,al);px(x,y-k,c,al)}}}
   g.globalAlpha=1}
 {let wt=0;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;setInterval(()=>{const cs=document.querySelectorAll('canvas.wfc');if(!cs.length)return;wt++;cs.forEach(c=>{if(calm&&c.dataset.d)return;c.dataset.d=1;wfxDraw(c,calm?0:wt)})},90)}
-const BOSS_IC=['................','.....kkkkkk.....','...kkuuuuuukk...','..kuuuurruuuwk..','.kuruukkkkuuuwk.','.kuuukmmmmkuuwk.','kuuukmzkkzmkuuwk','kurukmkkhkmkruwk','kuuukmkkkkmkuuwk','kuuukmzkkzmkuwwk','.kuuukmmmmkuuwk.','.kwruukkkkuurwk.','..kwwuuuuuuwwk..','...kkwwwwwwkk...','.....kkkkkk.....','................'];
+// 탐사 tab: a round, wide-eyed eyeball with a teal iris and two shines
+const BOSS_IC=['................', '....kkkkkkkk....', '...kkuuuuuukk...', '..kuuuuuuuuuuk..', '.kkuuuuuuuuupkk.', '.kuuuzzmzzuuuuk.', '.kuuzhhkmmzuuuk.', '.kuuzhhkkmzuuuk.', '.kuumkkkkkmuuuk.', '.kuumkkkkkmuuwk.', '.kuuzmkkkhzuwwk.', '.kkpuzmmmzuwwkk.', '..kuuuzzzuwwwk..', '...kkuuuuwwkk...', '....kkkkkkkk....', '................'];
+// 제작대 tab: a wrench lying on its side, open jaw at the top
+const WRENCH_IC=['................', '..........kk.kk.', '.........kuk.kuk', '.........kuk.kuk', '........kuuk.kuk', '........kuhkkuuk', '.......kuuuuuuk.', '......kuuuwwwk..', '.....kuuwkkkk...', '....kuuwk.......', '...kuuwk........', '..kuuwk.........', '.kuuwk..........', '.kuwk...........', '..kk............', '................'];
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
  {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 개척선 가이아 · 선체 손상 심각'},
- {id:'bench',n:'제작대',ic:null,cost:'',loc:'가이아 정비실 · 보조무기 · 무기 강화 · 우주복·장신구'},
+ {id:'bench',n:'제작대',ic:WRENCH_IC,cost:'',loc:'가이아 정비실 · 보조무기 · 무기 강화 · 우주복·장신구'},
  {id:'farm',n:'농사',ic:IC.farm,cost:'',loc:'유리 돔 농장 · 21℃ · 습도 41% · 인공 중력 0.8G'},
  {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
@@ -2694,7 +2697,7 @@ function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const a
   const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender()}
 function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
-  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):t.id==='bench'?`<img class="pix" src="${FAB_PNG[1]}" width="32" height="32" alt="">`:img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
+  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
 }
 function head(id=tab){const t=TABS.find(x=>x.id===id);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
