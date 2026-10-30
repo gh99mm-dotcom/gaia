@@ -3167,7 +3167,7 @@ const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
 const bossKind=b=>BOSS_KINDS[(b&&b.kind)|0]||BOSS_KINDS[0];
 const bossPct=b=>{if(b.hp<=0)return 0;if(b.hp>=b.max)return 100;return Math.max(.1,Math.floor(b.hp/b.max*1000)/10).toFixed(1)};
 // invader HP = 20 crew of its level each landing 10 typical hits (typical ATK 12 at Lv.1, +5.2/level incl. weapon and gear), never below the old curve
-const typAtk=lv=>12+5.2*(lv-1),bossHpFor=(lv,k)=>Math.round(Math.max(200*typAtk(lv),400*lv+12*lv*lv)*BOSS_KINDS[k].hp);
+const typAtk=lv=>12+5.2*(lv-1),bossHpFor=(lv,k)=>Math.round(Math.max(200*typAtk(lv),400*lv+12*lv*lv)*1.5*BOSS_KINDS[k].hp);
 const bossAlive=b=>!!b&&b.hp>0&&!b.failed&&!b.gone;
 const bossKilled=b=>!!b&&b.hp<=0&&!!b.killer;
 function bossTx(ref,fn){if(ref.tx)return ref.tx(fn);return ref.get().then(sn=>{const nx=fn(sn.exists?JSON.parse(JSON.stringify(sn.data())):null);return nx?ref.set(nx).then(()=>nx):null})}
