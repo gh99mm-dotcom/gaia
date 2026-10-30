@@ -70,8 +70,8 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bgm{margin-left:auto;cursor:pointer;color:var(--mute)}
 .sugg+.bgm{margin-left:0}
 .fbbadge{background:var(--red);color:var(--ink);padding:0 4px;margin-left:2px}
-.suggta{background:var(--deep);color:var(--text);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:8px;font:inherit;font-size:14px;min-height:96px;resize:vertical}
-.fblist{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}.invsplit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}.invcol{display:flex;flex-direction:column;gap:6px;min-width:0}@media (max-width:620px){.invsplit{grid-template-columns:minmax(0,1fr)}}.fbitem{background:var(--deep);border:2px solid var(--ink);padding:6px 8px;font-size:13px;display:flex;flex-direction:column;gap:3px}.fbitem .row{justify-content:space-between}.fbitem p{margin:0;white-space:pre-wrap;word-break:break-all}
+.suggta{background:var(--deep);color:var(--text);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:8px;font:inherit;font-size:14px;min-height:200px;resize:vertical}
+.fblist{display:flex;flex-direction:column;gap:6px;max-height:min(420px,50vh);overflow:auto}.invsplit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}.invcol{display:flex;flex-direction:column;gap:6px;min-width:0}@media (max-width:620px){.invsplit{grid-template-columns:minmax(0,1fr)}}.fbitem{background:var(--deep);border:2px solid var(--ink);padding:6px 8px;font-size:13px;display:flex;flex-direction:column;gap:3px}.fbitem .row{justify-content:space-between}.fbitem p{margin:0;white-space:pre-wrap;word-break:break-all}
 .bgm[aria-pressed="true"]{color:var(--green)}
 .bgm+.chip{margin-left:0}
 .bgm{cursor:pointer}#skinBtn[aria-pressed="false"]{color:var(--mute)}
@@ -2245,14 +2245,21 @@ const ENV=["kkkkkkkkkk","kuuuuuuuuk","kkuuuuuukk","kukkuukkuk","kuuukkuuuk","kuu
 let FB=[];
 const fbSeen=()=>{try{return +localStorage.getItem('sd_fbseen')||0}catch(e){return 0}};
 function fbItems(){return FB.flatMap(d=>(d.list||[]).map(it=>({doc:d.id,nick:it.nick||d.nick||'단원',text:String(it.text||''),at:+it.at||0}))).sort((a,b)=>b.at-a.at)}
-function updFbBadge(){const b=$('#adminBtn');if(!b)return;const n=fbItems().filter(x=>x.at>fbSeen()).length;b.innerHTML='운영자'+(n?`<span class="fbbadge">${n}</span>`:'')}
+function updFbBadge(){const n=fbItems().filter(x=>x.at>fbSeen()&&x.doc!==uid).length,b=$('#adminBtn'),sb=$('#suggBtn');if(b)b.innerHTML='운영자'+(n?`<span class="fbbadge">${n}</span>`:'');if(sb)sb.innerHTML=img(ENV,null,1)+'건의함'+(n&&isStaff()?`<span class="fbbadge">${n}</span>`:'')}
+function fbMarkSeen(){const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()}
+// admin and appointed staff share the inbox; a new suggestion from someone else chimes (not the ones already there when it loads)
+let fbLoaded=false;
+function fbSnap(sn){const old=new Set(fbItems().map(x=>x.doc+'|'+x.at));FB=sn.docs.map(d=>Object.assign({id:d.id},d.data()));const fresh=fbLoaded&&fbItems().some(x=>x.doc!==uid&&!old.has(x.doc+'|'+x.at));fbLoaded=true;updFbBadge();
+  if(fresh){toast('새 건의가 도착했습니다.');sfxNotice(()=>{try{notiSnd.volume=sfxVol/100;notiSnd.currentTime=0;notiSnd.play().catch(()=>{})}catch(e){}})}adminRefresh();if(!$('#suggModal').hidden)renderSugg()}
 function fbTime(t){const d=new Date(t);return`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
 let mySugg=[];
 async function loadMySugg(){if(mode==='online'&&db&&uid){try{const sn=await db.doc('feedback/'+uid).get();mySugg=sn.exists?[...(sn.data().list||[])]:[]}catch(e){mySugg=[]}}else mySugg=[...(P.sugg||[])];renderSugg()}
-function renderSugg(){const box=$('#suggBox');if(!box)return;const old=$('#suggIn'),keep=old?old.value:'',foc=old&&document.activeElement===old,sel=foc?[old.selectionStart,old.selectionEnd]:null;box.innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">SUGGESTION · 건의함</span><h2>운영자에게 건의하기</h2><span class="hint">불편한 점, 바라는 기능, 버그를 적어 주십시오. 운영자만 읽을 수 있습니다.</span></div><button class="btn sm ghost" data-act="suggclose">닫기</button></div>
-  <textarea id="suggIn" class="suggta" maxlength="300" placeholder="예) 낚시 대결에 시간 제한이 있으면 좋겠습니다" aria-label="건의 내용"></textarea>
-  <div class="row" style="justify-content:space-between"><span class="hint">최대 300자</span><button class="btn sm" data-act="suggsend">보내기</button></div>
-  ${mySugg.length?`<span class="lbl">Sent · 내가 보낸 건의</span><div class="fblist">${mySugg.slice().reverse().map(it=>`<div class="fbitem"><span class="hint">${fbTime(it.at)}</span><p>${esc(it.text)}</p></div>`).join('')}</div>`:''}`;const ta=$('#suggIn');if(ta&&keep){ta.value=keep}if(ta&&foc){ta.focus({preventScroll:true});if(sel)try{ta.setSelectionRange(sel[0],sel[1])}catch(e){}}}
+function renderSugg(){const box=$('#suggBox');if(!box)return;const old=$('#suggIn'),keep=old?old.value:'',foc=old&&document.activeElement===old,sel=foc?[old.selectionStart,old.selectionEnd]:null;box.innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">SUGGESTION · 건의함</span><h2>운영자에게 건의하기</h2><span class="hint">불편한 점, 바라는 기능, 버그를 적어 주십시오. 운영자와 관리자만 읽을 수 있습니다.</span></div><button class="btn sm ghost" data-act="suggclose">닫기</button></div>
+  <textarea id="suggIn" class="suggta" maxlength="1000" placeholder="예) 낚시 대결에 시간 제한이 있으면 좋겠습니다" aria-label="건의 내용"></textarea>
+  <div class="row" style="justify-content:space-between"><span class="hint">최대 1000자</span><button class="btn sm" data-act="suggsend">보내기</button></div>
+  ${mySugg.length?`<span class="lbl">Sent · 내가 보낸 건의</span><div class="fblist">${mySugg.slice().reverse().map(it=>`<div class="fbitem"><span class="hint">${fbTime(it.at)}</span><p>${esc(it.text)}</p></div>`).join('')}</div>`:''}${isStaff()?suggInboxHTML():''}`;const ta=$('#suggIn');if(ta&&keep){ta.value=keep}if(ta&&foc){ta.focus({preventScroll:true});if(sel)try{ta.setSelectionRange(sel[0],sel[1])}catch(e){}}}
+function suggInboxHTML(){const items=fbItems(),seen=suggSeenAt;return`<span class="lbl">Inbox · 받은 건의 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>seen&&it.doc!==uid?' · 새 건의':''}</span></div><p>${esc(it.text)}</p>${isAdmin?`<div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div>`:''}</div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없습니다.</span>'}`}
+let suggSeenAt=0;
 function fbAdminHTML(){const items=fbItems();return`<div class="info-sec" data-adm="fb"><span class="lbl">Suggestions · 건의함 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>fbSeen()?' · 새 건의':''}</span></div><p>${esc(it.text)}</p><div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div></div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없습니다.</span>'}</div>`}
 let INV=[],MEMB=[],INVMEMO={};const fmtCode=c=>String(c).slice(0,4)+'-'+String(c).slice(4);
 // right half: every member who joined with a code, newest first — code, who it is now, when they joined
@@ -2488,7 +2495,7 @@ async function connect(){
   if(!db||!user){goSolo('공용 서버에 연결할 수 없어 혼자 모드로 시작합니다.','공용 서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주십시오.');return}
   C.use('assets').then(a=>{ASSETS=a||null;if(tab==='social')renderPanel()}).catch(()=>{});
   uid=await user.id();try{isAdmin=await user.isOwner()}catch(e){isAdmin=false}$('#adminBtn').hidden=!isAdmin;
-  if(isAdmin)db.collection('feedback').onSnapshot(sn=>{const prev=fbItems().length;FB=sn.docs.map(d=>Object.assign({id:d.id},d.data()));updFbBadge();const n=fbItems().length;if(prev&&n>prev)toast('새 건의가 도착했습니다.');adminRefresh()},()=>{});
+  tabSub(()=>isStaff(),()=>db.collection('feedback').onSnapshot(fbSnap,()=>{}));
   if(isAdmin&&window.__fbInvite){db.collection('invites').orderBy('at','desc').onSnapshot(sn=>{INV=sn.docs.map(d=>Object.assign({id:d.id},d.data()));adminRefresh()},()=>{});db.collection('members').onSnapshot(sn=>{MEMB=sn.docs.map(d=>Object.assign({},d.data(),{uid:d.id}));adminRefresh()},()=>{});db.doc('boss/invmemo').onSnapshot(sn=>{INVMEMO=sn.exists?Object.assign({},sn.data()):{};adminRefresh()},()=>{})}
   const canW=await user.can('data.write');
   if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
@@ -3170,7 +3177,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>tab==='social'&&socTab==='pad',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='social'&&socTab==='pad')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -5107,9 +5114,9 @@ const A={
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'단원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
  async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'단원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
- suggopen(){$('#suggModal').hidden=false;renderSugg();loadMySugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
+ suggopen(){$('#suggModal').hidden=false;suggSeenAt=fbSeen();if(isStaff())fbMarkSeen();renderSugg();loadMySugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
  suggclose(){$('#suggModal').hidden=true},
- async suggsend(){const t=$('#suggIn'),v=(t&&t.value||'').trim().slice(0,300);if(!v){toast('건의 내용을 적어 주십시오.');return}const it={text:v,at:Date.now(),nick:P.nick};
+ async suggsend(){const t=$('#suggIn'),v=(t&&t.value||'').trim().slice(0,1000);if(!v){toast('건의 내용을 적어 주십시오.');return}const it={text:v,at:Date.now(),nick:P.nick};
   if(mode==='online'&&db&&uid){try{const ref=db.doc('feedback/'+uid),sn=await ref.get(),list=sn.exists?[...(sn.data().list||[])]:[];list.push(it);await ref.set({nick:P.nick,at:it.at,list:list.slice(-30)});mySugg=list.slice(-30)}catch(e){toast('건의를 보내지 못했습니다. 잠시 뒤 다시 시도해 주십시오.');return}}
   else{P.sugg=[...(P.sugg||[]),it].slice(-30);mySugg=P.sugg;save();FB=[{id:'me',nick:P.nick,list:P.sugg}];updFbBadge()}
   sfxCoin();toast('운영자에게 건의를 보냈습니다. 고맙습니다!');{const t=$('#suggIn');if(t)t.value=''}renderSugg()},
