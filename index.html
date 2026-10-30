@@ -3220,12 +3220,17 @@ function chestHTML(){const n=(P.chests||[]).length,c=(P.chests||[])[0];
   return`<div class="chestcard ${chestAnim?'shake':''}"><div class="chestspr">${img(CHEST,null,4,"",WPAL)}</div><div class="chestbody"><b>보상 상자가 도착했습니다${n>1?` ×${n}`:''}</b><span class="hint">${esc(c.name)} 토벌 보상 · 무엇이 들어 있을까요? 기여도에 따라 ${(chestEx(c)*100).toFixed(1)}% 확률로 탐사 전용 옷장 아이템이 나옵니다.</span><button class="btn gold" data-act="chestopen" ${chestAnim?'disabled':''}>${chestAnim?'여는 중…':'상자 열기'}</button></div></div>`}
 const bossReady=()=>Math.max(0,(P.bossAt||0)+BOSS_CD-Date.now());
 // the invader's counterblow: a same-level crew member goes down in about 3 of these
-const bossBlow=b=>Math.max(1,Math.round((20+b.lv*6.5)*bossKind(b).atk*(.85+Math.random()*.3)-def()*(1+bossBonusK(b,'def'))*.4));
+// returns [damage taken, damage the guard formation (방어 진형) took off it]
+const bossBlow2=b=>{const raw=(20+b.lv*6.5)*bossKind(b).atk*(.85+Math.random()*.3),hit=Math.max(1,Math.round(raw-def()*(1+bossBonusK(b,'def'))*.4));return[hit,Math.max(0,Math.max(1,Math.round(raw-def()*.4))-hit)]};
+// half of what the guard formation saved goes to its casters' contribution, split by stack
+function bossDefCredit(b,saved){const fx=bossFx(b).filter(f=>f.k==='def'&&f.u),c=Math.round(saved*.5);if(!fx.length||c<=0||!bossAlive(b))return;const m={};
+  fx.forEach((f,i)=>{const part=i===fx.length-1?c-Object.values(m).reduce((a,v)=>a+v,0):Math.floor(c/fx.length);if(part>0)m['dmg.'+f.u+'.d']=(m['dmg.'+f.u+'.d']||0)+part});
+  if(Object.keys(m).length)docInc(bossRef(),m,{}).catch(()=>{})}
 // every 30% of its health lost, the invader lashes out at everyone who has fought it
 // count of 30% steps lost (70% · 40% · 10% left) — taken from hp so a stale client's counter can't add extra blows
 const bossAoeN=b=>b&&b.hp>0&&b.max>0?Math.min(3,Math.floor((b.max-b.hp)/(b.max*.3)+1e-9)):0;
 function bossQuake(){const b=BOSS;if(!b||!bossAlive(b)||!(bossAoeN(b)>0)||!(b.dmg&&b.dmg[uid]))return;const seen=(P.bossAoe&&P.bossAoe.gen===b.gen)?P.bossAoe.n:0;const na=bossAoeN(b);if(na<=seen)return;
-  const k=na-seen;P.bossAoe={gen:b.gen,n:na};let tot=0;for(let i=0;i<k;i++)tot+=bossBlow(b);heal(-tot,0);
+  const k=na-seen;P.bossAoe={gen:b.gen,n:na};let tot=0,sv=0;for(let i=0;i<k;i++){const [h,v]=bossBlow2(b);tot+=h;sv+=v}heal(-tot,0);bossDefCredit(b,sv);
   bossLast={t:Date.now(),miss:false,txt:`${b.name}의 광역 반격! 모든 토벌대 체력 -${tot}`};log(`${b.name}이(가) 체력을 잃고 날뛰었다! 광역 반격으로 체력 -${tot}`,'bad');toast(`${b.name}의 광역 반격! 체력 -${tot}`);commit()}
 // invader skills: one per job, 10 min apart; the medic's rally (+10%) and the navigator's weak spot (+15%) are 3-min team effects kept on the invader, stacking to at most +75% damage
 const BSK={medic:{n:'전투 고무',d:'3분 동안 토벌대 전원 공격력 +10%'},mech:{n:'연속 타격',d:'침략자를 두 번 연속 공격'},nav:{n:'방어 진형',d:'3분 동안 토벌대 전원 방어력 +15%'}},BSK_CD=10*60e3,BFX_MS=3*60e3,BFX_MAX=.75,BFX_CAP={atk:.5,weak:.75,def:.75};
@@ -3244,9 +3249,9 @@ async function bossSkill(){const b=BOSS,j=OLDJOB[P.job]||P.job,k=BSK[j];if(!k||!
   try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end||bossBonusK(cur,bskKind(j))>=BFX_CAP[bskKind(j)])return null;cur.fx=[...bossFx(cur),{k:bskKind(j),by:P.nick,u:uid,until:Date.now()+BFX_MS}];cur.dmg=cur.dmg||{};if(!cur.dmg[uid])cur.dmg[uid]={n:P.nick,d:0};ok=true;return cur})}catch(e){}
   bossBusy=false;if(!ok){toast('스킬을 쓰지 못했습니다.');bossPaint();return}
   P.bossSk={gen:b.gen,at:Date.now()};sfxBossHit(false);log(`[${k.n}] ${k.d}`,'good');sys(`${P.nick} 님의 ${k.n}! ${k.d}`);commit()}
-// who a hit's damage is credited to: the share a rally or weak spot added goes to its casters, split by effect strength; the rest to the striker
+// who a hit's damage is credited to: the share a rally added goes to its casters, half of what a weak spot added goes to its casters, split by effect strength; the rest to the striker
 function bossSplit(cur,dealt,d){const out={},fx=bossFx(cur).filter(f=>f.u&&f.k!=='def'),extra=Math.max(0,dealt-Math.min(dealt,d));let mine=dealt;
-  if(fx.length&&extra>0){const wt=fx.reduce((a,f)=>a+fxVal(f),0);let given=0;fx.forEach((f,i)=>{const part=i===fx.length-1?extra-given:Math.floor(extra*fxVal(f)/wt);given+=part;if(!part)return;mine-=part;out[f.u]=(out[f.u]||0)+part})}
+  if(fx.length&&extra>0){const wt=fx.reduce((a,f)=>a+fxVal(f),0);let given=0;fx.forEach((f,i)=>{const part=i===fx.length-1?extra-given:Math.floor(extra*fxVal(f)/wt);given+=part;const cut=f.k==='weak'?Math.round(part*.5):part;if(!cut)return;mine-=cut;out[f.u]=(out[f.u]||0)+cut})}
   out[uid]=(out[uid]||0)+mine;return out}
 // counter hits landing together can take the invader to 0 without anyone holding the last-hit lock: the first client to see it records the kill for the last striker
 let bossFin=false;
@@ -3266,7 +3271,7 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
   bossBusy=false;if(!dealt){bossPaint();return}
   if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
-  let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const hit=bossBlow(b);heal(-hit,0);back=`${hit} 피해`}
+  let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const [hit,sv]=bossBlow2(b);heal(-hit,0);bossDefCredit(BOSS||b,sv);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
   // one notice for everyone, posted by whoever landed the last blow
   if(kill)sys(`[공지] 침략자 ${b.name}이(가) 물러났습니다! 토벌 성공. 참여한 단원은 탐사 화면에서 보상 상자를 여십시오.`,false,'beacon');
@@ -3413,7 +3418,7 @@ function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHe
 function bossSkHTML(b){const j=OLDJOB[P.job]||P.job,k=BSK[j],fx=bossFx(b),bn=bossBonusK(b,bskKind(j)),sc=bossSkReady(),ba=bossBonusK(b,'atk'),bw=bossBonusK(b,'weak'),bd=bossBonusK(b,'def');
   // one row per effect: its own total first, then who cast it and how long each lasts
   const fxs=fx.length?`<div class="bossfxs">${[['atk','전투 고무','공격력',ba],['def','방어 진형','방어력',bd],['weak','약점 분석','받는 피해',bw]].filter(([q])=>fx.some(f=>f.k===q)).map(([q,n,w,v])=>`<div class="bossfx"><b class="bossfxsum">${n} · ${w} 합계 +${Math.round(v*100)}%${v>=BFX_CAP[q]-1e-9?' (최대)':''}</b>${fx.filter(f=>f.k===q).map(f=>`<span class="qchip">+${Math.round(fxVal(f)*100)}% <small>${esc(f.by||'')} · <i class="bfxt" data-u="${f.until}">${fmtClock(f.until-Date.now())}</i></small></span>`).join('')}</div>`).join('')}</div>`:'';
-  return`${k?`<div class="row bossact"><button class="btn gold" data-act="bossskill" id="bossSkBtn" ${sc>0||isFaint()||(j!=='mech'&&bn>=BFX_CAP[bskKind(j)])?'disabled':''}>${k.n}</button><span class="hint" id="bossSkT">${JOBS[j].n} 스킬 · ${k.d} · ${sc>0?`다시 쓰기까지 ${fmtClock(sc)}`:'10분에 한 번 쓸 수 있습니다.'}</span></div>`:''}${fxs}<span class="hint">전투 고무와 방어 진형은 각각 겹쳐 쓸 수 있고, 전투 고무는 최대 +${BFX_CAP.atk*100}%, 방어 진형은 최대 +${BFX_CAP.def*100}%까지 쌓입니다. 전투 고무로 늘어난 피해는 효과를 건 단원의 기여도로 들어갑니다.</span>`}
+  return`${k?`<div class="row bossact"><button class="btn gold" data-act="bossskill" id="bossSkBtn" ${sc>0||isFaint()||(j!=='mech'&&bn>=BFX_CAP[bskKind(j)])?'disabled':''}>${k.n}</button><span class="hint" id="bossSkT">${JOBS[j].n} 스킬 · ${k.d} · ${sc>0?`다시 쓰기까지 ${fmtClock(sc)}`:'10분에 한 번 쓸 수 있습니다.'}</span></div>`:''}${fxs}<span class="hint">전투 고무와 방어 진형은 각각 겹쳐 쓸 수 있고, 전투 고무는 최대 +${BFX_CAP.atk*100}%, 방어 진형은 최대 +${BFX_CAP.def*100}%까지 쌓입니다. 전투 고무로 늘어난 피해는 전부, 약점 분석으로 늘어난 피해는 절반이 효과를 건 단원의 기여도로 들어갑니다. 방어 진형은 줄여 준 피해의 절반이 기여도로 들어갑니다.</span>`}
 function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT');{const at=$('#asigT');if(at){const sg=asigState();const k='a'+sg.n+(sg.off?'o':'');if(k!==window.__ak){window.__ak=k;if(window.__akInit)bossPaint();window.__akInit=1}else at.textContent=asigMsg(sg)}}
   {const r=$('#bossRet');if(r){const l=bossRetLeft(b);if(l>0)r.textContent=fmtClock(l);else bossPaint()}}
   if(bossAlive(b)){const c=$('#bossClock');if(c){c.textContent=bossClock(b);c.classList.toggle('urgent',(b.end||0)-Date.now()<30*60e3)}if(t){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}{const st=$('#bossSkT'),sb=$('#bossSkBtn'),sc=bossSkReady(),j=OLDJOB[P.job]||P.job;if(st&&BSK[j])st.textContent=`${JOBS[j].n} 스킬 · ${BSK[j].d} · ${sc>0?`다시 쓰기까지 ${fmtClock(sc)}`:'10분에 한 번 쓸 수 있습니다.'}`;if(sb)sb.disabled=sc>0||isFaint()||bossBusy||(j!=='mech'&&bossBonusK(b,bskKind(j))>=BFX_CAP[bskKind(j)]);document.querySelectorAll('.bfxt').forEach(e=>e.textContent=fmtClock(+e.dataset.u-Date.now()));const fk=bossFx(b).map(f=>f.until).join();if(fk!==window.__bfk){const had=window.__bfk!==undefined;window.__bfk=fk;if(had)bossPaint()}}}
