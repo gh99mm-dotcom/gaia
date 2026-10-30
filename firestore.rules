@@ -76,6 +76,15 @@ service cloud.firestore {
       allow delete: if member() && (resource.data.uid == me() || isAdmin());
     }
 
+    // 메모장: 모두 읽고, 자기 이름으로만 메모를 남겨요. 글쓴이만 내용을 고치고, 다른 사람은 댓글(cm)만 덧붙일 수 있어요.
+    match /memos/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.uid == me() && str('text', 200);
+      allow update: if member() && (resource.data.uid == me()
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cm']));
+      allow delete: if member() && (resource.data.uid == me() || isAdmin());
+    }
+
     // 귓속말: 주고받은 두 사람만 읽을 수 있어요.
     match /dm/{id} {
       allow read: if member() && me() in resource.data.users;
