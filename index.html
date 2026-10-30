@@ -1397,15 +1397,10 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 #socStage .rklist b,#socStage .rklist li:nth-child(-n+2) b{font-size:9px}
 #socStage .rkmine{font-size:10px;padding-top:3px}
 
-/* 관계도 in the phone: a big portrait map, then small tier chips */
+/* 관계도 in the phone: a big portrait map with just the colour key under it */
 #socStage .relmap{max-width:none}
-#socStage .reltiers{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:8px}
-#socStage .reltier{padding:4px 6px;gap:0;border-left-width:3px}
-#socStage .reltier b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#socStage .reltier .rng{font-size:9px}
-#socStage .reltier .hint{display:none}
-#socStage .reltier .cnt{font-size:10px}
-#socStage .relkey{display:none}
+#socStage .reltiers{display:none}
+#socStage .relkey{gap:4px 10px;margin-top:8px;font-size:11px}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -5896,7 +5891,7 @@ const GIFT_DAY=2,giftsToday=id=>{const v=(P.giftDay||{})[id];return !v?0:typeof 
 function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span class="hint">${affLabel(v)}</span>`}
 /* relationship map: the center person in the middle, everyone else on a ring; each link shows both directions */
 function relMapHTML(cid,compact,tall){const C=whoP(cid);if(!cid||!C)return'';const others=orgAll().filter(([id])=>id!==cid);
-  const W=100,H=tall?136:compact?70:82,cx=W/2,cy=H/2,rx=compact?40:tall?38:39,ry=tall?58:compact?27:32,n=others.length;
+  const W=100,H=tall?156:compact?70:82,cx=W/2,cy=H/2,rx=compact?40:tall?39:39,ry=tall?68:compact?27:32,n=others.length;
   const pos=others.map(([id,p],i)=>{const a=-Math.PI/2+i/Math.max(1,n)*Math.PI*2;return{id,p,x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry}});
   let lines='',labels='';
   pos.forEach(o=>{const out=affOf(C,o.id),inn=affOf(o.p,cid);if(!out&&!inn){lines+=`<line x1="${cx}" y1="${cy}" x2="${o.x}" y2="${o.y}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3" vector-effect="non-scaling-stroke"/>`;return}
