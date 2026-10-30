@@ -1224,7 +1224,7 @@ b.no{color:var(--red)}
 .memo{padding:9px 12px;border-bottom:1px dashed var(--line)}.memo:last-child{border-bottom:0}.memo.mine{background:color-mix(in srgb,var(--gold) 6%,transparent)}
 .memoact{margin-left:auto;display:flex;gap:4px}.memoact .qchip{font-size:11px;padding:1px 6px}
 .memotx{margin:5px 0 0 26px;font-size:13.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
-.memocms{margin:6px 0 0 26px;display:flex;flex-direction:column;gap:3px}.memocm{display:flex;align-items:baseline;gap:6px;font-size:12.5px;flex-wrap:wrap}.memocm b{font-size:12px}.memoct{flex:1;min-width:120px;overflow-wrap:anywhere}.memocm time{font-size:10.5px}.memoarr{color:var(--dim);font-size:11px}
+.memocms{margin:6px 0 0 26px;display:flex;flex-direction:column;gap:3px}.memocm{display:flex;align-items:baseline;gap:6px;font-size:12.5px;flex-wrap:wrap;margin-left:calc(var(--d,0) * 16px)}.memocmact{margin-left:auto;display:flex;gap:3px}.memocmact .qchip{font-size:10.5px;padding:0 5px}.memoact .qchip.on{color:var(--gold)}.memocm b{font-size:12px}.memoct{flex:1;min-width:120px;overflow-wrap:anywhere}.memocm time{font-size:10.5px}.memoarr{color:var(--dim);font-size:11px}
 .memocmin{align-items:center}.memocmin input{flex:1;min-width:140px;font-size:12.5px;padding:4px 6px}
 .upboost{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.upboost .hint{flex:1;min-width:140px}.upodds small{color:var(--gold);font-size:11px}
 .upodds{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px}.upodds b{color:var(--gold);font-weight:400}.upodds span{color:var(--mute)}.upodds .drop{color:var(--red)}
@@ -5615,7 +5615,9 @@ function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.fr
   // each message carries its sender's portrait; a run of messages from the same person shows it once
   return ms.length?ms.map((d,i)=>{const me=d.from===uid,first=!i||ms[i-1].from!==d.from;return`<div class="dmrow ${me?'me':''}"><span class="dmav">${first?headImg(3,whoP(d.from)):''}</span><div class="dmb ${me?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div></div>`}).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
 /* ---- 만남 (memo board): a memo board like a Naver cafe's, newest first, with short comments under each memo ---- */
-const MEMO_MAX=1500,MEMO_CM=100,MEMO_N=60;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false;
+const MEMO_MAX=1500,MEMO_CM=100,MEMO_N=60;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false,memoReply=null,memoCmDel=null;
+// comments are kept flat on the memo ({id,pid,...}); pid points at the comment being answered, so replies can go as deep as people like
+const memoCms=m=>(m.cm||[]).map((c,i)=>c&&Object.assign({id:'o'+i},c)).filter(Boolean);
 const memoRef=()=>db.collection('memos');
 tabSub(()=>tab==='social'&&socTab==='memo',()=>memoRef().orderBy('at','desc').limit(MEMO_N).onSnapshot(sn=>{MEMOS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='social'&&socTab==='memo'&&!isField(document.activeElement))renderPanel()},()=>{}));
 function memoStamp(t){const d=new Date(+t||0);return`${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
@@ -5625,19 +5627,27 @@ function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px
   <div class="card memonew"><div class="memohd">${headImg(2,P)}<b>${esc(P.nick)}</b><span class="hint" id="memoCnt">${memoDraft.length}/${MEMO_MAX}</span></div>
    <textarea id="memoIn" class="sel memota" maxlength="${MEMO_MAX}" placeholder="메모를 남겨 주세요. (${MEMO_MAX}자까지 · Ctrl+Enter로 등록)" aria-label="메모 내용">${esc(memoDraft)}</textarea>
    <div class="row" style="justify-content:flex-end"><button class="btn sm gold" data-act="memopost" ${memoBusy?'disabled':''}>등록</button></div></div>
-  <div class="memolist">${L.length?L.map(m=>{const mine=m.uid===uid,cms=(m.cm||[]).filter(c=>c&&c.text),op=memoOpen===m.id,arm=memoDelArm===m.id;
+  <div class="memolist">${L.length?L.map(m=>{const mine=m.uid===uid,cms=memoCms(m),live=cms.filter(c=>c.text&&!c.del).length,op=memoOpen===m.id,arm=memoDelArm===m.id;
     return`<article class="memo${mine?' mine':''}"><div class="memohd">${headImg(2,whoP(m.uid))}<b style="color:${colorOf(m.uid)}">${esc(m.nick||'단원')}</b><time class="hint">${memoStamp(m.at)}</time>
-      <span class="memoact">${cms.length||op?'':''}<button class="qchip" data-act="memocm" data-k="${esc(m.id)}">댓글${cms.length?' '+cms.length:''}</button>${mine||isAdmin?(arm?`<button class="qchip" data-act="memodel" data-k="${esc(m.id)}" data-x="1" style="color:var(--red)">정말 삭제</button><button class="qchip" data-act="memodel" data-k="">취소</button>`:`<button class="qchip" data-act="memodel" data-k="${esc(m.id)}">삭제</button>`):''}</span></div>
+      <span class="memoact">${cms.length||op?'':''}<button class="qchip${op?' on':''}" data-act="memocm" data-k="${esc(m.id)}" aria-expanded="${op}">댓글${live?' '+live:''} ${op?'▲':'▼'}</button>${mine||isAdmin?(arm?`<button class="qchip" data-act="memodel" data-k="${esc(m.id)}" data-x="1" style="color:var(--red)">정말 삭제</button><button class="qchip" data-act="memodel" data-k="">취소</button>`:`<button class="qchip" data-act="memodel" data-k="${esc(m.id)}">삭제</button>`):''}</span></div>
       <p class="memotx">${esc(m.text)}</p>
-      ${cms.length||op?`<div class="memocms">${cms.map(c=>`<div class="memocm"><span class="memoarr">ㄴ</span><b style="color:${colorOf(c.uid)}">${esc(c.nick||'단원')}</b><span class="memoct">${esc(c.text)}</span><time class="hint">${memoStamp(c.at)}</time></div>`).join('')}
-        ${op?`<div class="memocm memocmin"><span class="memoarr">ㄴ</span><input id="memoCmIn" class="sel" maxlength="${MEMO_CM}" data-k="${esc(m.id)}" value="${esc(memoCm[m.id]||'')}" placeholder="댓글 (${MEMO_CM}자까지 · Enter로 등록)" aria-label="댓글"><button class="btn sm" data-act="memocmpost" data-k="${esc(m.id)}">등록</button></div>`:''}</div>`:''}
+      ${op?`<div class="memocms">${memoTree(m,cms,'',0)}${memoReply===null||!cms.some(c=>c.id===memoReply)?memoCmBox(m.id,'',0):''}</div>`:''}
     </article>`}).join(''):'<p class="empty" style="padding:18px">아직 메모가 없습니다. 첫 메모를 남겨 보십시오.</p>'}</div>`}
 async function memoPost(){if(mode!=='online'||memoBusy)return;const t=String(($('#memoIn')||{}).value??memoDraft).trim().slice(0,MEMO_MAX);if(!t){toast('메모 내용을 적어 주십시오.');return}
   const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});memoDraft='';stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
-async function memoCmPost(id){const m=MEMOS.find(x=>x.id===id);if(!m)return;const i=$('#memoCmIn'),t=String((i&&i.value)||memoCm[id]||'').trim().slice(0,MEMO_CM);if(!t){toast('댓글을 적어 주십시오.');return}
-  const cm=[...(m.cm||[]),{uid,nick:P.nick,text:t,at:Date.now()}].slice(-30);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoCm[id]=''}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus()},30)}
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoCmIn')memoCm[t.dataset.k]=t.value});
-document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k)}});
+function memoCmBox(mid,pid,depth){return`<div class="memocm memocmin" style="--d:${Math.min(depth,6)}"><span class="memoarr">ㄴ</span><input id="memoCmIn" class="sel" maxlength="${MEMO_CM}" data-k="${esc(mid)}" data-p="${esc(pid)}" value="${esc(memoCm[mid+'|'+pid]||'')}" placeholder="${pid?'답글':'댓글'} (${MEMO_CM}자까지 · Enter로 등록)" aria-label="${pid?'답글':'댓글'}"><button class="btn sm" data-act="memocmpost" data-k="${esc(mid)}" data-p="${esc(pid)}">등록</button>${pid?`<button class="qchip" data-act="memoreply" data-k="">취소</button>`:''}</div>`}
+function memoTree(m,cms,pid,depth){return cms.filter(c=>(c.pid||'')===pid).map(c=>{const mine=c.uid===uid,gone=c.del||!c.text,arm=memoCmDel===m.id+'|'+c.id;
+  return`<div class="memocm" style="--d:${Math.min(depth,6)}"><span class="memoarr">ㄴ</span>${gone?'<span class="memoct hint">삭제된 댓글입니다.</span>':`<b style="color:${colorOf(c.uid)}">${esc(c.nick||'단원')}</b><span class="memoct">${esc(c.text)}</span><time class="hint">${memoStamp(c.at)}</time>
+   <span class="memocmact"><button class="qchip" data-act="memoreply" data-k="${esc(c.id)}">답글</button>${mine||isAdmin?(arm?`<button class="qchip" data-act="memocmdel" data-k="${esc(m.id)}" data-c="${esc(c.id)}" data-x="1" style="color:var(--red)">정말 삭제</button><button class="qchip" data-act="memocmdel" data-k="">취소</button>`:`<button class="qchip" data-act="memocmdel" data-k="${esc(m.id)}" data-c="${esc(c.id)}">삭제</button>`):''}</span>`}</div>
+   ${memoReply===c.id?memoCmBox(m.id,c.id,depth+1):''}${memoTree(m,cms,c.id,depth+1)}`}).join('')}
+// deleting a comment that has answers leaves a "삭제된 댓글" placeholder so the thread below it still hangs together
+async function memoCmDelete(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)return;const cms=memoCms(m),c=cms.find(x=>x.id===cid);if(!c||(c.uid!==uid&&!isAdmin))return;
+  const kids=cms.some(x=>x.pid===cid);const out=kids?cms.map(x=>x.id===cid?Object.assign({},x,{text:'',del:1}):x):cms.filter(x=>x.id!==cid);
+  try{await memoRef().doc(mid).update({cm:out})}catch(e){toast('댓글을 지우지 못했습니다.')}renderPanel()}
+async function memoCmPost(id,pid=''){const m=MEMOS.find(x=>x.id===id);if(!m)return;const key=id+'|'+pid,i=$('#memoCmIn'),t=String((i&&i.value)||memoCm[key]||'').trim().slice(0,MEMO_CM);if(!t){toast('댓글을 적어 주십시오.');return}
+  const cm=[...memoCms(m),{id:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),pid,uid,nick:P.nick,text:t,at:Date.now()}].slice(-300);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus()},30)}
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
+document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k,t.dataset.p||'')}});
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
   return`<p class="lead">단원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
   <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,3)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'단원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 단원을 고르십시오.</p>'}</div></div>`}
@@ -5826,8 +5836,10 @@ function socSubscribe(){
     renderNav();if(tab==='social'&&!viewing)renderPanel()},()=>{})}
 const SA={
  memopost(){memoPost()},
- memocmpost(d){memoCmPost(d.k)},
- memocm(d){memoOpen=memoOpen===d.k?null:d.k;renderPanel();if(memoOpen)setTimeout(()=>{const i=$('#memoCmIn');if(i)i.focus()},30)},
+ memocmpost(d){memoCmPost(d.k,d.p||'')},
+ memoreply(d){memoReply=d.k||null;renderPanel();setTimeout(()=>{const i=$('#memoCmIn');if(i)i.focus()},30)},
+ memocmdel(d){if(!d.k){memoCmDel=null;renderPanel();return}if(!d.x){memoCmDel=d.k+'|'+d.c;renderPanel();return}memoCmDel=null;memoCmDelete(d.k,d.c)},
+ memocm(d){memoOpen=memoOpen===d.k?null:d.k;memoReply=null;renderPanel();if(memoOpen)setTimeout(()=>{const i=$('#memoCmIn');if(i)i.focus()},30)},
  async memodel(d){if(!d.k){memoDelArm=null;renderPanel();return}if(!d.x){memoDelArm=d.k;renderPanel();return}memoDelArm=null;try{await memoRef().doc(d.k).delete()}catch(e){toast('삭제하지 못했습니다.')}renderPanel()},
  sotab(d){socTab=d.k;pdelArm=null;profId=null;profBio=false;if(d.k!=='pad'&&padThread)openThread(null);renderPanel();if(d.k==='dm'&&dmPeer)setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
  padview(d){padView=d.k;padTag='';renderPanel()},
