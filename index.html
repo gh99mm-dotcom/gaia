@@ -2764,7 +2764,7 @@ function renderFarm(){
   </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
 function harvestAt(i){let got=null;
-  podAct(i,cur=>{got=null;if(!cur||!cur.seed||stage(cur)!==3)return null;got=cur;return{til:1,wet:cur.wet&&isWet(cur)?cur.wet:0}},()=>{const pl=got,it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(lb?1:0),back=Math.random()<.45;sfxHarvest();
+  podAct(i,cur=>{got=null;if(!cur||!cur.seed||stage(cur)!==3)return null;got=cur;return{til:1,wet:cur.wet&&isWet(cur)?cur.wet:0}},()=>{const pl=got,it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(lb?1:0),back=Math.random()<.45;sfxHarvest(n);
     storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',FARM_LX);gainXp(3);
     log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good')},()=>toast('다른 단원이 먼저 수확했습니다.'))}
 // one picture per tier, from a plain work jumpsuit up to glowing power armour (suitgen.py)
@@ -3576,7 +3576,10 @@ function sfxSplash(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curr
 function noiseBurst(a,at,len,type,f0,f1,vol,shape=2){const buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,shape);const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type=type;f.Q.value=1;f.frequency.setValueAtTime(f0,at);f.frequency.exponentialRampToValueAtTime(f1,at+len);const g=a.createGain();g.gain.setValueAtTime(vol,at);s.connect(f).connect(g).connect(sfxOut(a));s.start(at);s.stop(at+len)}
 function sfxPlant(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.18,'lowpass',900,200,.5,3);noiseBurst(a,t+.14,.14,'lowpass',700,150,.35,3);tone(a,'sine',260,120,t+.02,.12,.18);tone(a,'triangle',880,0,t+.3,.08,.05)}
 function sfxWater(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;const len=1.1,buf=a.createBuffer(1,Math.floor(a.sampleRate*len),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++){const p=i/d.length;d[i]=(Math.random()*2-1)*Math.min(1,p*8)*Math.min(1,(1-p)*3)}const s=a.createBufferSource();s.buffer=buf;const f=a.createBiquadFilter();f.type='bandpass';f.Q.value=.9;f.frequency.setValueAtTime(1600,t);f.frequency.linearRampToValueAtTime(1100,t+len);const g=a.createGain();g.gain.value=.3;s.connect(f).connect(g).connect(sfxOut(a));s.start(t);s.stop(t+len);for(let k=0;k<7;k++)tone(a,'sine',700+Math.random()*900,0,t+.1+Math.random()*.9,.05,.035)}
-function sfxHarvest(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.25,'highpass',2500,900,.22,1.5);tone(a,'sine',300,900,t+.06,.09,.22);noiseBurst(a,t+.1,.2,'lowpass',800,200,.3,3);tone(a,'triangle',1320,0,t+.22,.12,.06);tone(a,'triangle',1760,0,t+.3,.14,.05)}
+// one "뽁" per crop pulled out of the soil (leaf rustle, a rising pop, a soft thud of dirt), each a little higher, then a sparkle
+function sfxHarvest(n=1){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,k=Math.max(1,Math.min(5,n|0)),gap=.17;
+  for(let i=0;i<k;i++){const tt=t+i*gap,up=1+i*.12;noiseBurst(a,tt,.16,'highpass',2600,1000,.15,1.5);tone(a,'sine',300*up,950*up,tt+.05,.09,.2);noiseBurst(a,tt+.09,.14,'lowpass',800,220,.2,3)}
+  const te=t+(k-1)*gap;tone(a,'triangle',1320,0,te+.22,.12,.06);tone(a,'triangle',1760,0,te+.3,.14,.05)}
 function sfxCoin(){lastCoinAt=Date.now();if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'square',1976,0,t,.07,.05);tone(a,'sine',2637,0,t+.06,.35,.14);tone(a,'sine',3136,0,t+.06,.25,.06);tone(a,'triangle',2349,0,t+.13,.3,.08);noiseBurst(a,t,.12,'highpass',6000,4000,.08,1.5)}
 function sfxSell(many){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,k=many?5:3;for(let i=0;i<k;i++){const tt=t+i*.075,f=[2349,2637,2093,2794,2489][i%5];tone(a,'sine',f,0,tt,.22,.09);tone(a,'square',f*1.5,0,tt,.03,.03)}noiseBurst(a,t+k*.075,.1,'highpass',5000,3000,.06,1.5);tone(a,'triangle',1568,0,t+k*.075+.05,.4,.07)}
 // 탐사: my shot at the invader, its counterblow, and the killing blow
