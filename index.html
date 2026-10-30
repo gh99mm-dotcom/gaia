@@ -1991,6 +1991,8 @@ const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','�
 // Below +10 a failure keeps the stage; from +10 on a failed attempt drops the weapon one step
 const UP_BOOST=10;let upBoost=false;
 const upUseB=()=>upBoost&&(P.inv.upcat||0)>0,upPct=n=>Math.min(100,UP_P[n]+(upUseB()?UP_BOOST:0));
+// attack from weapon upgrades: +5 a step up to +10, then each step adds one more than the last (+6 at +11 … +15 at +20), 155 at +20
+const wStep=k=>k<=10?5:k-5,wAtk=n=>{let a=0;for(let k=1;k<=(n|0);k++)a+=wStep(k);return a};
 const UP_P=[100,100,100,100,100,100,100,100,85,80,75,70,66,61,56,51,46,42,37,32],UP_DROP=10;
 // credits per attempt, paid win or lose
 const UP_CR=[10,15,30,45,70,90,120,150,200,250,300,380,450,530,640,750,900,1050,1200,1420];
@@ -2178,7 +2180,7 @@ const GF=k=>{let v=0;for(const id of accOf()){const f=accById(id);if(f&&f.fx[k])
 const petX=k=>1+PF(k)/100;
 // 항해사 (tank): +20% max HP and +30% DEF, never less than the old flat +30 HP / +6 DEF
 const NAV_HP=.2,NAV_DEF=.3,navAdd=(base,pct,min)=>P.job==='nav'?Math.max(min,Math.round(base*pct)):0;
-const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+navAdd(b,NAV_HP,30))*petX('hp'))}, maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')*(1+((SUITS[P.suit||0]||{}).en||0))), atk=()=>Math.round((6+P.lvl*2+P.wlv*5+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')), def=()=>{const b=Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+GF('def')+BUFF('def');return Math.floor((b+navAdd(b,NAV_DEF,6))*petX('def'))},
+const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+navAdd(b,NAV_HP,30))*petX('hp'))}, maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')*(1+((SUITS[P.suit||0]||{}).en||0))), atk=()=>Math.round((6+P.lvl*2+wAtk(P.wlv)+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')), def=()=>{const b=Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+GF('def')+BUFF('def');return Math.floor((b+navAdd(b,NAV_DEF,6))*petX('def'))},
 // critical chance in %: agility, gear and pet
 critPct=()=>AS('agi')+GF('crit')+PF('crit'), xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);if(!raidLocked())P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
@@ -4977,7 +4979,7 @@ let bagF=null;
 // 제작대 › 무기 강화
 function upCardHTML(){const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n];
   return`<div class="card upcard" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
-   <div class="upnow">${wpnImg(n,64)}<div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">공격력 +5 per 강화 · 최대 +${WEAPONS.length-1}</div>${n<WEAPONS.length-1?`<div class="upnext">${wpnImg(n+1,32)}<span class="hint">다음 · ${WEAPONS[n+1]} +${n+1}</span></div>`:''}</div></div>
+   <div class="upnow">${wpnImg(n,64)}<div><b style="color:var(--cyan)">${WEAPONS[n]} +${n}</b><div class="hint">강화 공격력 +${wAtk(n)}${n<WEAPONS.length-1?` · 다음 단계 +${wStep(n+1)}`:''} · 최대 +${WEAPONS.length-1}</div>${n<WEAPONS.length-1?`<div class="upnext">${wpnImg(n+1,32)}<span class="hint">다음 · ${WEAPONS[n+1]} +${n+1}</span></div>`:''}</div></div>
    ${n>=WEAPONS.length-1?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${upPct(n)}%${upUseB()?` <small>(+${UP_BOOST}%p 촉매)</small>`:''}</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div><div class="upboost">${iicon('upcat',2)}<span class="hint">공명 촉매 ${P.inv.upcat||0}개 · 한 번에 1개 써서 성공 확률 +${UP_BOOST}%p</span><button class="btn sm ${upUseB()?'gold':'ghost'}" data-act="upboost" ${(P.inv.upcat||0)>0?'':'disabled'} aria-pressed="${upUseB()}">${upUseB()?'사용 ON':'사용 OFF'}</button></div><button class="btn sm" data-act="upgrade" ${can?'':'disabled'}>강화하기</button>`}
    <details class="uptable" ${upTblOpen?"open":""}><summary>단계별 성공 확률 보기</summary><table><thead><tr><th>강화</th><th>무기</th><th>성공</th><th>크레딧</th><th>실패 시</th></tr></thead><tbody>${UP_P.map((p,i)=>`<tr class="${i===n?'now':''}"><td>+${i} → +${i+1}</td><td class="upw">${wpnImg(i+1,24)}${WEAPONS[i+1]}</td><td>${p}%</td><td>${UP_CR[i].toLocaleString()}</td><td>${i>=UP_DROP?'1단계 하락':'유지'}</td></tr>`).join('')}</tbody></table></details>
   </div>`}
