@@ -2109,6 +2109,7 @@ const BOSS_IC=['................','.....kkkkkk.....','...kkuuuuuukk...','..kuuuu
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
  {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 개척선 가이아 · 선체 손상 심각'},
+ {id:'bench',n:'제작대',ic:null,cost:'',loc:'가이아 정비실 · 보조무기 · 무기 강화 · 우주복·장신구'},
  {id:'farm',n:'농사',ic:IC.farm,cost:'',loc:'유리 돔 농장 · 21℃ · 습도 41% · 인공 중력 0.8G'},
  {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
@@ -2683,7 +2684,7 @@ function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const a
   const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender()}
 function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
-  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
+  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):t.id==='bench'?`<img class="pix" src="${FAB_PNG[1]}" width="32" height="32" alt="">`:img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
 }
 function head(id=tab){const t=TABS.find(x=>x.id===id);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
@@ -4634,8 +4635,8 @@ function roomMigrate(){roomDropGone();
   const r=P.room;if(!r||!Array.isArray(r.put))return;const FP={bed:900,sofa:800,desk:600,aqua:1000,chair:200,plant:150,trunk:250,lamp:300,rocket:400,robo:350,poster:150,clock:250,shelf:300,starmap:400,neon:500,monitor:650},WP={w1:300,w2:400,w3:500,w4:400},FL={f1:300,f2:400,f3:500};
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
   P.room={};if(cr>0){P.cr=(P.cr||0)+cr;log(`마이룸이 새 모습으로 바뀌어, 전에 산 가구 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
-function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='bench'}" data-act="shipview" data-k="bench">제작대</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
-function renderShip(){if(shipView==='bench')return benchHTML();if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 단원에게는 아직 잠겨 있습니다.</div>')}
+function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
+function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 단원에게는 아직 잠겨 있습니다.</div>')}
   if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 단원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
   const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP.find(x=>!shipDone(x))||SHIP[SHIP.length-1],open=shipOpen(pt),g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
   const rank=shipTotals().u;
@@ -4823,7 +4824,7 @@ function benchRows(k){const cr=P.cr||0;
 // the workbench header: a pixel SF fabricator (fabgen.py); the lit frame is shown, standing still
 const FAB_PNG=["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACQUlEQVR42uVXPUjrUBT+LNJBsGSoU4uIk2hAKcWpBAeHoiIdCpaS2aGigviKiGMQkS5NsZNjKAoiIg7iICF0eQ8JClH6HlIej+ekgz/g4GAdakJtk+beetXBb8nNubn5vnvOycm5wHdHm9OEnwtWWBLd3P5vIxbg54KVA1VlRi7LmzjaVWxFtDst0oon7ya+zWfApRabPtNO8qKdrQIAIJ5I0o1dyJuGIC1lmIXgVD+lD4G5kAUu/1y0FoJmC+OJpG2YaNFUQKn8FxntDACwKAzC7Vkn9PX2OM55SFTWk3t5Aev7RfyYmYI6GsX6fhFeXiDacX198dCS12L89x0RaTyRRFrKwM8FK9djk29EeGhjZu50WJYsmzl28sLOVgFCJIwDVcXP9AJ9HbAj/zW3gidDs+ymzcsLlp0EVB54MjT4YiJKx6XGJDwuwRcTHcknRkagFU8gy5utewAAbqRpeHkBvpgIxETLfr+nEO18KDSEo10FLedALaHdmGkdMLGyvGw/8fz67U9G3l5fIa2ushHAqiRTC5iIjr3r5eb6lv4FQiQMIRJm1pCUDZ1OgNmQuMXRMT9Y1oH5q1nbcS0eZh6qXdDFEgDgXJwiyiciAdlADvNXs+DzIWQDOfD5UIOQzo1OAADXvwYAGFC2iZKZuBBlAzlrbKR0GCmdqB+o7xuoBZDG2I2Iyb/gUw4mfi5YuT7srsZRfKwmlNLB5L4r+q/hkOLoAdbk5n19Z2zrgV4+9CHuLhu6u4CPOBe6nQ+/FC+eQvlH72dHJAAAAABJRU5ErkJggg==", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACN0lEQVR42mNgGOmAEZeEiIDMf2pa9ObDE0aiHSAiIPN/y4EDVLN80qQ5DLvWLcHqCBZcmg4dOUOxxaXHDjF0W9nhVcNCjEFrVixjYGBgYAiJiCKJzRARRV4aEBGQ+V/W0kO1KLhw7gLpUQDTSA1w59Y18qIAn8YQtOCFBzuJAK8Dbtx7wNBz6CIDAwMDQ4mdPgMhtbiAhpICTjkmYlyJbjmHmQ9Dz55LDKXZ4QxXY8IZevZcYuAw8yHKx+jlCxOplpMDQiKiGMpaehhEBGT+v14wB8URTKQaBvOp54JWhoSPDHA2shy2bGxnY8Kw5cABhpMKKqRHATbLtydUM6zX0mdYr6XPsD2hmqAjKEoDMPDj1BYGkYQ0htMHHmLInT7wkEEkIY3hx6ktWPX6ODgwHDpyhmHSpDmkl4TI4EmWHwOHmQ+DSEIaA0NCGqKyWTALp+XIwMDIgGHXuiUMZKcBZAuxsalaDsBATVUVjuA4AaFd9FBpKGhpa6OOA6hVJJPsAB8PL4oMh+knqy6wszFhsLMxoVqD5N6Vc6Q5ANYgIRSPONMHNcuB/Ke5WNnI4HP2Z0gryG4SAwMDA8PVmHCi0hNRiXCi9GS4xehsGOCdysvAwMDA0H0oj4GBgYFBe8lKohIz0QURsmXIbELtgRACzTIWsssAEi2iSl1Al46JiIDM/9c75CDxGPMNkqCWcFGFL+rxCKOTgjMEqG05jI/eMsYaAko6RjQJ7ntXzhF2AC36hYT6hwMKAAdO8ZdKUSQNAAAAAElFTkSuQmCC"];
 function benchHTML(){const tabs=[['wpn','보조무기'],['up','무기 강화'],['craft','우주복·장신구']];
-  return head()+shipSubTabs()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot fabbot"><img class="pix keepc" src="${FAB_PNG[1]}" width="64" height="64" alt="SF 제작 스테이션"></span><div class="sinfo"><b>제작대 · 가이아 정비실</b><p class="say">보조무기를 사고, 주무기를 강화하고, 우주복과 장신구를 만드는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
+  return head()+`<div class="shop bench"><div class="card keeper benchhead"><span class="bot fabbot"><img class="pix keepc" src="${FAB_PNG[1]}" width="64" height="64" alt="SF 제작 스테이션"></span><div class="sinfo"><b>제작대 · 가이아 정비실</b><p class="say">보조무기를 사고, 주무기를 강화하고, 우주복과 장신구를 만드는 곳입니다.</p><div class="row" style="gap:6px">${img(IC.coin,null,2)}<b class="bal">${(P.cr||0).toLocaleString()} CR</b></div></div></div>
    <div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${benchTab===k}" data-act="benchtab" data-k="${k}">${n}</button>`).join('')}</div>
    ${`<div class="benchlay"><div class="benchmain">${benchTab==='up'?upCardHTML():`<div class="slist">${benchRows(benchTab)}</div>`}</div>${benchWornHTML()}</div>`}</div>`}
 // right-hand panel: what I have on right now
@@ -5118,7 +5119,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(secretView){$('#stage').innerHTML=secretHTML();startSecretScene();return}
   if(meView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="infoclose">← 돌아가기</button><div class="dtabs metabs" role="tablist"><button role="tab" aria-selected="${meTab==='me'}" data-act="metab" data-k="me">내 정보</button><button role="tab" aria-selected="${meTab==='prof'}" data-act="metab" data-k="prof">내 프로필</button><button role="tab" aria-selected="${meTab==='look'}" data-act="metab" data-k="look">내 모습</button></div><span class="loc">${esc(P.nick)} · ${esc(titleName())}</span></div><div class="mepage" id="infoBox"></div>`;renderInfo();return}
   const sy=window.scrollY,sl=document.querySelector('#stage .slist'),st=sl?sl.scrollTop:0,sds=[...document.querySelectorAll('#stage .seeds')].map(e=>{const b=e.querySelector('[data-i]');return[b?b.dataset.i:'',e.scrollTop]}).filter(x=>x[1]>0),ps=document.querySelector('#stage .pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
-  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,req:renderReq,adv:renderBoss,ship:renderShip,raid:renderRaid}[tab];
+  const f={farm:renderFarm,gather:renderGather,fish:renderFish,scan:renderScan,bag:renderBag,shop:renderShop,social:renderSocial,req:renderReq,adv:renderBoss,ship:renderShip,bench:benchHTML,raid:renderRaid}[tab];
   // redraws must not move the page: the stage keeps its old height while the new content goes in, then lets go only of what is not
   // needed to stay where the reader is (so the browser never clamps the scroll); and the page is only pulled back while no finger
   // or fling is moving it, since a stale position from mid-scroll would yank it upward
@@ -5335,7 +5336,7 @@ const A={
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
  bosshit(){bossHit()},
- shipview(d){shipView=d.k==='room'?'room':d.k==='bench'?'bench':'ship';if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
+ shipview(d){shipView=d.k==='room'?'room':'ship';if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
  rslot(d){roomSlot=d.k;renderPanel()},
  pv(d){if(preview[roomSlot]===d.k)delete preview[roomSlot];else preview[roomSlot]=d.k;renderPanel()},
  pvone(d){delete preview[d.k];renderPanel()},
@@ -5409,7 +5410,7 @@ const A={
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
  metab(d){meTab=d.k==='look'||d.k==='prof'?d.k:'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
- mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='ship';shipView='bench';benchTab='craft'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
+ mlshop(){if(raidLocked())return;meView=false;if(mlTab==='gear'){tab='bench';benchTab='craft'}else{tab='ship';shipView='room';visit=null;roomSlot='ward'}renderNav();renderPanel();setPresence()},
  wprev(d){if(!wardById(d.id))return;if(wPrev[d.k]===d.id)delete wPrev[d.k];else wPrev[d.k]=d.id;renderPanel()},
  wprevclr(){wPrev={};neonPick=null;neonSlot=null;renderPanel()},
  wwear(d){if(!ownsW(d.id))return;delete wPrev[d.k];P.outfit=Object.assign({},outfitOf(P),{[d.k]:d.id});save();renderPanel();renderPilot()},
@@ -5732,7 +5733,7 @@ const shortAgo=t=>{const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금'
 const socSeenAt=()=>Math.max(socSeen,+(P&&P.socSeen)||0),dmReadAt=peer=>Math.max(dmRead[peer]||0,+((P&&P.dmRead)||{})[peer]||0);
 function dmUnread(peer){return DMS.filter(d=>d.to===uid&&d.from===peer&&d.at>dmReadAt(peer)).length}
 function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>dmReadAt(d.from)).length}
-function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>p.uid!==uid&&p.at>seen&&(!p.re||p.reUid===uid)).length+dmUnreadAll()}
+function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>p.uid!==uid&&p.at>seen&&(!p.re||p.reUid===uid)).length}
 // first load on a device: whatever this browser had already read is copied onto the character
 function seenSync(){if(!P||!P.nick)return;let ch=false;if(socSeen>(+P.socSeen||0)){P.socSeen=socSeen;ch=true}const r=Object.assign({},P.dmRead);for(const k in dmRead)if((dmRead[k]||0)>(+r[k]||0)){r[k]=dmRead[k];ch=true}if(ch){P.dmRead=r;save()}}
 // a red dot on the PAD / 만남 tabs while there are posts by others I haven't opened that tab since
@@ -6004,10 +6005,10 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
     const lock='<span class="hint tastelock">🔒 호감도 30 이상이면 보입니다</span>';
     return`<div class="card profcard" id="profCard"><div class="profwrap">${idCardHTML(p,id,!!p.pfp&&open,!!p.pfp&&!open)}${profSideHTML(p,id,open)}</div>${profNotesHTML(p,false)}
      <div class="profunder"><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
-      <div class="row" style="gap:5px;flex-wrap:wrap"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
+      <div class="row" style="gap:5px;flex-wrap:wrap"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
      <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
      <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
-  return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="dmopen" data-k="${k}">귓속말</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
+  return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
@@ -6015,9 +6016,9 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
 </div>`}
 function renderSocial(){
   if(mode!=='online')return head('social')+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
-  if(socTab==='crew'&&!profId)socTab='pad';
+  if((socTab==='crew'&&!profId)||socTab==='dm')socTab='pad';
   if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['memo','만남'+socDot('memo')],['rel','관계도'],['rank','랭킹']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],['memo','만남'+socDot('memo')],['rel','관계도'],['rank','랭킹']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head('social')+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='rank'?socRank():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>${loungeHTML()}</div>`;
@@ -6054,7 +6055,7 @@ function socSubscribe(){
   db.doc('org/roles').onSnapshot(sn=>{ROLES=sn.exists?Object.assign({},sn.data()):{};if(socOpen)renderPanel()},()=>{});
   db.collection('dm').where('users','array-contains',uid).orderBy('at','desc').limit(300).onSnapshot(sn=>{DMS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));
     const viewing=socOpen&&socTab==='dm';
-    DMS.forEach(d=>{if(d.to!==uid||d.at<=socBoot||socNoted.has(d.id))return;socNoted.add(d.id);if(!(viewing&&dmPeer===d.from)){toast(`귓속말 · ${d.nick||'단원'}: ${String(d.text||'').slice(0,30)}`);sfxDing()}});
+    DMS.forEach(d=>{if(d.to!==uid||d.at<=socBoot||socNoted.has(d.id))return;socNoted.add(d.id);});
     if(viewing){const b=$('#dmLog');if(b&&dmPeer){b.innerHTML=dmLogHTML();b.scrollTop=b.scrollHeight;markDm(dmPeer)}const l=$('#dmList');if(l)l.innerHTML=dmListHTML()}
     renderNav();if(socOpen&&!viewing)renderPanel()},()=>{})}
 const SA={
