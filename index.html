@@ -147,7 +147,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 
 /* grid */
 .grid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:12px;align-items:start}
-@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}.grid>.console{order:1}.grid>.leftcol{order:2}}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}.grid>.leftcol{display:contents}.leftcol>.pilot{order:0}.grid>.console{order:1}.leftcol>.crew{order:2}}
 .ticker{position:relative;height:40px;box-sizing:border-box;margin-bottom:12px;display:flex;align-items:center;gap:10px;padding:0 12px;cursor:pointer;user-select:none}
 .ticker .tk-l{font-family:var(--f-pix);font-size:11px;color:var(--gold);white-space:nowrap;display:flex;align-items:center;gap:6px}
 .ticker .tk-l i{width:7px;height:7px;background:var(--gold);display:inline-block;animation:tkb 1.2s steps(2) infinite}
