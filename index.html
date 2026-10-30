@@ -5628,7 +5628,7 @@ function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.fr
   // each message carries its sender's portrait; a run of messages from the same person shows it once
   return ms.length?ms.map((d,i)=>{const me=d.from===uid,first=!i||ms[i-1].from!==d.from;return`<div class="dmrow ${me?'me':''}"><span class="dmav">${first?headImg(3,whoP(d.from)):''}</span><div class="dmb ${me?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div></div>`}).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
 /* ---- 만남 (memo board): a memo board like a Naver cafe's, newest first, with short comments under each memo ---- */
-const MEMO_MAX=1500,MEMO_CM=1500,MEMO_PG=5;let memoPage=0;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false,memoReply=null,memoCmDel=null,memoEdit=null,memoSort='old';
+const MEMO_MAX=1500,MEMO_CM=1500,MEMO_PG=5;let memoPage=0;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false,memoReply=null,memoCmDel=null,memoEdit=null,memoEdTx=null,memoSort='old';
 // comments are kept flat on the memo ({id,pid,...}); pid points at the comment being answered, so replies can go as deep as people like
 const memoCms=m=>(m.cm||[]).map((c,i)=>c&&Object.assign({id:'o'+i},c)).filter(Boolean);
 const memoRef=()=>db.collection('memos');
@@ -5655,7 +5655,7 @@ function memoPager(n){const cur=memoPage,lo=Math.max(0,Math.min(cur-2,n-5)),hi=M
 async function memoPost(){if(mode!=='online'||memoBusy)return;const t=String(($('#memoIn')||{}).value??memoDraft).trim().slice(0,MEMO_MAX);if(!t){toast('메모 내용을 적어 주십시오.');return}
   const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});memoDraft='';memoPage=0;stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
 function memoCmBox(mid,pid,reply){return`<div class="memocmin${reply?' rep':''}"><span class="mav">${headImg(2,P)}</span><textarea id="memoCmIn" class="sel" rows="2" maxlength="${MEMO_CM}" data-k="${esc(mid)}" data-p="${esc(pid)}" placeholder="${reply?'답글':'댓글'}을 남겨 보세요 (${MEMO_CM}자까지 · Enter로 등록, Shift+Enter 줄바꿈)" aria-label="${reply?'답글':'댓글'}">${esc(memoCm[mid+'|'+pid]||'')}</textarea><button class="btn sm" data-act="memocmpost" data-k="${esc(mid)}" data-p="${esc(pid)}">등록</button>${reply?`<button class="mlink" data-act="memoreply" data-k="">취소</button>`:''}</div>`}
-function memoEditBox(mid,cid,text,max){return`<div class="memoedit"><textarea id="memoEdIn" class="sel memota" maxlength="${max}" data-k="${esc(mid)}" data-c="${esc(cid)}" aria-label="수정할 내용">${esc(text)}</textarea><div class="row" style="justify-content:flex-end;gap:5px"><button class="mlink" data-act="memoedit" data-k="">취소</button><button class="btn sm gold" data-act="memosave" data-k="${esc(mid)}" data-c="${esc(cid)}">저장</button></div></div>`}
+function memoEditBox(mid,cid,text,max){return`<div class="memoedit"><textarea id="memoEdIn" class="sel memota" maxlength="${max}" data-k="${esc(mid)}" data-c="${esc(cid)}" aria-label="수정할 내용">${esc(memoEdTx&&memoEdTx.k===mid+'|'+cid?memoEdTx.v:text)}</textarea><div class="row" style="justify-content:flex-end;gap:5px"><button class="mlink" data-act="memoedit" data-k="">취소</button><button class="btn sm gold" data-act="memosave" data-k="${esc(mid)}" data-c="${esc(cid)}">저장</button></div></div>`}
 // cafe-style thread: top-level comments, and every answer below its top-level comment one step in, tagged with whom it answers
 function memoThread(m,cms){const by=Object.fromEntries(cms.map(c=>[c.id,c])),root=c=>{let x=c,g=0;while(x.pid&&by[x.pid]&&g++<50)x=by[x.pid];return x};
   const ord=(a,b)=>memoSort==='new'?(+b.at||0)-(+a.at||0):(+a.at||0)-(+b.at||0);
@@ -5676,7 +5676,7 @@ async function memoCmDelete(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)ret
   try{await memoRef().doc(mid).update({cm:out})}catch(e){toast('댓글을 지우지 못했습니다.')}renderPanel()}
 async function memoCmPost(id,pid=''){const m=MEMOS.find(x=>x.id===id);if(!m)return;const key=id+'|'+pid,i=$('#memoCmIn'),t=String((i&&i.value)||memoCm[key]||'').trim().slice(0,MEMO_CM);if(!t){toast('댓글을 적어 주십시오.');return}
   const cm=[...memoCms(m),{id:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),pid,uid,nick:P.nick,text:t,at:Date.now()}].slice(-300);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus()},30)}
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoEdIn')memoEdTx={k:t.dataset.k+'|'+(t.dataset.c||''),v:t.value};else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k,t.dataset.p||'')}});
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
   return`<p class="lead">단원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
@@ -5877,7 +5877,7 @@ function socSubscribe(){
 const SA={
  memopost(){memoPost()},
  memocmpost(d){memoCmPost(d.k,d.p||'')},
- memoedit(d){memoEdit=d.k?d.k+'|'+(d.c||''):null;renderPanel();if(memoEdit)setTimeout(()=>{const i=$('#memoEdIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},30)},
+ memoedit(d){memoEdit=d.k?d.k+'|'+(d.c||''):null;memoEdTx=null;renderPanel();if(memoEdit)setTimeout(()=>{const i=$('#memoEdIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},30)},
  memosave(d){memoSave(d.k,d.c||'')},
  memopage(d){memoPage=Math.max(0,+d.k||0);memoOpen=null;memoReply=null;memoEdit=null;renderPanel();const l=document.querySelector('.memolist');if(l)l.scrollIntoView({block:'nearest'})},
  memosort(){memoSort=memoSort==='new'?'old':'new';renderPanel()},
