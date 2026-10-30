@@ -5614,14 +5614,14 @@ function dmListHTML(){const cv=dmConvs(),have=new Set(cv.map(c=>c[0])),fresh=Obj
 function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.from===dmPeer&&d.to===uid)).sort((a,b)=>a.at-b.at);
   // each message carries its sender's portrait; a run of messages from the same person shows it once
   return ms.length?ms.map((d,i)=>{const me=d.from===uid,first=!i||ms[i-1].from!==d.from;return`<div class="dmrow ${me?'me':''}"><span class="dmav">${first?headImg(3,whoP(d.from)):''}</span><div class="dmb ${me?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div></div>`}).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
-/* ---- 메모장: a one-line memo board like a Naver cafe's, newest first, with short comments under each memo ---- */
-const MEMO_MAX=200,MEMO_CM=100,MEMO_N=60;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false;
+/* ---- 만남 (memo board): a memo board like a Naver cafe's, newest first, with short comments under each memo ---- */
+const MEMO_MAX=1500,MEMO_CM=100,MEMO_N=60;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false;
 const memoRef=()=>db.collection('memos');
 tabSub(()=>tab==='social'&&socTab==='memo',()=>memoRef().orderBy('at','desc').limit(MEMO_N).onSnapshot(sn=>{MEMOS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='social'&&socTab==='memo'&&!isField(document.activeElement))renderPanel()},()=>{}));
 function memoStamp(t){const d=new Date(+t||0);return`${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
-function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">메모장은 온라인에 접속했을 때 쓸 수 있습니다.</p>';
+function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">만남은 온라인에 접속했을 때 쓸 수 있습니다.</p>';
   const L=MEMOS.filter(m=>m&&m.text);
-  return`<p class="lead">개척단 메모장입니다. 짧은 인사나 한마디를 남기고, 다른 단원의 메모에 댓글을 달 수 있습니다. 최근 ${MEMO_N}개가 보입니다.</p>
+  return`<p class="lead">만남 게시판입니다. 인사나 하고 싶은 이야기를 남기고, 다른 단원의 메모에 댓글을 달 수 있습니다. 최근 ${MEMO_N}개가 보입니다.</p>
   <div class="card memonew"><div class="memohd">${headImg(2,P)}<b>${esc(P.nick)}</b><span class="hint" id="memoCnt">${memoDraft.length}/${MEMO_MAX}</span></div>
    <textarea id="memoIn" class="sel memota" maxlength="${MEMO_MAX}" placeholder="메모를 남겨 주세요. (${MEMO_MAX}자까지 · Ctrl+Enter로 등록)" aria-label="메모 내용">${esc(memoDraft)}</textarea>
    <div class="row" style="justify-content:flex-end"><button class="btn sm gold" data-act="memopost" ${memoBusy?'disabled':''}>등록</button></div></div>
@@ -5794,7 +5794,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
 function renderSocial(){
   if(mode!=='online')return head()+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   markSoc();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['memo','메모장'],['crew','조직도'],['rel','관계도'],['rank','랭킹']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'],['dm','귓속말'+(dn?` <em>${dn}</em>`:'')],['memo','만남'],['crew','조직도'],['rel','관계도'],['rank','랭킹']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head()+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='rank'?socRank():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div>${loungeHTML()}</div>`;
