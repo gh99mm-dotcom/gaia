@@ -1991,8 +1991,8 @@ const WEAPONS=['정비용 렌치','플라즈마 커터','이온 블레이드','�
 // Below +10 a failure keeps the stage; from +10 on a failed attempt drops the weapon one step
 const UP_BOOST=10;let upBoost=false;
 const upUseB=()=>upBoost&&(P.inv.upcat||0)>0,upPct=n=>Math.min(100,UP_P[n]+(upUseB()?UP_BOOST:0));
-// attack from weapon upgrades: +5 a step up to +10, then each step adds one more than the last (+6 at +11 … +15 at +20), 155 at +20
-const wStep=k=>k<=10?5:k-5,wAtk=n=>{let a=0;for(let k=1;k<=(n|0);k++)a+=wStep(k);return a};
+// attack from weapon upgrades: every step adds one more than the last (+5 at +1, +6 at +2 … +24 at +20), 290 in all at +20
+const wStep=k=>4+k,wAtk=n=>{let a=0;for(let k=1;k<=(n|0);k++)a+=wStep(k);return a};
 const UP_P=[100,100,100,100,100,100,100,100,85,80,75,70,66,61,56,51,46,42,37,32],UP_DROP=10;
 // credits per attempt, paid win or lose
 const UP_CR=[10,15,30,45,70,90,120,150,200,250,300,380,450,530,640,750,900,1050,1200,1420];
