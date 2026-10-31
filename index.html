@@ -1575,6 +1575,8 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 .bdbot dl{margin:0}.bdbot dt{font-family:var(--f-pix);font-size:8px;letter-spacing:.12em;color:var(--mute)}.bdbot dd{margin:0;font-family:var(--f-pix);font-size:11px;letter-spacing:.06em}
 .bdbar{width:120px;height:26px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAASCAYAAADMgVnKAAAAcUlEQVR42u2YQQoAIQhFY47RogPM/e83rQIR/QUtYuh9CCOt9OHKUtC+3la/YceKfNba+OiuP/f77K3sb/X27E+Vh6ony9Oye2ifPQEQgAAEIAARAAEIQAAiAAIQgFfKTxhWfSo2mmqcrkdNVehA9E9169BGcKhoOigAAAAASUVORK5CYII=) 0 0/120px 26px no-repeat;image-rendering:pixelated}
 @media (max-width:620px){.bdwrap .idf input{font-size:16px}}
+/* one typeface on the sign-in badge */
+#authGate,#authGate *,#authGate input::placeholder{font-family:var(--f-body)!important}
 
 </style>
 <main class="authpage" id="authGate" hidden>
