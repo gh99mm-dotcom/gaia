@@ -2358,8 +2358,10 @@ const RAIDS_AT=[[10,3],[20,3.5],[30,4],[40,4.5],[50,6],[59,9],[60,9]];
 const RAIDS_PER=L=>{for(let i=1;i<RAIDS_AT.length;i++){const[a,x]=RAIDS_AT[i-1],[b,y]=RAIDS_AT[i];if(L<=b)return x+(y-x)*(Math.max(L,a)-a)/(b-a)}return 9};
 // RAID_PACE stretches the anchors so a 6h/day player (raids take ~5-10 min, ~48 a day) who also joins the 3 daily
 // invaders (~5% contribution, ~30 hits each) reaches Lv.60 in about 10 days
-const RAID_PACE=2.12,lvCost=L=>RAIDS_PER(L)*RAID_PACE*(raidXpAt(L)+SIDE_XP);
-const NEED=Array.from({length:61},(_,l)=>{if(!l)return 0;if(l<5)return xpBase(l);if(l>=10)return Math.round(lvCost(l)/10)*10;return Math.round(xpBase(4)*Math.pow(lvCost(10)/xpBase(4),(l-4)/6)/10)*10}),need=l=>NEED[Math.max(1,Math.min(60,l))];
+// XP_PACE: overall slowdown on top of the 10-day design (1.5 -> ~15 days). Lv.1-4 stay quick; rewards paid as a share
+// of need (scouting, invader chests) divide by it so they slow down too
+const XP_PACE=1.5,RAID_PACE=2.12,lvCost=L=>RAIDS_PER(L)*RAID_PACE*(raidXpAt(L)+SIDE_XP);
+const NEED=Array.from({length:61},(_,l)=>{if(!l)return 0;if(l<5)return xpBase(l);if(l>=10)return Math.round(lvCost(l)*XP_PACE/10)*10;return Math.round(xpBase(4)*Math.pow(lvCost(10)*XP_PACE/xpBase(4),(l-4)/6)/10)*10}),need=l=>NEED[Math.max(1,Math.min(60,l))];
 function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
 function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.min(maxEn(),Math.max(0,P.en+(en||0)))}
 
@@ -3397,7 +3399,7 @@ function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b
   if(!src||(P.bossGot||0)>=src.gen)return;const tot=Object.values(src.dmg).reduce((a,v)=>a+(v.d||0),0)||1,mine=src.dmg[uid].d||0,share=mine/tot;
   // the reward waits in a chest on the 탐사 screen; what is inside is fixed now, the 1% wardrobe roll happens when it is opened
   // base = 15% of what my current level needs; contribution doubles it up to 30% (full at 20% of the damage)
-  const xp=Math.round(need(P.lvl)*.15*(1+Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
+  const xp=Math.round(need(P.lvl)*.15/XP_PACE*(1+Math.min(1,share*5))),cr=150+Math.round(share*1500);P.bossGot=src.gen;stat('bosskill');
   P.chests=[...(P.chests||[]),{gen:src.gen,name:src.name,share,xp,cr,relic:relicRoll(P.lvl),crystal:src.killer===uid?2:0}].slice(-5);
   log(`${src.name}을(를) 쓰러뜨렸다! 탐사 화면에 보상 상자가 도착했다.`,'rare');commit()}
 // 탐사-only wardrobe drop: 3% base, rising with contribution to 10% at 20%+ of the damage
@@ -4235,7 +4237,7 @@ function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;cons
   if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}
   // 1% of searches turn up a 마이룸 piece found nowhere else
   {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했습니다.`)}}
-  const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0]*SC_XP_K)+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
+  const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0]*SC_XP_K/XP_PACE)+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
   stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,ev:ev.t,got,extra,acts:scLegLines&&scLegLines.length?scLegLines:scActs(sc.t),tr:sc.t,k,at:Date.now()};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
 // 귀중품 도감: every one found so far; the rest show as black silhouettes
 function junkDexHTML(){const got=new Set([...(P.jdex||[]),...JUNK.map(j=>j[0]).filter(id=>P.inv[id]>0)]);
