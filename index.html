@@ -3020,6 +3020,8 @@ const RAID_EVENTS=[
  {k:'cache',n:'숨겨진 보급고',t:'벽 뒤에 숨겨진 보급고를 발견했다!',cr:[60,120],item:['kit']}];
 // a full clear in your own zone is worth about half a level, so expeditions lead the XP race without breaking the 60-level curve
 // bosses pay out far more the higher they are: ×(1+(L/15)^1.5) on top of the base share
+// fighting far weaker monsters teaches little: up to 3 levels above them is full XP, then 9% less per level, never below 10% (13+ levels above)
+const raidLvX=(pl,ml)=>{const d=(pl||1)-(ml||1);return d<=3?1:Math.max(.1,1-(d-3)*.09)};
 const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.06*({elite:1.5,mid:3,boss:6}[kind]||1)*(kind==='boss'?1+Math.pow(L/15,1.5):1));
 /* monsters are tuned for a full party of 4 same-level crew (typical ATK/DEF/HP of a balanced build):
    a normal monster soaks ~8 of their hits, elite ~14, mid boss ~22, boss ~34; a normal monster drops one of them in ~6 hits, elite ~4.5, mid ~3.5, boss ~2.5.
@@ -3065,7 +3067,7 @@ function raidStep(r){const z=raidZone(r),rnd=raidRoll(r,(r.seed+r.step*7919)%214
   raidIn(r).forEach(u=>{const me=r.m[u],L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});
     if(ev.dmg&&me.hp>0){const d=Math.max(1,Math.round(me.maxHp*ev.dmg));me.hp=Math.max(1,me.hp-d)}
     if(ev.heal&&me.hp>0)me.hp=Math.min(me.maxHp,me.hp+Math.round(me.maxHp*ev.heal));
-    if(ev.xp)L.xp+=Math.round(raidMonXp(avg)*ev.xp);
+    if(ev.xp){const zl=Math.min(z.max,avg);L.xp+=Math.round(raidMonXp(zl)*ev.xp*raidLvX(me.lvl,zl))}
     if(ev.cr){const c=crs(ev.cr[0]+Math.floor(rnd()*(ev.cr[1]-ev.cr[0]+1)));L.cr+=c;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.ev+=c}
     (ev.item||[]).forEach(id=>L.it[id]=(L.it[id]||0)+1)});
   if(ev.dmg)res.push(`모두 최대 체력의 ${Math.round(ev.dmg*100)}% 피해`);if(ev.heal)res.push(`모두 체력 ${Math.round(ev.heal*100)}% 회복`);if(ev.xp)res.push('경험치 획득');if(ev.cr)res.push('크레딧 획득');if(ev.item)res.push(ev.item.map(i=>ITEMS[i]?ITEMS[i].n:i).filter((v,i,a)=>a.indexOf(v)===i).join('·')+' 획득');
@@ -3094,10 +3096,11 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
   if(b.mons.every(m=>m.hp<=0)){if(raidIn(r).some(u=>r.m[u].job==='medic'&&r.m[u].hp>0)){raidIn(r).forEach(u=>{const m=r.m[u];if(m.hp>0)m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.1))});raidLog(b,'의무원이 전투가 끝난 동료들을 치료했다. 모두 체력 +10%')}let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});
     // bigger parties earn more each: solo is the base, +10% per extra member (x1.3 for four)
     const pm=raidPartyX(r);xp=Math.round(xp*pm);const crB=crs(Math.round(b.mons.filter(m=>m.kind==='boss').reduce((a,m)=>a+m.L*16,0)*pm));cr=crs(Math.round(cr*pm));const crM=Math.max(0,cr-crB);
-    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=xp;L.cr+=cr;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=crM;L.cb.boss+=cr-crM;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n=n0&&r.m[u].job==='mech'?n0+1:n0;if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
+    const mL=b.mons.reduce((a,m)=>a+m.L,0)/Math.max(1,b.mons.length),lx=u=>raidLvX(r.m[u].lvl,mL);
+    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=Math.round(xp*lx(u));L.cr+=cr;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=crM;L.cb.boss+=cr-crM;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n=n0&&r.m[u].job==='mech'?n0+1:n0;if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
-    const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}`};
-    if(boss){const cb=crs(Math.round(200*raidPartyX(r)));raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5);L.cr+=cb;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cb})}return r}
+    const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 단원은 경험치가 줄어듭니다)':''}`};
+    if(boss){const cb=crs(Math.round(200*raidPartyX(r)));raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5*lx(u));L.cr+=cb;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cb})}return r}
   if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 체력 1로 정거장에 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);if(L.cb){for(const k in L.cb)L.cb[k]=Math.round(L.cb[k]/2)}L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
