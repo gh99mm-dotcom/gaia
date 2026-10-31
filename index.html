@@ -1867,12 +1867,12 @@ function img(grid,tint,scale,cls='',po){const s=spr(grid,tint,po);return`<img cl
 /* ───────── data ───────── */
 TPL.cropCarrot=PL.carrot;TPL.cropCorn=PL.corn;TPL.cropMelon=PL.melon;
 const ITEMS={
- seed_pot:{n:'별감자 씨앗',ic:'seed',t:'#c88a2a',type:'seed',grow:90e3,crop:'pot',d:'90초면 자라는 튼튼한 덩이줄기 씨앗.'},
- seed_berry:{n:'네온베리 씨앗',ic:'seed',t:'#ff5fb8',type:'seed',grow:180e3,crop:'berry',d:'어둠 속에서 빛나는 열매가 열립니다. 3분.'},
- seed_pump:{n:'월광호박 씨앗',ic:'seed',t:'#9b6bff',type:'seed',grow:360e3,crop:'pump',d:'달빛을 머금고 크는 호박. 6분.'},
- seed_carrot:{n:'별빛 당근 씨앗',ic:'seed',t:'#e0904a',type:'seed',grow:240e3,crop:'carrot',d:'별빛을 받아 주황빛으로 자라는 당근. 4분.'},
- seed_corn:{n:'유성 옥수수 씨앗',ic:'seed',t:'#e2d39a',type:'seed',grow:300e3,crop:'corn',d:'유성처럼 반짝이는 알갱이가 박힌 옥수수. 5분.'},
- seed_melon:{n:'은하 수박 씨앗',ic:'seed',t:'#5fc8a8',type:'seed',grow:480e3,crop:'melon',d:'줄무늬 사이로 은하가 비치는 커다란 수박. 8분.'},
+ seed_pot:{n:'별감자 씨앗',ic:'seed',t:'#c88a2a',type:'seed',grow:300e3,crop:'pot',d:'5분이면 자라는 튼튼한 덩이줄기 씨앗.'},
+ seed_berry:{n:'네온베리 씨앗',ic:'seed',t:'#ff5fb8',type:'seed',grow:600e3,crop:'berry',d:'어둠 속에서 빛나는 열매가 열립니다. 10분.'},
+ seed_pump:{n:'월광호박 씨앗',ic:'seed',t:'#9b6bff',type:'seed',grow:1200e3,crop:'pump',d:'달빛을 머금고 크는 호박. 20분.'},
+ seed_carrot:{n:'별빛 당근 씨앗',ic:'seed',t:'#e0904a',type:'seed',grow:800e3,crop:'carrot',d:'별빛을 받아 주황빛으로 자라는 당근. 13분 20초.'},
+ seed_corn:{n:'유성 옥수수 씨앗',ic:'seed',t:'#e2d39a',type:'seed',grow:1000e3,crop:'corn',d:'유성처럼 반짝이는 알갱이가 박힌 옥수수. 16분 40초.'},
+ seed_melon:{n:'은하 수박 씨앗',ic:'seed',t:'#5fc8a8',type:'seed',grow:1600e3,crop:'melon',d:'줄무늬 사이로 은하가 비치는 커다란 수박. 26분 40초.'},
  pot:{n:'별감자',ic:'veg',t:'#ffd65f',type:'food',hp:20,en:4},
  berry:{n:'네온베리',ic:'berry',t:'#ff5fb8',type:'food',hp:6,en:12},
  pump:{n:'월광호박',ic:'veg',t:'#9b6bff',type:'food',hp:45,en:16},
@@ -2890,7 +2890,7 @@ function renderFarm(){
   </div></div><div class="frow r2">${storeHTML()}</div>`;
 }
 function harvestAt(i){let got=null;
-  podAct(i,cur=>{got=null;if(!cur||!cur.seed||stage(cur)!==3)return null;got=cur;return{til:1,wet:cur.wet&&isWet(cur)?cur.wet:0}},()=>{const pl=got,it=ITEMS[pl.seed],lb=lifeHit('farm'),n=ri(2,3)+(pl.fert?1:0)+(lb?1:0),back=Math.random()<.45;sfxHarvest(lb?2:1);
+  podAct(i,cur=>{got=null;if(!cur||!cur.seed||stage(cur)!==3)return null;got=cur;return{til:1,wet:cur.wet&&isWet(cur)?cur.wet:0}},()=>{const pl=got,it=ITEMS[pl.seed],lb=lifeHit('farm'),n=1+(lb?1:0),back=Math.random()<.45;sfxHarvest(lb?2:1);
     storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',FARM_LX);gainXp(3);
     log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good')},()=>toast('다른 단원이 먼저 수확했습니다.'))}
 // one picture per tier, from a plain work jumpsuit up to glowing power armour (suitgen.py)
