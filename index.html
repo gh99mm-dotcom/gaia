@@ -4051,7 +4051,7 @@ function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArri
 // sized for ~30 crew: life support in about 3 days, then power→comms in about 11 more (see the gather tables)
 // every section also burns crops as bio-fuel: one station crop and one crop from the gathering site that section draws on
 const SHIP=[
- {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',1120],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',40],['pot',200],['mistLotus',120]]},
+ {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',2000],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',1000],['pot',500],['mistLotus',200]]},
  {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',185],['echoQuartz',65],['crystal',560],['mazeCore',60],['berry',200],['crystalBean',120]]},
  {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',1060],['craterIron',75],['rustBolt',55],['sandSlate',55],['bogResin',70],['carrot',200],['dustPot',150]]},
  {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',115],['crystal',510],['volcAsh',40],['dark',220],['wreckNozzle',80],['corn',200],['canyonPepper',120]]},
