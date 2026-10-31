@@ -1354,6 +1354,15 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 /* 교류 휴대폰: a handle on the left edge; the phone (the same body as the old PAD handset) slides out over the page */
 .socdock{position:fixed;left:0;top:0;bottom:0;z-index:60;display:flex;align-items:center;pointer-events:none;transform:translateX(calc(-1 * min(460px,calc(100vw - 30px)) - 12px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .socdock.open{transform:none}
+.socdock.right{left:auto;right:0;flex-direction:row-reverse;transform:translateX(calc(min(460px,calc(100vw - 30px)) + 12px))}
+.socdock.right.open{transform:none}
+.socdock.right .socterm{margin:12px 12px 12px 0}
+.socdock.right .sochandle{margin-left:0;margin-right:-3px;border-left:3px solid #000;border-right:none;border-radius:12px 0 0 12px}
+:root[data-skin="light"] .socdock.right .sochandle{border-left-color:#8b877f}
+.socdock .sochandle[style*="absolute"]{left:100%}
+.socdock.right .sochandle[style*="absolute"]{left:auto;right:100%}
+.stside{position:absolute;left:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:#6a6e80;font:inherit;font-size:13px;padding:2px 6px;cursor:pointer}
+:root[data-skin="light"] .stside{color:var(--ph-line)}
 .socdock .socterm{pointer-events:auto;flex:none;width:min(460px,calc(100vw - 30px));max-width:none;height:calc(100% - 24px);margin:12px 0 12px 12px;display:flex;flex-direction:column;box-sizing:border-box}
 .socterm .pp-top{position:relative;flex:none}
 .stclose{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--ph-line);opacity:.8;font:inherit;font-size:14px;padding:2px 6px;cursor:pointer}
@@ -1456,7 +1465,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
   </div>
 </div>
 
-<div class="socdock" id="socDock"><aside class="socterm padphone" aria-label="교류 휴대폰"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i><button type="button" class="stclose" data-act="socdock" aria-label="교류 닫기">✕</button></div><div class="stglass"><section class="px stage socstage" id="socStage" aria-live="polite"></section></div><div class="pp-bot"><button type="button" class="pp-home" data-act="socdock" aria-label="교류 닫기"></button></div></aside><button type="button" class="sochandle" data-act="socdock" aria-expanded="false" aria-label="교류 열기"><span class="shgrip"></span><span class="shico"></span><span class="shtxt">교류</span><em id="socBadge" hidden></em><span class="shgrip"></span></button></div>
+<div class="socdock" id="socDock"><aside class="socterm padphone" aria-label="교류 휴대폰"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i><button type="button" class="stside" data-act="socside" aria-label="교류를 반대쪽으로 옮기기" title="반대쪽으로 옮기기">⇄</button><button type="button" class="stclose" data-act="socdock" aria-label="교류 닫기">✕</button></div><div class="stglass"><section class="px stage socstage" id="socStage" aria-live="polite"></section></div><div class="pp-bot"><button type="button" class="pp-home" data-act="socdock" aria-label="교류 닫기"></button></div></aside><button type="button" class="sochandle" data-act="socdock" aria-expanded="false" aria-label="교류 열기"><span class="shgrip"></span><span class="shico"></span><span class="shtxt">교류</span><em id="socBadge" hidden></em><span class="shgrip"></span></button></div>
 <div class="modal" id="suggModal" hidden><div class="px infobox" id="suggBox" role="dialog" aria-label="건의함"></div></div>
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <main class="joinpage" id="joinModal" hidden>
@@ -2689,13 +2698,14 @@ function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.w
 /* ───────── 교류 단말기: a terminal that slides out from the left edge; the screen behind stays as it is ───────── */
 let socOpen=false,socDragged=false;
 // the 교류 handle can be dragged up and down the left edge; where it was left is remembered in this browser
-const SOCH_LS='nebula-soc-handle';
-function socHandlePos(y){const h=document.querySelector('.sochandle');if(!h)return;const max=innerHeight-h.offsetHeight-8;const v=Math.max(8,Math.min(max,y));h.style.top=v+'px';h.style.alignSelf='flex-start';h.style.position='absolute';h.style.left='100%'}
+const SOCH_LS='nebula-soc-handle',SOCS_LS='nebula-soc-side';let socSide='left';
+function socSetSide(side){socSide=side==='right'?'right':'left';const d=$('#socDock');if(d)d.classList.toggle('right',socSide==='right');try{localStorage.setItem(SOCS_LS,socSide)}catch(e){}}
+function socHandlePos(y){const h=document.querySelector('.sochandle');if(!h)return;const max=innerHeight-h.offsetHeight-8;const v=Math.max(8,Math.min(max,y));h.style.top=v+'px';h.style.alignSelf='flex-start';h.style.position='absolute';h.style.left=''}
 addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.sochandle');if(!h)return;const y0=e.clientY,t0=h.getBoundingClientRect().top;let moved=false;
-  const mv=ev=>{const dy=ev.clientY-y0;if(!moved&&Math.abs(dy)<6)return;moved=true;socHandlePos(t0+dy)};
+  const x0=e.clientX,mv=ev=>{const dy=ev.clientY-y0,dx=ev.clientX-x0;if(!moved&&Math.abs(dy)<6&&Math.abs(dx)<6)return;moved=true;socHandlePos(t0+dy);const want=ev.clientX>innerWidth/2?'right':'left';if(want!==socSide&&Math.abs(dx)>40)socSetSide(want)};
   const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);if(moved){socDragged=true;setTimeout(()=>{socDragged=false},400);try{localStorage.setItem(SOCH_LS,String(Math.round(h.getBoundingClientRect().top)))}catch(e){}}};
   addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)},{passive:true});
-setTimeout(()=>{try{const v=localStorage.getItem(SOCH_LS);if(v!=null)socHandlePos(+v)}catch(e){}},0);
+setTimeout(()=>{try{const sd=localStorage.getItem(SOCS_LS);if(sd)socSetSide(sd);const v=localStorage.getItem(SOCH_LS);if(v!=null)socHandlePos(+v)}catch(e){}},0);
 addEventListener('resize',()=>{const h=document.querySelector('.sochandle');if(h&&h.style.top)socHandlePos(parseFloat(h.style.top))});
 function socDrawer(open,keep){const was=socOpen;socOpen=!!open;if(was!==socOpen)setPresence();const d=$('#socDock');if(d){d.classList.toggle('open',socOpen);d.querySelector('.sochandle').setAttribute('aria-expanded',socOpen)}if(socOpen){renderSoc();if(!keep){const t=$('#socStage');if(t)t.scrollTop=0}}socBadge()}
 const socTop=()=>{const t=$('#socStage');if(t)t.scrollTo({top:0,behavior:'smooth'})};
@@ -5498,6 +5508,7 @@ const A={
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
  profile(){meView=true;mailView=false;orgView=false;rankView=false;profView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
+ socside(){socSetSide(socSide==='right'?'left':'right')},
  socdock(){if(socDragged){socDragged=false;return}socDrawer(!socOpen)},
  mailopen(){mailView=true;secretView=false;meView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  sentdel(d){if(d.x&&d.k){P.sent=(P.sent||[]).filter(m=>m.id!==d.k);sentDelArm=null;save()}else sentDelArm=d.k||null;renderPanel()},
@@ -5738,7 +5749,7 @@ document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.va
 let raidPd=null;addEventListener('pointerdown',e=>{const a=e.target.closest&&e.target.closest('[data-act]');raidPd=a&&/^raid(atk|def|sk|item|tgt|to|pick|bag)$/.test(a.dataset.act)?{el:a,act:a.dataset.act,k:a.dataset.k}:null},{capture:true,passive:true});
 addEventListener('pointerup',e=>{const d=raidPd;raidPd=null;if(!d||d.el.isConnected)return;setTimeout(()=>{const t=document.elementFromPoint(e.clientX,e.clientY),a=t&&t.closest('[data-act]');if(a&&a!==d.el&&a.dataset.act===d.act&&a.dataset.k===d.k&&!a.disabled)a.click()})},{capture:true,passive:true});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
