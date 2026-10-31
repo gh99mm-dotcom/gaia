@@ -2767,7 +2767,7 @@ function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
   $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
 }
-function head(id=tab){const t=TABS.find(x=>x.id===id);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
+function head(id=tab){const t=TABS.find(x=>x.id===id);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${id==='social'?(socTab==='chat'?'중앙 광장':''):t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
 
 /* ───────── panels ───────── */
