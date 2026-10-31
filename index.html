@@ -3140,7 +3140,16 @@ function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidN
   if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
   if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
-function raidClaim(r){if((P.raidDone||[]).includes(r.id))return;P.raidDone=[...(P.raidDone||[]).slice(-30),r.id];const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
+// rewards are taken once per expedition: the claim is first written onto the party record itself (claimed[uid]) in a transaction,
+// and only a claim that lands there pays out, so reloading the page (or a save that hasn't gone through yet) can't pay twice
+let raidClaiming=null;
+function raidClaim(r){if(!r||(P.raidDone||[]).includes(r.id)||raidClaiming===r.id)return;const done=()=>{P.raidDone=[...(P.raidDone||[]).filter(x=>x!==r.id).slice(-40),r.id]};
+  if((r.claimed||{})[uid]){done();commit();return}
+  if(mode!=='online'){done();raidPay(r);return}
+  raidClaiming=r.id;
+  raidTx(r.id,cur=>{if(!cur||(cur.claimed||{})[uid])return null;cur.claimed=Object.assign({},cur.claimed,{[uid]:Date.now()});return cur})
+   .then(nx=>{raidClaiming=null;done();if(nx)raidPay(nx);else commit()}).catch(()=>{raidClaiming=null})}
+function raidPay(r){const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
   if(!(r.left||{})[uid]){gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));if(r.result==='wipe'){P.hp=1;log('원정에 실패해 체력 1만 남기고 겨우 돌아왔다.','bad')}stat('raid');if(r.result==='clear')stat('raidclear');
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
 let raidWid=null;
