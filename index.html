@@ -6050,7 +6050,7 @@ tabSub(()=>!!P,()=>memoRef().orderBy('at','desc').onSnapshot(sn=>{MEMOS=sn.docs.
 function memoStamp(t){const d=new Date(+t||0);return`${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
 function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">만남은 온라인에 접속했을 때 쓸 수 있습니다.</p>';
   const A=MEMOS.filter(m=>m&&m.text),pages=Math.max(1,Math.ceil(A.length/MEMO_PG));if(memoPage>=pages)memoPage=pages-1;const L=A.slice(memoPage*MEMO_PG,memoPage*MEMO_PG+MEMO_PG);
-  return`<p class="lead">만남 게시판입니다. 인사나 하고 싶은 이야기를 남기고, 다른 선원의 메모에 댓글을 달 수 있습니다. 한 쪽에 ${MEMO_PG}개씩 보입니다.</p>
+  return`
   <div class="card memonew"><div class="memohd"><span class="mav">${headImg(2,P)}</span><b>${esc(P.nick)}</b><span class="hint" id="memoCnt">${memoDraft.length}/${MEMO_MAX}</span></div>
    <textarea id="memoIn" class="sel memota" maxlength="${MEMO_MAX}" placeholder="메모를 남겨 주세요. (${MEMO_MAX}자까지 · Ctrl+Enter로 등록)" aria-label="메모 내용">${esc(memoDraft)}</textarea>
    <div class="row" style="justify-content:flex-end"><button class="btn sm gold" data-act="memopost" ${memoBusy?'disabled':''}>등록</button></div></div>
