@@ -6375,6 +6375,7 @@ const jLeft=()=>J_START*ABIL.length+J_FREE-ABIL.reduce((a,[k])=>a+(J.as[k]||0),0
 function jChips(list,kind){return list.length?list.map(id=>`<span class="ichip ${kind}">${iicon(id,1)}${esc(ITEMS[id].n)}<button type="button" class="pvx" data-act="junpick" data-k="${id}" aria-label="${esc(ITEMS[id].n)} 빼기">×</button></span>`).join(''):`<span class="hint">아직 고르지 않았습니다.</span>`}
 function renderJoin(){if(!J)return;const b=$('#joinBody');if(!b)return;const prev={look:J.look},left=jLeft();
   b.innerHTML=`<div class="jsec"><span class="lbl">Look · 내 모습</span><div class="jlook"><div class="jprev">${meImg(6,prev)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button type="button" class="sw" style="background:${col}" data-act="jlook" data-k="${k}" data-c="${col}" aria-pressed="${J.look[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">네온 색은 게임 안 옷장에서 살 수 있습니다.</span></div></div></div>
+  <div class="jsec"><span class="lbl">Job · 직업 · 합류한 뒤에도 내 정보에서 바꿀 수 있습니다</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=J.job===k;return`<button type="button" class="jobcard jc-${k}" data-act="jjob" data-k="${k}" aria-pressed="${on}"><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">선택함</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></div>
   <div class="jsec"><span class="lbl">Taste · 좋아하는 요리 · 싫어하는 요리 (각 ${J_MAX}개)</span>
    <div class="jpicked"><b style="color:var(--pink);font-size:13px;margin-right:4px">♥ 좋아함</b>${jChips(J.likes,'like')}</div>
    <div class="jpicked"><b style="color:var(--red);font-size:13px;margin-right:4px">✕ 싫어함</b>${jChips(J.hates,'hate')}</div>
@@ -6384,10 +6385,11 @@ function renderJoin(){if(!J)return;const b=$('#joinBody');if(!b)return;const pre
    <span class="hint">아이콘을 누르면 위에서 고른 쪽(${J.mode==='like'?'좋아함':'싫어함'})에 담깁니다. 한 번 더 누르면 빠집니다.</span></div>
   <div class="jsec"><div class="stat-row"><span class="lbl">Status · 스테이터스</span><b class="${left?'ptsgo':''}">남은 포인트 ${left}</b></div><div class="jstats">${ABIL.map(([k,n,d])=>`<div class="jst"><b>${n}</b><span class="hint">${d}</span><span class="ctl"><button type="button" class="btn sm ghost" data-act="jstat" data-k="${k}" data-d="-1" ${(J.as[k]||0)<=J_START?'disabled':''} aria-label="${n} 내리기">−</button><span class="abv">${J.as[k]||0}</span><button type="button" class="btn sm" data-act="jstat" data-k="${k}" data-d="1" ${left<=0?'disabled':''} aria-label="${n} 올리기">+</button></span></div>`).join('')}</div>
    <div class="row" style="justify-content:space-between"><span class="hint">모두 ${J_START}씩 가지고 시작하고, 남은 ${J_FREE}포인트를 마음대로 나눕니다. 남긴 포인트는 나중에 내 정보에서 쓸 수 있습니다.</span><button type="button" class="qchip" data-act="jreset">처음대로</button></div></div>`;
-  $('#joinIc').innerHTML=meImg(4,prev);$('#joinLeft').textContent=left?`남은 스테이터스 ${left}포인트`:'준비 완료!'}
-function applyJoin(){if(!J)return;P.look=Object.assign({},J.look);P.likes=[...J.likes];P.hates=[...J.hates];P.as=Object.assign({},J.as);P.hp=maxHp();P.en=maxEn();J=null}
+  $('#joinIc').innerHTML=meImg(4,prev);$('#joinLeft').textContent=!J.job?'직업을 골라 주십시오':left?`남은 스테이터스 ${left}포인트`:'준비 완료!'}
+function applyJoin(){if(!J)return;P.look=Object.assign({},J.look);P.likes=[...J.likes];P.hates=[...J.hates];P.as=Object.assign({},J.as);if(J.job&&JOBS[J.job])P.job=J.job;P.hp=maxHp();P.en=maxEn();J=null}
 const JA={
  jlook(d){if(!J||!LOOKS[d.k]||!LOOKS[d.k].opts.some(o=>o[0]===d.c))return;J.look=Object.assign({},J.look,{[d.k]:d.c});renderJoin()},
+ jjob(d){if(J&&JOBS[d.k]){J.job=d.k;renderJoin()}},
  jmode(d){if(J){J.mode=d.k==='hate'?'hate':'like';renderJoin()}},
  jcat(d){if(J){J.cat=d.k;renderJoin()}},
  jpick(d){if(!J||!ITEMS[d.k])return;const id=d.k;if(J.likes.includes(id)){J.likes=J.likes.filter(x=>x!==id)}else if(J.hates.includes(id)){J.hates=J.hates.filter(x=>x!==id)}else{const L=J.mode==='hate'?J.hates:J.likes;if(L.length>=J_MAX){toast(`${J.mode==='hate'?'싫어하는':'좋아하는'} 것은 ${J_MAX}개까지 고를 수 있습니다.`);return}L.push(id)}renderJoin()},
@@ -6396,9 +6398,9 @@ const JA={
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
 };
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
-function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),mode:'like',cat:'dish'};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
+function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},180e3);
-$('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;
+$('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;if(J&&!J.job){toast('직업을 골라 주십시오.');const c=$('#joinBody .jobcards');if(c)c.scrollIntoView({block:'center',behavior:'smooth'});return}
   if(P.joined&&P.nick!=='새 선원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
   $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 선원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
