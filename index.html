@@ -1519,10 +1519,10 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <main class="joinpage" id="joinModal" hidden>
   <div class="joinwrap">
-    <header class="joinhead"><span id="joinIc"></span><div><h1>개척단 합류</h1><span class="lbl">Crew registration · 단원 등록</span></div></header>
-    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다. 승선하기 전에 나를 소개해 주십시오. 정한 내용은 다른 단원의 프로필 화면에 보입니다.</p>
+    <header class="joinhead"><span id="joinIc"></span><div><h1>개척단 합류</h1><span class="lbl">Crew registration · 선원 등록</span></div></header>
+    <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다. 승선하기 전에 나를 소개해 주십시오. 정한 내용은 다른 선원의 프로필 화면에 보입니다.</p>
     <form class="px joincard" id="joinForm">
-      <div class="jsec"><span class="lbl">Callsign · 콜사인</span><input id="callsign" maxlength="12" required autocomplete="off" placeholder="다른 단원에게 보일 이름 (최대 12자)" aria-label="콜사인"></div>
+      <div class="jsec"><span class="lbl">Callsign · 콜사인</span><input id="callsign" maxlength="12" required autocomplete="off" placeholder="다른 선원에게 보일 이름 (최대 12자)" aria-label="콜사인"></div>
       <div id="joinBody"></div>
       <div class="row joinfoot"><span class="hint" id="joinLeft"></span><button class="btn" type="submit">개척 시작</button></div>
     </form>
@@ -2183,7 +2183,7 @@ const TABS=[
  {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
  {id:'fish',n:'낚시',ic:IC.fish,cost:'EN 3',loc:'성운 호수 · 액체 메탄 · 수심 미측정'},
  {id:'raid',n:'원정',ic:IC.raygun,cost:'',loc:'파티 원정 · 최대 4명 · 턴제 전투'},
- {id:'adv',n:'탐사',ic:BOSS_IC,cost:'',loc:'심연에서 온 침략자 · 모든 단원 공동 토벌'},
+ {id:'adv',n:'탐사',ic:BOSS_IC,cost:'',loc:'심연에서 온 침략자 · 모든 선원 공동 토벌'},
  {id:'scan',n:'조사',ic:IC.scan,cost:'다섯 갈래 길',loc:'정착지 주변 · 다섯 갈래 길 탐색'},
  {id:'bag',n:'가방',ic:IC.bag,cost:'',loc:'개인 보관함'},
  {id:'req',n:'의뢰',ic:IC.req,cost:'',loc:'마담 로자의 의뢰 중개소 · 매일 새 포스터'},
@@ -2226,7 +2226,7 @@ let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;
 const LS='nebula-outpost-solo-v1';
 const TICK=20e3;
 function newPlayer(nick){return{nick,lvl:1,xp:0,hp:72,en:32,t:Date.now(),wlv:0,cr:50,rod:0,suit:0,tk:0,inv:{seed_pot:2,seed_berry:1,fc0:2,pot:1},field:[],fu:2,fv:3,water:12,dex:{},joined:Date.now(),season:window.__season||0}}
-let P=newPlayer('새 단원');
+let P=newPlayer('새 선원');
 /* listeners only one screen needs: opened when you arrive there, closed when you leave, so busy chats and logs elsewhere cost nothing */
 const TAB_SUBS=[];
 const tabSub=(want,open)=>TAB_SUBS.push({want,open,un:null});
@@ -2402,14 +2402,14 @@ function tickCook(){const ck=P.cook;if(P.buff&&Date.now()>=P.buff.until){P.buff=
 /* ───────── admin: crew management ───────── */
 let admDel=null;
 function agoText(t){if(!t)return'기록 없음';const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금 전';if(m<60)return m+'분 전';const h=Math.floor(m/60);if(h<24)return h+'시간 전';const d=Math.floor(h/24);return d+'일 '+(h%24)+'시간 전'}
-function charDeleted(){clearTimeout(saveT);dirty=false;const nick=P.nick;P=newPlayer(nick||'단원');P._fresh=1;toast('운영자가 내 캐릭터를 삭제했습니다. 새로 시작합니다.');log('운영자에 의해 캐릭터가 삭제되어 처음부터 다시 시작한다.','bad');renderAll();showJoin()}
-function crewAdminHTML(){if(mode!=='online')return`<div class="info-sec" data-adm="crew"><span class="lbl">Crew · 단원 관리</span><span class="hint">공유된 페이지에서 열면 다른 단원의 접속 기록과 삭제 기능이 여기에 보입니다.</span></div>`;
+function charDeleted(){clearTimeout(saveT);dirty=false;const nick=P.nick;P=newPlayer(nick||'선원');P._fresh=1;toast('운영자가 내 캐릭터를 삭제했습니다. 새로 시작합니다.');log('운영자에 의해 캐릭터가 삭제되어 처음부터 다시 시작한다.','bad');renderAll();showJoin()}
+function crewAdminHTML(){if(mode!=='online')return`<div class="info-sec" data-adm="crew"><span class="lbl">Crew · 선원 관리</span><span class="hint">공유된 페이지에서 열면 다른 선원의 접속 기록과 삭제 기능이 여기에 보입니다.</span></div>`;
   const on=new Set(PEERS.map(p=>p.presence&&p.presence.uid).filter(Boolean));
   const rows=Object.entries(PLAYERS).filter(([id])=>id!==uid).map(([id,p])=>({id,p,on:on.has(id),seen:p.seen||0})).sort((a,b)=>(b.on-a.on)||(b.seen-a.seen));
-  return`<div class="info-sec" data-adm="crew"><span class="lbl">Crew · 단원 관리 ${rows.length}명</span>${rows.length?`<div class="fblist">${rows.map(({id,p,on:o,seen})=>`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')} <span class="lv">LV.${p.lvl||1}</span>${STAFF.includes(id)?' <span class="scantag">관리자</span>':''}</b><span class="hint" style="color:${o?'var(--green)':'var(--mute)'}">${o?'● 접속 중':'오프라인 · '+agoText(seen)}</span></div><span class="hint">${seen?'마지막 활동 '+fbTime(seen):'마지막 활동 기록 없음 (이번 업데이트 뒤 접속하면 기록됩니다)'} · ${(p.cr||0).toLocaleString()} CR</span><div class="row" style="justify-content:flex-end;gap:5px">${admDel===id?`<span class="hint" style="color:var(--red)">정말 삭제하시겠습니까? 아래 「삭제된 단원」에서 되돌릴 수 있습니다.</span><button class="btn sm ghost" data-act="admdelno">취소</button><button class="btn sm" data-act="admdelyes" data-k="${esc(id)}">삭제</button>`:`<button class="btn sm ghost" data-act="admdel" data-k="${esc(id)}">캐릭터 삭제</button>`}</div></div>`).join('')}</div>`:'<span class="hint">아직 다른 단원이 없습니다.</span>'}</div>${delAdminHTML()}`}
+  return`<div class="info-sec" data-adm="crew"><span class="lbl">Crew · 선원 관리 ${rows.length}명</span>${rows.length?`<div class="fblist">${rows.map(({id,p,on:o,seen})=>`<div class="fbitem"><div class="row"><b>${esc(p.nick||'선원')} <span class="lv">LV.${p.lvl||1}</span>${STAFF.includes(id)?' <span class="scantag">관리자</span>':''}</b><span class="hint" style="color:${o?'var(--green)':'var(--mute)'}">${o?'● 접속 중':'오프라인 · '+agoText(seen)}</span></div><span class="hint">${seen?'마지막 활동 '+fbTime(seen):'마지막 활동 기록 없음 (이번 업데이트 뒤 접속하면 기록됩니다)'} · ${(p.cr||0).toLocaleString()} CR</span><div class="row" style="justify-content:flex-end;gap:5px">${admDel===id?`<span class="hint" style="color:var(--red)">정말 삭제하시겠습니까? 아래 「삭제된 선원」에서 되돌릴 수 있습니다.</span><button class="btn sm ghost" data-act="admdelno">취소</button><button class="btn sm" data-act="admdelyes" data-k="${esc(id)}">삭제</button>`:`<button class="btn sm ghost" data-act="admdel" data-k="${esc(id)}">캐릭터 삭제</button>`}</div></div>`).join('')}</div>`:'<span class="hint">아직 다른 선원이 없습니다.</span>'}</div>${delAdminHTML()}`}
 // deleted characters keep their data (deleted:true only hides them), so the admin can bring them back
 function delAdminHTML(){const L=Object.entries(DELP).sort((a,b)=>(b[1].delAt||b[1].at||0)-(a[1].delAt||a[1].at||0));if(!L.length)return'';
-  return`<div class="info-sec" data-adm="del"><span class="lbl">Deleted · 삭제된 단원 ${L.length}명</span><span class="hint">삭제 취소를 누르면 레벨·아이템·크레딧이 그대로 돌아옵니다. 단원이 다시 접속해서 새 캐릭터를 만들기 전에 되돌려 주십시오.</span><div class="fblist">${L.map(([id,p])=>{const full=p.lvl!=null||p.inv;return`<div class="fbitem"><div class="row"><b>${esc(p.nick||'단원')}${full?` <span class="lv">LV.${p.lvl||1}</span>`:''}</b><span class="hint">삭제 ${fbTime(p.delAt||p.at||0)}${p.delBy?' · '+esc(p.delBy):''}</span></div>${full?`<span class="hint">${(p.cr||0).toLocaleString()} CR · 아이템 ${Object.keys(p.inv||{}).length}종</span>`:'<span class="hint" style="color:var(--red)">예전 방식으로 삭제되어 남은 데이터가 없습니다. 되돌려도 새 캐릭터로 시작합니다.</span>'}<div class="row" style="justify-content:flex-end"><button class="btn sm alt" data-act="admundel" data-k="${esc(id)}">삭제 취소</button></div></div>`}).join('')}</div></div>`}
+  return`<div class="info-sec" data-adm="del"><span class="lbl">Deleted · 삭제된 선원 ${L.length}명</span><span class="hint">삭제 취소를 누르면 레벨·아이템·크레딧이 그대로 돌아옵니다. 선원이 다시 접속해서 새 캐릭터를 만들기 전에 되돌려 주십시오.</span><div class="fblist">${L.map(([id,p])=>{const full=p.lvl!=null||p.inv;return`<div class="fbitem"><div class="row"><b>${esc(p.nick||'선원')}${full?` <span class="lv">LV.${p.lvl||1}</span>`:''}</b><span class="hint">삭제 ${fbTime(p.delAt||p.at||0)}${p.delBy?' · '+esc(p.delBy):''}</span></div>${full?`<span class="hint">${(p.cr||0).toLocaleString()} CR · 아이템 ${Object.keys(p.inv||{}).length}종</span>`:'<span class="hint" style="color:var(--red)">예전 방식으로 삭제되어 남은 데이터가 없습니다. 되돌려도 새 캐릭터로 시작합니다.</span>'}<div class="row" style="justify-content:flex-end"><button class="btn sm alt" data-act="admundel" data-k="${esc(id)}">삭제 취소</button></div></div>`}).join('')}</div></div>`}
 /* ───────── admin credit grants ───────── */
 /* ───────── suggestion box ───────── */
 // the header envelope drawn on the same 12x12 canvas as the bag and the bell, so the three icons share one size
@@ -2418,7 +2418,7 @@ const BELL=['....kkkk....','....k..k....','...kkkkkk...','..kuuuuwwk..','..kuuuu
 const ENV=["kkkkkkkkkk","kuuuuuuuuk","kkuuuuuukk","kukkuukkuk","kuuukkuuuk","kuuuuuuuuk","kkkkkkkkkk"];
 let FB=[];
 const fbSeen=()=>{try{return +localStorage.getItem('sd_fbseen')||0}catch(e){return 0}};
-function fbItems(){return FB.flatMap(d=>(d.list||[]).map(it=>({doc:d.id,nick:it.nick||d.nick||'단원',text:String(it.text||''),at:+it.at||0}))).sort((a,b)=>b.at-a.at)}
+function fbItems(){return FB.flatMap(d=>(d.list||[]).map(it=>({doc:d.id,nick:it.nick||d.nick||'선원',text:String(it.text||''),at:+it.at||0}))).sort((a,b)=>b.at-a.at)}
 function updFbBadge(){const n=fbItems().filter(x=>x.at>fbSeen()&&x.doc!==uid).length,b=$('#adminBtn'),sb=$('#suggBtn');if(b)b.innerHTML='운영자'+(n?`<span class="fbbadge">${n}</span>`:'');if(sb)sb.innerHTML=img(ENV,null,1)+'건의함'+(n&&isStaff()?`<span class="fbbadge">${n}</span>`:'')}
 function fbMarkSeen(){const nw=fbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_fbseen',String(nw))}catch(e){}}updFbBadge()}
 // admin and appointed staff share the inbox; a new suggestion from someone else chimes (not the ones already there when it loads)
@@ -2461,15 +2461,15 @@ document.addEventListener('focusout',e=>{if(!admPend)return;const box=$('#adminB
 // the admin page is split into tabs: tools, member management, deleted members; sections say which tab they belong to
 let admTab='tools';
 function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.querySelector('.info-head'),nc=Object.keys(PLAYERS).filter(id=>id!==uid).length,nd=Object.keys(DELP).length;
-  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['crew',`단원 관리 <em>${nc}</em>`],['del',`삭제된 단원 <em>${nd}</em>`]].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
+  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`]].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
   box.querySelectorAll('.info-sec').forEach(el=>{el.hidden=(el.dataset.adm||'tools')!==admTab});
-  if(![...box.querySelectorAll('.info-sec')].some(el=>(el.dataset.adm||'tools')===admTab))box.insertAdjacentHTML('beforeend',`<div class="info-sec" data-adm="${admTab}"><span class="hint">${admTab==='del'?'삭제된 단원이 없습니다.':'이 기능은 공용 서버에 연결했을 때만 쓸 수 있습니다.'}</span></div>`)}
+  if(![...box.querySelectorAll('.info-sec')].some(el=>(el.dataset.adm||'tools')===admTab))box.insertAdjacentHTML('beforeend',`<div class="info-sec" data-adm="${admTab}"><span class="hint">${admTab==='del'?'삭제된 선원이 없습니다.':'이 기능은 공용 서버에 연결했을 때만 쓸 수 있습니다.'}</span></div>`)}
 /* ───────── activity log ───────── */
 /* ───────── profile: titles, jobs, life levels ───────── */
 /* three crew roles: 기관사 fights and fixes, 항해사 scouts and takes hits, 의무원 heals and backs the party up */
 const JOBS={mech:{n:'기관사',r:'전투 · 엔지니어',d:'공격력 +15% · 무기 강화 재료 30% 절약 · 원정 우주선 자재 +1 · 채집 로봇이 재료를 더 자주 가져옴'},
  nav:{n:'항해사',r:'탐사 · 탱커',d:'최대 체력 +20% · 방어력 +30% (최소 체력 +30 · 방어 +6) · 원정에서 몬스터의 공격을 3배 더 자주 받음 · 조사 이동 시간 25% 단축'},
- medic:{n:'의무원',r:'힐러 · 서포터',d:'음식 회복량 +50% (원정에서 동료에게 써도 적용) · 원정 전투에서 이길 때마다 파티 전원 체력 10% 회복 · 구조에 에너지가 들지 않고 구조한 단원은 체력 70%로 깨어남'}};
+ medic:{n:'의무원',r:'힐러 · 서포터',d:'음식 회복량 +50% (원정에서 동료에게 써도 적용) · 원정 전투에서 이길 때마다 파티 전원 체력 10% 회복 · 구조에 에너지가 들지 않고 구조한 선원은 체력 70%로 깨어남'}};
 const jobOf=p=>p&&p.job?JOBS[p.job]||JOBS[OLDJOB[p.job]]||null:null;
 const OLDJOB={fighter:'mech',engineer:'mech',guard:'nav',scout:'nav',angler:'nav',farmer:'medic'};
 const LIFE=[['farm','농사',IC.farm],['gather','채집',IC.gather],['fish','낚시',IC.fish],['scan','조사',IC.scan],['cook','요리',TPL.dPot]];
@@ -2524,7 +2524,7 @@ const TITLES=[
  ['lv20','스무 번째 궤도','레벨 20 달성',()=>P.lvl>=20],
  ['lv40','마흔 번째 궤도','레벨 40 달성',()=>P.lvl>=40],
  ['lv60','예순 번째 궤도','최고 레벨 60 달성',()=>P.lvl>=60],
- ['soc1','다정한 이웃','단원에게 인사 10번 건네기',()=>st('hi')>=10],
+ ['soc1','다정한 이웃','선원에게 인사 10번 건네기',()=>st('hi')>=10],
  ['soc2','광장의 이야기꾼','PAD에 글 10개 쓰기',()=>st('post')>=10],
  ['adv1','침략자 사냥꾼','심연의 침략자 50번 공격',()=>st('boss')>=50],
  ['adv2','심연을 닫은 자','침략자 처치에 3번 참여',()=>st('bosskill')>=3],
@@ -2569,15 +2569,15 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
   seasonQuit()},()=>{})}
 const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','guest','shipdon','farmlog','parties','duel','farm','boss'];
 function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox"><span class="lbl">Season · 테스트 기록 초기화</span>
-  <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 단원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
-  <span class="hint">로그인 아이디와 비밀번호는 남아서, 단원들은 같은 아이디로 로그인한 뒤 <b>새 초대코드</b>를 적어 다시 합류합니다. 아이디까지 지우려면 Firebase 콘솔의 Authentication에서 사용자를 삭제하십시오.</span>
+  <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 선원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
+  <span class="hint">로그인 아이디와 비밀번호는 남아서, 선원들은 같은 아이디로 로그인한 뒤 <b>새 초대코드</b>를 적어 다시 합류합니다. 아이디까지 지우려면 Firebase 콘솔의 Authentication에서 사용자를 삭제하십시오.</span>
   <div class="row" style="gap:6px;flex-wrap:wrap"><input id="seasonTxt" class="sel" maxlength="10" placeholder="초기화 라고 입력" style="width:150px" aria-label="확인 문구"><button class="btn sm seasongo" data-act="seasonreset" ${seasonBusy?'disabled':''}>${seasonBusy?'초기화하는 중…':'모든 기록 초기화'}</button></div>
   ${SEASON?`<span class="hint">지금 시즌 ${SEASON}</span>`:''}</div>`}
 function admStaffHTML(others){const list=STAFF.filter(id=>PLAYERS[id]),rest=others.filter(([id])=>!STAFF.includes(id));
-  return`<div class="info-sec"><span class="lbl">My room · 마이룸 공개</span><div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="hint">${ROOM_LINK?`<b style="color:var(--gold)">우주선과 연동 중</b> · 생명 유지 장치를 고치기 전에는 운영자와 관리자만 마이룸에 들어갈 수 있습니다.${roomOpen()?' (지금은 이미 수리가 끝나 모두에게 열려 있습니다)':''}`:'<b style="color:var(--green)">연동 꺼짐</b> · 우주선 수리와 상관없이 모든 단원이 마이룸에 들어갈 수 있습니다.'}</span><button class="btn sm ${ROOM_LINK?'alt':'gold'}" data-act="admroomlink" aria-pressed="${ROOM_LINK}">${ROOM_LINK?'연동 끄기 (모두에게 공개)':'연동 켜기 (수리 후 공개)'}</button></div></div>
-  <div class="info-sec"><span class="lbl">Managers · 관리자 명단</span><span class="hint">관리자로 임명한 단원은 생명 유지 장치를 고치기 전에도 마이룸을 미리 볼 수 있습니다.</span>
-   ${list.length?`<div class="admfaint">${list.map(id=>{const p=PLAYERS[id];return`<div class="admfrow">${headImg(3,p)}<div class="admfn"><b>${esc(p.nick||'단원')}</b><span class="hint">Lv.${p.lvl||1} · 관리자</span></div><button class="btn sm ghost" data-act="admstaff" data-k="${esc(id)}">해제</button></div>`}).join('')}</div>`:'<span class="hint">아직 임명한 관리자가 없습니다.</span>'}
-   ${rest.length?`<div class="row" style="gap:6px;flex-wrap:wrap"><select id="admStaffPick" class="sel" aria-label="관리자로 임명할 단원">${rest.map(([id,p])=>`<option value="${esc(id)}">${esc(p.nick||'단원')} · Lv.${p.lvl||1}</option>`).join('')}</select><button class="btn sm gold" data-act="admstaff">관리자 임명</button></div>`:''}</div>`}
+  return`<div class="info-sec"><span class="lbl">My room · 마이룸 공개</span><div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="hint">${ROOM_LINK?`<b style="color:var(--gold)">우주선과 연동 중</b> · 생명 유지 장치를 고치기 전에는 운영자와 관리자만 마이룸에 들어갈 수 있습니다.${roomOpen()?' (지금은 이미 수리가 끝나 모두에게 열려 있습니다)':''}`:'<b style="color:var(--green)">연동 꺼짐</b> · 우주선 수리와 상관없이 모든 선원이 마이룸에 들어갈 수 있습니다.'}</span><button class="btn sm ${ROOM_LINK?'alt':'gold'}" data-act="admroomlink" aria-pressed="${ROOM_LINK}">${ROOM_LINK?'연동 끄기 (모두에게 공개)':'연동 켜기 (수리 후 공개)'}</button></div></div>
+  <div class="info-sec"><span class="lbl">Managers · 관리자 명단</span><span class="hint">관리자로 임명한 선원은 생명 유지 장치를 고치기 전에도 마이룸을 미리 볼 수 있습니다.</span>
+   ${list.length?`<div class="admfaint">${list.map(id=>{const p=PLAYERS[id];return`<div class="admfrow">${headImg(3,p)}<div class="admfn"><b>${esc(p.nick||'선원')}</b><span class="hint">Lv.${p.lvl||1} · 관리자</span></div><button class="btn sm ghost" data-act="admstaff" data-k="${esc(id)}">해제</button></div>`}).join('')}</div>`:'<span class="hint">아직 임명한 관리자가 없습니다.</span>'}
+   ${rest.length?`<div class="row" style="gap:6px;flex-wrap:wrap"><select id="admStaffPick" class="sel" aria-label="관리자로 임명할 선원">${rest.map(([id,p])=>`<option value="${esc(id)}">${esc(p.nick||'선원')} · Lv.${p.lvl||1}</option>`).join('')}</select><button class="btn sm gold" data-act="admstaff">관리자 임명</button></div>`:''}</div>`}
 // every item laid out like the shared store, grouped by kind
 let admPick=null;
 function admGroups(){const all=ORDER.filter(id=>ITEMS[id]),ship=new Set(shipMatIds()),used=new Set(),take=f=>{const l=all.filter(id=>!used.has(id)&&f(id,ITEMS[id]));l.forEach(id=>used.add(id));return l};
@@ -2585,18 +2585,18 @@ function admGroups(){const all=ORDER.filter(id=>ITEMS[id]),ship=new Set(shipMatI
   return g.filter(([,l])=>l.length).map(([n,l])=>`<div class="fsgrp"><span class="fsgl">${n}</span><div class="bag">${l.map(id=>`<button class="slot" data-act="admpick" data-id="${id}" aria-pressed="${id===admPick}" aria-label="${esc(ITEMS[id].n)}" title="${esc(ITEMS[id].n)}">${iicon(id,2)}<em>${P.inv[id]||0}</em></button>`).join('')}</div></div>`).join('')}
 // fainted crew first, each with their face and a wake button
 function admFaintHTML(others){const now=Date.now(),fz=p=>p&&p.faint&&p.faint>now;const list=[...others].sort((a,b)=>(fz(b[1])?1:0)-(fz(a[1])?1:0));
-  return`<div class="admfaint">${list.map(([id,p])=>`<div class="admfrow ${fz(p)?'down':''}">${headImg(3,p)}<div class="admfn"><b>${esc(p.nick||'단원')}</b><span class="hint">Lv.${p.lvl||1} · ${fz(p)?`<b style="color:var(--red)">기절 중</b> · ${fmtClock(p.faint-now)} 남음`:'정상'}</span></div><button class="btn sm ${fz(p)?'gold':'ghost'}" data-act="admrescue" data-k="${id}">기절 해제</button></div>`).join('')||'<span class="hint">다른 단원이 없습니다.</span>'}</div>`}
+  return`<div class="admfaint">${list.map(([id,p])=>`<div class="admfrow ${fz(p)?'down':''}">${headImg(3,p)}<div class="admfn"><b>${esc(p.nick||'선원')}</b><span class="hint">Lv.${p.lvl||1} · ${fz(p)?`<b style="color:var(--red)">기절 중</b> · ${fmtClock(p.faint-now)} 남음`:'정상'}</span></div><button class="btn sm ${fz(p)?'gold':'ghost'}" data-act="admrescue" data-k="${id}">기절 해제</button></div>`).join('')||'<span class="hint">다른 선원이 없습니다.</span>'}</div>`}
 function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==uid);
   $('#adminBox').innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">ADMIN · 운영자 도구</span><h2>운영자 권한</h2><span class="hint">이 게임의 주인에게만 보이는 도구입니다.</span></div><button class="qchip" data-act="adminclose">← 돌아가기</button></div>
   <div class="info-sec"><span class="lbl">Me · 나에게</span><div class="row" style="gap:5px">
    <button class="btn sm alt" data-act="adm" data-k="heal">체력·에너지 가득</button><button class="btn sm alt" data-act="adm" data-k="wake">기절 해제</button><button class="btn sm alt" data-act="adm" data-k="water">물탱크 가득</button><button class="btn sm alt" data-act="adm" data-k="sig">조사 이동 즉시 도착</button><button class="btn sm alt" data-act="adm" data-k="exp">채집 로봇 즉시 귀환</button><button class="btn sm alt" data-act="adm" data-k="farm">농작물 즉시 성장</button>
    <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button></div></div>
-  <div class="info-sec" data-adm="give"><span class="lbl">Give · 아이템 지급</span><span class="hint">크레딧은 바로 아래 칸에서, 아이템은 지급할 아이템을 누르고 개수와 받을 사람을 정하십시오. 칸의 숫자는 내 가방에 있는 개수입니다. 다른 단원에게 주면 '운영자' 이름의 선물로 도착합니다.</span>
-   ${admPick&&ITEMS[admPick]?`<div class="admpick"><div class="fspick">${iicon(admPick,2)}<div><b>${esc(ITEMS[admPick].n)}</b><span class="hint">내 가방 ${P.inv[admPick]||0}개</span></div></div><div class="row" style="gap:6px;flex-wrap:wrap"><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'단원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div></div>`:''}
-   <div class="admpick admcr"><div class="fspick">${img(IC.coin,null,3)}<div><b>크레딧</b><span class="hint">내 잔액 ${(P.cr||0).toLocaleString()} CR</span></div></div><div class="row" style="gap:6px;flex-wrap:wrap"><input id="admCr" class="sel" type="number" min="1" max="1000000" value="1000" style="width:100px" aria-label="지급할 크레딧"><span class="hint">CR</span><select id="admCrTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'단원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgivecr">크레딧 지급</button></div></div>
+  <div class="info-sec" data-adm="give"><span class="lbl">Give · 아이템 지급</span><span class="hint">크레딧은 바로 아래 칸에서, 아이템은 지급할 아이템을 누르고 개수와 받을 사람을 정하십시오. 칸의 숫자는 내 가방에 있는 개수입니다. 다른 선원에게 주면 '운영자' 이름의 선물로 도착합니다.</span>
+   ${admPick&&ITEMS[admPick]?`<div class="admpick"><div class="fspick">${iicon(admPick,2)}<div><b>${esc(ITEMS[admPick].n)}</b><span class="hint">내 가방 ${P.inv[admPick]||0}개</span></div></div><div class="row" style="gap:6px;flex-wrap:wrap"><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'선원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div></div>`:''}
+   <div class="admpick admcr"><div class="fspick">${img(IC.coin,null,3)}<div><b>크레딧</b><span class="hint">내 잔액 ${(P.cr||0).toLocaleString()} CR</span></div></div><div class="row" style="gap:6px;flex-wrap:wrap"><input id="admCr" class="sel" type="number" min="1" max="1000000" value="1000" style="width:100px" aria-label="지급할 크레딧"><span class="hint">CR</span><select id="admCrTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'선원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgivecr">크레딧 지급</button></div></div>
    ${admGroups()}</div>
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
-   <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 단원에게 크레딧을 보냅니다. 지금 접속하지 않은 단원도 다음에 들어오면 받습니다.</span>
+   <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
    ${admStaffHTML(others)}${seasonAdminHTML()}`:''}`}
@@ -2663,7 +2663,7 @@ async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false
 // adm marks a notice sent from the admin side: it pins to the ticker and rings the chime for everyone
 function sys(text,adm,snd){if(mode!=='online'||!TICK_RE.test(text))return;const d={uid,nick:P.nick,text,at:Date.now(),sys:true};if(adm&&isAdmin)d.adm=true;if(snd)d.snd=snd;db.collection('chat').add(d).catch(()=>{})}
 function setPresence(){if(room&&mode==='online')room.presence({uid,nick:P.nick,act:socOpen&&socTab==='chat'?'교류':TABS.find(t=>t.id===tab).n}).catch(()=>{})}
-function goSolo(msg,why){mode='solo';isAdmin=true;$('#adminBtn').hidden=false;FB=P&&P.sugg?[{id:'me',nick:P.nick,list:P.sugg}]:[];setTimeout(updFbBadge,0);if(why){const b=$('#soloBanner');b.innerHTML=`<b>⚠ 진행 상황이 공용 서버에 저장되지 않습니다</b><span>${esc(why)}</span><span>지금은 이 브라우저에만 임시로 저장돼서, 다른 기기로 들어오거나 브라우저 기록이 지워지면 사라질 수 있습니다. 새로고침해도 계속되면 운영자(선장)에게 알려 주십시오.</span>`;b.hidden=false}try{const s=localStorage.getItem(LS);if(s){const o=JSON.parse(s);P=Object.assign(newPlayer('단원'),o);P.fv=o.fv||0}}catch(e){}if(msg)toast(msg);renderNet();renderAll();if(!P.joined||P.nick==='새 단원')showJoin()}
+function goSolo(msg,why){mode='solo';isAdmin=true;$('#adminBtn').hidden=false;FB=P&&P.sugg?[{id:'me',nick:P.nick,list:P.sugg}]:[];setTimeout(updFbBadge,0);if(why){const b=$('#soloBanner');b.innerHTML=`<b>⚠ 진행 상황이 공용 서버에 저장되지 않습니다</b><span>${esc(why)}</span><span>지금은 이 브라우저에만 임시로 저장돼서, 다른 기기로 들어오거나 브라우저 기록이 지워지면 사라질 수 있습니다. 새로고침해도 계속되면 운영자(선장)에게 알려 주십시오.</span>`;b.hidden=false}try{const s=localStorage.getItem(LS);if(s){const o=JSON.parse(s);P=Object.assign(newPlayer('선원'),o);P.fv=o.fv||0}}catch(e){}if(msg)toast(msg);renderNet();renderAll();if(!P.joined||P.nick==='새 선원')showJoin()}
 
 async function connect(){
   const C=window.claude;
@@ -2678,7 +2678,7 @@ async function connect(){
   const canW=await user.can('data.write');
   if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
   mode='online';myRef=db.doc('players/'+uid);
-  try{const s=await myRef.get();if(s.exists&&!s.data().deleted){seasonFromDoc=true;P=Object.assign(newPlayer('단원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
+  try{const s=await myRef.get();if(s.exists&&!s.data().deleted){seasonFromDoc=true;P=Object.assign(newPlayer('선원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
   renderNet();renderAll();seasonWatch();seenSync();loadMySn();setTimeout(openingOnce,400);
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
@@ -2686,7 +2686,7 @@ async function connect(){
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
   db.collection('grants').onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
-    if(!r.adm&&r.by&&r.by!==uid&&r.at!==P.rescueSeen&&(!P.faintAt||r.at>=P.faintAt)){P.rescueSeen=r.at;P.rescuedAt=r.at;addAff(r.by,AFF.rescue,'구조');P.rnoti=[{by:r.by,nick:r.nick||'단원',at:r.at},...(P.rnoti||[])].slice(0,20);if(isFaint())wake(r.nick||'누군가',r.med);else{log(`${r.nick||'누군가'} 님이 구조해 줬다.`,'good');commit()}bellRefresh()}
+    if(!r.adm&&r.by&&r.by!==uid&&r.at!==P.rescueSeen&&(!P.faintAt||r.at>=P.faintAt)){P.rescueSeen=r.at;P.rescuedAt=r.at;addAff(r.by,AFF.rescue,'구조');P.rnoti=[{by:r.by,nick:r.nick||'선원',at:r.at},...(P.rnoti||[])].slice(0,20);if(isFaint())wake(r.nick||'누군가',r.med);else{log(`${r.nick||'누군가'} 님이 구조해 줬다.`,'good');commit()}bellRefresh()}
     else if(r.adm&&isFaint()&&r.at>=(P.faintAt||0))wake(r.nick||'누군가',r.med);
     db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
@@ -2741,7 +2741,7 @@ function renderPilot(){if(pilotBusy())return;
   <div class="stat" data-tip="우주복의 에너지입니다."><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
   <div class="specs"><div class="spec"><span class="lbl">ATK 공격</span><b>${atk()}</b></div><div class="spec"><span class="lbl">DEF 방어</span><b>${def()}</b></div><div class="spec" style="grid-column:1/-1;display:flex;align-items:center;gap:6px">${img(IC.coin,null,2)}<b id="crBal">${Math.round(crShown??(P.cr||0)).toLocaleString()}</b><span class="lbl" style="margin-left:auto">CR 크레딧</span></div></div>
-  ${gearPickHTML()}${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어납니다</span><span class="hint">${mode==='online'?'다른 단원이 구조해 주면 바로 일어납니다.':'혼자 모드에서는 시간이 지나야 깨어납니다.'}</span></div></div>`:''}`;
+  ${gearPickHTML()}${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어납니다</span><span class="hint">${mode==='online'?'다른 선원이 구조해 주면 바로 일어납니다.':'혼자 모드에서는 시간이 지나야 깨어납니다.'}</span></div></div>`:''}`;
 }
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
 /* ───────── 교류 단말기: a terminal that slides out from the left edge; the screen behind stays as it is ───────── */
@@ -2889,7 +2889,7 @@ function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge
     body=`<div class="acts"><button class="btn sm ghost" data-act="soil" data-i="${i}">배양토 채우기 <small>EN 1</small></button></div>`}
   else if(!pl.seed){const wet=isWet(pl);cls=wet?'wet':'dirt';title=`포드 ${i+1} · ${wet?'젖은 흙':'마른 흙'}`;
     body=seeds.length?`<div class="seeds">${seeds.map(([id,n,src])=>`<button class="seedbtn" data-act="plant" data-i="${i}" data-id="${id}" data-k="${src}">${iicon(id,2)}${ITEMS[id].n}<em>${src==='store'?'창고 ':''}×${n}</em></button>`).join('')}</div>`:`<span class="sub">씨앗이 없습니다. 채집·조사에서 얻거나 공용 창고에 넣어 주십시오.</span>`}
-  else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl),pc=Math.min(100,effG(pl)/it.grow*100),who=pl.byN?`<span class="sub">심은 단원 · ${esc(pl.byN)}</span>`:'';cls=wet?'wet':'dirt';
+  else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl),pc=Math.min(100,effG(pl)/it.grow*100),who=pl.byN?`<span class="sub">심은 선원 · ${esc(pl.byN)}</span>`:'';cls=wet?'wet':'dirt';
     pic=img([PL.seed0,PL.sprout,PL.young,PL[ITEMS[it.crop].pl||it.crop]][s],s===0?it.t:crop.t,2,'plant');
     if(s===3){cls='ready';title=`포드 ${i+1} · ${crop.n} 수확 가능`;badge=`<span class="tb">${img(IC.star,null,1)}</span>`;body=`${who}<span class="sub" style="color:var(--gold)">${podArmed(i)?'작물을 한 번 더 누르면 수확합니다.':'다 자랐습니다. 작물을 두 번 누르면 수확합니다.'}</span>`}
     else{if(!wet)badge=`<span class="tb">${img(DROP,null,2)}</span>`;title=`포드 ${i+1} · ${crop.n} · ${['씨앗','새싹','성장'][s]} 단계`;
@@ -2912,15 +2912,15 @@ function storeHTML(){const S=Object.keys(FSTORE).filter(id=>FSTORE[id]>0&&ITEMS[
    ${S.length?storeGroups(S,id=>FSTORE[id],'fssel',fsSel):'<p class="hint">창고가 비어 있습니다. 수확하면 작물이 여기에 쌓입니다.</p>'}
    ${fsSel?pick(fsSel,FSTORE[fsSel],'store'):S.length?'<p class="hint">아이템을 누르고 개수를 정해 꺼내십시오.</p>':''}
    <div class="row" style="justify-content:space-between;align-items:center;gap:6px"><span class="lbl">내 가방에서 넣기</span>${mine.length?`<span class="row" style="gap:4px">${fsAllArm?'<button class="btn sm ghost" data-act="fsputall" data-k="no">취소</button>':''}<button class="btn sm ${fsAllArm?'gold':'alt'}" data-act="fsputall">${fsAllArm?'정말 모두 넣기':'모두 넣기'} · ${mine.length}종 ${mine.reduce((a,id)=>a+P.inv[id],0)}개</button></span>`:''}</div>${mine.length?`${storeGroups(mine,id=>P.inv[id],'fpsel',fpSel)}${fpSel?pick(fpSel,P.inv[fpSel],'bag'):'<p class="hint">넣을 아이템을 누르고 개수를 정하십시오. 씨앗과 작물만 넣을 수 있습니다.</p>'}`:'<p class="hint">넣을 수 있는 씨앗이나 작물이 없습니다.</p>'}</div>
-  <div class="card fstore"><div class="stat-row"><span>창고 내역</span><b>최근 ${Math.min(FLOG.length,30)}건</b></div>${FLOG.length?`<ul class="flist flog">${FLOG.slice(0,30).map(l=>`<li><time>${hhmm(l.at)}</time>${iicon(l.id,1)}<span><b>${esc(l.nick||'단원')}</b> · ${esc(ITEMS[l.id]?ITEMS[l.id].n:l.id)}</span><i class="fk ${l.k==='put'?'put':'take'}">${l.k==='put'?'넣음':'꺼냄'}</i><em>×${+l.n||0}</em></li>`).join('')}</ul>`:'<p class="hint">아직 창고에 넣거나 꺼낸 기록이 없습니다.</p>'}</div>`}
+  <div class="card fstore"><div class="stat-row"><span>창고 내역</span><b>최근 ${Math.min(FLOG.length,30)}건</b></div>${FLOG.length?`<ul class="flist flog">${FLOG.slice(0,30).map(l=>`<li><time>${hhmm(l.at)}</time>${iicon(l.id,1)}<span><b>${esc(l.nick||'선원')}</b> · ${esc(ITEMS[l.id]?ITEMS[l.id].n:l.id)}</span><i class="fk ${l.k==='put'?'put':'take'}">${l.k==='put'?'넣음':'꺼냄'}</i><em>×${+l.n||0}</em></li>`).join('')}</ul>`:'<p class="hint">아직 창고에 넣거나 꺼낸 기록이 없습니다.</p>'}</div>`}
 /* side-column card bodies, shared by the farm view and the hidden measuring pass in fitSide() */
 function tankInner(wait){return`<div class="stat-row"><span>${img(DROP,null,2)}공용 물탱크</span><b>${FARM.water}/${FARM.cap}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.water/FARM.cap*100}%"></i></div>${wait?`<button class="btn sm alt" disabled>물 채우기 대기 중</button><span class="hint" id="refT">다시 채우기까지 ${fmtClock(FARM.refCd-Date.now())}</span>`:`<button class="btn sm alt" data-act="refill" ${FARM.water>=FARM.cap?'disabled':''}>물 채우기</button>`}`}
-function growInner(t){const fu=FARM.fu,ore=P.inv.ore||0,cr=P.inv.crystal||0;return`<div class="row growtabs" style="gap:4px"><button class="qchip" data-act="growtab" data-k="pod" aria-pressed="${t==='pod'}">재배 포드 증설</button><button class="qchip" data-act="growtab" data-k="tank" aria-pressed="${t==='tank'}">물탱크 증설</button></div>${t==='tank'?(FARM.tlv>=TANK_LV?`<span class="sub">물탱크가 최대 용량 ${FARM.cap}까지 늘었습니다.</span>`:`<div class="stat-row"><span>물탱크 ${FARM.tlv+1}단계 증설 · 용량 ${FARM.cap} → ${FARM.cap+TANK_STEP}</span><b>${FARM.tprog}/${FARM.tneed}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.tprog/FARM.tneed*100}%"></i></div><span class="sub">모든 단원이 은하 결정을 하나씩 모아 공용 물탱크를 키웁니다.</span><div class="acts"><button class="btn sm ghost" data-act="tdon" ${cr?'':'disabled'}>은하 결정 1개 넣기</button><span class="hint">내 가방 ${cr}개</span></div>`)
-   :(fu>=FIELD_N?`<span class="sub">포드 ${FIELD_N}개가 모두 열렸습니다.</span>`:`<div class="stat-row"><span>재배 포드 ${fu+1}번 증설</span><b>${FARM.prog}/${FARM.need}</b></div><div class="bar"><i style="--c:var(--gold);width:${FARM.prog/FARM.need*100}%"></i></div><span class="sub">모든 단원이 운석 파편을 하나씩 모아 다음 포드를 엽니다. 다 모이면 바로 열립니다.</span><div class="acts"><button class="btn sm ghost" data-act="fdon" ${ore?'':'disabled'}>운석 파편 1개 넣기</button><span class="hint">내 가방 ${ore}개</span></div>`)}`}
+function growInner(t){const fu=FARM.fu,ore=P.inv.ore||0,cr=P.inv.crystal||0;return`<div class="row growtabs" style="gap:4px"><button class="qchip" data-act="growtab" data-k="pod" aria-pressed="${t==='pod'}">재배 포드 증설</button><button class="qchip" data-act="growtab" data-k="tank" aria-pressed="${t==='tank'}">물탱크 증설</button></div>${t==='tank'?(FARM.tlv>=TANK_LV?`<span class="sub">물탱크가 최대 용량 ${FARM.cap}까지 늘었습니다.</span>`:`<div class="stat-row"><span>물탱크 ${FARM.tlv+1}단계 증설 · 용량 ${FARM.cap} → ${FARM.cap+TANK_STEP}</span><b>${FARM.tprog}/${FARM.tneed}</b></div><div class="bar"><i style="--c:var(--cyan);width:${FARM.tprog/FARM.tneed*100}%"></i></div><span class="sub">모든 선원이 은하 결정을 하나씩 모아 공용 물탱크를 키웁니다.</span><div class="acts"><button class="btn sm ghost" data-act="tdon" ${cr?'':'disabled'}>은하 결정 1개 넣기</button><span class="hint">내 가방 ${cr}개</span></div>`)
+   :(fu>=FIELD_N?`<span class="sub">포드 ${FIELD_N}개가 모두 열렸습니다.</span>`:`<div class="stat-row"><span>재배 포드 ${fu+1}번 증설</span><b>${FARM.prog}/${FARM.need}</b></div><div class="bar"><i style="--c:var(--gold);width:${FARM.prog/FARM.need*100}%"></i></div><span class="sub">모든 선원이 운석 파편을 하나씩 모아 다음 포드를 엽니다. 다 모이면 바로 열립니다.</span><div class="acts"><button class="btn sm ghost" data-act="fdon" ${ore?'':'disabled'}>운석 파편 1개 넣기</button><span class="hint">내 가방 ${ore}개</span></div>`)}`}
 // lock each side card to the height it has in its reference state at the current width, so the column never jumps
 function fitSide(){const side=document.querySelector('.farmcol.side');if(!side)return;if(innerWidth<=760){['--pch','--tch','--gch','--sdh'].forEach(k=>side.style.removeProperty(k));return}
   const m=(cls,html)=>{const d=document.createElement('div');d.className=cls;d.style.cssText=`position:absolute;visibility:hidden;left:0;top:0;width:${side.clientWidth}px;height:auto`;d.innerHTML=html;side.appendChild(d);const h=d.offsetHeight;d.remove();return h};
-  const pod=`<h3>포드 1 · 별감자 · 새싹 단계</h3><span class="sub">심은 단원 · ${esc(P.nick)}</span><div class="bar"><i style="width:40%"></i></div><span class="sub">목마릅니다. 물을 줘야 자랍니다</span><span class="sub">작물을 한 번 더 누르면 물을 줍니다. (EN 1)</span><span class="sub">작물을 오른쪽 버튼으로 누르면(휴대폰은 길게 누르면) 비료를 뿌립니다. (이끼 2 · 보유 99)</span>`;
+  const pod=`<h3>포드 1 · 별감자 · 새싹 단계</h3><span class="sub">심은 선원 · ${esc(P.nick)}</span><div class="bar"><i style="width:40%"></i></div><span class="sub">목마릅니다. 물을 줘야 자랍니다</span><span class="sub">작물을 한 번 더 누르면 물을 줍니다. (EN 1)</span><span class="sub">작물을 오른쪽 버튼으로 누르면(휴대폰은 길게 누르면) 비료를 뿌립니다. (이끼 2 · 보유 99)</span>`;
   const ph=m('card podinfo',pod);side.style.setProperty('--pch',ph+'px');side.style.setProperty('--sdh',Math.max(40,ph-m('card podinfo','<h3>포드 1 · 마른 흙</h3>')-8)+'px');
   side.style.setProperty('--tch',Math.max(m('card tank',tankInner(false)),m('card tank',tankInner(true)))+'px');
   side.style.setProperty('--gch',Math.max(m('card podinfo',growInner('pod')),m('card podinfo',growInner('tank')))+'px')}
@@ -2932,7 +2932,7 @@ function renderFarm(){
   const info=`<h3>${pods[selPod].title}</h3>${pods[selPod].body}`;
   const grow=`<div class="card podinfo gcard">${growInner(growTab)}</div>`;
   const here=mode==='online'?[...new Set(PEERS.filter(p=>p.presence&&p.presence.uid!==uid&&p.presence.act==='농사').map(p=>p.presence.nick))]:[];
-  return head()+`<p class="lead">모든 단원이 함께 쓰는 돔 농장입니다. 누구나 배양토를 채우고 심고 물을 줄 수 있고, 거둔 작물은 공용 창고에 쌓여 누구나 꺼내 씁니다. 물탱크와 비료용 이끼는 각자 자기 것을 씁니다.${here.length?` <span class="visitors">지금 농장에 있는 단원 · ${here.map(n=>esc(n||'단원')).join(', ')}</span>`:''}</p>
+  return head()+`<p class="lead">모든 선원이 함께 쓰는 돔 농장입니다. 누구나 배양토를 채우고 심고 물을 줄 수 있고, 거둔 작물은 공용 창고에 쌓여 누구나 꺼내 씁니다. 물탱크와 비료용 이끼는 각자 자기 것을 씁니다.${here.length?` <span class="visitors">지금 농장에 있는 선원 · ${here.map(n=>esc(n||'선원')).join(', ')}</span>`:''}</p>
   <div class="frow r1"><div class="farmcol"><div class="bay" style="background-image:url(${bayFrame()})"><div class="pods">${pods.map(x=>x.tile).join('')}${`<span class="ptile lock" aria-hidden="true"></span>`.repeat(Math.max(0,FIELD_N-fu))}</div><span class="dome-label">SHARED DOME · ${fu}/${FIELD_N}</span></div></div>
   <div class="farmcol side"><div class="card podinfo pcard">${info}</div>
   <div class="card tank tcard">${tankInner(Date.now()<FARM.refCd)}</div>${grow}</div>
@@ -2941,7 +2941,7 @@ function renderFarm(){
 function harvestAt(i){let got=null;
   podAct(i,cur=>{got=null;if(!cur||!cur.seed||stage(cur)!==3)return null;got=cur;return{til:1,wet:cur.wet&&isWet(cur)?cur.wet:0}},()=>{const pl=got,it=ITEMS[pl.seed],lb=lifeHit('farm'),n=1+(lb?1:0),back=Math.random()<.45;sfxHarvest(lb?2:1);
     storeAdd(it.crop,n);if(back)storeAdd(pl.seed,1);stat('harvest');lxp('farm',FARM_LX);gainXp(3);
-    log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good')},()=>toast('다른 단원이 먼저 수확했습니다.'))}
+    log(`포드 ${i+1}에서 ${ITEMS[it.crop].n} ${n}개를 거둬 공용 창고에 넣었다.${lb?' (농사 숙련 +1)':''}${back?' 씨앗도 하나 남았다.':''}`,'good')},()=>toast('다른 선원이 먼저 수확했습니다.'))}
 // one picture per tier, from a plain work jumpsuit up to glowing power armour (suitgen.py)
 const SUIT_PNG=["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABnklEQVR42mNgGOmAkRTFCuJy/4lR9+DlI0aqO0BBXO5/TGo6UWqXzJ5JtCNYSAmBj5++MDAwMDB8/fYdp5r3b9+QFAUkOeDJ48cDnwZWzGtj+P/3L1b5y9fvMbT1zaddGli1sJvh39/fOB3AwMDAwMzGwRAWX0q0I5iIdcCDl48Yw+JL8aq5fP0eSZaT5AAYuHTl9sClAVhUVBUlYpUjNf5xOgBbgfPg5SNGZHF0R7T1zcepFl8hxYjN8oLySgyNEzrbGbCJYwP41E7obEdxBNFpgFjLSVWLtSD6+v0Hw7fvP+H8F8+eMejqaML5X75+xWkgDzc3VjNg5pBdEn79/oOBgYGB4dv3nwx/fv+EFsk/UNS8ef2KQVlFleHFs2cMSsqKtMmGMGBtbU2VbEi2A44ePYpTzoCVDg7ABy78prA2vHf3Pl5NDx8+ImgwITNIToQwAyWkpBiUVVRxqsOW0qlSEsJAdGoWXsv3bt1AUnONhZQ2HS3ahDRJhHTJhtQCLKRqIDWR0TQE9m7dQDDRjaYBmjTJ0LMbNrFRQCwAAJZpu8RUmfCjAAAAAElFTkSuQmCC","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACVklEQVR42u1XQU8TQRT+tmk8cYGDTZRdm20PWA1/o5FUE38AJoZ40wNcGkiNS2g0myZ6qJ4IIeoPIIEG0j9By3YZemgNLmsTPMCFEG2argcz4y7dbmfKUjj4TrOzb9775r3vvX0LXLNIwxyKxxTHb//w2JKuHEA8pjgbO1u+754+eiwMIhKWcwDY2NnqG51LR4A6dxCBI/XHHXE6QpGQRJ0DgCNF8Pr9mkdnZWFuKBBR3ghQ57kP677vKaCVhTlUK+bVcMAtH7VXoZQhN4C9iuF5fqkVRwfg8NiSlpcWuQwau1UsLy1ykzA6iHxuQ3sVA/n554EkNHargTa4qoDWclbLQ9dyLArxmOK8efsu8Eb09n42/Lql5Oc8q+UBACenZ5gYH0MyoeDF7DOsfv3C9OyjH55zk/Jdtqa6jabFbABgdtwgfFNg1gjuTCpsnUwoHucXHV4Uqnt+3mYXadkWkgmFjwOZJ2mUNsv/iGXsY3r6gUen0bR6zrkddLoOvjUb7Hkmk4Zh7POTcCaTZus6Ieh0/7b4bhfsdr9+t5lOy7ag3JOZfuphymMj9EYEAO37P0fXiPzk1sHtSwOIDnvQnd/QARCTDDw4KL88NoQiQA1OpVKBenVChCIgicx8tLNRoay3vh+xPXfX45kbhSairJbHyekZKzuahvpBk5XkxPgYdC3H/TESqgKzRtCyrb6EbNkWzFoIKQiKwqf1z9gulXtIuF0qQ1VlFAu60GQsXIZ1QqCqcg/ZVFUefSMqFnQUC/r1dcKRzoQ35t/Q3SMo2fz2/guv/AGTixYep1mQKwAAAABJRU5ErkJggg==","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACNklEQVR42mNgoAAoiMv9VxCX+0+JGYzkWApjN0+fxcDAwMBQm5kGl3/w8hEjzRygIC73H2YpLlCbmUaSIxhJtfz7778Mv/78w6mOn5OVJEcwkWo5IfDx+2+G5umzGIhNG0zEhgAxlsPA5ctXiVbLQkoauCEoT5yhd27RxgEMDAwM7lIcBNXsJcE8kh2w89kPqhpKdBq4c+MGAy0AIzEFDgwELd5GlKHrYr0wxHBlS0ZcFscXlWHPDT9+4rWck4Mdq/jCvi6sjmFEt7ygtYPh/dt3DM/efMAw5P2LZww29jYMz54+x2qJlLQkw5GDRxikFRQZvqE5VEpEgEFQWIiBgYGBYUJ1BdwRGOmFkOUwi3ABG3sbhvsPn2KIw8yEOQIjwSqIy/2PLypjuHrlGooCQQkpFP7jhw/wRoGsvAKGw5HZ2jpa2B3w4OUjxoV9Xf9Ta1sYvv36DVdw8/xZOPv1p+8omhOs3zAwMDAwLDgqgqLm6YP7cL6huQWKeU8f3ictGwoICTEYmlswGJpbQHzx8QvD+49f4JbDHPLo+RuGq1euMzAwMDCoGxozCAgJMZzZtYV65QCtAAu5GpvW4JcXl1dkKGjtYPj64w9pDrh/G39F8uzxY6IdeeXyNeqEACFHIYOXaImM5KKYUEMiurwer+V7ViwiaClySchCbJlNjOPIaZiSnAtuXcPf2jH1DWEgpak+NLMhqQmNZiGwZ8UiohLdoI6CAXcARX1DWHZDT/Wk9g9HNgAAy6bnOVeUuaoAAAAASUVORK5CYII=","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACy0lEQVR42r1XTWgTQRT+dmklgVgvabceGpODhx56kpaCgl4U4kmkQisWC0VEodEevOnJ3kqJ1oMWKQQqRmkQQTBFLwaUhorYoKLiIX/NYWNK6fZHmgTiIcx0Nzs7O9tGHyzLvpn5vm/eezv7VgLH/IqvllFzEsvPms+aa2cSjzxy7y1Gbp6mwIT4yuht5prHsxOOhUiiEfArvpoVMUuIqAihSYRc03awvV22nd/ZedBSRGNaZZHcAoCm7Qjn9eu3H9y06nlk3mCzLaPmJH1NmVLAqnp9+Ic93UJEM8UUNw16k0VeIxLSuc3vQuS8NHAFWIVtMRlzFOrSagGLyZjQm9DCq3z9cy6fhq8r4EiIHsNKjGS1MBQKm/wflz4IEff2HTf5pqfHmSJMr6EVOQBcv9wqRN7bvWTyh0Jhiq+PjKQnvzg0Dm+7D6XiH8Pi4MkvAIDIvAeK4kE6nWeSBwJdcLsOAwBO9X0GAMQTPXTc2+FG6XcOAPA0GkZGzUmGGvC2+7C1UaGk8UQPvdctTYksizb7C/4jR+maRhxvh4+KMBXh1kbFpJzc1WIaiuIx7vjq2bqsmdfU1zhHj0MiOZVYAzMFcw+HEJnfBTh37DxefnpBn6uV+nfgxN1LzN2/v/OkvqvWAwZ/I87IhU0MX4sio+YkQxE+f9WGaqVMLwBwu2S4XbvTrMgbx6qVMlZX83StHnfq0Zr4QUSMAJFd8iJAxDflJOQR2fkcC1gpZLGuqfQSFcEjXylkAcASt8VOIQEgdqhN4RLbCecexSK9wINbccSSz5hj65qK0TM3MDYZFOoNTBGw+3o5aVZEe0LZKbDV7omNTQYddcWy01ZsoH/QNkV2WIaekNWn8Wz2zX0M9A8aqppcJP88rMYNy3v9owGA5dQCllML+2pM93QQNaM73tdJ6NSa2uqzuhqWTz/2Lvqz9i//N/5vBJptfwGanZl+atNovQAAAABJRU5ErkJggg=="];
 const SUIT_MK=['Mk.Ⅰ','Mk.Ⅱ','Mk.Ⅲ','Mk.Ⅳ'];
@@ -3012,7 +3012,7 @@ const RAID_EVENTS=[
  {k:'record',n:'고대 기록',t:'봉인된 기록 장치를 열어 앞선 개척단의 기록을 읽었다.',xp:1},
  {k:'moss',n:'이끼 군락',t:'빛나는 이끼를 한 아름 걷었다.',item:['moss','moss','moss']},
  {k:'gravity',n:'중력 이상 지대',t:'몸이 짓눌리는 중력장을 버텨 냈다. 몸은 아프지만 깨달은 것이 있다.',dmg:.1,xp:1.5},
- {k:'trace',n:'동료의 흔적',t:'앞서 간 단원이 남긴 보급품으로 기운을 차렸다.',heal:.2,item:['drink']},
+ {k:'trace',n:'동료의 흔적',t:'앞서 간 선원이 남긴 보급품으로 기운을 차렸다.',heal:.2,item:['drink']},
  {k:'shortcut',n:'지름길',t:'바위 틈으로 난 지름길을 찾았다. 한 구간을 건너뛴다.',skip:1},
  {k:'storm',n:'모래 폭풍',t:'거센 폭풍이 몰아쳐 모두 상처를 입었다.',dmg:.1},
  {k:'shroom',n:'빛나는 버섯',t:'먹어도 되는 버섯을 찾아 나눠 먹었다.',heal:.15,item:['moss']},
@@ -3100,7 +3100,7 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
     const mL=b.mons.reduce((a,m)=>a+m.L,0)/Math.max(1,b.mons.length),lx=u=>raidLvX(r.m[u].lvl,mL);
     raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=Math.round(xp*lx(u));L.cr+=cr;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=crM;L.cb.boss+=cr-crM;if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n=n0&&r.m[u].job==='mech'?n0+1:n0;if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
-    const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 단원은 경험치가 줄어듭니다)':''}`};
+    const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치가 줄어듭니다)':''}`};
     if(boss){const cb=crs(Math.round(200*raidPartyX(r)));raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5*lx(u));L.cr+=cb;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cb})}return r}
   if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 체력 1로 정거장에 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);if(L.cb){for(const k in L.cb)L.cb[k]=Math.round(L.cb[k]/2)}L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
@@ -3195,7 +3195,7 @@ function sfxRaidHurt(me){if(!soundOn)return;const a=ac();if(!a)return;const t=a.
 /* party chat: one small doc per party (last 40 lines), shown under the party list while more than one member is along */
 const RC_MAX=40;let RCHAT=[],rcDraft='',rcUnsub=null;
 const rcRef=id=>db.doc('boss/rc_'+id);
-function rcLogHTML(){return RCHAT.length?RCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">파티원에게 말을 걸어 보십시오.</li>'}
+function rcLogHTML(){return RCHAT.length?RCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">파티원에게 말을 걸어 보십시오.</li>'}
 function rcHTML(r){if(mode!=='online'||!r||r.ids.length<2)return'';return`<div class="card bosschat rchat"><div class="stat-row"><span>파티 대화</span><b>${raidIn(r).length}명</b></div><ol class="bosslog" id="rcLog">${rcLogHTML()}</ol>
   <form class="bossform" id="rcForm"><input id="rcIn" value="${esc(rcDraft)}" maxlength="120" autocomplete="off" placeholder="파티원에게 말하기" aria-label="파티 대화 입력"><button class="btn sm" type="submit">보내기</button></form></div>`}
 function rcPaint(){const l=$('#rcLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=rcLogHTML();if(end)l.scrollTop=l.scrollHeight}
@@ -3218,8 +3218,8 @@ const runAlive=v=>v.phase!=='end'&&raidIn(v).length>0&&lobbyAlive(v);
 function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).sort((a,b)=>(b.at||0)-(a.at||0));
   return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),cur=Math.min(x.step||1,RAID_STEPS),mp=raidMapImg(zz.id,cur,false,RAID_STEPS,true),boss=cur===RAID_STEPS;
     return`<div class="pcard run"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">${cur}/${RAID_STEPS} 지점${boss?' · 보스':''}</span></div>
-     <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'단원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
-      <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'단원')}</em><small>Lv.${m.lvl||'?'}</small>${raidBar(Math.max(0,m.hp||0),m.maxHp||1,'var(--green)')}</span>`}).join('')}</div>
+     <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
+      <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small>${raidBar(Math.max(0,m.hp||0),m.maxHp||1,'var(--green)')}</span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
 function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));raidRefilter();if(tab==='raid')renderPanel()},()=>{}));
   tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','run').onSnapshot(sn=>{RAIDS_RUN=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{}));
@@ -3252,8 +3252,8 @@ function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);ret
   <div class="row" style="gap:6px;margin:8px 0"><button class="btn" data-act="raidnew" data-k="solo" ${raidFits(z)?'':'disabled'}>혼자 출발</button><button class="btn alt" data-act="raidnew" data-k="party" ${raidFits(z)?'':'disabled'}>파티 모집</button><span class="hint">선택 구역 · ${z.n}</span></div>
   <div class="card"><div class="stat-row"><span>모집 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),ok=raidFits(zz),mp=raidMapImg(zz.id,1,false,RAID_STEPS,true);
     return`<div class="pcard ${ok?'':'off'}"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">Lv.${zz.min}~${zz.id==='r6'?'':zz.max}${zz.id==='r6'?' 이상':''}</span></div>
-     <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'단원')}</span>
-      <div class="pcmem">${Array.from({length:RAID_MAX},(_,k)=>{const u=x.ids[k],m=u&&(x.m[u]||{});return u?`<span class="pcm${u===x.host?' host':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'단원')}</em><small>Lv.${m.lvl||'?'}</small><small class="pcjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</small></span>`:`<span class="pcm empty"><i></i><em>빈 자리</em></span>`}).join('')}</div>
+     <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'선원')}</span>
+      <div class="pcmem">${Array.from({length:RAID_MAX},(_,k)=>{const u=x.ids[k],m=u&&(x.m[u]||{});return u?`<span class="pcm${u===x.host?' host':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small><small class="pcjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</small></span>`:`<span class="pcm empty"><i></i><em>빈 자리</em></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn sm" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 부족'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
   ${raidRunListHTML()}
   <span class="lbl" style="display:block;margin-top:10px">Zone · 원정 구역</span><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>`}
@@ -3381,10 +3381,10 @@ function bossSummon(k,lv){return bossTx(bossRef(),cur=>{if(bossAlive(cur))return
 function bossDismiss(){return bossTx(bossRef(),cur=>{if(!bossAlive(cur))return null;cur.gone=true;cur.goneAt=Date.now();return cur})}
 // when the clock runs out the first client to notice marks the raid failed; everyone then takes the penalty once
 function bossExpire(){const b=BOSS;if(!bossAlive(b)||Date.now()<(b.end||Infinity)||bossBusy)return;bossBusy=true;
-  bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()<cur.end)return null;cur.failed=true;cur.failedAt=Date.now();return cur}).then(nx=>{if(nx)sys(`[공지] 침략자 ${b.name}이(가) 정거장의 에너지를 빼앗고 사라졌습니다… 토벌 실패. 모든 단원의 체력과 에너지가 1이 되었습니다.`,false,'static')}).catch(()=>{}).finally(()=>{bossBusy=false})}
+  bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()<cur.end)return null;cur.failed=true;cur.failedAt=Date.now();return cur}).then(nx=>{if(nx)sys(`[공지] 침략자 ${b.name}이(가) 정거장의 에너지를 빼앗고 사라졌습니다… 토벌 실패. 모든 선원의 체력과 에너지가 1이 되었습니다.`,false,'static')}).catch(()=>{}).finally(()=>{bossBusy=false})}
 function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b.prev&&b.prev.failed?b.prev:null;
   if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;
-  P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 단원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
+  P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
   bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint()},()=>{});
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
@@ -3466,7 +3466,7 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
     Object.entries(bossSplit(b,dealt,d)).forEach(([u,v])=>{m['dmg.'+u+'.d']=(m['dmg.'+u+'.d']||0)+v});
     try{await docInc(bossRef(),m,ex)}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}}
   else try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,Math.round(d*(1+bossBonus(cur))));cur.hp-=dealt;cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};cur.last=uid;
-    Object.entries(bossSplit(cur,dealt,d)).forEach(([u,v])=>{const e=cur.dmg[u]||{n:u===uid?P.nick:'단원',d:0};if(u===uid)e.n=P.nick;e.d=(+e.d||0)+v;cur.dmg[u]=e});
+    Object.entries(bossSplit(cur,dealt,d)).forEach(([u,v])=>{const e=cur.dmg[u]||{n:u===uid?P.nick:'선원',d:0};if(u===uid)e.n=P.nick;e.d=(+e.d||0)+v;cur.dmg[u]=e});
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
   if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
@@ -3474,17 +3474,17 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
   let back='';if(!kill){const dodge=Math.random()*100<Math.min(30,AS('agi')*1.5);if(dodge)back='회피!';else{const [hit,sv]=bossBlow2(b);heal(-hit,0);bossDefCredit(BOSS||b,sv);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
   // one notice for everyone, posted by whoever landed the last blow
-  if(kill)sys(`[공지] 침략자 ${b.name}이(가) 물러났습니다! 토벌 성공. 참여한 단원은 탐사 화면에서 보상 상자를 여십시오.`,false,'beacon');
+  if(kill)sys(`[공지] 침략자 ${b.name}이(가) 물러났습니다! 토벌 성공. 참여한 선원은 탐사 화면에서 보상 상자를 여십시오.`,false,'beacon');
   sfxBossHit(crit);if(kill)sfxBossKill();else sfxBossBack(bossLast&&bossLast.miss);
   log(`${two?'[연속 타격] ':''}${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
 /* 교류 lounge: a small live chat for whoever is on the 교류 tab right now, next to the PAD phone (last 40 lines kept) */
 const LOUNGE_MAX=40,loungeRef=()=>db.doc('boss/lounge');let LCHAT=[],loungeDraft='';
 const loungeHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='교류').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
-function loungeLogHTML(){return LCHAT.length?LCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 대화 탭에 있는 단원에게 말을 걸어 보십시오.</li>'}
+function loungeLogHTML(){return LCHAT.length?LCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 대화 탭에 있는 선원에게 말을 걸어 보십시오.</li>'}
 function loungeHTML(){const h=loungeHere();return`<div class="card bosschat lounge"><div class="stat-row"><span>교류 대화</span><b id="lgHere">${h.length}명</b></div><span class="hint" id="lgWho">${h.map(esc).join(', ')}</span>
   <ol class="bosslog" id="lgLog">${loungeLogHTML()}</ol>
-  <form class="bossform" id="lgForm"><input id="lgIn" value="${esc(loungeDraft)}" maxlength="120" autocomplete="off" placeholder="대화 중인 단원에게 말하기" aria-label="교류 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
-  <span class="hint">대화 탭을 연 단원끼리 이야기합니다. 최근 ${LOUNGE_MAX}개만 남습니다.</span></div>`}
+  <form class="bossform" id="lgForm"><input id="lgIn" value="${esc(loungeDraft)}" maxlength="120" autocomplete="off" placeholder="대화 중인 선원에게 말하기" aria-label="교류 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
+  <span class="hint">대화 탭을 연 선원끼리 이야기합니다. 최근 ${LOUNGE_MAX}개만 남습니다.</span></div>`}
 function loungePaint(){const l=$('#lgLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=loungeLogHTML();if(end)l.scrollTop=l.scrollHeight;const h=loungeHere(),hc=$('#lgHere'),hw=$('#lgWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 function loungeSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t||mode!=='online')return;const m={uid,n:P.nick,t,at:Date.now()};
   return bossTx(loungeRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-LOUNGE_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
@@ -3587,10 +3587,10 @@ function bossMainHTML(){const b=BOSS;
   return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,10)}</div>
     <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
     ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp"><b class="bosspct">${bossPct(b)}%</b> · ${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span>${alive?`<span class="bossclock ${urgent?'urgent':''}" id="bossClock">${bossClock(b)}</span>`:''}</div></div>
-   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div>${bossSkHTML(b)}<p class="hint"><b style="color:var(--red)">2시간 안에 토벌하지 못하면 모든 단원의 체력과 에너지가 1이 됩니다.</b></p>`
-    :b.failed?`<div class="card"><b style="color:var(--red)">토벌 실패…</b><p class="hint">${esc(b.name)}이(가) 2시간을 버티고 심연으로 돌아갔습니다. 저주로 모든 단원의 체력과 에너지가 1이 되었습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`
+   ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div>${bossSkHTML(b)}<p class="hint"><b style="color:var(--red)">2시간 안에 토벌하지 못하면 모든 선원의 체력과 에너지가 1이 됩니다.</b></p>`
+    :b.failed?`<div class="card"><b style="color:var(--red)">토벌 실패…</b><p class="hint">${esc(b.name)}이(가) 2시간을 버티고 심연으로 돌아갔습니다. 저주로 모든 선원의 체력과 에너지가 1이 되었습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`
     :b.gone?`<div class="card"><b>침략자가 물러났습니다</b><p class="hint">운영자가 ${esc(b.name)}을(를) 심연으로 돌려보냈습니다. 다음 침략자를 기다리십시오.</p></div>`
-    :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'단원')} · 공격한 단원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
+    :`<div class="card"><b>${esc(b.name)}을(를) 토벌했다!</b><p class="hint">마지막 일격 · ${esc(((b.dmg||{})[b.killer]||{}).n||'선원')} · 공격한 선원은 모두 보상을 받았습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`}
    <div class="card"><div class="stat-row"><span>피해 순위</span><b>${mine?`내 피해 ${mine.d.toLocaleString()} (${(mine.d/tot*100).toFixed(1)}%)`:'아직 공격하지 않았습니다'}</b></div>
     ${rk.length?bossJobRank(rk,tot):'<p class="hint">첫 공격을 기다리고 있습니다.</p>'}
     <p class="hint">마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
@@ -3601,18 +3601,18 @@ function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(
    ${alive?`<div class="row" style="gap:8px;align-items:center">${bossSpr(b,2)}<span class="hint">지금 <b>${esc(b.name)}</b> Lv.${b.lv} 출현 중 · 체력 ${b.hp.toLocaleString()}/${b.max.toLocaleString()} · ${bossClock(b)}</span><button class="btn sm ghost" data-act="admbossoff">돌려보내기</button></div><span class="hint">돌려보내면 보상도 저주도 없이 사라집니다. 침략자가 있는 동안에는 새로 소환할 수 없습니다.</span>`
    :`<div class="bosspicks">${BOSS_KINDS.map((K,i)=>`<button type="button" class="qchip bosspick" data-act="admbosspick" data-k="${i}" aria-pressed="${i===bossPick}" title="${esc(K.n)}">${bossSpr({kind:i},2)}<span>${esc(K.n)}</span></button>`).join('')}</div>
     <div class="row" style="gap:6px;align-items:center"><span class="hint">레벨</span><input id="admBossLv" class="sel" type="number" min="1" max="99" value="${lv}" style="width:70px" aria-label="침략자 레벨"><span class="hint" id="admBossHp">체력 ${bossHpFor(lv,bossPick).toLocaleString()}</span><button class="btn sm gold" data-act="admboss">소환</button></div>
-    <span class="hint">소환하면 2시간 안에 토벌해야 합니다. 실패하면 모든 단원의 체력과 에너지가 1이 됩니다.</span>`}</div>`}
-function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'단원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 단원에게 인사해 보십시오.</li>'}
+    <span class="hint">소환하면 2시간 안에 토벌해야 합니다. 실패하면 모든 선원의 체력과 에너지가 1이 됩니다.</span>`}</div>`}
+function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 선원에게 인사해 보십시오.</li>'}
 // damage ranking split by job: each column ranks its own crew, with the job's share of all damage in the header
 function bossJobRank(rk,tot){const jobOf=u=>{const j=u===uid?P.job:(PLAYERS[u]||{}).job;return OLDJOB[j]||j||''},G=['mech','nav','medic'].map(j=>[j,rk.filter(([u])=>jobOf(u)===j)]),etc=rk.filter(([u])=>!JOBS[jobOf(u)]);if(etc.length)G.push(['',etc]);
   return`<div class="bossjobs">${G.map(([j,L])=>{const sum=L.reduce((a,[,v])=>a+v.d,0);return`<div class="bossjob ${j?'':'etc'}" style="--jc:${j?`var(--job-${j})`:'var(--mute)'}"><div class="bjhd"><b>${j?JOBS[j].n:'직업 미정'}</b><span>${L.length}명 · ${(sum/tot*100).toFixed(1)}%</span></div>
-    ${L.length?`<ol class="bossrank">${L.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'단원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">아직 없습니다.</p>'}</div>`}).join('')}</div>`}
+    ${L.length?`<ol class="bossrank">${L.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><span>${esc(v.n||'선원')}</span><b>${v.d.toLocaleString()}</b><small>${(v.d/tot*100).toFixed(1)}%</small></li>`).join('')}</ol>`:'<p class="hint">아직 없습니다.</p>'}</div>`}).join('')}</div>`}
 function renderBoss(){const here=bossHere();
   return head()+`<div class="bossgrid"><div class="bossmain" id="bossMain">${chestHTML()}${bossMainHTML()}</div>
    <div class="card bosschat"><div class="stat-row"><span>탐사 대화</span><b id="bossHere">${here.length}명</b></div><span class="hint" id="bossWho">${here.map(esc).join(', ')}</span>
     <ol class="bosslog" id="bossLog">${bossChatLogHTML()}</ol>
-    <form class="bossform" id="bossForm"><input id="bossIn" value="${esc(bossDraft)}" maxlength="120" autocomplete="off" placeholder="탐사 중인 단원에게 말하기" aria-label="탐사 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
-    <span class="hint">탐사 탭에 있는 단원만 보고 말할 수 있습니다. 최근 ${BOSS_CHAT_MAX}개만 남습니다.</span></div></div>`}
+    <form class="bossform" id="bossForm"><input id="bossIn" value="${esc(bossDraft)}" maxlength="120" autocomplete="off" placeholder="탐사 중인 선원에게 말하기" aria-label="탐사 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
+    <span class="hint">탐사 탭에 있는 선원만 보고 말할 수 있습니다. 최근 ${BOSS_CHAT_MAX}개만 남습니다.</span></div></div>`}
 function bossPaint(){const m=$('#bossMain');if(!m){renderPanel();return}m.innerHTML=chestHTML()+bossMainHTML()}
 function bossPaintChat(){const l=$('#bossLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=bossChatLogHTML();if(end)l.scrollTop=l.scrollHeight}
 function bossSkHTML(b){const j=OLDJOB[P.job]||P.job,k=BSK[j],fx=bossFx(b),bn=bossBonusK(b,bskKind(j)),sc=bossSkReady(),ba=bossBonusK(b,'atk'),bw=bossBonusK(b,'weak'),bd=bossBonusK(b,'def');
@@ -3713,11 +3713,11 @@ function claimGather(){const x=expInfo();if(!x||x.pending<=0)return false;let wf
 const FK_KST=9*3600e3,fkDay=()=>new Date(Date.now()+FK_KST).toISOString().slice(0,10),fkWeek=()=>'w'+Math.floor((Math.floor((Date.now()+FK_KST)/864e5)+3)/7);
 function fkCatch(tr){const d=fkDay(),w=fkWeek(),o=Object.assign({},P.fk),pt=DPTS[tr]||1;if(o.d!==d){o.d=d;o.dp=0;o.dn=0}if(o.w!==w){o.w=w;o.wp=0;o.wn=0}o.dp+=pt;o.dn++;o.wp+=pt;o.wn++;P.fk=o}
 function fkRows(week){const d=fkDay(),w=fkWeek();return orgAll().map(([id,p])=>{const f=p&&p.fk||{};return week?(f.w===w?[id,p,f.wp||0,f.wn||0]:null):(f.d===d?[id,p,f.dp||0,f.dn||0]:null)}).filter(r=>r&&r[2]>0).sort((a,b)=>b[2]-a[2]||b[3]-a[3]).slice(0,3)}
-function fkCard(week){const rows=fkRows(week),[t]=rows,nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'단원')}${id===uid?' (나)':''}</button>`,sc=r=>`${r[2].toLocaleString()}점 · ${r[3]}마리`;
+function fkCard(week){const rows=fkRows(week),[t]=rows,nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'선원')}${id===uid?' (나)':''}</button>`,sc=r=>`${r[2].toLocaleString()}점 · ${r[3]}마리`;
   return`<div class="fkcard ${week?'wk':'dy'}"><div class="fkban"><span>${week?'주간 낚시왕':'오늘의 낚시왕'}</span></div>
    <div class="fkbody">${t?`<div class="fktop"><div class="fkface"><i class="fkcrown"></i>${headImg(5,t[1])}</div><div class="fkhead"><b class="fk1">1위</b>${nm(t[0],t[1])}<span class="fkv">${img(IC.fish,null,1)}${sc(t)}</span></div></div>
     ${rows.length>1?`<ol class="fklist">${rows.slice(1).map((r,i)=>`<li class="${r[0]===uid?'me':''}"><i class="fkmed"></i><span class="no">${i+2}위</span><span class="rkface">${headImg(2,r[1])}</span>${nm(r[0],r[1])}<b>${sc(r)}</b></li>`).join('')}</ol>`:''}`
-    :`<p class="hint fkempty">${week?'이번 주':'오늘'} 아직 물고기를 낚은 단원이 없습니다.</p>`}<span class="hint fkreset">${week?'매주 월요일 0시(한국 시간)에 새로 시작':'매일 0시(한국 시간)에 새로 시작'} · 일반 1 · 레어 3 · 유니크 8 · 레전더리 25점</span></div></div>`}
+    :`<p class="hint fkempty">${week?'이번 주':'오늘'} 아직 물고기를 낚은 선원이 없습니다.</p>`}<span class="hint fkreset">${week?'매주 월요일 0시(한국 시간)에 새로 시작':'매일 0시(한국 시간)에 새로 시작'} · 일반 1 · 레어 3 · 유니크 8 · 레전더리 25점</span></div></div>`}
 const fkHTML=()=>mode==='online'?`<div class="fkgrid">${fkCard(false)}${fkCard(true)}</div>`:'';
 // a cast needs 3 energy; with exactly 3 left it takes only 2 so you keep 1 and fishing can't knock you out
 const CAST_EN=3,castEn=()=>{regen();return P.en===CAST_EN?CAST_EN-1:CAST_EN};
@@ -4295,7 +4295,7 @@ const roomOpen=()=>mode==='online'&&shipDone(roomLife());
 // boss/staff.roomLink (admin switch): while linked, 마이룸 stays locked until the life-support section is repaired; unlinked, it is open to everyone
 let ROOM_LINK=true;
 const canRoom=()=>!ROOM_LINK||roomOpen()||isStaff();
-function roomLockHTML(){const pt=roomLife(),v=mode==='online'?shipPct(pt):0;return head()+shipSubTabs()+`<div class="card roomlock"><b>🔒 마이룸은 아직 잠겨 있습니다</b><p class="hint">가이아의 <b>${esc(pt.n)}</b>를 고치면 거주 구역에 공기가 돌아 마이룸이 열립니다. 단원 모두가 우주선 탭에서 재료를 넣어 함께 고칠 수 있습니다.</p><div class="stat-row"><span>${esc(pt.n)} 수리율</span><b>${Math.floor(v*100)}%</b></div><div class="bar"><i style="--c:var(--cyan);width:${v*100}%"></i></div><button class="btn sm" data-act="shipview" data-k="ship">우주선 수리하러 가기</button></div>
+function roomLockHTML(){const pt=roomLife(),v=mode==='online'?shipPct(pt):0;return head()+shipSubTabs()+`<div class="card roomlock"><b>🔒 마이룸은 아직 잠겨 있습니다</b><p class="hint">가이아의 <b>${esc(pt.n)}</b>를 고치면 거주 구역에 공기가 돌아 마이룸이 열립니다. 선원 모두가 우주선 탭에서 재료를 넣어 함께 고칠 수 있습니다.</p><div class="stat-row"><span>${esc(pt.n)} 수리율</span><b>${Math.floor(v*100)}%</b></div><div class="bar"><i style="--c:var(--cyan);width:${v*100}%"></i></div><button class="btn sm" data-act="shipview" data-k="ship">우주선 수리하러 가기</button></div>
   <div class="card" style="margin-top:10px"><span class="lbl">옷장</span>${wardHTML()}</div>`}
 if(!IC.room)IC.room=["................","....kkkkkkkk....","...kSSSSSSSSk...","...kSkkkkkkSk...","...kSkcccckSk...","...kSkcwcckSk...","...kSkkkkkkSk...","...kSvvvvvvSk...","...kSvvvvvvSk...","...kSvvvvyvSk...","...kSvvvvvvSk...","...kSvvvvvvSk...","...kSvvvvvvSk...","..kkkkkkkkkkkk..","..kSSSSSSSSSSk..","..kkkkkkkkkkkk.."];
 let shipView='ship';
@@ -4799,7 +4799,7 @@ function pvBar(){const ks=Object.entries(preview);if(!ks.length)return'';const p
   return`<div class="pvbar"><div class="pvchips">${ks.map(([slot,id])=>{const f=furnById(id);return`<span class="ichip">${FURN[slot].n} · ${esc(f.n)}${ownsF(id)?' (보유)':''}<button class="pvx" data-act="pvone" data-k="${slot}" aria-label="${esc(f.n)} 미리보기 빼기">×</button></span>`}).join('')}</div>
    <div class="row" style="gap:8px">${pd.lock?'<span class="hint" style="color:var(--red)">조사에서만 얻는 가구가 포함되어 있어요</span>':''}${pd.buy.length?`<span class="price">${img(IC.coin,null,2)}${pd.cost.toLocaleString()}</span>${pd.mats.length?matHTML(pd.mats):''}`:'<span class="hint">모두 보유한 가구예요.</span>'}<span style="margin-left:auto"></span><button class="btn sm ghost" data-act="pvoff">되돌리기</button><button class="btn sm gold" data-act="pvall" ${pd.ok?'':'disabled'}>${pd.buy.length?`전체 구매·배치 (${pd.buy.length}개 구매)`:'전체 배치'}</button></div></div>`}
 // other crew's rooms as small faces next to the room picture; online first
-function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean)),vp=visit&&(others.find(([id])=>id===visit)||[])[1];return`<div class="vside"><span class="lbl">${vp?`<b>${esc(vp.nick||'단원')}</b>의 방`:'단원의 방'}</span>${others.length?`<div class="vfaces">${others.slice().sort((a,b)=>(b[0]===visit)-(a[0]===visit)||on.has(b[0])-on.has(a[0])).map(([id,p])=>`<button class="vface ${visit===id?'on':''}" data-act="visit" data-k="${id}" title="${esc(p.nick||'단원')} 님의 방 구경하기" aria-label="${esc(p.nick||'단원')} 님의 방 구경하기">${headImg(2,p)}${on.has(id)?'<i class="von"></i>':''}</button>`).join('')}</div>`:`<span class="hint">${mode==='online'?'아직 다른 단원이 없습니다.':'온라인에서 볼 수 있습니다.'}</span>`}</div>`}
+function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean)),vp=visit&&(others.find(([id])=>id===visit)||[])[1];return`<div class="vside"><span class="lbl">${vp?`<b>${esc(vp.nick||'선원')}</b>의 방`:'선원의 방'}</span>${others.length?`<div class="vfaces">${others.slice().sort((a,b)=>(b[0]===visit)-(a[0]===visit)||on.has(b[0])-on.has(a[0])).map(([id,p])=>`<button class="vface ${visit===id?'on':''}" data-act="visit" data-k="${id}" title="${esc(p.nick||'선원')} 님의 방 구경하기" aria-label="${esc(p.nick||'선원')} 님의 방 구경하기">${headImg(2,p)}${on.has(id)?'<i class="von"></i>':''}</button>`).join('')}</div>`:`<span class="hint">${mode==='online'?'아직 다른 선원이 없습니다.':'온라인에서 볼 수 있습니다.'}</span>`}</div>`}
 function renderRoom(){
   enterRoomSpace(visit||uid);
   const vis=visit&&PLAYERS[visit];
@@ -4833,7 +4833,7 @@ function roomAvatars(){const owner=visit||uid,out=[];const others=rsPeers.filter
   return out}
 function drawAvatars(x){roomAvatars().slice().sort((a,b)=>a.dy-b.dy).forEach(a=>{const ax=Math.round(a.x),dy=a.dy||0;x.save();x.translate(0,dy);x.fillStyle='rgba(0,0,0,.4)';x.fillRect(ax-7,78,14,2);const gl=lookGlow(a.p);if(gl){const n=parseInt(gl.slice(1),16),rgb=`${n>>16&255},${n>>8&255},${n&255}`,gg=x.createRadialGradient(ax,70,1,ax,70,12);gg.addColorStop(0,`rgba(${rgb},.38)`);gg.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=gg;x.beginPath();x.arc(ax,70,12,0,Math.PI*2);x.fill();x.fillStyle=`rgba(${rgb},.25)`;x.fillRect(ax-9,79,18,2)}const ph=(a.id||'').length*1.7+(a.me?0:2.3),tt=Date.now()/1000,still=matchMedia('(prefers-reduced-motion: reduce)').matches,bob=still?0:(Math.sin(tt*2.4+ph)>.3?-.5:0)+(Math.sin(tt*.9+ph)>.85?-.5:0);x.save();if(!still&&Math.sin(tt*.5+ph)>.92){x.translate(ax,80);x.rotate(Math.sin(tt*6)*.05);x.translate(-ax,-80)}gridOnS(x,avatarGrid(a.p),ax-10,60+bob,.5,lookPal(a.p));x.restore();
   if(a.emote&&EMOTES[a.emote]){const g=EMOTES[a.emote],bx=ax+2,by=46;x.fillStyle='#05060b';x.fillRect(bx-1,by-1,11,10);x.fillStyle='#d6d8e0';x.fillRect(bx,by,9,8);x.fillRect(bx+1,by+8,2,2);gridOn(x,g,bx+1+(g[0].length<6?1:0),by+1,null)}x.restore()})}
-function roomLabels(){const el=$('#roomNames');if(!el)return;el.innerHTML=roomAvatars().map(a=>`<span class="rname ${a.me?'me':''} ${a.away?'away':''}" title="${a.away?'자리 비움':''}" style="left:${a.x/192*100}%;top:${(61.5+(a.dy||0))/96*100}%">${a.me?'나':esc(a.nick||'단원')}</span>`).join('')}
+function roomLabels(){const el=$('#roomNames');if(!el)return;el.innerHTML=roomAvatars().map(a=>`<span class="rname ${a.me?'me':''} ${a.away?'away':''}" title="${a.away?'자리 비움':''}" style="left:${a.x/192*100}%;top:${(61.5+(a.dy||0))/96*100}%">${a.me?'나':esc(a.nick||'선원')}</span>`).join('')}
 let wanderAt=0;
 // pets roam the room floor on their own (each viewer sees their own wander; nothing is synced)
 const PETW={},PET_FLY=new Set(['jelly','plasmoth','propdrone','orbsat']),petImgC={};
@@ -4865,21 +4865,21 @@ function roomMigrate(){roomDropGone();
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
   P.room={};if(cr>0){P.cr=(P.cr||0)+cr;log(`마이룸이 새 모습으로 바뀌어, 전에 산 가구 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
 function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
-function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 단원에게는 아직 잠겨 있습니다.</div>')}
-  if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 단원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
+function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 선원에게는 아직 잠겨 있습니다.</div>')}
+  if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 선원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
   const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP.find(x=>!shipDone(x))||SHIP[SHIP.length-1],open=shipOpen(pt),g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
   const rank=shipTotals().u;
   const top=Object.entries(rank).filter(([,r])=>r.n>0).sort((a,b)=>b[1].n-a[1].n).slice(0,8);
   const mine=(rank[uid]||{}).n||0;
   const canAny=open&&pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0),prevN=(SHIP[SHIP.indexOf(pt)-1]||{}).n;
   return head()+shipSubTabs()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 가이아 풍경"></canvas></div><div class="shiptop card">
-   <div class="sinfo"><b>${all>=1?'가이아 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 가이아'}</b><span class="hint">${all>=1?'모든 단원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 단원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
+   <div class="sinfo"><b>${all>=1?'가이아 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 가이아'}</b><span class="hint">${all>=1?'모든 선원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 선원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
    <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
   <div class="card shipdet"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div><b>${pt.n}</b> <span class="hint">${shipDone(pt)?'수리 완료':Math.floor(shipPct(pt)*100)+'%'}</span><p class="hint" style="margin:4px 0 0">${pt.d}</p>${open?'':`<p class="shiplock">🔒 ${esc(prevN)}을(를) 먼저 고쳐야 이 구역을 수리할 수 있습니다.</p>`}</div>
    ${shipDone(pt)?'':`<button class="btn sm" data-act="shipgive" data-k="${pt.id}" ${canAny?'':'disabled'}>가진 재료 모두 넣기</button>`}</div>
    <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}${isCropId(id)?'<small class="smfuel">생체 연료</small>':''}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?(()=>{const mx=Math.min(left,my,1000),q=Math.max(1,Math.min(mx||1,shipQty[id]||mx||1));return`<span class="smq"><input class="sel" type="number" min="1" max="${mx||1}" value="${q}" data-shipq="${id}" aria-label="${esc(ITEMS[id].n)} 넣을 개수" ${my&&open?'':'disabled'}><button class="btn sm alt" data-act="shipgive" data-k="${pt.id}" data-i="${id}" ${my&&open?'':'disabled'}>넣기</button></span>`})():'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>
-  <div class="card"><div class="stat-row"><span>수리 기여 순위</span><b>내 기여 ${mine}개</b></div>${top.length?`<ol class="shiprank">${top.map(([id,r],k)=>`<li><span>${k+1}</span><button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(id===uid?P.nick:(PLAYERS[id]&&PLAYERS[id].nick)||r.nick||'단원')}</button><b>${r.n}개</b></li>`).join('')}</ol>`:'<p class="hint">아직 아무도 재료를 넣지 않았습니다. 첫 번째 수리공이 되어 보십시오.</p>'}</div>`;
+  <div class="card"><div class="stat-row"><span>수리 기여 순위</span><b>내 기여 ${mine}개</b></div>${top.length?`<ol class="shiprank">${top.map(([id,r],k)=>`<li><span>${k+1}</span><button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(id===uid?P.nick:(PLAYERS[id]&&PLAYERS[id].nick)||r.nick||'선원')}</button><b>${r.n}개</b></li>`).join('')}</ol>`:'<p class="hint">아직 아무도 재료를 넣지 않았습니다. 첫 번째 수리공이 되어 보십시오.</p>'}</div>`;
 }
 /* ship scene: a pixel-art crash site on an alien world; repaired parts show on the downed starfighter */
 const SW=240,SH=120,BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
@@ -5344,7 +5344,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox')){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll()}else adminRefresh();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
-  if(profView){const ph=profId&&profHTML();if(ph){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="profclose">← 돌아가기</button><h2>단원 프로필</h2><span class="loc">${esc((whoP(profId)||{}).nick||'')}</span></div>${ph}`;return}profView=false;profId=null}
+  if(profView){const ph=profId&&profHTML();if(ph){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="profclose">← 돌아가기</button><h2>선원 프로필</h2><span class="loc">${esc((whoP(profId)||{}).nick||'')}</span></div>${ph}`;return}profView=false;profId=null}
   if(orgView){$('#stage').innerHTML=orgPage();return}
   if(rankView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="orgclose">← 돌아가기</button><h2>개척단 랭킹</h2><span class="loc">레벨 · 생활레벨 · 기여도</span></div>${socRank()}`;return}
   if(secretView){$('#stage').innerHTML=secretHTML();startSecretScene();return}
@@ -5444,7 +5444,7 @@ function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog
 function colorOf(id){const p=id===uid||id==='me'?P:PLAYERS[id],j=p&&p.job?(JOBS[p.job]?p.job:OLDJOB[p.job]):'';return j?`var(--job-${j})`:'var(--text)'}
 function renderCrew(){
   const ul=$('#crew');
-  if(mode!=='online'){ul.innerHTML=`<li><span class="dot on"></span><span class="nm">${esc(P.nick)} (나)</span><span class="lvt">LV.${P.lvl}</span></li><li class="hint" style="border-style:dashed">${mode==='solo'?'공유된 페이지에서 열면 다른 단원이 여기에 보입니다.':'연결 중…'}</li>`;return}
+  if(mode!=='online'){ul.innerHTML=`<li><span class="dot on"></span><span class="nm">${esc(P.nick)} (나)</span><span class="lvt">LV.${P.lvl}</span></li><li class="hint" style="border-style:dashed">${mode==='solo'?'공유된 페이지에서 열면 다른 선원이 여기에 보입니다.':'연결 중…'}</li>`;return}
   const online={};PEERS.forEach(p=>{if(p.presence&&p.presence.uid)online[p.presence.uid]=p.presence.act||''});
   const list=Object.entries(PLAYERS).map(([id,p])=>({id,rcd:rescueCd(id===uid?P:p,id===uid?null:id),faint:id===uid?isFaint():isDown(id,p),nick:id===uid?P.nick:p.nick,lvl:id===uid?P.lvl:p.lvl,on:id in online||id===uid,act:id===uid?TABS.find(t=>t.id===tab).n:online[id]}))
    .sort((a,b)=>((b.id===uid)-(a.id===uid))||(b.on-a.on)||(b.lvl-a.lvl));
@@ -5453,14 +5453,14 @@ function renderCrew(){
   ul.innerHTML=list.map(x=>{const down=x.faint&&x.id!==uid;return`<li class="${down?'downrow':''}"><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${x.id===uid?'var(--me-name)':x.on?colorOf(x.id):'var(--off-name)'}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button>${down?'':`<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>`}${down?(x.rcd>0?`<button class="btn sm ghost rescue" disabled title="구조를 받은 지 30분이 지나야 다시 구조할 수 있습니다">구조 <small>${Math.ceil(x.rcd/60e3)}분</small></button>`:`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN ${P.job==='medic'?0:3}</small></button>`):''}${x.id!==uid&&!down?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="선물 보내기">선물</button>`:''}</li>`}).join('');
 }
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
-const TICK_RE=/^(새 단원|\[공지\]|선장이)/;
+const TICK_RE=/^(새 선원|\[공지\]|선장이)/;
 let tickOpen=false;
 // notices older than 2 hours drop off the ticker; a minute timer keeps it fresh even with no new chat
 // pinned notices: the admin's, and the invader's win / loss announcements; they stay up until a newer pinned one replaces them
 const tickPinned=m=>!!m&&(m.adm||(m.sys&&(m.snd==='beacon'||m.snd==='static')));
 const TICK_TTL=2*3600e3,tickList=()=>CHAT.filter(m=>m.sys&&!tickPinned(m)&&TICK_RE.test(m.text||'')&&Date.now()-(+m.at||0)<TICK_TTL).slice().reverse().slice(0,10);
 setInterval(()=>{if(CHAT.some(m=>m.sys&&Date.now()-(+m.at||0)>=TICK_TTL&&Date.now()-(+m.at||0)<TICK_TTL+65e3))renderChat()},60e3);
-const tickKind=t=>t.startsWith('[공지]')?'n':t.startsWith('새 단원')?'j':'c';
+const tickKind=t=>t.startsWith('[공지]')?'n':t.startsWith('새 선원')?'j':'c';
 // the admin can strike any notice off the ticker
 const tickDel=x=>isAdmin&&mode==='online'&&x&&x.id?`<button type="button" class="tk-x" data-act="tickdel" data-k="${esc(x.id)}" title="이 알림 삭제" aria-label="이 알림 삭제">×</button>`:'';
 /* ticker: the latest admin notice stays pinned; everyone else's news slides past once (6 s each) and is gone */
@@ -5494,12 +5494,12 @@ const A={
  async admgrant(){if(!isAdmin)return;const msg=($('#admNotice').value||'').trim().slice(0,80),cr=Math.floor(+$('#admGrantCr').value||0);if(!msg){toast('공지 내용을 먼저 적어 주십시오.');return}if(cr<1||cr>100000){toast('크레딧은 1~100,000 사이로 적어 주십시오.');return}
   const g={cr,msg,at:Date.now(),by:P.nick},id='g'+g.at.toString(36);
   if(mode!=='online'){MAILA.push(Object.assign({id,grant:1},g));mailRefresh();return}
-  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 단원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true,adm:true});$('#admNotice').value='';toast(`모든 단원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
+  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 선원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true,adm:true});$('#admNotice').value='';toast(`모든 선원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
  admtab(d){if(!isAdmin)return;admTab=['tools','give','boss','spres','inv','fb','crew','del'].includes(d.k)?d.k:'tools';renderAdminAll()},
- async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'단원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
+ async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
- async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'단원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'단원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
+ async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'선원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
  suggopen(){$('#suggModal').hidden=false;suggSeenAt=fbSeen();if(isStaff())fbMarkSeen();renderSugg();loadMySugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
  suggclose(){$('#suggModal').hidden=true},
  orgopen(){if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}orgView=true;rankView=false;meView=false;mailView=false;secretView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
@@ -5527,10 +5527,10 @@ const A={
   log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit();if(fresh)rcpPop(ck.id)},
  selpod(d){const i=+d.i,pl=fpod(i);if(podArmed(i)&&pl&&pl.seed){podArm=null;if(stage(pl)===3)harvestAt(i);else A.water({i});return}selPod=i;podArm=i;podArmAt=Date.now();renderPanel()},
  soil(d){const i=+d.i;podArm=null;if(i>=FARM.fu||(fpod(i)&&fpod(i).til))return;if(!spendKeep(1))return;
-  podAct(i,cur=>cur&&cur.til?null:{til:1,wet:0},()=>log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`),()=>{heal(0,1);toast('다른 단원이 먼저 배양토를 채웠습니다.')})},
+  podAct(i,cur=>cur&&cur.til?null:{til:1,wet:0},()=>log(`공용 농장 포드 ${i+1}에 배양토를 채웠다.`),()=>{heal(0,1);toast('다른 선원이 먼저 배양토를 채웠습니다.')})},
  plant(d){const i=+d.i,pl=fpod(i);podArm=null;if(!pl||!pl.til||pl.seed)return;const fromStore=d.k==='store';if(fromStore){if(!(FSTORE[d.id]>0))return;storeAdd(d.id,-1)}else if(!take(d.id))return;
   let wet=false;podAct(i,cur=>{if(!cur||!cur.til||cur.seed)return null;wet=isWet(cur);return{til:1,seed:d.id,got:0,wet:wet?Date.now():0,by:uid,byN:P.nick}},
-   ()=>{sfxPlant();gainXp(3);lxp('farm',FARM_LX);log(`공용 농장 포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`)},()=>{if(fromStore)storeAdd(d.id,1);else add(d.id,1);toast('다른 단원이 먼저 이 포드에 심었습니다. 씨앗은 돌려받았습니다.')})},
+   ()=>{sfxPlant();gainXp(3);lxp('farm',FARM_LX);log(`공용 농장 포드 ${i+1}에 ${ITEMS[d.id].n}을 심었다.${wet?'':' 물을 줘야 자란다.'}`)},()=>{if(fromStore)storeAdd(d.id,1);else add(d.id,1);toast('다른 선원이 먼저 이 포드에 심었습니다. 씨앗은 돌려받았습니다.')})},
  water(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.til)return;
   // a damp crop needs nothing more
   if(pl.seed&&isWet(pl)){toast('더 이상 물을 줄 필요는 없을 것 같다.');return}
@@ -5538,9 +5538,9 @@ const A={
   podAct(i,cur=>{why='';if(!cur||!cur.til){why='gone';return null}if(cur.seed&&isWet(cur)){why='wet';return null}const q=Object.assign({},cur);if(q.seed)q.got=effG(q);q.wet=Date.now();return q},
    q=>{sfxWater();FARM.water--;if(mode==='online'){if(FARM.wset)farmInc('farm/pods','water',-1).catch(()=>{});else farmMerge('farm/pods',{water:FARM.water}).catch(()=>{})}else farmSave();// the farm is shared: watering any growing crop pays the same, your own or someone else's
     if(q.seed){gainXp(3);lxp('farm',FARM_LX);if(q.by&&q.by!==uid)stat('helpfarm')}},
-   ()=>{heal(0,1);toast(why==='wet'?'방금 다른 단원이 물을 줬다. 더 이상 물을 줄 필요는 없을 것 같다.':'포드 상태가 바뀌어 물을 주지 못했습니다.')})},
+   ()=>{heal(0,1);toast(why==='wet'?'방금 다른 선원이 물을 줬다. 더 이상 물을 줄 필요는 없을 것 같다.':'포드 상태가 바뀌어 물을 주지 못했습니다.')})},
  fert(d){const i=+d.i,pl=fpod(i);if(!pl||!pl.seed||pl.fert)return;if(!take('moss',2)){toast('성운 이끼가 2개 필요합니다.');return}
-  podAct(i,cur=>{if(!cur||!cur.seed||cur.fert)return null;const it=ITEMS[cur.seed];return Object.assign({},cur,{got:Math.min(it.grow,(cur.got||0)+it.grow*.3),fert:1})},()=>{gainXp(3);lxp('farm',FARM_LX);log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`)},()=>{add('moss',2);toast('다른 단원이 먼저 비료를 뿌렸습니다. 이끼는 돌려받았습니다.')})},
+  podAct(i,cur=>{if(!cur||!cur.seed||cur.fert)return null;const it=ITEMS[cur.seed];return Object.assign({},cur,{got:Math.min(it.grow,(cur.got||0)+it.grow*.3),fert:1})},()=>{gainXp(3);lxp('farm',FARM_LX);log(`공용 농장 포드 ${i+1}에 이끼 비료를 뿌렸다.`)},()=>{add('moss',2);toast('다른 선원이 먼저 비료를 뿌렸습니다. 이끼는 돌려받았습니다.')})},
  harvest(d){const i=+d.i,pl=fpod(i);if(pl&&pl.seed&&stage(pl)===3)harvestAt(i)},
  fssel(d){fsSel=fsSel===d.id?null:d.id;fpSel=null;renderPanel()},
  fpsel(d){fpSel=fpSel===d.id?null:d.id;fsSel=null;renderPanel()},
@@ -5653,7 +5653,7 @@ const A={
  rescue(d){const t=PLAYERS[d.k],tid=d.k;if(mode!=='online'||!t||!isDown(tid,t))return;if(rescueCd(t,tid)>0){toast(`${t.nick} 님은 구조를 받은 지 30분이 지나지 않았습니다. ${Math.ceil(rescueCd(t,tid)/60e3)}분 뒤에 다시 구조할 수 있습니다.`);return}
   const cost=P.job==='medic'?0:3;if(P.en<cost){toast('에너지가 부족합니다.');return}const now=Date.now(),med=P.job==='medic';
   bossTx(rescuedRef(),cur=>{cur=cur||{};const e=cur[tid];if(e&&e.faint===t.faint)return null;const nx={};for(const k in cur)if(now-(+cur[k].at||0)<864e5)nx[k]=cur[k];nx[tid]={by:uid,nick:P.nick,faint:t.faint,at:now};return nx})
-   .then(nx=>{if(!nx){toast('이미 다른 단원이 구조했습니다.');renderCrew();return}RESCUED=nx;if(!spend(cost))return;
+   .then(nx=>{if(!nx){toast('이미 다른 선원이 구조했습니다.');renderCrew();return}RESCUED=nx;if(!spend(cost))return;
      db.doc('rescues/'+tid).set({by:uid,nick:P.nick,at:now,med}).catch(()=>{});
      log(`${t.nick} 님을 구조했다.`,'good');addAff(tid,AFF.rescue,'구조함');sys(`${P.nick} 님이 기절한 ${t.nick} 님을 구조했습니다.`);gainXp(10);commit()})
    .catch(()=>toast('구조 신호를 보내지 못했습니다. 다시 시도해 주십시오.'))},
@@ -5684,21 +5684,21 @@ const A={
  async seasonreset(){if(!isAdmin||mode!=='online'||seasonBusy)return;const t=($('#seasonTxt')||{}).value||'';if(t.trim()!=='초기화'){toast('확인 칸에 초기화 라고 적어 주십시오.');return}
   seasonBusy=true;renderAdminAll();const next=(SEASON||0)+1;
   try{await bossTx(seasonRef(),()=>({n:next,at:Date.now(),by:uid}))}catch(e){seasonBusy=false;toast('초기화를 시작하지 못했습니다.');renderAdminAll();return}
-  toast('단원들의 화면을 정리하는 중입니다… (약 8초)');await seasonCleanMine();await new Promise(r=>setTimeout(r,8000));
+  toast('선원들의 화면을 정리하는 중입니다… (약 8초)');await seasonCleanMine();await new Promise(r=>setTimeout(r,8000));
   seasonLock=true;let n=0;
   for(const col of SEASON_WIPE){try{const sn=await db.collection(col).get();const ids=sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid));
     for(let i=0;i<ids.length;i+=40){await Promise.all(ids.slice(i,i+40).map(id=>db.doc(col+'/'+id).delete().then(()=>n++).catch(()=>{})))}}catch(e){}}
   try{await db.doc('members/'+uid).delete()}catch(e){}
   toast(`초기화를 마쳤습니다. 기록 ${n}건을 지웠습니다. 새로 시작합니다.`);setTimeout(()=>location.reload(),2500)},
- admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 단원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
- admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'단원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
+ admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 선원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
+ admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
  admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
  admgive(){if(!isAdmin)return;const id=admPick,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
-  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[{id,n}],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
+  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[{id,n}],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'선원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
  admgivecr(){if(!isAdmin)return;const n=Math.floor(+$('#admCr').value||0),to=$('#admCrTo').value;adminTo=to;if(n<1||n>1000000){toast('크레딧은 1~1,000,000 사이로 적어 주십시오.');return}
   if(!to){P.cr=(P.cr||0)+n;log(`[운영자] ${n.toLocaleString()} CR 지급`);commit();toast('지급했습니다.');return}
-  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[],cr:n,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'단원'} 님에게 ${n.toLocaleString()} CR을 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
+  if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[],cr:n,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'선원'} 님에게 ${n.toLocaleString()} CR을 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true,adm:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now(),adm:true}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
@@ -5723,12 +5723,12 @@ const A={
  trwantx(d){delete trWant[d.id];renderPanel()},
  mlsend(){if(mode!=='online'||mlBusy)return;const to=($('#mlTo')||{}).value||mlTo,msg=String(($('#mlMsg')||{}).value??mlMsg).trim().slice(0,200),items=attList(mlAtt);
   if(!PLAYERS[to]){toast('받는 사람을 고르십시오.');return}if(!msg&&!items.length){toast('편지 내용을 쓰거나 아이템을 넣으십시오.');return}if(!haveAll(items,0)){toast('넣은 아이템이 가방에 모자랍니다.');return}
-  mlBusy=true;items.forEach(x=>take(x.id,x.n));items.forEach(x=>Object.assign(x,byField(x.id)));const nick=PLAYERS[to].nick||'단원';
+  mlBusy=true;items.forEach(x=>take(x.id,x.n));items.forEach(x=>Object.assign(x,byField(x.id)));const nick=PLAYERS[to].nick||'선원';
   const sat=Date.now();db.collection('gifts').add({to,from:uid,nick:P.nick,kind:'letter',items,cr:0,msg,at:sat}).then(ref=>{P.sent=[{id:ref.id,to,nick:String(nick).slice(0,16),msg,items:items.map(x=>({id:x.id,n:x.n})),at:sat},...(P.sent||[])].slice(0,MBOX_MAX);mlBusy=false;mlAtt={};mlMsg='';log(`${nick} 님에게 편지를 보냈다.${items.length?' 첨부: '+items.map(x=>ITEMS[x.id].n+'×'+x.n).join(', '):''}`,'good');toast(`${nick} 님에게 편지를 보냈습니다.`);commit()})
    .catch(()=>{mlBusy=false;items.forEach(x=>add(x.id,x.n));toast('편지를 보내지 못했습니다. 아이템은 그대로 돌려놓았습니다.');commit()})},
  trsend(){if(mode!=='online'||mlBusy)return;const to=($('#trTo')||{}).value||trTo,give=attList(trGive),want=attList(trWant),gc=Math.max(0,Math.floor(trGiveCr||0)),wc=Math.max(0,Math.floor(trWantCr||0)),msg=String(trMsg||'').trim().slice(0,120);
-  if(!PLAYERS[to]){toast('거래할 단원을 고르십시오.');return}if(!give.length&&!gc){toast('내가 줄 것을 넣으십시오.');return}if(!haveAll(give,gc)){toast('줄 물건이나 크레딧이 모자랍니다.');return}
-  mlBusy=true;give.forEach(x=>take(x.id,x.n));give.forEach(x=>Object.assign(x,byField(x.id)));P.cr-=gc;const tid='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),nick=PLAYERS[to].nick||'단원';
+  if(!PLAYERS[to]){toast('거래할 선원을 고르십시오.');return}if(!give.length&&!gc){toast('내가 줄 것을 넣으십시오.');return}if(!haveAll(give,gc)){toast('줄 물건이나 크레딧이 모자랍니다.');return}
+  mlBusy=true;give.forEach(x=>take(x.id,x.n));give.forEach(x=>Object.assign(x,byField(x.id)));P.cr-=gc;const tid='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),nick=PLAYERS[to].nick||'선원';
   db.collection('gifts').add({to,from:uid,nick:P.nick,toNick:nick,kind:'trade',tid,give,giveCr:gc,want,wantCr:wc,items:[],cr:0,msg,at:Date.now()}).then(()=>{mlBusy=false;trGive={};trWant={};trGiveCr=0;trWantCr=0;trMsg='';log(`${nick} 님에게 거래를 제안했다. 줄 것은 답이 올 때까지 맡겨 둔다.`,'good');toast(`${nick} 님에게 거래 제안을 보냈습니다.`);commit()})
    .catch(()=>{mlBusy=false;give.forEach(x=>add(x.id,x.n));P.cr+=gc;toast('거래 제안을 보내지 못했습니다. 물건은 그대로 돌려놓았습니다.');commit()})},
  // accept, decline and cancel each claim the offer first, so only one of them can ever happen
@@ -5737,17 +5737,17 @@ const A={
   if(!won){mlBusy=false;toast('이미 끝난 거래입니다.');MAILG=MAILG.filter(x=>x.id!==t.id);db.collection('gifts').doc(t.id).delete().catch(()=>{});renderPanel();return}
   want.forEach(x=>take(x.id,x.n));want.forEach(x=>Object.assign(x,byField(x.id)));P.cr-=wc;(t.give||[]).forEach(x=>{if(ITEMS[x.id]){add(x.id,Math.min(ML_EACH,x.n));tmkAdd(x.id,x.by)}});P.cr+=Math.max(0,+t.giveCr||0);P.gotG=[...(P.gotG||[]).slice(-60),t.id];MAILG=MAILG.filter(x=>x.id!==t.id);
   db.collection('gifts').add({to:t.from,from:uid,nick:P.nick,kind:'tradeok',items:want,cr:wc,msg:`거래 성사 · ${P.nick} 님이 거래를 받아들였습니다.`,at:Date.now()}).catch(()=>{});db.collection('gifts').doc(t.id).delete().catch(()=>{});
-  mlBusy=false;sfxCoin();log(`${t.nick||'단원'} 님과 거래했다. 받은 것: ${chipsTxt(t.give,+t.giveCr)} · 준 것: ${chipsTxt(want,wc)}`,'rare');commit();mailRefresh()},
+  mlBusy=false;sfxCoin();log(`${t.nick||'선원'} 님과 거래했다. 받은 것: ${chipsTxt(t.give,+t.giveCr)} · 준 것: ${chipsTxt(want,wc)}`,'rare');commit();mailRefresh()},
  async trno(d){const t=MAILG.find(x=>x.id===d.k);if(!t||t.kind!=='trade'||mlBusy)return;mlBusy=true;let won=false;try{await bossTx(trLock(t.tid||t.id),cur=>{if(cur&&cur.st)return null;won=true;return{st:'no',by:uid,at:Date.now()}})}catch(e){}
   MAILG=MAILG.filter(x=>x.id!==t.id);P.gotG=[...(P.gotG||[]).slice(-60),t.id];
   if(won)db.collection('gifts').add({to:t.from,from:uid,nick:P.nick,kind:'tradeno',items:(t.give||[]).filter(x=>ITEMS[x.id]),cr:Math.max(0,+t.giveCr||0),msg:`거래 거절 · ${P.nick} 님이 거래를 거절해 맡긴 물건을 돌려보냅니다.`,at:Date.now()}).catch(()=>{});
-  db.collection('gifts').doc(t.id).delete().catch(()=>{});mlBusy=false;log(`${t.nick||'단원'} 님의 거래 제안을 거절했다.`);commit();mailRefresh()},
+  db.collection('gifts').doc(t.id).delete().catch(()=>{});mlBusy=false;log(`${t.nick||'선원'} 님의 거래 제안을 거절했다.`);commit();mailRefresh()},
  async trcancel(d){const t=MYTR.find(x=>x.id===d.k);if(!t||mlBusy)return;mlBusy=true;let won=false;try{await bossTx(trLock(t.tid||t.id),cur=>{if(cur&&cur.st)return null;won=true;return{st:'cancel',by:uid,at:Date.now()}})}catch(e){}
   if(won){(t.give||[]).forEach(x=>{if(ITEMS[x.id])add(x.id,x.n)});P.cr+=Math.max(0,+t.giveCr||0);db.collection('gifts').doc(t.id).delete().catch(()=>{});MYTR=MYTR.filter(x=>x.id!==t.id);log('보낸 거래 제안을 취소하고 맡긴 물건을 돌려받았다.','good');toast('거래를 취소했습니다.')}
   else toast('상대가 이미 답했습니다. 우편함을 확인하십시오.');mlBusy=false;commit()},
  // from someone's profile: open the mailbox on the write tab with them as the recipient
- mailto(d){if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}if(!PLAYERS[d.k]||d.k===uid){toast('지금은 편지를 보낼 수 없는 단원입니다.');return}const im=$('#infoModal');if(im)im.hidden=true;mailTab='write';mlTo=d.k;A.mailopen();setTimeout(()=>{const t=$('#mlMsg');if(t)t.focus({preventScroll:true})},50)},
- mlreply(d){if(!PLAYERS[d.k]){toast('지금은 답장할 수 없는 단원입니다.');return}mailTab='write';mlTo=d.k;renderPanel();setTimeout(()=>{const t=$('#mlMsg');if(t)t.focus()},0)},
+ mailto(d){if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}if(!PLAYERS[d.k]||d.k===uid){toast('지금은 편지를 보낼 수 없는 선원입니다.');return}const im=$('#infoModal');if(im)im.hidden=true;mailTab='write';mlTo=d.k;A.mailopen();setTimeout(()=>{const t=$('#mlMsg');if(t)t.focus({preventScroll:true})},50)},
+ mlreply(d){if(!PLAYERS[d.k]){toast('지금은 답장할 수 없는 선원입니다.');return}mailTab='write';mlTo=d.k;renderPanel();setTimeout(()=>{const t=$('#mlMsg');if(t)t.focus()},0)},
  mbdel(d){if(!d.k){mbDelArm=null;renderPanel();return}if(d.x!=='1'){mbDelArm=d.k;renderPanel();return}P.mbox=(P.mbox||[]).filter(x=>x.id!==d.k);mbDelArm=null;toast('우편을 삭제했습니다.');save();renderPanel()},
  mailone(d){if(mailOpenOne(d.k)){commit();mailRefresh();renderPanel()}},
  mailall(){const ids=mailList().filter(m=>m.kind!=='trade').map(m=>m.id);let n=0;ids.forEach(id=>{if(mailOpenOne(id))n++});if(n){toast(`우편 ${n}통을 모두 받았습니다.`);commit();mailRefresh();renderPanel()}},
@@ -5814,7 +5814,7 @@ function openGift(id){if(!PLAYERS[id])return;giftTo=id;giftSel={};giftCr=0;giftM
 const GIFT_MAX=1,isDish=i=>COOK.some(c=>c.id===dishBase(i)),isJunk=i=>!!ITEMS[i]&&ITEMS[i].type==='junk',canGift=i=>isDish(i)||isJunk(i),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
 function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]&&canGift(i));const sel=Object.entries(giftSel);
   $('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2><span class="hint">${esc(t.nick)} 님의 나에 대한 호감도 ${affBadge(affOf(t,uid))}</span></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
-  ${tasteHTML(t)||'<span class="hint">이 단원은 아직 취향을 정하지 않았습니다.</span>'}
+  ${tasteHTML(t)||'<span class="hint">이 선원은 아직 취향을 정하지 않았습니다.</span>'}
   <div class="info-sec"><span class="lbl">Gifts · 요리·귀중품, 한 번에 ${GIFT_MAX}개 · 한 사람에게 하루 ${GIFT_DAY}번 (오늘 ${giftsToday(giftTo)}/${GIFT_DAY}번)</span><div class="bag" style="max-height:220px;overflow:auto">${ids.map(i=>`<button class="slot" data-act="giftadd" data-id="${i}" aria-pressed="${!!giftSel[i]}" title="${ITEMS[i].n}">${iicon(i,2)}<em>${giftSel[i]?giftSel[i]+'/':''}${P.inv[i]}</em></button>`).join('')||'<p class="hint">선물할 요리나 귀중품이 없습니다. 가방에서 요리를 만들거나 조사에서 귀중품을 찾아보십시오.</p>'}</div></div>
   <div class="info-sec"><span class="lbl">Credits · 크레딧</span><div class="row" style="gap:5px">${[0,50,100,500,1000,5000].map(v=>`<button class="qchip" data-act="giftcr" data-k="${v}" aria-pressed="${giftCr===v}" ${v>(P.cr||0)?'disabled':''}>${v?v.toLocaleString()+' CR':'없음'}</button>`).join('')}</div></div>
   <div class="info-sec"><span class="lbl">Message · 쪽지 (아이템 없이 쪽지만 보내도 됩니다)</span><input id="giftMsg" class="sel" maxlength="40" placeholder="예: 낚시할 때 써!" value="${esc(giftMsg)}"></div>
@@ -5853,7 +5853,7 @@ function sentSync(){if(!MYOUT)return;let ch=false;(P.sent||[]).forEach(m=>{if(!m
 const sentUnread=()=>(P.sent||[]).filter(m=>!m.rd).length;
 function mailSentHTML(){const S=P.sent||[];if(!S.length)return'<p class="empty" style="padding:24px 0">아직 보낸 편지가 없습니다. 편지 쓰기에서 보낸 편지가 여기에 남습니다.</p>';
   return`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">받는 사람이 편지를 열면 <b class="rdb ok">읽음</b>으로 바뀝니다.</span><span class="hint">최근 ${MBOX_MAX}통</span></div>
-  <div class="maillist">${S.map(m=>{const rd=!!m.rd,wait=!MYOUT&&!rd,chips=mlChips(m.items||[],0),arm=sentDelArm===m.id,who=(PLAYERS[m.to]||{}).nick||m.nick||'단원';
+  <div class="maillist">${S.map(m=>{const rd=!!m.rd,wait=!MYOUT&&!rd,chips=mlChips(m.items||[],0),arm=sentDelArm===m.id,who=(PLAYERS[m.to]||{}).nick||m.nick||'선원';
     return`<div class="mailitem ${rd?'read':''}"><div class="mailfrom">${headImg(3,whoP(m.to))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">님에게</span> <span class="rdb ${rd?'ok':'no'}">${wait?'확인 중':rd?'읽음':'안 읽음'}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(m.msg)}”</p>`:''}${chips?`<div class="chips">${chips}<span class="hint">첨부</span></div>`:''}${rd?`<span class="hint">${fbTime(m.rd)} 무렵 읽음</span>`:''}</div>
      <div class="sbtns" style="flex-direction:column">${arm?`<button class="btn sm alt" data-act="sentdel" data-k="${esc(m.id)}" data-x="1">정말 지우기</button><button class="btn sm ghost" data-act="sentdel" data-k="">취소</button>`:`<button class="btn sm ghost" data-act="sentdel" data-k="${esc(m.id)}" title="내 목록에서만 지웁니다">지우기</button>`}</div></div>`}).join('')}</div>`}
 const canReply=m=>!m.sys&&!m.grant&&m.from&&m.from!==uid&&!!PLAYERS[m.from];
@@ -5872,21 +5872,21 @@ function attPicker(sel,act,qact){const ids=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i]&
   return`<div class="mlatt">${L.length?L.map(x=>`<div class="mlrow">${iicon(x.id,2)}<b>${esc(ITEMS[x.id].n)}</b><input class="sel mlq" type="number" min="1" max="${Math.min(ML_EACH,P.inv[x.id]||0)}" value="${x.n}" data-q="${qact}" data-k="${x.id}" aria-label="${esc(ITEMS[x.id].n)} 개수"><span class="hint">/ ${Math.min(ML_EACH,P.inv[x.id]||0)}</span><button class="pvx" data-act="${act}" data-id="${x.id}" aria-label="빼기">×</button></div>`).join(''):'<span class="hint">아래 가방에서 넣을 아이템을 누르십시오.</span>'}</div>
    <span class="hint">아이템은 ${ML_TYPES}종류까지, 종류마다 ${ML_EACH}개까지 넣을 수 있습니다. (${L.length}/${ML_TYPES})</span>
    ${ids.length?`<div class="bag mlbag">${ids.map(i=>`<button class="slot" data-act="${act}" data-id="${i}" aria-pressed="${!!sel[i]}" title="${esc(ITEMS[i].n)}" aria-label="${esc(ITEMS[i].n)} ${P.inv[i]}개">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">가방이 비어 있습니다.</p>'}`}
-function toSel(id,cur){const L=Object.entries(PLAYERS).filter(([k,p])=>k!==uid&&p&&p.nick).sort((a,b)=>a[1].nick.localeCompare(b[1].nick,'ko'));return L.length?`<select id="${id}" class="sel" aria-label="받는 사람"><option value="">받는 사람 고르기</option>${L.map(([k,p])=>`<option value="${esc(k)}" ${cur===k?'selected':''}>${esc(p.nick)} · Lv.${p.lvl||1}</option>`).join('')}</select>`:'<span class="hint">다른 단원이 아직 없습니다.</span>'}
+function toSel(id,cur){const L=Object.entries(PLAYERS).filter(([k,p])=>k!==uid&&p&&p.nick).sort((a,b)=>a[1].nick.localeCompare(b[1].nick,'ko'));return L.length?`<select id="${id}" class="sel" aria-label="받는 사람"><option value="">받는 사람 고르기</option>${L.map(([k,p])=>`<option value="${esc(k)}" ${cur===k?'selected':''}>${esc(p.nick)} · Lv.${p.lvl||1}</option>`).join('')}</select>`:'<span class="hint">다른 선원이 아직 없습니다.</span>'}
 // letters already opened: kept until deleted, with a quick reply
 function mboxHTML(R){if(!R.length)return'';return`<div class="row" style="justify-content:space-between;margin:16px 0 6px"><span class="lbl">읽은 우편 · ${R.length}통</span><span class="hint">직접 삭제하기 전까지 남아 있습니다 (최근 ${MBOX_MAX}통)</span></div>
-  <div class="maillist mbox">${R.map(m=>{const who=m.sys?'운영자':(m.nick||'단원'),kind=m.kind==='grant'?'운영자 선물':mailKind(m),chips=mlChips(m.items||[],+m.cr||0),arm=mbDelArm===m.id;
+  <div class="maillist mbox">${R.map(m=>{const who=m.sys?'운영자':(m.nick||'선원'),kind=m.kind==='grant'?'운영자 선물':mailKind(m),chips=mlChips(m.items||[],+m.cr||0),arm=mbDelArm===m.id;
     return`<div class="mailitem read ${m.sys?'sys':''}"><div class="mailfrom">${m.sys?`<span class="mailsys">운영자</span>`:headImg(3,whoP(m.from))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">· ${kind}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(m.msg)}”</p>`:''}${chips?`<div class="chips">${chips}<span class="hint">받음</span></div>`:''}</div>
      <div class="sbtns" style="flex-direction:column">${canReply(m)?`<button class="btn sm" data-act="mlreply" data-k="${esc(m.from)}">답장</button>`:''}${arm?`<button class="btn sm alt" data-act="mbdel" data-k="${esc(m.id)}" data-x="1">정말 삭제</button><button class="btn sm ghost" data-act="mbdel" data-k="">취소</button>`:`<button class="btn sm ghost" data-act="mbdel" data-k="${esc(m.id)}">삭제</button>`}</div></div>`}).join('')}</div>`}
 function mailInHTML(){const L=mailList(),R=P.mbox||[];
   return (L.length?`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">선물·편지는 받기를 눌러야 가방에 들어옵니다. 거래 제안은 수락하거나 거절하십시오.</span><button class="btn sm gold" data-act="mailall">모두 받기</button></div>
-  <div class="maillist">${L.map(m=>{const sysm=m.grant||m.sys,tr=m.kind==='trade',gift=m.grant||mailHasGift(m),who=sysm?'운영자':(m.nick||'단원');
+  <div class="maillist">${L.map(m=>{const sysm=m.grant||m.sys,tr=m.kind==='trade',gift=m.grant||mailHasGift(m),who=sysm?'운영자':(m.nick||'선원');
     const chips=m.grant?`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`:tr?'':mlChips(giftItems(m).map(([id,n])=>({id,n})),+m.cr||0);
     const trBody=tr?`<div class="trbox"><div><span class="lbl">받을 것</span><div class="chips">${mlChips(m.give||[],+m.giveCr||0)||'<span class="hint">없음</span>'}</div></div><div><span class="lbl">줄 것</span><div class="chips">${mlChips(m.want||[],+m.wantCr||0)||'<span class="hint">없음</span>'}</div></div></div>`:'';
     const ok=tr&&haveAll(m.want||[],+m.wantCr||0);
     const btn=tr?`<div class="sbtns" style="flex-direction:column"><button class="btn sm gold" data-act="tracc" data-k="${esc(m.id)}" ${ok?'':'disabled'} title="${ok?'':'줄 물건이 모자랍니다'}">수락</button><button class="btn sm ghost" data-act="trno" data-k="${esc(m.id)}">거절</button></div>`:`<div class="sbtns" style="flex-direction:column"><button class="btn sm ${gift?'gold':'ghost'}" data-act="mailone" data-k="${esc(m.id)}">${gift?'받기':'확인'}</button>${canReply(m)?`<button class="btn sm ghost" data-act="mlreply" data-k="${esc(m.from)}">답장</button>`:''}</div>`;
     return`<div class="mailitem ${sysm?'sys':''} ${tr?'trade':''}"><div class="mailfrom">${sysm?`<span class="mailsys">운영자</span>`:headImg(3,whoP(m.from))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(who)} <span class="hint">· ${mailKind(m)}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(String(m.msg).slice(0,200))}”</p>`:''}${chips?`<div class="chips">${chips}</div>`:''}${trBody}${tr&&!ok?'<span class="hint" style="color:var(--red)">줄 물건이나 크레딧이 모자라 아직 수락할 수 없습니다.</span>':''}</div>${btn}</div>`}).join('')}</div>`
-  :(R.length?'':'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 단원이나 운영자가 보낸 선물, 편지, 거래 제안이 여기에 도착합니다.</p>'))+mboxHTML(R)}
+  :(R.length?'':'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 선원이나 운영자가 보낸 선물, 편지, 거래 제안이 여기에 도착합니다.</p>'))+mboxHTML(R)}
 function mailWriteHTML(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">편지는 온라인에 접속했을 때 보낼 수 있습니다.</p>';
   return`<div class="card mlform"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="lbl">받는 사람</span>${toSel('mlTo',mlTo)}</div>
    <textarea id="mlMsg" class="sel mltext" maxlength="200" placeholder="편지 내용 (200자까지)" aria-label="편지 내용">${esc(mlMsg)}</textarea>
@@ -5894,7 +5894,7 @@ function mailWriteHTML(){if(mode!=='online')return'<p class="hint" style="paddin
    <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="mlsend" ${mlBusy?'disabled':''}>편지 보내기</button></div></div>`}
 function mailTradeHTML(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">거래는 온라인에 접속했을 때 할 수 있습니다.</p>';
   const W=attList(trWant),cat=ORDER.filter(i=>ITEMS[i]&&!isBound(i)&&!trWant[i]);
-  return`<div class="card mlform"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="lbl">거래할 단원</span>${toSel('trTo',trTo)}</div>
+  return`<div class="card mlform"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="lbl">거래할 선원</span>${toSel('trTo',trTo)}</div>
    <span class="lbl">내가 줄 것</span>${attPicker(trGive,'trgive','tg')}
    <div class="row" style="gap:6px;align-items:center"><span class="hint">크레딧도 함께 주기</span><input id="trGiveCr" class="sel" type="number" min="0" max="${P.cr||0}" value="${trGiveCr||0}" style="width:100px" aria-label="줄 크레딧"><span class="hint">CR (가진 크레딧 ${(P.cr||0).toLocaleString()})</span></div>
    <span class="lbl">받고 싶은 것</span><div class="mlatt">${W.length?W.map(x=>`<div class="mlrow">${iicon(x.id,2)}<b>${esc(ITEMS[x.id].n)}</b><input class="sel mlq" type="number" min="1" max="${ML_EACH}" value="${x.n}" data-q="tw" data-k="${x.id}" aria-label="${esc(ITEMS[x.id].n)} 개수"><span class="hint">/ ${ML_EACH}</span><button class="pvx" data-act="trwantx" data-id="${x.id}" aria-label="빼기">×</button></div>`).join(''):'<span class="hint">받고 싶은 아이템을 아래에서 고르십시오. 고르지 않아도 됩니다 — 크레딧만 받거나, 아무것도 받지 않고 보낼 수도 있습니다.</span>'}</div>
@@ -5903,7 +5903,7 @@ function mailTradeHTML(){if(mode!=='online')return'<p class="hint" style="paddin
    <span class="hint">거래를 보내면 내가 줄 것은 상대가 답할 때까지 맡겨 둡니다. 상대가 거절하거나 내가 취소하면 그대로 돌아옵니다.</span>
    <textarea id="trMsg" class="sel mltext" maxlength="120" placeholder="한마디 (선택)" aria-label="거래 메시지">${esc(trMsg)}</textarea>
    <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="trsend" ${mlBusy?'disabled':''}>거래 제안 보내기</button></div></div>
-  <span class="lbl" style="display:block;margin-top:12px">보낸 거래 제안 · 답을 기다리는 중</span>${MYTR.length?`<div class="maillist">${MYTR.map(t=>`<div class="mailitem trade"><div class="mailfrom">${headImg(3,whoP(t.to))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc((PLAYERS[t.to]||{}).nick||t.toNick||'단원')} <span class="hint">· 답을 기다리는 중</span></b><time class="hint">${fbTime(+t.at||0)}</time></div><div class="trbox"><div><span class="lbl">줄 것</span><div class="chips">${mlChips(t.give||[],+t.giveCr||0)||'<span class="hint">없음</span>'}</div></div><div><span class="lbl">받을 것</span><div class="chips">${mlChips(t.want||[],+t.wantCr||0)||'<span class="hint">없음</span>'}</div></div></div></div><button class="btn sm ghost" data-act="trcancel" data-k="${esc(t.id)}">취소</button></div>`).join('')}</div>`:'<p class="hint">보낸 거래 제안이 없습니다.</p>'}`}
+  <span class="lbl" style="display:block;margin-top:12px">보낸 거래 제안 · 답을 기다리는 중</span>${MYTR.length?`<div class="maillist">${MYTR.map(t=>`<div class="mailitem trade"><div class="mailfrom">${headImg(3,whoP(t.to))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc((PLAYERS[t.to]||{}).nick||t.toNick||'선원')} <span class="hint">· 답을 기다리는 중</span></b><time class="hint">${fbTime(+t.at||0)}</time></div><div class="trbox"><div><span class="lbl">줄 것</span><div class="chips">${mlChips(t.give||[],+t.giveCr||0)||'<span class="hint">없음</span>'}</div></div><div><span class="lbl">받을 것</span><div class="chips">${mlChips(t.want||[],+t.wantCr||0)||'<span class="hint">없음</span>'}</div></div></div></div><button class="btn sm ghost" data-act="trcancel" data-k="${esc(t.id)}">취소</button></div>`).join('')}</div>`:'<p class="hint">보낸 거래 제안이 없습니다.</p>'}`}
 function mailHTML(){const L=mailList();const tabs=[['in',`받은 우편${L.length?' <em>'+L.length+'</em>':''}`],['write','편지 쓰기'],['sent',`보낸 편지${sentUnread()?' <em>'+sentUnread()+'</em>':''}`],['trade',`거래${MYTR.length?' <em>'+MYTR.length+'</em>':''}`]];
   return`<div class="stage-head mehead"><button class="qchip" data-act="mailclose">← 돌아가기</button><h2>우편함</h2><span class="loc">${L.length?L.length+'통 도착':(P.mbox||[]).length?'새 우편 없음':'비어 있음'}</span></div>
   <div class="dtabs" role="tablist" style="margin-top:8px">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${mailTab===k}" data-act="mailtab" data-k="${k}">${n}</button>`).join('')}</div>
@@ -5978,7 +5978,7 @@ function socDots(){['pad','memo'].forEach(k=>{const b=document.querySelector(`[d
 function markMemo(){const cur=memoSeenAt(),m=Math.max(cur,...MEMOS.map(x=>+x.at||0));if(m>memoSeen){memoSeen=m;try{localStorage.setItem(MEMO_LS,String(m))}catch(e){}}if(P&&m>(+P.memoSeen||0)){P.memoSeen=m;save()}}
 function markSoc(){const cur=socSeenAt(),m=Math.max(cur,...POSTS.map(p=>p.at||0));if(m>cur||m>socSeen||m>(+P.socSeen||0)){socSeen=m;try{localStorage.setItem(SOC_LS,String(m))}catch(e){}if(m>(+P.socSeen||0)){P.socSeen=m;save()}queueMicrotask(renderNav)}}
 function markDm(peer){const last=Math.max(0,...DMS.filter(d=>d.from===peer&&d.to===uid).map(d=>d.at||0));if(last>dmReadAt(peer)||last>(+((P.dmRead||{})[peer])||0)){dmRead[peer]=Math.max(dmRead[peer]||0,last);try{localStorage.setItem(DM_LS,JSON.stringify(dmRead))}catch(e){}if(last>(+((P.dmRead||{})[peer])||0)){P.dmRead=Object.assign({},P.dmRead,{[peer]:last});save()}queueMicrotask(renderNav)}}
-function socWho(id,nick,sc=2){return`<span class="phead">${headImg(sc,whoP(id))}<span class="who" style="color:${colorOf(id)}">${esc(nick||'단원')}</span>${id===uid?'<span class="hint">(나)</span>':''}</span>`}
+function socWho(id,nick,sc=2){return`<span class="phead">${headImg(sc,whoP(id))}<span class="who" style="color:${colorOf(id)}">${esc(nick||'선원')}</span>${id===uid?'<span class="hint">(나)</span>':''}</span>`}
 /* ---- PAD images ---- */
 let ASSETS=null,padImgs=[],replyImgs=[],padBusy=false;const IMG_MAX=4,IMG_TYPES=/^image\/(png|jpeg|gif|webp)$/,ASSET_ID=/^[A-Za-z0-9_-]{8,64}$/;
 const imgList=ctx=>ctx==='reply'?replyImgs:padImgs;
@@ -6007,9 +6007,9 @@ document.addEventListener('input',e=>{if(e.target.id==='fishTxt'&&lastFish)lastF
 function fishCardHTML(f){const it=ITEMS[f.id];if(!it)return'';return`<div class="fishcard t-${esc(f.tr||it.fish||'c')}">${iicon(f.id,3)}<div><p>${f.first?'<span class="spctag newfish">새로운!</span> ':''}<b>${esc(it.n)}</b> · ${esc(it.tier||'')} 등급</p><p class="fishlen ${f.big?'big':''}">크기 <b>${fmtLen(+f.cm||0)}</b>${f.big?' <span class="spctag">대어!</span>':''}${f.rec?' <span class="spctag rec">최고 기록</span>':''} <span class="hint">(${fmtLen(it.sz[0])} ~ ${fmtLen(it.sz[1])})</span></p><p class="hint">${f.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${+f.ms||0}ms · 경험치 +${+f.xp||0}</p></div></div>`}
 function twHTML(p,big){const isRt=!!p.rt,s=isRt?Object.assign({},p.rto||{},{id:p.rt}):p,orig=isRt?(POSTS.find(x=>x.id===p.rt)||(THRP&&THRP.id===p.rt?THRP:null)):p;
   const lk=orig?Object.values(orig.likes||{}).filter(Boolean).length:0,liked=!!(orig&&orig.likes&&orig.likes[uid]),rc=replies(s.id).length,rtc=POSTS.filter(x=>x.rt===s.id).length,rted=!!myRt(s.id),k=esc(s.id),canDel=!isRt&&(p.uid===uid||isAdmin);
-  return`<article class="tw ${big?'big':''}" ${big?'':`data-act="padopen" data-k="${k}"`}>${isRt?`<div class="twrt">⇄ ${esc(p.nick||'단원')} 님이 재전송했습니다</div>`:''}<div class="twrow"><div class="twav">${headImg(3,whoP(s.uid))}</div><div class="twbody">
-   <div class="twh"><b style="color:${colorOf(s.uid)}">${esc(s.nick||'단원')}</b><span class="hint">@${esc(s.nick||'단원')} · ${shortAgo(s.at||Date.now())}</span>${canDel?`<button class="twbtn twdel ${pdelArm===p.id?'arm':''}" data-act="pdel" data-k="${esc(p.id)}">${pdelArm===p.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
-   ${s.re?`<div class="hint">↳ <button class="tag" data-act="padopen" data-k="${esc(s.re)}">@${esc(s.reNick||'단원')}</button> 님에게 답글</div>`:''}
+  return`<article class="tw ${big?'big':''}" ${big?'':`data-act="padopen" data-k="${k}"`}>${isRt?`<div class="twrt">⇄ ${esc(p.nick||'선원')} 님이 재전송했습니다</div>`:''}<div class="twrow"><div class="twav">${headImg(3,whoP(s.uid))}</div><div class="twbody">
+   <div class="twh"><b style="color:${colorOf(s.uid)}">${esc(s.nick||'선원')}</b><span class="hint">@${esc(s.nick||'선원')} · ${shortAgo(s.at||Date.now())}</span>${canDel?`<button class="twbtn twdel ${pdelArm===p.id?'arm':''}" data-act="pdel" data-k="${esc(p.id)}">${pdelArm===p.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
+   ${s.re?`<div class="hint">↳ <button class="tag" data-act="padopen" data-k="${esc(s.re)}">@${esc(s.reNick||'선원')}</button> 님에게 답글</div>`:''}
    ${s.text?`<p class="twtext">${richText(s.text)}</p>`:''}${s.fishc?fishCardHTML(s.fishc):''}${imgsHTML(s.img)}
    <div class="twact"><button class="twbtn" data-act="padopen" data-k="${k}" aria-label="답글 ${rc}개"><i>↩</i>${rc}</button>${s.re?'':`<button class="twbtn rt ${rted?'on':''}" data-act="padrt" data-k="${k}" aria-pressed="${rted}" aria-label="재전송 ${rtc}"><i>⇄</i>${rtc}</button>`}<button class="twbtn like ${liked?'on':''}" data-act="plike" data-k="${k}" aria-pressed="${liked}" aria-label="좋아요 ${lk}"><i>♥</i>${lk}</button></div></div></div></article>`}
 function padCompose(){return`<div class="padc padnew"><div class="twav big">${headImg(3,P)}</div><div class="padcb"><b class="padwho">${esc(P.nick)}<span class="hint">@${esc(P.nick)}</span></b><textarea id="padIn" class="suggta socta" maxlength="${PAD_MAX}" placeholder="지금 정거장에서 무슨 일이 있습니까? #해시태그 @콜사인 도 쓸 수 있습니다" aria-label="PAD 글 쓰기">${esc(padDraft)}</textarea>${imgPrev('pad')}<div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${imgPicker('pad')}<span class="hint">Ctrl+Enter로 게시${ASSETS?' · 이미지는 붙여넣기도 됩니다':''}</span></span><span class="row" style="gap:8px"><span class="twcnt" id="padCnt">${padDraft.length}/${PAD_MAX}</span><button class="btn sm" data-act="padpost" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'게시'}</button></span></div></div></div>`}
@@ -6017,7 +6017,7 @@ function socPad(){
   if(padThread){const main=THRP||POSTS.find(x=>x.id===padThread),rs=replies(padThread).sort((a,b)=>a.at-b.at);
     return`<div class="row"><button class="btn sm ghost" data-act="padback">← 타임라인</button><span class="hint">스레드</span></div><div class="twfeed">${THRA.length?`<div class="twanc">${THRA.map(a=>a.gone?'<p class="hint twgone">지워진 글입니다.</p>':twHTML(a)).join('')}</div>`:''}${main?twHTML(main,true):'<p class="empty" style="padding:14px">지워졌거나 불러오는 중인 글입니다.</p>'}
      ${rs.length?`<span class="lbl twrlbl">답글 ${rs.length}개</span>`:''}${rs.map(r=>twHTML(r)).join('')||(main?'<p class="hint" style="padding:10px 14px">아직 답글이 없습니다.</p>':'')}
-     ${main?`<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="padReply" class="suggta socta" maxlength="${PAD_MAX}" placeholder="@${esc(main.nick||'단원')} 님에게 답글 달기" aria-label="답글">${esc(replyDraft)}</textarea>${imgPrev('reply')}<div class="row" style="justify-content:space-between;gap:8px">${imgPicker('reply')||'<span></span>'}<span class="row" style="gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" data-act="padreply" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'답글'}</button></span></div></div></div>`:''}</div>`}
+     ${main?`<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="padReply" class="suggta socta" maxlength="${PAD_MAX}" placeholder="@${esc(main.nick||'선원')} 님에게 답글 달기" aria-label="답글">${esc(replyDraft)}</textarea>${imgPrev('reply')}<div class="row" style="justify-content:space-between;gap:8px">${imgPicker('reply')||'<span></span>'}<span class="row" style="gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" data-act="padreply" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'답글'}</button></span></div></div></div>`:''}</div>`}
   const me=new RegExp('@'+P.nick.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![^\\s@#])');
   const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&me.test(s.text||'');return true});
   return padCompose()+`<div class="dtabs padtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
@@ -6034,9 +6034,9 @@ function openThread(id){thrUnsub.forEach(f=>{try{f()}catch(e){}});thrUnsub=[];TH
 /* ---- whisper ---- */
 function dmConvs(){const m={};DMS.forEach(d=>{const peer=d.from===uid?d.to:d.from;if(!m[peer]||m[peer].at<d.at)m[peer]=d});return Object.entries(m).sort((a,b)=>b[1].at-a[1].at)}
 function dmListHTML(){const cv=dmConvs(),have=new Set(cv.map(c=>c[0])),fresh=Object.entries(PLAYERS).filter(([id])=>id!==uid&&!have.has(id));
-  return cv.map(([peer,d])=>{const p=whoP(peer),n=dmUnread(peer);return`<button class="dmi" data-act="dmopen" data-k="${esc(peer)}" aria-pressed="${dmPeer===peer}">${headImg(2,p)}<span class="sinfo"><b>${esc(p.nick||d.nick||'단원')}</b><span class="hint">${d.from===uid?'나: ':''}${esc(String(d.text||'').slice(0,24))}</span></span>${n?`<span class="dmdot" title="안 읽은 귓속말 ${n}개"></span>`:''}</button>`}).join('')
-   +(fresh.length?`<span class="lbl" style="margin-top:6px">New · 새 귓속말</span>`+fresh.map(([id,p])=>`<button class="dmi" data-act="dmopen" data-k="${esc(id)}" aria-pressed="${dmPeer===id}">${headImg(2,p)}<span class="sinfo"><b>${esc(p.nick||'단원')}</b><span class="hint">${isOn(id)?'접속 중':'오프라인'}</span></span></button>`).join(''):'')
-   ||'<p class="hint">귓속말을 나눌 단원이 아직 없습니다.</p>'}
+  return cv.map(([peer,d])=>{const p=whoP(peer),n=dmUnread(peer);return`<button class="dmi" data-act="dmopen" data-k="${esc(peer)}" aria-pressed="${dmPeer===peer}">${headImg(2,p)}<span class="sinfo"><b>${esc(p.nick||d.nick||'선원')}</b><span class="hint">${d.from===uid?'나: ':''}${esc(String(d.text||'').slice(0,24))}</span></span>${n?`<span class="dmdot" title="안 읽은 귓속말 ${n}개"></span>`:''}</button>`}).join('')
+   +(fresh.length?`<span class="lbl" style="margin-top:6px">New · 새 귓속말</span>`+fresh.map(([id,p])=>`<button class="dmi" data-act="dmopen" data-k="${esc(id)}" aria-pressed="${dmPeer===id}">${headImg(2,p)}<span class="sinfo"><b>${esc(p.nick||'선원')}</b><span class="hint">${isOn(id)?'접속 중':'오프라인'}</span></span></button>`).join(''):'')
+   ||'<p class="hint">귓속말을 나눌 선원이 아직 없습니다.</p>'}
 function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.from===dmPeer&&d.to===uid)).sort((a,b)=>a.at-b.at);
   // each message carries its sender's portrait; a run of messages from the same person shows it once
   return ms.length?ms.map((d,i)=>{const me=d.from===uid,first=!i||ms[i-1].from!==d.from;return`<div class="dmrow ${me?'me':''}"><span class="dmav">${first?headImg(3,whoP(d.from)):''}</span><div class="dmb ${me?'me':''}">${esc(d.text)}<time>${hhmm(d.at)}</time></div></div>`}).join(''):'<p class="empty">아직 나눈 귓속말이 없습니다. 먼저 말을 걸어 보십시오.</p>'}
@@ -6050,12 +6050,12 @@ tabSub(()=>!!P,()=>memoRef().orderBy('at','desc').onSnapshot(sn=>{MEMOS=sn.docs.
 function memoStamp(t){const d=new Date(+t||0);return`${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
 function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">만남은 온라인에 접속했을 때 쓸 수 있습니다.</p>';
   const A=MEMOS.filter(m=>m&&m.text),pages=Math.max(1,Math.ceil(A.length/MEMO_PG));if(memoPage>=pages)memoPage=pages-1;const L=A.slice(memoPage*MEMO_PG,memoPage*MEMO_PG+MEMO_PG);
-  return`<p class="lead">만남 게시판입니다. 인사나 하고 싶은 이야기를 남기고, 다른 단원의 메모에 댓글을 달 수 있습니다. 한 쪽에 ${MEMO_PG}개씩 보입니다.</p>
+  return`<p class="lead">만남 게시판입니다. 인사나 하고 싶은 이야기를 남기고, 다른 선원의 메모에 댓글을 달 수 있습니다. 한 쪽에 ${MEMO_PG}개씩 보입니다.</p>
   <div class="card memonew"><div class="memohd"><span class="mav">${headImg(2,P)}</span><b>${esc(P.nick)}</b><span class="hint" id="memoCnt">${memoDraft.length}/${MEMO_MAX}</span></div>
    <textarea id="memoIn" class="sel memota" maxlength="${MEMO_MAX}" placeholder="메모를 남겨 주세요. (${MEMO_MAX}자까지 · Ctrl+Enter로 등록)" aria-label="메모 내용">${esc(memoDraft)}</textarea>
    <div class="row" style="justify-content:flex-end"><button class="btn sm gold" data-act="memopost" ${memoBusy?'disabled':''}>등록</button></div></div>
   <div class="memolist">${L.length?L.map(m=>{const mine=m.uid===uid,cms=memoCms(m),live=cms.filter(c=>c.text&&!c.del).length,op=memoOpen===m.id,arm=memoDelArm===m.id,ed=memoEdit===m.id+'|';
-    return`<article class="memo${mine?' mine':''}"><div class="memohd"><span class="mav">${headImg(2,whoP(m.uid))}</span><b style="color:${colorOf(m.uid)}">${esc(m.nick||'단원')}</b>
+    return`<article class="memo${mine?' mine':''}"><div class="memohd"><span class="mav">${headImg(2,whoP(m.uid))}</span><b style="color:${colorOf(m.uid)}">${esc(m.nick||'선원')}</b>
       ${mine||isAdmin?`<span class="memomod">${mine?`<button class="mlink" data-act="memoedit" data-k="${esc(m.id)}" data-c="">수정</button><i>|</i>`:''}${arm?`<button class="mlink red" data-act="memodel" data-k="${esc(m.id)}" data-x="1">정말 삭제</button><i>|</i><button class="mlink" data-act="memodel" data-k="">취소</button>`:`<button class="mlink" data-act="memodel" data-k="${esc(m.id)}">삭제</button>`}</span>`:''}<time class="hint memodate">${memoStamp(m.at)}</time></div>
       ${ed?memoEditBox(m.id,'',m.text,MEMO_MAX):`<p class="memotx">${esc(m.text)}</p>`}
       <div class="memobar"><button class="mlink memocmbtn${op?' on':''}" data-act="memocm" data-k="${esc(m.id)}" aria-expanded="${op}">${op?'⌃':'⌄'} 댓글 <b>${live}</b></button>${op?`<i>|</i><button class="mlink" data-act="memosort">${memoSort==='new'?'최신순':'등록순'} ▾</button>`:''}</div>
@@ -6076,9 +6076,9 @@ function memoThread(m,cms){const by=Object.fromEntries(cms.map(c=>[c.id,c])),roo
   return tops.map(t=>{const reps=cms.filter(c=>c!==t&&c.pid&&by[c.pid]&&root(c)===t).sort((a,b)=>(+a.at||0)-(+b.at||0));
     return memoCmRow(m,t,null,false)+reps.map(r=>memoCmRow(m,r,by[r.pid]&&by[r.pid]!==t?by[r.pid]:null,true)).join('')+(memoReply&&(memoReply===t.id||reps.some(r=>r.id===memoReply))?memoCmBox(m.id,memoReply,true):'')}).join('')}
 function memoCmRow(m,c,to,rep){const mine=c.uid===uid,gone=c.del||!c.text,arm=memoCmDel===m.id+'|'+c.id,ed=memoEdit===m.id+'|'+c.id;
-  return`<div class="mcm${rep?' rep':''}">${rep?'<span class="mcmarr">ㄴ</span>':''}${gone?'':`<span class="mav">${headImg(2,whoP(c.uid))}</span>`}<div class="mcmb">${gone?'<span class="hint">삭제된 댓글입니다.</span>':`<div class="mcmh"><b style="color:${colorOf(c.uid)}">${esc(c.nick||'단원')}</b>${c.uid===m.uid?'<span class="mcmauth">작성자</span>':''}<time class="hint">${memoStamp(c.at)}</time><button class="mlink" data-act="memoreply" data-k="${esc(c.id)}">↪ 답글</button>
+  return`<div class="mcm${rep?' rep':''}">${rep?'<span class="mcmarr">ㄴ</span>':''}${gone?'':`<span class="mav">${headImg(2,whoP(c.uid))}</span>`}<div class="mcmb">${gone?'<span class="hint">삭제된 댓글입니다.</span>':`<div class="mcmh"><b style="color:${colorOf(c.uid)}">${esc(c.nick||'선원')}</b>${c.uid===m.uid?'<span class="mcmauth">작성자</span>':''}<time class="hint">${memoStamp(c.at)}</time><button class="mlink" data-act="memoreply" data-k="${esc(c.id)}">↪ 답글</button>
     ${mine||isAdmin?`<span class="memomod">${mine?`<button class="mlink" data-act="memoedit" data-k="${esc(m.id)}" data-c="${esc(c.id)}">수정</button><i>|</i>`:''}${arm?`<button class="mlink red" data-act="memocmdel" data-k="${esc(m.id)}" data-c="${esc(c.id)}" data-x="1">정말 삭제</button><i>|</i><button class="mlink" data-act="memocmdel" data-k="">취소</button>`:`<button class="mlink" data-act="memocmdel" data-k="${esc(m.id)}" data-c="${esc(c.id)}">삭제</button>`}</span>`:''}</div>
-    ${ed?memoEditBox(m.id,c.id,c.text,MEMO_CM):`<p class="mcmt">${to&&!(to.del||!to.text)?`<span class="mcmto">${esc(to.nick||'단원')}</span> `:''}${esc(c.text)}</p>`}`}</div></div>`}
+    ${ed?memoEditBox(m.id,c.id,c.text,MEMO_CM):`<p class="mcmt">${to&&!(to.del||!to.text)?`<span class="mcmto">${esc(to.nick||'선원')}</span> `:''}${esc(c.text)}</p>`}`}</div></div>`}
 async function memoSave(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)return;const i=$('#memoEdIn'),t=String(i&&i.value||'').trim();if(!t){toast('내용을 적어 주십시오.');return}if(i)i.blur();
   try{if(!cid){if(m.uid!==uid)return;await memoRef().doc(mid).update({text:t.slice(0,MEMO_MAX),ed:Date.now()})}
    else{const cms=memoCms(m),c=cms.find(x=>x.id===cid);if(!c||c.uid!==uid)return;await memoRef().doc(mid).update({cm:cms.map(x=>x.id===cid?Object.assign({},x,{text:t.slice(0,MEMO_CM),ed:Date.now()}):x)})}
@@ -6092,11 +6092,11 @@ async function memoCmPost(id,pid=''){const m=MEMOS.find(x=>x.id===id);if(!m)retu
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoEdIn')memoEdTx={k:t.dataset.k+'|'+(t.dataset.c||''),v:t.value};else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k,t.dataset.p||'')}});
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
-  return`<p class="lead">단원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
-  <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,3)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'단원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 단원을 고르십시오.</p>'}</div></div>`}
+  return`<p class="lead">선원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
+  <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,3)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'선원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 선원을 고르십시오.</p>'}</div></div>`}
 /* ---- crew ---- */
 function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${esc(titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
-  ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 단원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
+  ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한 줄 소개를 적으면 다른 선원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한 줄 소개 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
 /* ───────── affinity: how each player feels about the others ───────── */
 // every affinity change is two-way: both sides apply the same delta on their own record (greeting, gift, rescue)
@@ -6108,7 +6108,7 @@ const affTier=v=>{const i=AFF_TIERS.findIndex(([m])=>v>=m);return i<0?AFF_TIERS.
 const affLabel=v=>AFF_TIERS[affTier(v)][1];
 const affColor=v=>`var(--rel${AFF_TIERS.length-1-affTier(v)})`;
 function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf(P,id),v=Math.max(AFF_MIN,Math.min(AFF_MAX,before+delta));P.aff=Object.assign({},P.aff,{[id]:v});
-  const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'단원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
+  const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'선원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
 // gifts per person per day: GIFT_DAY sends, each carrying at most one dish (old saves stored just the day: that counts as one send)
 const GIFT_DAY=2,giftsToday=id=>{const v=(P.giftDay||{})[id];return !v?0:typeof v==='string'?(v===dayKey()?1:0):v.d===dayKey()?(+v.n||0):0},giftedToday=id=>giftsToday(id)>=GIFT_DAY;
 function affBadge(v){return`<b style="color:${affColor(v)}">♥ ${v}</b> <span class="hint">${affLabel(v)}</span>`}
@@ -6122,12 +6122,12 @@ function relMapHTML(cid,compact,tall){const C=whoP(cid);if(!cid||!C)return'';con
     // each feeling is its own line with an arrowhead pointing from the one who feels it to the one it is about; hover shows who, what and how much
     [[out,nx,ny,1,C,o.p],[inn,-nx,-ny,-1,o.p,C]].forEach(([v,ox,oy,dir,from,to])=>{if(!v)return;const col=affColor(v),x1=cx+ox,y1=cy+oy,x2=o.x+ox,y2=o.y+oy;
       const t=dir>0?.6:.4,mx=x1+(x2-x1)*t,my=y1+(y2-y1)*t,ux=dx/L*dir,uy=dy/L*dir,ah=1.3,aw=.8,
-        tip=`${from.nick||'단원'} → ${to.nick||'단원'} · ${affLabel(v)} (${v})`;
+        tip=`${from.nick||'선원'} → ${to.nick||'선원'} · ${affLabel(v)} (${v})`;
       lines+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${Math.abs(v)>=60?3:2}" stroke-opacity="${Math.abs(v)<20?.55:1}" vector-effect="non-scaling-stroke"/>`
         +`<polygon points="${mx+ux*ah},${my+uy*ah} ${mx-uy*aw},${my+ux*aw} ${mx+uy*aw},${my-ux*aw}" fill="${col}" fill-opacity="${Math.abs(v)<20?.6:1}"/>`
         +`<line class="relhit" data-tip="${esc(tip)}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="transparent" stroke-width="12" vector-effect="non-scaling-stroke"/>`;
 })});
-  const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="profopen" data-k="${esc(id)}" title="${esc(p.nick||'단원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'단원')}${id===uid?' (나)':''}</span></button>`;
+  const node=(id,p,x,y,center)=>`<button class="relnode ${center?'center':''} ${id===uid?'me':''}" style="left:${x/W*100}%;top:${y/H*100}%" data-act="profopen" data-k="${esc(id)}" title="${esc(p.nick||'선원')}${center?' 프로필 보기':' 중심으로 보기'}"><span class="orgface">${headImg(2,p)}</span><span class="nm">${esc(p.nick||'선원')}${id===uid?' (나)':''}</span></button>`;
   return`<div class="relmap ${compact?'compact':''}" style="aspect-ratio:${W}/${H}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${labels}${pos.map(o=>node(o.id,o.p,o.x,o.y,false)).join('')}${node(cid,C,cx,cy,true)}</div>
   <div class="relkey">${AFF_TIERS.map((t,i)=>`<span><i style="background:var(--rel${AFF_TIERS.length-1-i})"></i>${esc(t[1])}</span>`).join('')}</div>
 `}
@@ -6155,39 +6155,39 @@ const RK_IC={lv:["....k....","...kAk...","kkkkAkkkk","kAAAAAAAk",".kAAHAAk.","..
   don:["kkkkkkkkk","kAAAAAAAk","kAHkkkHAk","kAkAAAkAk","kAAkAkAAk","kAkAAAkAk","kAHkkkHAk","kAAAAAAAk","kkkkkkkkk"]};
 const RK_IPO={lv:{A:'#ff7a82',H:'#ffd0d4'},life:{A:'#6ad890',H:'#c8ffd8',B:'#8a6a4a'},don:{A:'#6ab0ff',H:'#d0e8ff'}};
 function rankCard([k,n,c]){const rows=rankRows(k),top=rows[0],mi=rows.findIndex(r=>r[0]===uid);
-  const nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'단원')}${id===uid?' (나)':''}</button>`;
+  const nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'선원')}${id===uid?' (나)':''}</button>`;
   return`<div class="rkcard" style="--c:${c}"><i class="rkrv a"></i><i class="rkrv b"></i><div class="rkbn"><span class="rkic">${img(RK_IC[k],null,2,'',RK_IPO[k])}</span><b>${n}</b></div>${top?`<div class="rktop"><div class="rkport" style="background-image:url(${SPACE_PNG[k]})"><i class="rkspace"></i><i class="rkmeteor"></i><img class="pix keepc rkthrone" src="${THRONE_PNG[k]}" alt="" aria-hidden="true"><span class="rkchar">${meImg(4,top[1])}</span><i class="rksp s1"></i><i class="rksp s2"></i><i class="rksp s3"></i><i class="rksp s4"></i><i class="rksp s5"></i></div><div class="rkhead"><span class="rk1"><em>1ST</em>랭킹 1위</span>${nm(top[0],top[1])}<span class="rkv">${top[3]}</span></div></div>
    ${rows.length>1?`<ol class="rklist">${rows.slice(1,10).map(([id,p,,v],i)=>`<li class="${id===uid?'me':''}"><span class="no">${i<2?`<span class="rkmd">${img(RK_MEDAL,null,1.5,'',RK_MPO[i+2])}</span>`:''}${i+2}위</span><span class="rkface">${headImg(2,p)}</span>${nm(id,p)}<b>${v}</b></li>`).join('')}</ol>`:''}
-   ${mi>=10?`<div class="rkmine">내 순위 <b>${mi+1}위</b> · ${rows[mi][3]}</div>`:''}`:'<p class="hint">아직 순위에 오른 단원이 없습니다.</p>'}</div>`}
+   ${mi>=10?`<div class="rkmine">내 순위 <b>${mi+1}위</b> · ${rows[mi][3]}</div>`:''}`:'<p class="hint">아직 순위에 오른 선원이 없습니다.</p>'}</div>`}
 
 function socRank(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">개척단 랭킹</b><span class="hint">이름을 누르면 프로필이 열립니다</span></div><div class="rkgrid">${RANKS.map(rankCard).join('')}</div>`}
-function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">단원을 누르면 그 단원의 프로필이 열립니다</span></div>${relMapHTML(uid,false,true)}${relTiersHTML()}`}
+function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">선원을 누르면 그 선원의 프로필이 열립니다</span></div>${relMapHTML(uid,false,true)}${relTiersHTML()}`}
 // one card per relationship tier, with how many crew I currently feel that way about
 function relTiersHTML(){const mine=orgAll().filter(([id])=>id!==uid).map(([id])=>affTier(affOf(P,id)));
-  return`<div class="reltiers">${AFF_TIERS.map(([m,n,d],i)=>{const hi=i?AFF_TIERS[i-1][0]-1:100,c=mine.filter(t=>t===i).length;return`<div class="reltier ${c?'mine':''}" style="--c:var(--rel${AFF_TIERS.length-1-i})"><b>${n}</b><span class="rng">♥ ${m>0?`${m} ~ ${hi}`:`${hi} ~ ${m}`}</span><span class="hint">${d}</span>${c?`<span class="cnt">내가 이렇게 느끼는 단원 ${c}명</span>`:''}</div>`}).join('')}</div>`}
+  return`<div class="reltiers">${AFF_TIERS.map(([m,n,d],i)=>{const hi=i?AFF_TIERS[i-1][0]-1:100,c=mine.filter(t=>t===i).length;return`<div class="reltier ${c?'mine':''}" style="--c:var(--rel${AFF_TIERS.length-1-i})"><b>${n}</b><span class="rng">♥ ${m>0?`${m} ~ ${hi}`:`${hi} ~ ${m}`}</span><span class="hint">${d}</span>${c?`<span class="cnt">내가 이렇게 느끼는 선원 ${c}명</span>`:''}</div>`}).join('')}</div>`}
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:13px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:13px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m)}
 const rolesNow=()=>mode==='online'?ROLES:(P.roles||{});
 function roleOf(id){const r=rolesNow();const k=POSTS3.find(([k])=>r[k]===id);return k?k[1]:null}
 function orgRole(id){if(isHead(id,whoP(id)))return'선장';return roleOf(id)||'선원'}
-function orgNode(id,p,big){return`<button class="orgm ${id===uid?'me':''}" data-act="profopen" data-k="${esc(id)}" aria-pressed="${profId===id}" title="${esc(p.nick||'단원')} 프로필 보기"><span class="orgface">${headImg(2,p)}</span><span class="orgnm">${esc(p.nick||'단원')}</span></button>`}
+function orgNode(id,p,big){return`<button class="orgm ${id===uid?'me':''}" data-act="profopen" data-k="${esc(id)}" aria-pressed="${profId===id}" title="${esc(p.nick||'선원')} 프로필 보기"><span class="orgface">${headImg(2,p)}</span><span class="orgnm">${esc(p.nick||'선원')}</span></button>`}
 // the org chart page opened from the crew panel's 조직도 button (profiles still open in the phone)
 const orgPage=()=>{const keep=profId;profId=null;const h=socCrew();profId=keep;return`<div class="stage-head mehead"><button class="qchip" data-act="orgclose">← 돌아가기</button><h2>개척단 조직도</h2><span class="loc">이름을 누르면 프로필이 열립니다</span></div>${h}`};
-function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row"><button class="btn sm ghost" data-act="profclose">← 돌아가기</button><span class="hint">단원 프로필</span></div>`+ph;profId=null}
+function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row"><button class="btn sm ghost" data-act="profclose">← 돌아가기</button><span class="hint">선원 프로필</span></div>`+ph;profId=null}
   const all=orgAll(),r=rolesNow(),heads=all.filter(([id,p])=>isHead(id,p)),valid=new Map(all.filter(([id,p])=>!isHead(id,p)));
   const officers=POSTS3.map(([k,n])=>[k,n,valid.has(r[k])?r[k]:null]),taken=new Set(officers.map(o=>o[2]).filter(Boolean));
   const crew=all.filter(([id,p])=>!isHead(id,p)&&!taken.has(id)).sort((a,b)=>(b[1].lvl||1)-(a[1].lvl||1));
   const cand=[...valid.entries()].sort((a,b)=>String(a[1].nick||'').localeCompare(String(b[1].nick||'')));
-  const sel=(k,cur)=>isAdmin?`<select class="sel orgsel" data-role="${k}" aria-label="${esc(POSTS3.find(x=>x[0]===k)[1])} 임명"><option value="">— 공석 —</option>${cand.map(([id,p])=>`<option value="${esc(id)}" ${cur===id?'selected':''}>${esc(p.nick||'단원')}</option>`).join('')}</select>`:'';
+  const sel=(k,cur)=>isAdmin?`<select class="sel orgsel" data-role="${k}" aria-label="${esc(POSTS3.find(x=>x[0]===k)[1])} 임명"><option value="">— 공석 —</option>${cand.map(([id,p])=>`<option value="${esc(id)}" ${cur===id?'selected':''}>${esc(p.nick||'선원')}</option>`).join('')}</select>`:'';
   return`<p class="lead">가이아 승무원 조직도입니다. 의무장 · 기관장 · 항해장은 선장이 임명합니다. 얼굴을 누르면 프로필을 볼 수 있습니다.</p>
   <div class="org"><div class="orgroot"><span class="lbl">Captain · 선장</span><div class="orgrow">${heads.length?heads.map(([id,p])=>orgNode(id,p)).join(''):'<span class="orgempty">공석</span>'}</div></div>
   <div class="orgstem"></div><div class="orgdepts">${officers.map(([k,n,id])=>`<div class="orgdept officer"><div class="orgdh">${n}</div><div class="orgrow">${id?orgNode(id,valid.get(id)):'<span class="orgempty">공석</span>'}</div>${sel(k,id)}</div>`).join('')}</div>
   <div class="orgstem"></div><div class="orgdept crewbox"><div class="orgdh">선원 <span class="hint">${crew.length}</span></div><div class="orgrow">${crew.length?crew.map(([id,p])=>orgNode(id,p)).join(''):'<span class="hint">아직 선원이 없습니다.</span>'}</div></div></div>
-  ${isAdmin?'<p class="hint">선장(운영자)에게만 임명 메뉴가 보입니다. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 됩니다.</p>':''}${all.length<2?'<p class="hint">아직 다른 단원이 없습니다. 게임 링크를 친구에게 공유해 보십시오.</p>':''}`}
+  ${isAdmin?'<p class="hint">선장(운영자)에게만 임명 메뉴가 보입니다. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 됩니다.</p>':''}${all.length<2?'<p class="hint">아직 다른 선원이 없습니다. 게임 링크를 친구에게 공유해 보십시오.</p>':''}`}
 async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const r=Object.assign({},rolesNow());for(const [kk] of POSTS3)if(id&&r[kk]===id)r[kk]='';r[k]=id||'';
-  if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'단원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`)}else{P.roles=r;save();renderPanel()}
-  toast(id?`${whoP(id).nick||'단원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠습니다.`)}
+  if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`)}else{P.roles=r;save();renderPanel()}
+  toast(id?`${whoP(id).nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠습니다.`)}
 document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classList.contains('orgsel'))setRole(t.dataset.role,t.value)});
 let profId=null,profBio=false;
 // 내 프로필: my card exactly as other crew see it when they open me (likes and hates shown, since it is mine)
@@ -6202,7 +6202,7 @@ function idCardHTML(p,id,photo,lock){const logo=($('.lg2-em img')||{}).src||'',s
   return`<div class="idc"><div class="idc-top"><span class="idc-tl">${L}</span><span class="idc-brand"><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div>
    <div class="idc-panel"><span class="idc-moto">Together<br>We Rebuild<br>Gaia</span><span class="idc-bigp">${L}</span>
     <div class="idc-ph">${photo?pfpImg(p.pfp):`<span class="idc-av">${meImg(5,p)}</span>`}${lock?'<span class="pfplock">🔒 사진은 호감도 30 이상</span>':''}</div>
-    <dl class="idc-dl">${row('이름',esc(p.nick||'단원'),1)}${row('직군',j?esc(j.n):'없음')}${row('직급',esc(orgRole(id)))}${row('레벨','LV.'+(p.lvl||1))}${row('생활레벨','LV.'+lifeSum(p))}</dl>
+    <dl class="idc-dl">${row('이름',esc(p.nick||'선원'),1)}${row('직군',j?esc(j.n):'없음')}${row('직급',esc(orgRole(id)))}${row('레벨','LV.'+(p.lvl||1))}${row('생활레벨','LV.'+lifeSum(p))}</dl>
     <svg class="idc-seal" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="sealT" d="M14 50 a36 36 0 0 1 72 0"/><path id="sealB" d="M10 50 a40 40 0 0 0 80 0"/></defs><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="3"/><text font-size="11.5" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealT" startOffset="50%">GAIA PROJECT</textPath></text><text font-size="10" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealB" startOffset="50%">★ SECTOR K-7 ★</textPath></text><circle cx="50" cy="50" r="12" fill="currentColor"/><ellipse cx="50" cy="51" rx="21" ry="6" fill="none" stroke="currentColor" stroke-width="3" transform="rotate(-18 50 50)"/></svg></div>
    <div class="idc-bot"><div class="idc-ttl"><span class="idc-wing">❖</span><span><b>${esc(ttlOf(p))}</b>${sn?`<small>${esc(sn)}</small>`:''}</span></div>
     <div class="idc-logo">${L}<span><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div></div></div>`}
@@ -6211,8 +6211,8 @@ let whyEdit=false;const WHY_MAX=80;
 function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>',
   lock='<span class="hint">🔒 호감도 30 이상이면 보입니다</span>';
   let aff;if(mine){const v=Object.values(PLAYERS).filter(q=>q&&q.aff&&q.aff[uid]!=null).map(q=>q.aff[uid]),avg=v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0;
-    aff=`<div class="pside-big" style="color:${affColor(avg)}">${v.length?avg:'—'}<small>${v.length?affLabel(avg):''}</small></div><div class="bar"><i style="--c:${affColor(avg)};width:${Math.min(100,Math.abs(avg))}%"></i></div><span class="hint">나를 아는 단원 ${v.length}명의 평균 · 단원에게는 그 단원의 호감도가 보입니다</span>`}
-  else{const af=affOf(p,uid);aff=`<div class="pside-big" style="color:${affColor(af)}">${af}<small>${affLabel(af)}</small></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div><span class="hint">${esc(p.nick||'단원')} 님이 나를 생각하는 마음</span>`}
+    aff=`<div class="pside-big" style="color:${affColor(avg)}">${v.length?avg:'—'}<small>${v.length?affLabel(avg):''}</small></div><div class="bar"><i style="--c:${affColor(avg)};width:${Math.min(100,Math.abs(avg))}%"></i></div><span class="hint">나를 아는 선원 ${v.length}명의 평균 · 선원에게는 그 선원의 호감도가 보입니다</span>`}
+  else{const af=affOf(p,uid);aff=`<div class="pside-big" style="color:${affColor(af)}">${af}<small>${affLabel(af)}</small></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div><span class="hint">${esc(p.nick||'선원')} 님이 나를 생각하는 마음</span>`}
   const why=mine&&whyEdit?`<div class="sendrow"><input id="whyIn" class="sel" maxlength="${WHY_MAX}" autocomplete="off" placeholder="예: 잃어버린 고향 별을 다시 찾고 싶어서" aria-label="프로젝트에 들어오게 된 이유" value="${esc(P.why||'')}"><button class="btn sm" data-act="whysave">저장</button><button class="qchip" data-act="whyedit">취소</button></div>`
     :`<p class="pside-why">${p.why?esc(p.why):`<span class="hint">${mine?'아직 적지 않았습니다. 왜 이 개척단에 왔나요?':'아직 적지 않았습니다.'}</span>`}</p>${mine?`<button class="qchip" data-act="whyedit">${p.why?'고치기':'적기'}</button>`:''}`;
   const C=(cls,ic,t,b)=>`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${b}</section>`;
@@ -6224,9 +6224,9 @@ function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,c
     :`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):`<span class="hint">아직 적지 않았습니다.</span>`}</p>${mine?`<button class="qchip" data-act="noteedit" data-k="${k}">${v?'고치기':'적기'}</button>`:''}`;
   return`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${body}</section>`}).join('')}</div>`}
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
-  return`<div class="row" style="justify-content:space-between;margin-bottom:6px"><b class="dfloor">다른 단원에게 보이는 내 프로필</b><span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
+  return`<div class="row" style="justify-content:space-between;margin-bottom:6px"><b class="dfloor">다른 선원에게 보이는 내 프로필</b><span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
    <div class="card profcard"><div class="profwrap">${idCardHTML(p,uid,!!p.pfp,false)}${profSideHTML(p,uid,true)}</div>${profNotesHTML(p,true)}
-    <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 단원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
+    <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 선원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
     ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}
     <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
@@ -6241,14 +6241,14 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
       <div class="row" style="gap:5px;flex-wrap:wrap"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
      <p class="bio">${p.bio?'“'+esc(p.bio)+'”':'<span class="hint">아직 한 줄 소개가 없습니다.</span>'}</p>
      <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
-  return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'단원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
-   ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 단원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
+  return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'선원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
+   ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 선원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
    ${tasteHTML(p)}
    ${me?`<div class="info-sec"><span class="lbl">Relations · 인물 관계도</span>${relMapHTML(uid,true)}</div>`:''}
 </div>`}
 function renderSocial(){
-  if(mode!=='online')return head('social')+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 단원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
+  if(mode!=='online')return head('social')+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 선원과 함께 접속해 있을 때 열립니다. 지금은 한 줄 소개만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   if((socTab==='crew'&&!profId)||socTab==='dm'||socTab==='rank')socTab='pad';
   if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
   const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],['chat','대화'],['memo','만남'+socDot('memo')],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
@@ -6258,7 +6258,7 @@ const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top
 function afterSocialRender(){if(socOpen&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}if(socOpen&&socTab==='chat'){const l=$('#lgLog');if(l)l.scrollTop=l.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
-    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'단원'} 님이 인사를 건넸다.`,'good');addAff(g.from,1,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'단원'} 님이 인사를 건넸습니다!`);ch=true}});
+    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,1,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit()}
 /* PAD alerts: replies to my posts, reposts of my posts and mentions of me, newest first; the bell shows what came in since I last opened it */
 function padNotis(){if(mode!=='online'||!P)return[];const me='@'+P.nick;return POSTS.filter(p=>p.uid!==uid&&(p.reUid===uid||(p.rt&&p.rto&&p.rto.uid===uid)||(!p.rt&&String(p.text||'').includes(me)))).sort((a,b)=>b.at-a.at).slice(0,30)}
@@ -6271,7 +6271,7 @@ function memoNotis(){if(mode!=='online'||!P)return[];const out=[];
   return out.sort((a,b)=>b.at-a.at).slice(0,30)}
 function notiUnread(){const seen=P&&P.notiSeen||0;return padNotis().filter(p=>p.at>seen).length+rescueNotis().filter(n=>n.at>seen).length+memoNotis().filter(n=>n.at>seen).length}
 const notiPop=document.createElement('div');notiPop.id='notiPop';notiPop.className='notipop px';notiPop.hidden=true;notiPop.setAttribute('role','dialog');notiPop.setAttribute('aria-label','PAD 알림');document.body.appendChild(notiPop);
-function notiHTML(){const L=[...padNotis(),...rescueNotis().map(n=>Object.assign({resc:1},n)),...memoNotis()].sort((a,b)=>b.at-a.at).slice(0,30),seen=P.notiSeen||0;return`<div class="stat-row"><span class="lbl">Alerts · 알림</span><b>${L.length?L.length+'개':''}</b></div>${L.length?`<ul class="notilist">${L.map(p=>{if(p.memo)return`<li class="nk-memo ${p.at>seen?'new':''}" data-act="memogo" data-k="${esc(p.mid)}" role="button" tabindex="0"><span class="twav sm">${headImg(2,whoP(p.uid))}</span><div><i class="ntag">만남</i><b>${esc(p.nick||'단원')}</b> <span>님이 ${p.why}</span><p>${esc(String(p.text).slice(0,60))}</p><time>${shortAgo(p.at)}</time></div></li>`;if(p.resc)return`<li class="${p.at>seen?'new':''}" data-act="profopen" data-k="${esc(p.by)}" role="button" tabindex="0"><span class="twav sm">${headImg(2,whoP(p.by))}</span><div><b>${esc(p.nick)}</b> <span>님이 구조해줬습니다.</span><time>${shortAgo(p.at)}</time></div></li>`;const kind=p.reUid===uid?'내 글에 답글을 달았습니다':p.rt?'내 글을 재전송했습니다':'나를 언급했습니다',txt=p.rt?(p.rto&&p.rto.text)||'':p.text||'';return`<li class="nk-pad ${p.at>seen?'new':''}" data-act="notigo" data-k="${esc(p.rt||p.id)}" role="button" tabindex="0"><span class="twav sm">${headImg(2,whoP(p.uid))}</span><div><i class="ntag">PAD</i><b>${esc(p.nick||'단원')}</b> <span>님이 ${kind}</span>${txt?`<p>${esc(txt.slice(0,60))}</p>`:''}<time>${shortAgo(p.at)}</time></div></li>`}).join('')}</ul>`:'<p class="hint">아직 알림이 없습니다. 누가 내 글에 답글을 달거나 나를 언급하면, 또는 만남에서 내 글과 댓글에 댓글이 달리면 여기에 뜹니다.</p>'}`}
+function notiHTML(){const L=[...padNotis(),...rescueNotis().map(n=>Object.assign({resc:1},n)),...memoNotis()].sort((a,b)=>b.at-a.at).slice(0,30),seen=P.notiSeen||0;return`<div class="stat-row"><span class="lbl">Alerts · 알림</span><b>${L.length?L.length+'개':''}</b></div>${L.length?`<ul class="notilist">${L.map(p=>{if(p.memo)return`<li class="nk-memo ${p.at>seen?'new':''}" data-act="memogo" data-k="${esc(p.mid)}" role="button" tabindex="0"><span class="twav sm">${headImg(2,whoP(p.uid))}</span><div><i class="ntag">만남</i><b>${esc(p.nick||'선원')}</b> <span>님이 ${p.why}</span><p>${esc(String(p.text).slice(0,60))}</p><time>${shortAgo(p.at)}</time></div></li>`;if(p.resc)return`<li class="${p.at>seen?'new':''}" data-act="profopen" data-k="${esc(p.by)}" role="button" tabindex="0"><span class="twav sm">${headImg(2,whoP(p.by))}</span><div><b>${esc(p.nick)}</b> <span>님이 구조해줬습니다.</span><time>${shortAgo(p.at)}</time></div></li>`;const kind=p.reUid===uid?'내 글에 답글을 달았습니다':p.rt?'내 글을 재전송했습니다':'나를 언급했습니다',txt=p.rt?(p.rto&&p.rto.text)||'':p.text||'';return`<li class="nk-pad ${p.at>seen?'new':''}" data-act="notigo" data-k="${esc(p.rt||p.id)}" role="button" tabindex="0"><span class="twav sm">${headImg(2,whoP(p.uid))}</span><div><i class="ntag">PAD</i><b>${esc(p.nick||'선원')}</b> <span>님이 ${kind}</span>${txt?`<p>${esc(txt.slice(0,60))}</p>`:''}<time>${shortAgo(p.at)}</time></div></li>`}).join('')}</ul>`:'<p class="hint">아직 알림이 없습니다. 누가 내 글에 답글을 달거나 나를 언급하면, 또는 만남에서 내 글과 댓글에 댓글이 달리면 여기에 뜹니다.</p>'}`}
 function notiPlace(){const b=$('#bellBtn');if(!b)return;const r=b.getBoundingClientRect();notiPop.style.top=Math.round(r.bottom+6)+'px';notiPop.style.left=Math.round(Math.max(8,Math.min(innerWidth-8-(notiPop.offsetWidth||330),r.left-8)))+'px'}
 function notiToggle(open){notiPop.hidden=!open;const b=$('#bellBtn');if(b)b.setAttribute('aria-expanded',open);if(open){notiPop.innerHTML=notiHTML();notiPlace();P.notiSeen=Date.now();save();bellRefresh(true)}}
 // PAD / 만남 alerts newer than this session (and than the last chime) play noti.mp3 once
@@ -6281,7 +6281,7 @@ function notiChime(){const t=Math.max(0,...padNotis().map(p=>+p.at||0),...memoNo
 function bellRefresh(keep){socDots();const b=$('#bellBtn');if(!b)return;notiChime();const n=notiUnread();b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n);if(!keep&&!notiPop.hidden)notiPop.innerHTML=notiHTML()}
 document.addEventListener('click',e=>{if(e.target.closest('#bellBtn')){e.stopPropagation();notiToggle(notiPop.hidden);return}if(!notiPop.hidden&&!e.target.closest('#notiPop'))notiToggle(false)},true);
 addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener('scroll',()=>{if(!notiPop.hidden)notiPlace()},{passive:true});
-function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'단원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'단원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'단원'} 님이 PAD에서 나를 언급했습니다.`)})}
+function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'선원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'선원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'선원'} 님이 PAD에서 나를 언급했습니다.`)})}
 // PAD keeps every post: the feed shows 20 at a time behind a 더보기 button, and when the loaded posts run out it asks the server for 150 more
 let padShow=20,padLoad=150,padUnsub=null,padMore=false;
 function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padUnsub=db.collection('posts').orderBy('at','desc').limit(padLoad).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLoad;notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
@@ -6334,17 +6334,17 @@ const SA={
   try{await db.collection('dm').add({users:[uid,to],from:uid,to,nick:P.nick,text:v,at:Date.now()})}catch(e){dmDraft=v;if(i)i.value=v;socErr(e);return}stat('dm');save()},
  async hi(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||(P.greet||{})[d.k]===dayKey())return;
   try{await db.collection('guest').add({to:d.k,from:uid,nick:P.nick,kind:'hi',text:'',at:Date.now()})}catch(e){socErr(e);return}
-  P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});stat('hi');sfxCoin();log(`${t.nick||'단원'} 님에게 인사를 건넸다.`,'good');addAff(d.k,1,'인사');commit()},
+  P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});stat('hi');sfxCoin();log(`${t.nick||'선원'} 님에게 인사를 건넸다.`,'good');addAff(d.k,1,'인사');commit()},
  bioedit(){editBio=true;bioDraft=P.bio||'';renderPanel();setTimeout(()=>{const i=$('#bioIn');if(i)i.focus()},30)},
  biosave(){P.bio=bioDraft.trim().slice(0,40);editBio=false;log(P.bio?'한 줄 소개를 바꿨다.':'한 줄 소개를 지웠다.');save();renderPanel()},
  biocancel(){editBio=false;renderPanel()},
 };
 async function padWrite(raw,parent){const ctx=parent?'reply':'pad',L=imgList(ctx),v=String(raw||'').trim().slice(0,PAD_MAX);if(!v&&!L.length){toast('글 내용을 적거나 이미지를 붙여 주십시오.');return}if(mode!=='online'||padBusy)return;if(Date.now()-lastPost<5e3){toast('조금 뒤에 다시 올려 주십시오.');return}
   const ids=[];if(L.length){if(!ASSETS){toast('이 화면에서는 이미지를 올릴 수 없습니다.');return}padBusy=true;renderPanel();try{for(const m of L){const r=await ASSETS.upload(m.blob,{type:m.blob.type||'image/jpeg'});ids.push(r.id)}}catch(e){padBusy=false;ids.forEach(id=>ASSETS.delete(id).catch(()=>{}));imgErr(e);renderPanel();return}padBusy=false}
-  const doc={uid,nick:P.nick,text:v,at:Date.now(),likes:{}};if(ids.length)doc.img=ids;if(parent)Object.assign(doc,{re:parent.id,reNick:parent.nick||'단원',reUid:parent.uid||''});
+  const doc={uid,nick:P.nick,text:v,at:Date.now(),likes:{}};if(ids.length)doc.img=ids;if(parent)Object.assign(doc,{re:parent.id,reNick:parent.nick||'선원',reUid:parent.uid||''});
   try{await db.collection('posts').add(doc)}catch(e){ids.forEach(id=>ASSETS&&ASSETS.delete(id).catch(()=>{}));socErr(e);renderPanel();return}
   lastPost=Date.now();clearImgs(ctx);if(parent)replyDraft='';else{padDraft='';padTag='';padView='all'}stat('post');
-  if(P.postDay!==dayKey()){P.postDay=dayKey();gainXp(10);log('오늘 첫 PAD 글을 남겼다. 경험치 +10','good')}else log(parent?`${parent.nick||'단원'} 님의 글에 답글을 달았다.`:'PAD에 글을 남겼다.');commit()}
+  if(P.postDay!==dayKey()){P.postDay=dayKey();gainXp(10);log('오늘 첫 PAD 글을 남겼다. 경험치 +10','good')}else log(parent?`${parent.nick||'선원'} 님의 글에 답글을 달았다.`:'PAD에 글을 남겼다.');commit()}
 const isField=el=>el&&el.closest&&el.closest('#stage,#socStage')&&/^(TEXTAREA|INPUT)$/.test(el.tagName)&&el.type!=='file';
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='padIn'){padDraft=t.value;const c=$('#padCnt');if(c)c.textContent=t.value.length+'/'+PAD_MAX}else if(t.id==='padReply')replyDraft=t.value;else if(t.id==='bioIn')bioDraft=t.value;else if(t.id==='dmIn')dmDraft=t.value});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&socOpen&&!isField(e.target)){socDrawer(false);return}});
@@ -6399,9 +6399,9 @@ Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),mode:'like',cat:'dish'};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},180e3);
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;
-  if(P.joined&&P.nick!=='새 단원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
+  if(P.joined&&P.nick!=='새 선원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
-  $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 단원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
+  $('#joinModal').hidden=true;log(`콜사인 「${v}」로 개척단에 합류했다.`,'rare');sys(`새 선원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
 
 /* ───────── bgm ───────── */
 const bgm=new Audio('bgm.mp3?v=storm');bgm.loop=true;bgm.preload='auto';
