@@ -1426,21 +1426,21 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .scside{min-height:100%}
 
 /* 조사 기록 as a hologram: a translucent cyan screen with scanlines, glowing text and corner brackets; fixed height, it scrolls */
-.sclog.holo{--hc:#6fe3ff;position:relative;padding:12px 14px;border:1px solid color-mix(in srgb,var(--hc) 45%,transparent);border-radius:4px;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--hc) 11%,#050a16),color-mix(in srgb,var(--hc) 4%,#050a16));
-  box-shadow:0 0 14px color-mix(in srgb,var(--hc) 22%,transparent),inset 0 0 22px color-mix(in srgb,var(--hc) 14%,transparent);overflow:hidden;flex:none;min-height:0}
-.sclog.holo::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(150,235,255,.06) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
-.sclog.holo::before{content:"";position:absolute;left:0;right:0;top:-30%;height:30%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(140,230,255,.08),transparent);animation:holosweep 6s linear infinite}
+.sclog.holo{--hc:#4f98ad;position:relative;padding:12px 14px;border:1px solid color-mix(in srgb,var(--hc) 45%,transparent);border-radius:4px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--hc) 7%,#070a14),color-mix(in srgb,var(--hc) 3%,#070a14));
+  box-shadow:0 0 6px color-mix(in srgb,var(--hc) 12%,transparent),inset 0 0 16px color-mix(in srgb,var(--hc) 8%,transparent);overflow:hidden;flex:none;min-height:0}
+.sclog.holo::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(150,220,240,.03) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+.sclog.holo::before{content:"";position:absolute;left:0;right:0;top:-30%;height:30%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(140,210,235,.035),transparent);animation:holosweep 8s linear infinite}
 @keyframes holosweep{to{top:130%}}
-.sclog.holo .hc{position:absolute;width:10px;height:10px;border-color:var(--hc);border-style:solid;opacity:.9;pointer-events:none}
+.sclog.holo .hc{position:absolute;width:10px;height:10px;border-color:var(--hc);border-style:solid;opacity:.7;pointer-events:none}
 .hc.tl{left:3px;top:3px;border-width:2px 0 0 2px}.hc.tr{right:3px;top:3px;border-width:2px 2px 0 0}.hc.bl{left:3px;bottom:3px;border-width:0 0 2px 2px}.hc.br{right:3px;bottom:3px;border-width:0 2px 2px 0}
-.sclog.holo .scll{height:178px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--hc) 40%,transparent) transparent;font-family:var(--f-pix);font-size:12.5px;line-height:1.75;color:#c8f5ff;text-shadow:0 0 6px rgba(111,227,255,.55);padding-right:4px}
+.sclog.holo .scll{height:178px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--hc) 40%,transparent) transparent;font-family:var(--f-pix);font-size:12.5px;line-height:1.75;color:#a8c4cf;text-shadow:0 0 4px rgba(90,170,200,.25);padding-right:4px}
 .sclog.holo .scll p{position:relative;padding-left:14px}
 .sclog.holo .scll p::before{content:"›";position:absolute;left:0;color:var(--hc)}
-.sclog.holo .scll b{color:#fff;font-weight:400;text-shadow:0 0 8px rgba(111,227,255,.9)}
-.sclog.holo .scdim{color:#7fb8c8;text-shadow:none}
-.sclog.holo .hts{font-style:normal;color:#5fb3c8;margin-right:7px;font-size:11px}
-.sclog.holo .sclgot .ichip{background:color-mix(in srgb,var(--hc) 10%,transparent);border-color:color-mix(in srgb,var(--hc) 40%,transparent);color:#d8f8ff}
+.sclog.holo .scll b{color:#d6e6ec;font-weight:400;text-shadow:0 0 5px rgba(90,170,200,.35)}
+.sclog.holo .scdim{color:#6d8792;text-shadow:none}
+.sclog.holo .hts{font-style:normal;color:#55798a;margin-right:7px;font-size:11px}
+.sclog.holo .sclgot .ichip{background:color-mix(in srgb,var(--hc) 10%,transparent);border-color:color-mix(in srgb,var(--hc) 40%,transparent);color:#c4d8de}
 .sclog.holo .scll .scnew{animation:holoin .6s ease-out}
 @keyframes holoin{0%{opacity:0;filter:blur(2px)}40%{opacity:.6}60%{opacity:.3}100%{opacity:1;filter:none}}
 @media (prefers-reduced-motion:reduce){.sclog.holo::before{animation:none;display:none}.sclog.holo .scll .scnew{animation:none}}
