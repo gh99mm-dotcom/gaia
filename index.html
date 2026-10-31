@@ -2659,7 +2659,7 @@ function save(){if(seasonLock)return;
 const flushNow=()=>{if(mode==='online'&&dirty&&!seasonLock){clearTimeout(saveT);return flush()}};
 window.__flushSave=async()=>{await flushNow()};
 addEventListener('pagehide',flushNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushNow()});
-async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();if(SN_PUB&&P.sn!==SN_PUB)P.sn=SN_PUB;await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
+async function flush(){if(saving)return;saving=true;try{while(dirty){dirty=false;P.seen=Date.now();if(SN_PUB&&P.sn!==SN_PUB)P.sn=SN_PUB;if(P.scout&&P.scout.last)scLastSafe(P.scout.last);await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
 // adm marks a notice sent from the admin side: it pins to the ticker and rings the chime for everyone
 function sys(text,adm,snd){if(mode!=='online'||!TICK_RE.test(text))return;const d={uid,nick:P.nick,text,at:Date.now(),sys:true};if(adm&&isAdmin)d.adm=true;if(snd)d.snd=snd;db.collection('chat').add(d).catch(()=>{})}
 function setPresence(){if(room&&mode==='online')room.presence({uid,nick:P.nick,act:socOpen&&socTab==='chat'?'교류':TABS.find(t=>t.id===tab).n}).catch(()=>{})}
@@ -4065,7 +4065,7 @@ function scLogHTML(sc,i){const T=TRAILS[i],mv=sc.mv,pick=x=>x&&!mv&&x.tr===i&&x.
   else if(L)lines=[...L.acts.map(a=>`${esc(a)}`),...(L.evNote?[`<span class="sce sce-evend">이동 중 사건 · ${esc(L.evNote)}</span>`]:[]),`<b>${esc(L.ev)}</b>`];
   else if(sc.pend)lines=[`${esc(T.nodes[sc.at-1])}에 도착했다.`,'<span class="scdim">주변을 살펴보는 중…</span>'];
   else lines=[`${esc(T.nodes[sc.at-1])}은(는) 이미 둘러보았다.`,'<span class="scdim">더 들어가거나 정착지로 돌아갈 수 있습니다.</span>'];
-  return`<div class="sclog holo ${fresh?'fresh':''}" aria-live="polite" aria-label="조사 기록"><i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i><div class="scll" id="scLogL">${lines.map((l,n)=>{const a=!L||!L.leg||l.includes('class="anim"');return`<p class="${a?'anim':''}" style="--d:${(L&&L.leg?Math.max(0,n-lines.length+2):n)*.45}s">${l}</p>`}).join('')}${L&&(L.got.length||L.extra)?`<div class="sclgot anim" style="--d:${(L.leg?2:lines.length)*.45}s">${chipsOf(L.got,L.extra)}</div>`:''}</div></div>`}
+  return`<div class="sclog holo ${fresh?'fresh':''}" aria-live="polite" aria-label="조사 기록"><i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i><div class="scll" id="scLogL">${lines.map((l,n)=>{const a=!L||!L.leg||l.includes('class="anim"');return`<p class="${a?'anim':''}" style="--d:${(L&&L.leg?Math.max(0,n-lines.length+2):n)*.45}s">${l}</p>`}).join('')}${L&&(scGot(L).length||L.extra)?`<div class="sclgot anim" style="--d:${(L.leg?2:lines.length)*.45}s">${chipsOf(scGot(L),L.extra)}</div>`:''}</div></div>`}
 const scLogList=(sc,i)=>{const h=scLogHTML(sc,i),a=h.indexOf('<div class="scll"'),b=h.lastIndexOf('</div></div>');return h.slice(a,b+6)};
 function scFpHTML(sc){const mv=sc.mv,i=mv?mv.t:sc.t,T=TRAILS[i],k=mv?mv.to:sc.at,ahead=Math.min(SC_N,mv?mv.to:sc.at+1),end=!mv&&sc.at>=SC_N;
   const where=mv?`${esc(T.n)} ${mv.to}지점으로 가는 중`:`${esc(T.n)} ${sc.at}지점 · ${esc(T.nodes[sc.at-1])}`;
@@ -4083,8 +4083,11 @@ function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(ren
   <div class="scui ${on?'on':''}"><div class="scleft">${scoutMapHTML()}</div><div class="scside">${on?scFpHTML(sc):scListHTML(sc)}</div></div>
   ${junkDexHTML()}`;
 }
+// the saved stop log must fit Firestore: no arrays inside arrays, so finds are kept as {id,n}
+const scLastSafe=L=>{if(L&&Array.isArray(L.got))L.got=L.got.map(g=>Array.isArray(g)?{id:g[0],n:g[1]}:g);return L};
+const scGot=L=>((L&&L.got)||[]).map(g=>Array.isArray(g)?g:[g.id,g.n]);
 function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.t],k=m.to,first=k>sc.far[m.t];sc.mv=null;sc.t=m.t;sc.at=k;if(first)sc.far[m.t]=k;sc.pend=first?2:1;sc.nw=tab==='scan'?0:1;
-  log(`${T.nodes[k-1]}에 도착했다.`);scLegLines=scMoveLines(m,m.e).filter(x=>!x[2]).slice(-3).map(x=>x[1]);scoutSearch();scApplyEvent(m);if(lastScan){lastScan.leg={t:m.t,from:m.from,to:m.to,s:m.s,e:m.e};const {at,...keep}=lastScan;sc.last=JSON.parse(JSON.stringify(keep));save()}save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
+  log(`${T.nodes[k-1]}에 도착했다.`);scLegLines=scMoveLines(m,m.e).filter(x=>!x[2]).slice(-3).map(x=>x[1]);scoutSearch();scApplyEvent(m);if(lastScan){lastScan.leg={t:m.t,from:m.from,to:m.to,s:m.s,e:m.e};const {at,...keep}=lastScan;sc.last=scLastSafe(JSON.parse(JSON.stringify(keep)));save()}save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
 // 조사 기록: what the crew member does at a stop, picked at random (two lines from the trail's own pool, sometimes one general one)
 // 조사 scripts. Trails: 0 결정 능선 · 1 녹슨 잔해길 · 2 포자 습지 · 3 운석 분화구 · 4 얼음 협곡
 // reward specs: "item:n" or "item:a-b" adds items, "hp:-n" hurts, "en:n" restores energy, "xp:n" grants XP, "seed:n" gives random seeds
