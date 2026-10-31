@@ -5571,7 +5571,7 @@ const A={
  raidpick(d){raidPick=d.id;renderPanel()},
  async raideat(d){const id=d.id,it=ITEMS[id],r=MYRAID;if(!it||!(P.inv[id]>0)||!raidSoloRest(r)||raidBusy)return;raidBusy=true;const mk=P.job==='medic'?1.5:1;let h=0;
   const nx=await raidTx(r.id,cur=>{if(!raidSoloRest(cur))return null;const me=cur.m[uid];h=it.hp>=999?me.maxHp:Math.round((it.hp||0)*mk);me.hp=Math.min(me.maxHp,me.hp+h);return cur}).catch(()=>null);raidBusy=false;
-  if(!nx){toast('지금은 먹을 수 없습니다.');return}if(!take(id))return;const ee=it.en>=999?maxEn():Math.round((it.en||0)*mk);heal(0,ee);applyDish(id);MYRAID=nx;raidHpSync();
+  if(!nx){toast('지금은 먹을 수 없습니다.');return}if(!take(id))return;const ee=it.en>=999?maxEn():Math.round((it.en||0)*mk);heal(0,ee);applyDish(id);MYRAID=Object.assign({},nx,{id:r.id});raidHpSync();
   log(`원정 중 쉬면서 ${it.n}을(를) 먹었다. 체력 +${h}${ee?`, 에너지 +${ee}`:''}`,'good');commit();renderPanel()},
  raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID||!raidMyTurn())return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);raidBag=false;raidPick=null;commit();renderPanel()}})},
  raidnext(){raidNext()},
