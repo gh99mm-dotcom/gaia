@@ -1424,6 +1424,26 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 @keyframes sclin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.sclog.fresh .scll>*{animation:none;opacity:1}}
 .scside{min-height:100%}
+
+/* 조사 기록 as a hologram: a translucent cyan screen with scanlines, glowing text and corner brackets; fixed height, it scrolls */
+.sclog.holo{--hc:#6fe3ff;position:relative;padding:12px 14px;border:1px solid color-mix(in srgb,var(--hc) 45%,transparent);border-radius:4px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--hc) 11%,#050a16),color-mix(in srgb,var(--hc) 4%,#050a16));
+  box-shadow:0 0 14px color-mix(in srgb,var(--hc) 22%,transparent),inset 0 0 22px color-mix(in srgb,var(--hc) 14%,transparent);overflow:hidden;flex:none;min-height:0}
+.sclog.holo::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(150,235,255,.06) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+.sclog.holo::before{content:"";position:absolute;left:0;right:0;top:-30%;height:30%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(140,230,255,.08),transparent);animation:holosweep 6s linear infinite}
+@keyframes holosweep{to{top:130%}}
+.sclog.holo .hc{position:absolute;width:10px;height:10px;border-color:var(--hc);border-style:solid;opacity:.9;pointer-events:none}
+.hc.tl{left:3px;top:3px;border-width:2px 0 0 2px}.hc.tr{right:3px;top:3px;border-width:2px 2px 0 0}.hc.bl{left:3px;bottom:3px;border-width:0 0 2px 2px}.hc.br{right:3px;bottom:3px;border-width:0 2px 2px 0}
+.sclog.holo .scll{height:178px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--hc) 40%,transparent) transparent;font-family:var(--f-pix);font-size:12.5px;line-height:1.75;color:#c8f5ff;text-shadow:0 0 6px rgba(111,227,255,.55);padding-right:4px}
+.sclog.holo .scll p{position:relative;padding-left:14px}
+.sclog.holo .scll p::before{content:"›";position:absolute;left:0;color:var(--hc)}
+.sclog.holo .scll b{color:#fff;font-weight:400;text-shadow:0 0 8px rgba(111,227,255,.9)}
+.sclog.holo .scdim{color:#7fb8c8;text-shadow:none}
+.sclog.holo .hts{font-style:normal;color:#5fb3c8;margin-right:7px;font-size:11px}
+.sclog.holo .sclgot .ichip{background:color-mix(in srgb,var(--hc) 10%,transparent);border-color:color-mix(in srgb,var(--hc) 40%,transparent);color:#d8f8ff}
+.sclog.holo .scll .scnew{animation:holoin .6s ease-out}
+@keyframes holoin{0%{opacity:0;filter:blur(2px)}40%{opacity:.6}60%{opacity:.3}100%{opacity:1;filter:none}}
+@media (prefers-reduced-motion:reduce){.sclog.holo::before{animation:none;display:none}.sclog.holo .scll .scnew{animation:none}}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -4023,11 +4043,11 @@ function scListHTML(sc){return`<div class="sclist"><span class="lbl">지역을 �
 // the side panel on a trail: what lies ahead in first person, the road and what to do next
 function scLogHTML(sc,i){const T=TRAILS[i],mv=sc.mv,L=lastScan&&!mv&&lastScan.tr===i&&lastScan.k===sc.at?lastScan:null,fresh=L&&Date.now()-L.at<3000;
   let lines;
-  if(mv){const L2=scMoveLines(mv,Date.now()).slice(-7);scLogN=scMoveLines(mv,Date.now()).length;lines=L2.map(([t,x],n)=>`<span class="${n===L2.length-1&&Date.now()-t<2500?'scnew':''}">▶ ${esc(x)}</span>`)}
-  else if(L)lines=[...L.acts.map(a=>`▶ ${esc(a)}`),`<b>${esc(L.ev)}</b>`];
-  else if(sc.pend)lines=[`▶ ${esc(T.nodes[sc.at-1])}에 도착했다.`,'<span class="scdim">주변을 살펴보는 중…</span>'];
-  else lines=[`▶ ${esc(T.nodes[sc.at-1])}은(는) 이미 둘러보았다.`,'<span class="scdim">더 들어가거나 정착지로 돌아갈 수 있습니다.</span>'];
-  return`<div class="card sclog ${fresh?'fresh':''}" aria-live="polite"><span class="lbl">Field log · 조사 기록</span><div class="scll" id="scLogL">${lines.map((l,n)=>`<p style="--d:${n*.45}s">${l}</p>`).join('')}${L&&(L.got.length||L.extra)?`<div class="sclgot" style="--d:${lines.length*.45}s">${chipsOf(L.got,L.extra)}</div>`:''}</div></div>`}
+  if(mv){const L2=scMoveLines(mv,Date.now());scLogN=scMoveLines(mv,Date.now()).length;lines=L2.map(([t,x],n)=>`<span class="${n===L2.length-1&&Date.now()-t<2500?'scnew':''}"><em class="hts">${hhmm(t)}</em>${esc(x)}</span>`)}
+  else if(L)lines=[...L.acts.map(a=>`${esc(a)}`),`<b>${esc(L.ev)}</b>`];
+  else if(sc.pend)lines=[`${esc(T.nodes[sc.at-1])}에 도착했다.`,'<span class="scdim">주변을 살펴보는 중…</span>'];
+  else lines=[`${esc(T.nodes[sc.at-1])}은(는) 이미 둘러보았다.`,'<span class="scdim">더 들어가거나 정착지로 돌아갈 수 있습니다.</span>'];
+  return`<div class="sclog holo ${fresh?'fresh':''}" aria-live="polite" aria-label="조사 기록"><i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i><div class="scll" id="scLogL">${lines.map((l,n)=>`<p style="--d:${n*.45}s">${l}</p>`).join('')}${L&&(L.got.length||L.extra)?`<div class="sclgot" style="--d:${lines.length*.45}s">${chipsOf(L.got,L.extra)}</div>`:''}</div></div>`}
 const scLogList=(sc,i)=>{const h=scLogHTML(sc,i),a=h.indexOf('<div class="scll"'),b=h.lastIndexOf('</div></div>');return h.slice(a,b+6)};
 function scFpHTML(sc){const mv=sc.mv,i=mv?mv.t:sc.t,T=TRAILS[i],k=mv?mv.to:sc.at,ahead=Math.min(SC_N,mv?mv.to:sc.at+1),end=!mv&&sc.at>=SC_N;
   const where=mv?`${esc(T.n)} ${mv.to}지점으로 가는 중`:`${esc(T.n)} ${sc.at}지점 · ${esc(T.nodes[sc.at-1])}`;
@@ -4061,7 +4081,7 @@ let scLegLines=null;
 function scMoveLines(mv,upTo){let sd=(mv.s%2147483646)+1;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,T=TRAILS[mv.t],pool=[...(SC_ACTS[mv.t]||[]),...SC_ACTS_ANY],out=[[mv.s,`${T.n} ${mv.to}지점을 향해 출발했다.`]];
   let t=mv.s+(4+rnd()*10)*1e3;const recent=[];while(t<=Math.min(upTo,mv.e)){let j=Math.floor(rnd()*pool.length);for(let g=0;g<pool.length&&recent.includes(j);g++)j=(j+1)%pool.length;recent.push(j);if(recent.length>3)recent.shift();out.push([t,pool[j]]);t+=(8+rnd()*22)*1e3}return out}
 let scLogN=-1;
-function scLogTick(){const sc=scoutSt(),mv=sc.mv,box=$('#scLogL');if(!mv||!box)return;const n=scMoveLines(mv,Date.now()).length;if(n===scLogN)return;scLogN=n;box.outerHTML=scLogList(sc,sc.mv.t)}
+function scLogTick(){const sc=scoutSt(),mv=sc.mv,box=$('#scLogL');if(!mv||!box)return;const n=scMoveLines(mv,Date.now()).length;if(n===scLogN)return;scLogN=n;box.outerHTML=scLogList(sc,sc.mv.t);const nb=$('#scLogL');if(nb)nb.scrollTop=nb.scrollHeight}
 function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;const T=TRAILS[sc.t],k=sc.at,first=sc.pend===2;sc.pend=0;
   const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();if(k>=2)got.push([T.it,ri(1,k-1)]);
   {const rl=relicRoll(P.lvl,RELIC_SCAN_P);if(rl)got.push([rl,1])}const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
@@ -5204,7 +5224,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   if(tab==='gather')startGatherScene();
   if(tab==='bag')renderCook();else if(bagOpen)renderCook();
   // the seed lists only get their height in fitSide, so their scroll goes back after it
-  if(tab==='scan')scCam();
+  if(tab==='scan'){scCam();const l=$('#scLogL');if(l)l.scrollTop=l.scrollHeight}
   if(tab==='farm'){fitSide();fitBay();sds.forEach(([k,t])=>{const b=document.querySelector(`#stage .seeds [data-i="${k}"]`),e=b&&b.closest('.seeds');if(e)e.scrollTop=t})}
   if(tab==='adv'){const l=$('#bossLog');if(l)l.scrollTop=l.scrollHeight}
 }
