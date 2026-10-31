@@ -849,7 +849,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .orgface{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 60%,#1d2236 0 45%,transparent 46%)}
 .orgempty{display:flex;align-items:center;justify-content:center;width:60px;aspect-ratio:3/4;border:2px dashed var(--line);color:var(--dim);font-size:11px}
 .orgdept.officer{min-width:120px}.orgdept.officer .orgdh{color:var(--gold)}
-.orgdept.crewbox{width:100%;max-width:560px}
+.orgdept.crewbox{width:100%;max-width:560px}.orgdepts{align-items:flex-start;width:100%;flex-wrap:nowrap}.orgcol{position:relative;display:flex;flex-direction:column;align-items:center;flex:1 1 0;min-width:0;max-width:280px}.orgcol::before{content:"";position:absolute;top:-18px;left:-7px;right:-7px;height:2px;background:var(--line)}.orgcol:first-child::before{left:50%}.orgcol:last-child::before{right:50%}.orgcol .orgdept.officer::after{display:none}@media (max-width:520px){.orgcol{max-width:none}.orgcol::before{display:none}}.orgcol>.orgdept.officer{align-self:center}.orgdept.jobbox{width:100%;min-width:0;box-sizing:border-box}.orgdept.jobbox::before{display:none}.jb-mech .orgdh{color:#e8a84a}.jb-nav .orgdh{color:#6ab8e8}.jb-medic .orgdh{color:#6ad88a}
 .orgdept.crewbox::before{display:none}
 .orgsel{font-size:12px;padding:3px 4px;max-width:120px}
 .orgnm{font-size:11px;width:100%;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 3px}
@@ -6178,12 +6178,13 @@ function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row">
   const all=orgAll(),r=rolesNow(),heads=all.filter(([id,p])=>isHead(id,p)),valid=new Map(all.filter(([id,p])=>!isHead(id,p)));
   const officers=POSTS3.map(([k,n])=>[k,n,valid.has(r[k])?r[k]:null]),taken=new Set(officers.map(o=>o[2]).filter(Boolean));
   const crew=all.filter(([id,p])=>!isHead(id,p)&&!taken.has(id)).sort((a,b)=>(b[1].lvl||1)-(a[1].lvl||1));
+  const POST_JOB={purser:'medic',engineer:'mech',navigator:'nav'},jk=p=>OLDJOB[p.job]||p.job||'',byJob=k=>crew.filter(([,p])=>jk(p)===k),loose=crew.filter(([,p])=>!JOBS[jk(p)]);
   const cand=[...valid.entries()].sort((a,b)=>String(a[1].nick||'').localeCompare(String(b[1].nick||'')));
   const sel=(k,cur)=>isAdmin?`<select class="sel orgsel" data-role="${k}" aria-label="${esc(POSTS3.find(x=>x[0]===k)[1])} 임명"><option value="">— 공석 —</option>${cand.map(([id,p])=>`<option value="${esc(id)}" ${cur===id?'selected':''}>${esc(p.nick||'선원')}</option>`).join('')}</select>`:'';
   return`<p class="lead">가이아 승무원 조직도입니다. 의무장 · 기관장 · 항해장은 선장이 임명합니다. 얼굴을 누르면 프로필을 볼 수 있습니다.</p>
   <div class="org"><div class="orgroot"><span class="lbl">Captain · 선장</span><div class="orgrow">${heads.length?heads.map(([id,p])=>orgNode(id,p)).join(''):'<span class="orgempty">공석</span>'}</div></div>
-  <div class="orgstem"></div><div class="orgdepts">${officers.map(([k,n,id])=>`<div class="orgdept officer"><div class="orgdh">${n}</div><div class="orgrow">${id?orgNode(id,valid.get(id)):'<span class="orgempty">공석</span>'}</div>${sel(k,id)}</div>`).join('')}</div>
-  <div class="orgstem"></div><div class="orgdept crewbox"><div class="orgdh">선원 <span class="hint">${crew.length}</span></div><div class="orgrow">${crew.length?crew.map(([id,p])=>orgNode(id,p)).join(''):'<span class="hint">아직 선원이 없습니다.</span>'}</div></div></div>
+  <div class="orgstem"></div><div class="orgdepts">${officers.map(([k,n,id])=>{const jb=POST_JOB[k],mem=byJob(jb);return`<div class="orgcol"><div class="orgdept officer"><div class="orgdh">${n}</div><div class="orgrow">${id?orgNode(id,valid.get(id)):'<span class="orgempty">공석</span>'}</div>${sel(k,id)}</div><div class="orgstem"></div><div class="orgdept jobbox jb-${jb}"><div class="orgdh">${JOBS[jb].n} <span class="hint">${mem.length}</span></div><div class="orgrow">${mem.length?mem.map(([id,p])=>orgNode(id,p)).join(''):'<span class="hint">아직 없습니다.</span>'}</div></div></div>`}).join('')}</div>
+  ${loose.length?`<div class="orgstem"></div><div class="orgdept crewbox"><div class="orgdh">직업 미정 <span class="hint">${loose.length}</span></div><div class="orgrow">${loose.map(([id,p])=>orgNode(id,p)).join('')}</div></div>`:''}</div>
   ${isAdmin?'<p class="hint">선장(운영자)에게만 임명 메뉴가 보입니다. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 됩니다.</p>':''}${all.length<2?'<p class="hint">아직 다른 선원이 없습니다. 게임 링크를 친구에게 공유해 보십시오.</p>':''}`}
 async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const r=Object.assign({},rolesNow());for(const [kk] of POSTS3)if(id&&r[kk]===id)r[kk]='';r[k]=id||'';
   if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`)}else{P.roles=r;save();renderPanel()}
