@@ -1420,6 +1420,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .scll .scdim{color:var(--mute)}
 .sclgot{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .sclog.fresh .scll>*{opacity:0;animation:sclin .35s ease-out var(--d) forwards}
+.scll .scnew{display:inline-block;animation:sclin .5s ease-out}
 @keyframes sclin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.sclog.fresh .scll>*{animation:none;opacity:1}}
 .scside{min-height:100%}
@@ -4022,17 +4023,18 @@ function scListHTML(sc){return`<div class="sclist"><span class="lbl">지역을 �
 // the side panel on a trail: what lies ahead in first person, the road and what to do next
 function scLogHTML(sc,i){const T=TRAILS[i],mv=sc.mv,L=lastScan&&!mv&&lastScan.tr===i&&lastScan.k===sc.at?lastScan:null,fresh=L&&Date.now()-L.at<3000;
   let lines;
-  if(mv)lines=[`▶ ${esc(T.n)} ${mv.to}지점을 향해 걷는다.`,`<span class="scdim">${esc(scWay(i,mv.to))}</span>`];
+  if(mv){const L2=scMoveLines(mv,Date.now()).slice(-7);scLogN=scMoveLines(mv,Date.now()).length;lines=L2.map(([t,x],n)=>`<span class="${n===L2.length-1&&Date.now()-t<2500?'scnew':''}">▶ ${esc(x)}</span>`)}
   else if(L)lines=[...L.acts.map(a=>`▶ ${esc(a)}`),`<b>${esc(L.ev)}</b>`];
-  else if(sc.pend)lines=[`▶ ${esc(T.nodes[sc.at-1])}에 도착했다.`,'<span class="scdim">주변에 무엇이 있을지 살펴보자. 「조사한다」를 누르십시오.</span>'];
+  else if(sc.pend)lines=[`▶ ${esc(T.nodes[sc.at-1])}에 도착했다.`,'<span class="scdim">주변을 살펴보는 중…</span>'];
   else lines=[`▶ ${esc(T.nodes[sc.at-1])}은(는) 이미 둘러보았다.`,'<span class="scdim">더 들어가거나 정착지로 돌아갈 수 있습니다.</span>'];
-  return`<div class="card sclog ${fresh?'fresh':''}" aria-live="polite"><span class="lbl">Field log · 조사 기록</span><div class="scll">${lines.map((l,n)=>`<p style="--d:${n*.45}s">${l}</p>`).join('')}${L&&(L.got.length||L.extra)?`<div class="sclgot" style="--d:${lines.length*.45}s">${chipsOf(L.got,L.extra)}</div>`:''}</div></div>`}
+  return`<div class="card sclog ${fresh?'fresh':''}" aria-live="polite"><span class="lbl">Field log · 조사 기록</span><div class="scll" id="scLogL">${lines.map((l,n)=>`<p style="--d:${n*.45}s">${l}</p>`).join('')}${L&&(L.got.length||L.extra)?`<div class="sclgot" style="--d:${lines.length*.45}s">${chipsOf(L.got,L.extra)}</div>`:''}</div></div>`}
+const scLogList=(sc,i)=>{const h=scLogHTML(sc,i),a=h.indexOf('<div class="scll"'),b=h.lastIndexOf('</div></div>');return h.slice(a,b+6)};
 function scFpHTML(sc){const mv=sc.mv,i=mv?mv.t:sc.t,T=TRAILS[i],k=mv?mv.to:sc.at,ahead=Math.min(SC_N,mv?mv.to:sc.at+1),end=!mv&&sc.at>=SC_N;
   const where=mv?`${esc(T.n)} ${mv.to}지점으로 가는 중`:`${esc(T.n)} ${sc.at}지점 · ${esc(T.nodes[sc.at-1])}`;
   return`<div class="card scfpinfo"><span class="lbl">${mv?'On the way · 이동 중':'Location · 현재 위치'}</span><b>${where}</b>${end?'<p class="scway">이 길의 끝입니다. 더 나아갈 곳이 없습니다.</p>':`<div class="scroad">${mv?'지금 걷는 길':'앞으로 갈 길'} ${scRoughTag(ahead)}</div><p class="scway">${scWay(i,ahead)}</p>`}
-   ${mv?`<div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 도착하면 주변을 조사할 수 있습니다.</div>`:sc.pend?'<div class="hint">도착했습니다. 주변을 조사한 뒤에 더 들어갈 수 있습니다.</div>':''}</div>
+   ${mv?`<div class="hint">도착까지 <span id="scT">${fmtClock(scoutLeft())}</span> · 걸으며 조사한 결과는 도착하면 나옵니다.</div>`:sc.pend?'':''}</div>
   ${scLogHTML(sc,i)}
-  <div class="scfpacts">${mv?'<button class="btn alt" data-act="scstop">이동 취소</button>':`<button class="btn gold" data-act="scsearch" ${sc.pend?'':'disabled'}>조사한다</button>${end?'':`<button class="btn" data-act="scgo" data-t="${i}" ${sc.pend?'disabled':''}>더 들어간다 <small>${T.m[sc.at]}분 · EN ${scEn(sc.at+1)}</small></button>`}<button class="btn sm alt" data-act="scback">정착지로 귀환</button>`}</div>`}
+  <div class="scfpacts">${mv?'<button class="btn alt" data-act="scstop">이동 취소</button>':`${end?'':`<button class="btn" data-act="scgo" data-t="${i}">더 들어간다 <small>${T.m[sc.at]}분 · EN ${scEn(sc.at+1)}</small></button>`}<button class="btn sm alt" data-act="scback">정착지로 귀환</button>`}</div>`}
 // the map is shown zoomed in and slides so that I stay in the middle; it follows me while I walk
 // the last camera offset is written straight into each redraw, so a redraw never slides the map in from the corner again
 let scCamT='none';
@@ -4044,7 +4046,7 @@ function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(ren
   ${junkDexHTML()}`;
 }
 function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.t],k=m.to,first=k>sc.far[m.t];sc.mv=null;sc.t=m.t;sc.at=k;if(first)sc.far[m.t]=k;sc.pend=first?2:1;sc.nw=tab==='scan'?0:1;
-  log(`${T.nodes[k-1]}에 도착했다. 주변을 조사할 수 있다.`);save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
+  log(`${T.nodes[k-1]}에 도착했다.`);scLegLines=scMoveLines(m,m.e).slice(-3).map(x=>x[1]);scoutSearch();save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
 // 조사 기록: what the crew member does at a stop, picked at random (two lines from the trail's own pool, sometimes one general one)
 const SC_ACTS=[
  ['결정 틈에 손전등을 비춰 본다.','공명하는 결정에 귀를 대고 소리를 듣는다.','반짝이는 조각을 조심스럽게 떼어 낸다.','능선 아래로 굴러떨어진 결정 더미를 뒤진다.','얼어붙은 바위를 망치로 두드려 본다.','결정 사이로 스며드는 빛의 방향을 따라간다.','휴대용 분광기를 켜 결정의 성분을 읽는다.','바람에 깎인 결정 기둥 뒤를 살핀다.'],
@@ -4054,6 +4056,12 @@ const SC_ACTS=[
  ['얼음 벽을 피켈로 깎아 낸다.','얼어붙은 개울 아래를 들여다본다.','눈 더미를 장갑 낀 손으로 파헤친다.','빙벽에 박힌 무언가를 녹여 꺼낸다.','얼음 동굴 입구에 조명탄을 던져 넣는다.','미끄러운 비탈에 아이젠을 박고 주위를 살핀다.','서리 낀 바위를 문질러 표면을 확인한다.','얼음 속에 갇힌 기포의 모양을 기록한다.']];
 const SC_ACTS_ANY=['탐사 장비의 스캐너를 켜 주변을 훑는다.','잠시 멈춰 서서 지형을 지도에 기록한다.','무전기로 정착지에 현재 위치를 알린다.','발밑에 떨어진 이상한 물건을 집어 든다.','장갑을 고쳐 끼고 천천히 주변을 둘러본다.'];
 function scActs(i){const pool=SC_ACTS[i]||SC_ACTS_ANY,a=pool[ri(0,pool.length-1)];let b=pool[ri(0,pool.length-1)];for(let n=0;n<5&&b===a;n++)b=pool[ri(0,pool.length-1)];const out=[a,b];if(Math.random()<.35)out.splice(1,0,SC_ACTS_ANY[ri(0,SC_ACTS_ANY.length-1)]);return out}
+// while walking, the crew member searches as they go: a line every 8–30 s, the same lines for the same walk (seeded by its start time)
+let scLegLines=null;
+function scMoveLines(mv,upTo){let sd=(mv.s%2147483646)+1;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,T=TRAILS[mv.t],pool=[...(SC_ACTS[mv.t]||[]),...SC_ACTS_ANY],out=[[mv.s,`${T.n} ${mv.to}지점을 향해 출발했다.`]];
+  let t=mv.s+(4+rnd()*10)*1e3;const recent=[];while(t<=Math.min(upTo,mv.e)){let j=Math.floor(rnd()*pool.length);for(let g=0;g<pool.length&&recent.includes(j);g++)j=(j+1)%pool.length;recent.push(j);if(recent.length>3)recent.shift();out.push([t,pool[j]]);t+=(8+rnd()*22)*1e3}return out}
+let scLogN=-1;
+function scLogTick(){const sc=scoutSt(),mv=sc.mv,box=$('#scLogL');if(!mv||!box)return;const n=scMoveLines(mv,Date.now()).length;if(n===scLogN)return;scLogN=n;box.outerHTML=scLogList(sc,sc.mv.t)}
 function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;const T=TRAILS[sc.t],k=sc.at,first=sc.pend===2;sc.pend=0;
   const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();if(k>=2)got.push([T.it,ri(1,k-1)]);
   {const rl=relicRoll(P.lvl,RELIC_SCAN_P);if(rl)got.push([rl,1])}const lb=got.length&&lifeHit('scan');if(lb)got=got.map(([id,n])=>[id,n*2]);got.forEach(([id,n])=>add(id,n));let extra=lb?'<span class="ichip">조사 숙련 · 보상 2배</span>':'';
@@ -4066,13 +4074,13 @@ function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;cons
   // 1% of searches turn up a 마이룸 piece found nowhere else
   {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했습니다.`)}}
   const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0]*SC_XP_K)+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
-  stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,ev:ev.t,got,extra,acts:scActs(sc.t),tr:sc.t,k,at:Date.now()};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
+  stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,ev:ev.t,got,extra,acts:scLegLines&&scLegLines.length?scLegLines:scActs(sc.t),tr:sc.t,k,at:Date.now()};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
 // 귀중품 도감: every one found so far; the rest show as black silhouettes
 function junkDexHTML(){const got=new Set([...(P.jdex||[]),...JUNK.map(j=>j[0]).filter(id=>P.inv[id]>0)]);
   return`<section class="card jdex"><div class="row" style="justify-content:space-between;gap:8px"><span class="lbl">Field guide · 귀중품 도감</span><b class="jdexn">${got.size} / ${JUNK.length}</b></div>
    <p class="hint" style="margin:4px 0 8px">조사할 때 8% 확률로 귀중품을 줍습니다. 처음 주운 귀중품은 도감에 기록되고, 상점에서 하나에 200 CR에 팔 수 있습니다.</p>
    <div class="jdgrid">${JUNK.map(([id,n])=>{const k=got.has(id);return`<div class="jdc${k?'':' no'}" title="${k?esc(n)+' · 판매가 '+sellPrice(id)+' CR':'아직 찾지 못한 귀중품'}">${iicon(id,2)}<span>${k?esc(n):'???'}</span></div>`}).join('')}</div></section>`}
-function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArrive();return}if(tab==='scan'&&sc.mv){const e=$('#scT');if(e)e.textContent=fmtClock(scoutLeft());const me=$('#scMe');if(me){const[x,y]=scoutPos();me.style.left=(x+.5)/SC_W*100+'%';me.style.top=(y-5)/SC_H*100+'%'}scCam()}}
+function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArrive();return}if(!sc.mv&&sc.pend&&sc.t>=0){scLegLines=null;scoutSearch();if(tab==='scan')renderPanel();return}if(tab==='scan'&&sc.mv){scLogTick();const e=$('#scT');if(e)e.textContent=fmtClock(scoutLeft());const me=$('#scMe');if(me){const[x,y]=scoutPos();me.style.left=(x+.5)/SC_W*100+'%';me.style.top=(y-5)/SC_H*100+'%'}scCam()}}
 /* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
 // repaired strictly in this order: each section opens once the one before it is finished.
 // sized for ~30 crew: life support in about 3 days, then power→comms in about 11 more (see the gather tables)
