@@ -1452,6 +1452,15 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
   .scui.on .sclog.holo{flex:1 1 0;min-height:90px;display:flex;flex-direction:column}
   .scui.on .sclog.holo .scll{height:auto;flex:1 1 0;min-height:0}
 }
+
+/* road events in the field log: warnings amber, encounters red, finds gold; the follow-up lines stay tinted */
+.sclog.holo .sce-warn{color:#d9a35a;text-shadow:0 0 5px rgba(217,163,90,.35)}
+.sclog.holo .sce-beast{color:#d97a72;text-shadow:0 0 5px rgba(217,122,114,.35)}
+.sclog.holo .sce-find{color:#d6c06a;text-shadow:0 0 5px rgba(214,192,106,.35)}
+.sclog.holo .sce-ev{color:#c9b9a0}
+.sclog.holo .sce-evend{color:#cfd9b0}
+.sclog.holo .sce-warn.scnew,.sclog.holo .sce-beast.scnew{animation:holoalert .9s ease-out}
+@keyframes holoalert{0%,40%,80%{opacity:1}20%,60%{opacity:.25}100%{opacity:1}}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -4051,8 +4060,8 @@ function scListHTML(sc){return`<div class="sclist"><span class="lbl">지역을 �
 // the side panel on a trail: what lies ahead in first person, the road and what to do next
 function scLogHTML(sc,i){const T=TRAILS[i],mv=sc.mv,L=lastScan&&!mv&&lastScan.tr===i&&lastScan.k===sc.at?lastScan:null,fresh=L&&Date.now()-L.at<3000;
   let lines;
-  if(mv){const L2=scMoveLines(mv,Date.now());scLogN=scMoveLines(mv,Date.now()).length;lines=L2.map(([t,x],n)=>`<span class="${n===L2.length-1&&Date.now()-t<2500?'scnew':''}"><em class="hts">${hhmm(t)}</em>${esc(x)}</span>`)}
-  else if(L)lines=[...L.acts.map(a=>`${esc(a)}`),`<b>${esc(L.ev)}</b>`];
+  if(mv){const L2=scMoveLines(mv,Date.now());scLogN=scMoveLines(mv,Date.now()).length;lines=L2.map(([t,x,k],n)=>`<span class="${k?'sce sce-'+k:''} ${n===L2.length-1&&Date.now()-t<2500?'scnew':''}"><em class="hts">${hhmm(t)}</em>${esc(x)}</span>`)}
+  else if(L)lines=[...L.acts.map(a=>`${esc(a)}`),...(L.evNote?[`<span class="sce sce-evend">이동 중 사건 · ${esc(L.evNote)}</span>`]:[]),`<b>${esc(L.ev)}</b>`];
   else if(sc.pend)lines=[`${esc(T.nodes[sc.at-1])}에 도착했다.`,'<span class="scdim">주변을 살펴보는 중…</span>'];
   else lines=[`${esc(T.nodes[sc.at-1])}은(는) 이미 둘러보았다.`,'<span class="scdim">더 들어가거나 정착지로 돌아갈 수 있습니다.</span>'];
   return`<div class="sclog holo ${fresh?'fresh':''}" aria-live="polite" aria-label="조사 기록"><i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i><div class="scll" id="scLogL">${lines.map((l,n)=>`<p style="--d:${n*.45}s">${l}</p>`).join('')}${L&&(L.got.length||L.extra)?`<div class="sclgot" style="--d:${lines.length*.45}s">${chipsOf(L.got,L.extra)}</div>`:''}</div></div>`}
@@ -4074,7 +4083,7 @@ function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(ren
   ${junkDexHTML()}`;
 }
 function scoutArrive(){const sc=scoutSt(),m=sc.mv;if(!m)return;const T=TRAILS[m.t],k=m.to,first=k>sc.far[m.t];sc.mv=null;sc.t=m.t;sc.at=k;if(first)sc.far[m.t]=k;sc.pend=first?2:1;sc.nw=tab==='scan'?0:1;
-  log(`${T.nodes[k-1]}에 도착했다.`);scLegLines=scMoveLines(m,m.e).slice(-3).map(x=>x[1]);scoutSearch();save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
+  log(`${T.nodes[k-1]}에 도착했다.`);scLegLines=scMoveLines(m,m.e).filter(x=>!x[2]).slice(-3).map(x=>x[1]);scoutSearch();scApplyEvent(m);save();renderPilot();renderNav();if(tab==='scan')renderPanel()}
 // 조사 기록: what the crew member does at a stop, picked at random (two lines from the trail's own pool, sometimes one general one)
 const SC_ACTS=[
  ['결정 틈에 손전등을 비춰 본다.','공명하는 결정에 귀를 대고 소리를 듣는다.','반짝이는 조각을 조심스럽게 떼어 낸다.','능선 아래로 굴러떨어진 결정 더미를 뒤진다.','얼어붙은 바위를 망치로 두드려 본다.','결정 사이로 스며드는 빛의 방향을 따라간다.','휴대용 분광기를 켜 결정의 성분을 읽는다.','바람에 깎인 결정 기둥 뒤를 살핀다.'],
@@ -4087,7 +4096,31 @@ function scActs(i){const pool=SC_ACTS[i]||SC_ACTS_ANY,a=pool[ri(0,pool.length-1)
 // while walking, the crew member searches as they go: a line every 8–30 s, the same lines for the same walk (seeded by its start time)
 let scLegLines=null;
 function scMoveLines(mv,upTo){let sd=(mv.s%2147483646)+1;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,T=TRAILS[mv.t],pool=[...(SC_ACTS[mv.t]||[]),...SC_ACTS_ANY],out=[[mv.s,`${T.n} ${mv.to}지점을 향해 출발했다.`]];
-  let t=mv.s+(4+rnd()*10)*1e3;const recent=[];while(t<=Math.min(upTo,mv.e)){let j=Math.floor(rnd()*pool.length);for(let g=0;g<pool.length&&recent.includes(j);g++)j=(j+1)%pool.length;recent.push(j);if(recent.length>3)recent.shift();out.push([t,pool[j]]);t+=(8+rnd()*22)*1e3}return out}
+  let t=mv.s+(4+rnd()*10)*1e3;const recent=[];while(t<=Math.min(upTo,mv.e)){let j=Math.floor(rnd()*pool.length);for(let g=0;g<pool.length&&recent.includes(j);g++)j=(j+1)%pool.length;recent.push(j);if(recent.length>3)recent.shift();out.push([t,pool[j]]);t+=(8+rnd()*22)*1e3}
+  // a walk's event plays out as its own few lines, a few seconds apart, in the middle of the walk
+  const ev=scLegEvent(mv);if(ev)ev.lines.forEach((x,n)=>{const at=ev.at+n*3500;if(at<=Math.min(upTo,mv.e))out.push([at,x,n===0?ev.k:n===ev.lines.length-1?'evend':'ev'])});
+  return out.sort((a,b)=>a[0]-b[0])}
+// events on the road: about 4 walks in 10 have one; it is fixed by the walk's start time, and its reward or harm lands on arrival
+const SC_EVENTS=[
+ {k:'warn',lines:['⚠ 경고: 전방에서 모래폭풍이 다가온다!','바위 뒤로 몸을 숨기고 폭풍이 지나가길 기다린다.','폭풍이 지나간 자리에 금속 조각이 반짝인다.'],add:[['ore',2]]},
+ {k:'beast',lines:['⚠ 수상한 그림자가 뒤를 밟고 있다…','레이건을 겨누자 작은 외계 생물이 허둥지둥 달아났다.','생물이 떨어뜨린 이끼 뭉치를 주웠다.'],add:[['moss',2]]},
+ {k:'find',lines:['✦ 무전기에 정체불명의 신호가 잡혔다.','신호를 따라가자 버려진 보급 캡슐이 나타났다!','캡슐 안에서 붕대를 챙겼다.'],add:[['bandage',1]]},
+ {k:'warn',lines:['⚠ 발밑의 지면이 갑자기 꺼진다!','간신히 가장자리를 붙잡고 기어 올라왔다.','긁힌 상처가 욱신거린다.'],hp:-8},
+ {k:'find',lines:['✦ 탐지기가 요란하게 울린다!','바위 틈에서 순도 높은 결정 덩어리를 찾아냈다!'],add:[['crystal',2]]},
+ {k:'warn',lines:['⚠ 머리 위로 작은 유성우가 쏟아진다!','몸을 웅크리고 파편을 피했다.','근처에 떨어진 운석 조각이 아직 뜨겁다. 식혀서 챙겼다.'],add:[['dark',1]]},
+ {k:'find',lines:['✦ 모래 속에 반쯤 묻힌 탐사 로봇을 발견했다.','배터리를 연결하자 로봇이 깜빡이며 깨어났다.','로봇이 모아 둔 자원을 넘겨주고 다시 잠들었다.'],add:[['ore',1],['moss',1]]}];
+const SC_EVENTS_T=[
+ [{k:'warn',lines:['⚠ 결정들이 일제히 날카롭게 공명하기 시작한다!','귀를 막고 버티자 진동이 서서히 잦아들었다.','진동에 떨어진 결정 조각을 주웠다.'],add:[['crystal',3]]}],
+ [{k:'warn',lines:['⚠ 머리 위의 잔해 더미가 무너져 내린다!','재빨리 몸을 날려 피했다.','무너진 틈에서 쓸 만한 부품이 드러났다.'],add:[['ore',3]]}],
+ [{k:'beast',lines:['⚠ 늪 속에서 거대한 무언가가 움직인다…','숨을 죽이고 기다리자 거품만 남기고 사라졌다.','물가에 빛나는 이끼가 잔뜩 떠올랐다.'],add:[['moss',3]]}],
+ [{k:'warn',lines:['⚠ 땅이 흔들리며 분화구에서 증기가 뿜어져 나온다!','열기를 피해 바위 뒤로 달렸다. 우주복이 그을렸다.','분출물 사이에서 검은 조각을 찾았다.'],add:[['dark',2]],hp:-5}],
+ [{k:'warn',lines:['⚠ 머리 위에서 거대한 고드름이 떨어진다!','아슬아슬하게 옆으로 굴러 피했다.','깨진 얼음 속에 결정이 박혀 있다.'],add:[['crystal',2]]}]];
+function scApplyEvent(m){const ev=scLegEvent(m);if(!ev||!lastScan)return;let ex='';(ev.add||[]).forEach(([id,n])=>{if(!ITEMS[id])return;add(id,n);lastScan.got.push([id,n])});
+  if(ev.hp){heal(ev.hp,0);ex+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${ev.hp}</span>`}lastScan.extra=(lastScan.extra||'')+ex;lastScan.evNote=ev.lines[ev.lines.length-1];lastScan.evK=ev.k;
+  log(`이동 중 사건: ${ev.lines[0].replace(/^[⚠✦] /,'')}`,ev.hp?'bad':'good');commit()}
+function scLegEvent(mv){let sd=(Math.imul((Math.floor(mv.s)%1e9)^0x5bd1e995,2654435761)>>>0)%2147483646+1;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;rnd();rnd();if(rnd()>=.4)return null;
+  const pool=[...SC_EVENTS,...(SC_EVENTS_T[mv.t]||[]),...(SC_EVENTS_T[mv.t]||[])],ev=pool[Math.floor(rnd()*pool.length)],dur=mv.e-mv.s;
+  return Object.assign({},ev,{at:mv.s+dur*(.25+rnd()*.4)})}
 let scLogN=-1;
 function scLogTick(){const sc=scoutSt(),mv=sc.mv,box=$('#scLogL');if(!mv||!box)return;const n=scMoveLines(mv,Date.now()).length;if(n===scLogN)return;scLogN=n;box.outerHTML=scLogList(sc,sc.mv.t);const nb=$('#scLogL');if(nb)nb.scrollTop=nb.scrollHeight}
 function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;const T=TRAILS[sc.t],k=sc.at,first=sc.pend===2;sc.pend=0;
