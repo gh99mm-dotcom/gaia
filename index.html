@@ -2756,7 +2756,7 @@ addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.
   addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)},{passive:true});
 setTimeout(()=>{try{const sd=localStorage.getItem(SOCS_LS);if(sd)socSetSide(sd);const v=localStorage.getItem(SOCH_LS);if(v!=null)socHandlePos(+v)}catch(e){}},0);
 addEventListener('resize',()=>{const h=document.querySelector('.sochandle');if(h&&h.style.top)socHandlePos(parseFloat(h.style.top))});
-function socDrawer(open,keep){const was=socOpen;socOpen=!!open;if(was!==socOpen)setPresence();const d=$('#socDock');if(d){d.classList.toggle('open',socOpen);d.querySelector('.sochandle').setAttribute('aria-expanded',socOpen)}if(socOpen){renderSoc();if(!keep){const t=$('#socStage');if(t)t.scrollTop=0}}socBadge()}
+function socDrawer(open,keep){const was=socOpen;socOpen=!!open;if(was!==socOpen)setPresence();tabSubsSync();const d=$('#socDock');if(d){d.classList.toggle('open',socOpen);d.querySelector('.sochandle').setAttribute('aria-expanded',socOpen)}if(socOpen){renderSoc();if(!keep){const t=$('#socStage');if(t)t.scrollTop=0}}socBadge()}
 const socTop=()=>{const t=$('#socStage');if(t)t.scrollTo({top:0,behavior:'smooth'})};
 function socBadge(){const b=$('#socBadge');if(!b)return;const n=socUnread();b.textContent=n?String(Math.min(99,n)):'';b.hidden=!n||socOpen}
 // redraw the terminal (not while someone is typing in it: that waits for the field to lose focus)
