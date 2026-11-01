@@ -1057,12 +1057,16 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 
 .relkey{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 2px;font-size:12px;color:var(--mute)}.relkey span{display:inline-flex;align-items:center;gap:5px}.relkey i{width:18px;height:4px;display:inline-block}
 .pnotes{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}
-.affnotes{margin-top:16px;display:flex;flex-direction:column;gap:8px}.afhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.afhead b{font-family:var(--f-display);font-weight:400;font-size:15px;color:#ff8ab8}
+.affnotes{margin-top:16px;display:flex;flex-direction:column;gap:8px}.afhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.afhead b{font-family:var(--f-display);font-weight:400;font-size:15px;color:#d9a0b0}
 .afgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .ps-afn{min-height:0}
 .ps-afn textarea{width:100%;resize:vertical;min-height:84px;font:inherit;font-size:13px;box-sizing:border-box}
-.aflocked{opacity:.75}.aflocked::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(255,138,184,.06) 0 6px,transparent 6px 12px)}
-.aflock{margin:0;font-size:12.5px;color:var(--mute)}:root[data-skin="light"] .afhead b,:root[data-skin="light"] .ps-afn h4{color:#b8336a}
+.aflocked{opacity:.75}.aflocked::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(217,160,176,.07) 0 6px,transparent 6px 12px)}
+.aflock{margin:0;font-size:12.5px;color:var(--mute)}:root[data-skin="light"] .afhead b{color:#8a4a5e}
+/* 차분한 로즈: a little deeper at every step */
+.afl-20{--pc:#d9b0bc}.afl-40{--pc:#cf9cab}.afl-60{--pc:#c4889a}.afl-80{--pc:#b87488}.afl-100{--pc:#ab6076}
+:root[data-skin="light"] .pside.afl-20{--pc:#b9909c}:root[data-skin="light"] .pside.afl-40{--pc:#a87a88}:root[data-skin="light"] .pside.afl-60{--pc:#986474}:root[data-skin="light"] .pside.afl-80{--pc:#874e60}:root[data-skin="light"] .pside.afl-100{--pc:#76384c}
+:root[data-skin="light"] .ps-afn h4{color:var(--pc)}:root[data-skin="light"] .aflocked::after{background:repeating-linear-gradient(135deg,rgba(135,78,96,.06) 0 6px,transparent 6px 12px)}
 .ps-trait{--pc:#6ad8b0}.ps-feat{--pc:#7fb8ff}.ps-note{--pc:#ffa860}
 .pnotes .pside{min-height:72px}.pnotes textarea{width:100%;resize:vertical;min-height:64px;font:inherit;font-size:13px}
 :root[data-skin="light"] .ps-trait{--pc:#1f8a64}:root[data-skin="light"] .ps-feat{--pc:#2a6ac8}:root[data-skin="light"] .ps-note{--pc:#c0601a}
@@ -6288,7 +6292,7 @@ function affNotesHTML(p,mine,af){const N=p.affNote||{};
     const body=ed?`<textarea id="affIn" class="sel" maxlength="${AFFN_MAX}" rows="4" placeholder="호감도 ${n}이 된 선원에게 보여줄 이야기" aria-label="호감도 ${n} 이야기">${esc(affDraft)}</textarea><div class="row" style="gap:4px"><button class="btn sm" data-act="affsave" data-k="${n}">저장</button><button class="qchip" data-act="affedit" data-k="${n}">취소</button><span class="hint notecnt"><b id="affCnt">${affDraft.length}</b> / ${AFFN_MAX}자</span></div>`
       :open?`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):'<span class="hint">아직 적지 않았습니다.</span>'}</p>${mine?`<button class="qchip" data-act="affedit" data-k="${n}">${v?'고치기':'적기'}</button>`:''}`
       :`<p class="aflock">🔒 호감도 ${n} 이상이면 열립니다</p>`;
-    return`<section class="pside ps-afn ${open?'':'aflocked'}" style="--pc:${{20:'#ffb0cc',40:'#ff8ab8',60:'#ff6a9a',80:'#ff4a78',100:'#ff2a5a'}[n]}"><h4><span>♥</span>호감도 ${n}</h4>${body}</section>`}).join('')}</div></div>`}
+    return`<section class="pside ps-afn afl-${n} ${open?'':'aflocked'}"><h4><span>♥</span>호감도 ${n}</h4>${body}</section>`}).join('')}</div></div>`}
 function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,cls,ph])=>{const ed=mine&&noteEdit===k,v=p[k]||'',mx=noteMax(k);
   const body=ed?`<div class="sendrow"><textarea id="noteIn" class="sel" maxlength="${mx}" rows="${mx>500?8:3}" placeholder="${ph}" aria-label="${t}">${esc(v)}</textarea></div><div class="row" style="gap:4px"><button class="btn sm" data-act="notesave" data-k="${k}">저장</button><button class="qchip" data-act="noteedit" data-k="${k}">취소</button><span class="hint notecnt"><b id="noteCnt">${v.length.toLocaleString()}</b> / ${mx.toLocaleString()}자</span></div>`
     :`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):`<span class="hint">아직 적지 않았습니다.</span>`}</p>${mine?`<button class="qchip" data-act="noteedit" data-k="${k}">${v?'고치기':'적기'}</button>`:''}`;
