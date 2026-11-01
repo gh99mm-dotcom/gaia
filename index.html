@@ -776,7 +776,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .ccard.mine{box-shadow:inset 0 0 0 1px var(--gold)}
 .cc-top{display:flex;gap:9px;align-items:center;min-width:0}
 .bio{margin:0;font-size:13.5px;color:var(--text);word-break:break-word}
-.bioq{margin:0 0 4px;flex:1;min-width:0;font-family:var(--f-display);font-size:21px;line-height:1.35;color:var(--text);word-break:keep-all;overflow-wrap:anywhere}.bioq i{font-style:normal;font-size:1.5em;line-height:0;color:var(--gold);vertical-align:-.28em;margin:0 3px}.bioq.none{font-family:inherit;font-size:13px;color:var(--mute)}
+.bioq{margin:0 0 6px;text-align:center;min-width:0;font-family:var(--f-display);font-size:21px;line-height:1.35;color:var(--text);word-break:keep-all;overflow-wrap:anywhere}.bioq i{font-style:normal;font-size:1.5em;line-height:0;color:var(--gold);vertical-align:-.28em;margin:0 3px}.bioq.none{font-family:inherit;font-size:13px;color:var(--mute)}
 .gbe{display:flex;flex-direction:column;gap:5px}
 .gbe.hi{display:block;font-size:13px;color:var(--gold);background:var(--deep);border:2px dashed var(--line);padding:5px 9px}
 /* PAD */
@@ -6231,7 +6231,7 @@ function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,c
 /* the one-line intro, shown as a quote at the very top of a profile */
 const bioQ=(p,empty)=>p.bio?`<p class="bioq"><i>“</i>${esc(p.bio)}<i>”</i></p>`:`<p class="bioq none">${empty||''}</p>`;
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
-  return`<div class="row" style="justify-content:space-between;align-items:flex-end;margin-bottom:8px;gap:10px">${bioQ(p,'아직 한 줄 소개가 없습니다.')}<span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
+  return`${bioQ(p,'아직 한 줄 소개가 없습니다.')}<div class="row" style="justify-content:flex-end;margin-bottom:8px"><span class="hint">한 줄 소개는 내 정보 탭에서 고칠 수 있습니다</span></div>
    <div class="card profcard"><div class="profwrap">${idCardHTML(p,uid,!!p.pfp,false)}${profSideHTML(p,uid,true)}</div>${profNotesHTML(p,true)}
     <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 30 이상인 선원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
     ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}
