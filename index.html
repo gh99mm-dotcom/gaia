@@ -1683,14 +1683,17 @@ function makeQuery(path,w=[],o=null,l=0){
     doc:id=>makeDoc(path+'/'+(id||doc(collection(fs,path)).id)),
     add:async d=>{const r=await W(addDoc(collection(fs,path),d));return makeDoc(path+'/'+r.id)},
     get:()=>W(getDocs(build())).then(shape),onSnapshot:(n,e)=>onSnapshot(build(),qs=>n(shape(qs)),x=>e&&e(wrapErr(x)))}}
-const db={doc:makeDoc,collection:p=>makeQuery(p)};
+/* test server: the same game kept under worlds/<WORLD>/…; accounts, invites, photos and the staff list stay shared */
+const WORLD=window.__WORLD||'',WP=WORLD?'worlds/'+WORLD+'/':'',SHARED=/^(members|invites|imgs)(\/|$)|^boss\/staff$/;
+const wp=p=>WP&&!SHARED.test(p)?WP+p:p;
+const db={doc:p=>makeDoc(wp(p)),collection:p=>makeQuery(wp(p))};
 
 /* ---- room: presence + short-lived events, kept in Firestore ---- */
 // liveness is judged on the server's clock: every heartbeat also carries a server timestamp (st), and each client learns how far
 // its own clock is off from the echo of its own heartbeat, so a phone or PC whose clock is minutes off no longer shows people offline
 const ROOMS=new Set(),STALE=150e3;let ME=null,clockOff=0;
 const stMs=d=>d&&d.st&&typeof d.st.toMillis==='function'?d.st.toMillis():0;
-function makeRoom(name){
+function makeRoom(name){if(WORLD)name=WORLD+'-'+name;
   const peersC=collection(fs,'rooms',name,'peers'),evC=collection(fs,'rooms',name,'events'),me=doc(peersC,ME.uid);
   let state={},wT=null,lastW=0,peerFns=[],peerDocs=[],unE=null,handlers={},left=false;const seen=new Set(),joined=Date.now();
   const emitPeers=()=>{const now=Date.now(),sNow=now+clockOff,peers=peerDocs.filter(d=>d.id===ME.uid||(stMs(d)?sNow-stMs(d):now-(d.ts||0))<STALE).map(d=>({id:d.id,presence:d.p||{},isMe:d.id===ME.uid}));peerFns.forEach(f=>{try{f({peers})}catch(e){console.error(e)}})};

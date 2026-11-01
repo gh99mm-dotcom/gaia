@@ -152,6 +152,118 @@ service cloud.firestore {
     // 낚시 대결: 접속한 단원 모두 함께 씀.
     match /duel/{id} { allow read, write: if member(); }
 
+    // ───────── 테스트 서버 (gaia/test/) ─────────
+    // 같은 게임을 worlds/test/ 아래에 따로 저장해요. 계정·초대장·사진·관리자 명단은 위의 것을 함께 써요.
+    // 규칙 내용은 위의 게임 데이터 규칙과 똑같아요.
+    match /worlds/test {
+      // 캐릭터: 모두 읽고, 자기 캐릭터만 저장. 운영자는 캐릭터 삭제 표시 가능.
+      match /players/{uid} {
+        allow read: if member();
+        allow write: if member() && (me() == uid || isAdmin());
+      }
+
+      // 건의함: 본인과 운영자·관리자가 읽고, 본인만 씀. 지우기는 운영자만.
+      match /feedback/{uid} {
+        allow read: if member() && (me() == uid || staff());
+        allow write: if member() && me() == uid;
+        allow delete, update: if isAdmin();
+      }
+
+      // 운영자 전용 데이터: 전체 선물, 조직도 임명.
+      match /grants/{id} { allow read: if member(); allow write: if isAdmin(); }
+      match /org/{id}    { allow read: if member(); allow write: if isAdmin(); }
+
+      // 공용 채널
+      match /chat/{id} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.uid == me() && str('text', 200);
+        allow delete: if isAdmin();
+      }
+
+      // PAD: 글쓴이만 수정/삭제, 다른 사람은 ♥(likes)만 바꿀 수 있어요.
+      match /posts/{id} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.uid == me()
+          && (!('text' in request.resource.data) || str('text', 300));
+        allow update: if member() && (resource.data.uid == me()
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
+        allow delete: if member() && (resource.data.uid == me() || isAdmin());
+      }
+
+      // 만남(메모장): 모두 읽고, 자기 이름으로만 메모를 남겨요. 글쓴이만 내용을 고치고, 다른 사람은 댓글(cm)만 덧붙일 수 있어요.
+      match /memos/{id} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.uid == me() && str('text', 1500);
+        allow update: if member() && (resource.data.uid == me()
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cm']));
+        allow delete: if member() && (resource.data.uid == me() || isAdmin());
+      }
+
+      // 귓속말: 주고받은 두 사람만 읽을 수 있어요.
+      match /dm/{id} {
+        allow read: if member() && me() in resource.data.users;
+        allow create: if member() && request.resource.data.from == me()
+          && request.resource.data.users.size() == 2 && me() in request.resource.data.users
+          && request.resource.data.to in request.resource.data.users && str('text', 200);
+        allow delete: if member() && resource.data.from == me();
+      }
+
+      // 방명록·인사
+      match /guest/{id} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.from == me() && str('text', 120);
+        allow delete: if member() && (resource.data.from == me() || resource.data.to == me() || isAdmin());
+      }
+
+      // 선물·농사 도움: 보낸 사람이 만들고, 받는 사람이 읽고 지움.
+      match /gifts/{id} {
+        allow read, delete: if member() && (resource.data.to == me() || resource.data.from == me());
+        allow create: if member() && (request.resource.data.from == me());
+      }
+      match /farmhelp/{id} {
+        allow read, delete: if member() && (resource.data.to == me() || resource.data.from == me());
+        allow create: if member() && request.resource.data.from == me();
+      }
+
+      // 기절 구조 신호: 누구나 보내고, 당사자만 읽고 지움.
+      match /rescues/{uid} {
+        allow read, delete: if member() && me() == uid;
+        allow create, update: if member();
+      }
+
+      // 우주선 수리: 재료를 넣을 때마다 기록 한 장. 넣은 사람만 만들고, 고치거나 지우는 건 운영자만.
+      match /shipdon/{id} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.uid == me()
+          && request.resource.data.n is int && request.resource.data.n > 0 && request.resource.data.n <= 1000;
+        allow update, delete: if isAdmin();
+      }
+
+      // 공용 농장: 포드(farm/pods)와 공용 창고(farm/store)는 모든 단원이 함께 읽고 씀.
+      match /farm/{id} { allow read, write: if member(); }
+      // 공용 창고에서 꺼낸 기록: 꺼낸 본인 이름으로만 남기고, 지우는 건 운영자만.
+      match /farmlog/{id} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.uid == me() && request.resource.data.n is int && request.resource.data.n > 0;
+        allow delete: if isAdmin();
+      }
+
+      // 원정 파티: 단원 모두 읽고(모집 목록), 파티 진행은 단원이면 누구나 기록. 만든 사람이나 운영자만 지움.
+      match /parties/{id} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.host == me();
+        allow update: if member();
+        allow delete: if member() && (resource.data.host == me() || isAdmin());
+      }
+
+      // 레이드: 심연의 침략자(공동 체력)와 레이드 대화. 단원이면 누구나 읽고 기록.
+      // 관리자 명단(staff)은 운영자만 바꿀 수 있어요.
+      match /boss/{id} { allow read: if member(); allow write: if member() && (id != 'staff' || isAdmin()); }
+
+      // 낚시 대결: 접속한 단원 모두 함께 씀.
+      match /duel/{id} { allow read, write: if member(); }
+    }
+
     // 실시간 접속 정보(누가 어디에 있는지)와 짧은 이벤트
     match /rooms/{room}/peers/{uid} {
       allow read: if member();
