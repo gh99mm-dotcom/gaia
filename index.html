@@ -6316,7 +6316,7 @@ const SA={
  padopen(d){if(!d.k)return;openThread(d.k);renderPanel();socTop()},
  padback(){openThread(null);renderPanel()},
  profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;secretView=false;adminView=false;profId=d.k;profBio=false;profView=true;if(socOpen)socDrawer(false);renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
- relopen(){meView=false;socTab='rel';socDrawer(true,1);renderPanel()},
+ relopen(){socTab='rel';socDrawer(true,1);renderPanel()},
  profclose(){profId=null;profBio=false;profView=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
  profbio(){profBio=!profBio;renderPanel();if(profBio)setTimeout(()=>{const i=$('#profBioIn');if(i)i.focus()},30)},
