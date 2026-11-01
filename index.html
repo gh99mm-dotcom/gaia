@@ -3523,11 +3523,11 @@ const bossClock=b=>`토벌 제한 시간 ${fmtClock((b.end||0)-Date.now())}`;
 const BOSS_RET=30e3,bossRetLeft=b=>bossKilled(b)&&b.killedAt?Math.max(0,b.killedAt+BOSS_RET-Date.now()):0;
 /* 탐사 idle scene: the old SOS beacon drifting against the station's starfield and dark planet */
 const BCN_W=240,BCN_H=120,BCN={};
-function beaconImg(){const dk=(isDay()||isLight())?'d':'n';if(BCN.src&&BCN.k===dk)return BCN;BCN.k=dk;const W=BCN_W,H=BCN_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+function beaconImg(){const dk=(isDay())?'d':'n';if(BCN.src&&BCN.k===dk)return BCN;BCN.k=dk;const W=BCN_W,H=BCN_H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
   const px=(x,y,col)=>{x=Math.round(x);y=Math.round(y);if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x,y,1,1)};let sd=911;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
   const dith=(x,y,t)=>t*16>BAYER[y&3][x&3];
   // backdrop: the planet surface, same as the crash-site view
-  surfaceBackdrop(g,isDay()||isLight(),rnd);
+  surfaceBackdrop(g,isDay(),rnd);
   // the beacon stands a little right of centre (clear of the sun) and down on the ground
   const BX=16,BY=6;g.translate(BX,BY);
   const O='#0a0c10',FR=['#2e3640','#262d36'],TP=['#4a5460','#3e4752'],SD='#1c2229',RU=['#6e4c2a','#8e6634','#4e3822'];
@@ -3673,7 +3673,7 @@ function gatherBg(site,day){const lt=site==='cave'&&isLight(),key=site+(day?'d':
   }
   GBG[key]={c,HZ:site==='cave'?HZ:HZ,seed:site.length};return GBG[key]}
 function gatherSceneDraw(cv,t){
-  const x=expInfo(),site=x?x.site.id:gSite,day=(isDay()||isLight())&&site!=='cave',B=gatherBg(site,day),g=cv.getContext('2d');g.drawImage(B.c,0,0);
+  const x=expInfo(),site=x?x.site.id:gSite,day=(isDay())&&site!=='cave',B=gatherBg(site,day),g=cv.getContext('2d');g.drawImage(B.c,0,0);
   const px=(a,b,col)=>{g.fillStyle=col;g.fillRect(a|0,b|0,1,1)},HZ=56,gy=72;
   // site life
   if(site==='crater'&&!day)for(let i=0;i<5;i++){const v=(Math.sin(t/500+i*1.9)+1)/2;if(v>.7)px((i*53+17)%GW,(i*13+5)%34,'#ffffff')}
@@ -3944,12 +3944,13 @@ function lakeBase(W,H,hz){let r=7;const rnd=()=>((r=(r*9301+49297)%233280)/23328
   const motes=Array.from({length:6},()=>({x:rnd()*W,y:hz+4+rnd()*(H-hz-6),s:.15+rnd()*.25}));return{W,H,hz,stars,ridge,motes}}
 function drawLake(){const cv=$('#lakeCv');if(!cv)return;const w=Math.max(80,Math.round(cv.clientWidth/3)),h=Math.round(cv.clientHeight/3)||50;
   if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;LAKE=null}if(!LAKE||LAKE.W!==w)LAKE=lakeBase(w,h,Math.round(h*.38));
-  // 우주모드 OFF paints the same lake by daylight: pale sky, misty ridge, clear blue water
-  const K=isLight()?{s0:'#b9cbe2',s1:'#e8eef6',st0:'#e8eef6',st1:'#ffffff',p0:'#f4f2fb',p1:'#b8b4d4',p2:'#d6d3ea',ridge:'#8d9ab3',w0:'#9fc0da',w1:'#c9dcec',d0:'#bcd4e6',d1:'#e1edf6',r0:'#f2f0fa',r1:'#cfd9ea',ring:'#c9b98e',refl:'#e6eff7',mote:'#5f9a86'}
+  // 우주모드 OFF paints the same lake by daylight in the daytime (KST 6-18); at night it is the dark lake: pale sky, misty ridge, clear blue water
+  const lday=isLight()&&isDay();
+  const K=lday?{s0:'#b9cbe2',s1:'#e8eef6',st0:'#e8eef6',st1:'#ffffff',p0:'#f4f2fb',p1:'#b8b4d4',p2:'#d6d3ea',ridge:'#8d9ab3',w0:'#9fc0da',w1:'#c9dcec',d0:'#bcd4e6',d1:'#e1edf6',r0:'#f2f0fa',r1:'#cfd9ea',ring:'#c9b98e',refl:'#e6eff7',mote:'#5f9a86'}
    :{s0:'#05060c',s1:'#141a2c',st0:'#3a3f52',st1:'#c4c7d4',p0:'#8a86a8',p1:'#3a3858',p2:'#2a2840',ridge:'#04050a',w0:'#0c1626',w1:'#060912',d0:'#16283a',d1:'#1d3448',r0:'#6c6888',r1:'#3e3c5c',ring:'#5f5640',refl:'#2e4458',mote:'#7fb8a4'};
   const L=LAKE,x=cv.getContext('2d'),R=(a,b,c,d,col)=>{x.fillStyle=col;x.fillRect(a,b,c,d)},hz=L.hz,ph=lakePh;
   for(let j=0;j<hz;j++)R(0,j,w,1,mix(K.s0,K.s1,j/hz));
-  if(!isLight())L.stars.forEach(st=>{const tw=Math.sin(ph*.7+st.x)*.5+.5;R(st.x,st.y,1,1,mix(K.st0,K.st1,st.b*.6+tw*.3))});
+  if(!lday)L.stars.forEach(st=>{const tw=Math.sin(ph*.7+st.x)*.5+.5;R(st.x,st.y,1,1,mix(K.st0,K.st1,st.b*.6+tw*.3))});
   const px=Math.round(w*.72),py=Math.round(hz*.42),pr=Math.max(5,Math.round(hz*.3));
   for(let j=-pr;j<=pr;j++)for(let i=-pr;i<=pr;i++){if(i*i+j*j>pr*pr)continue;const lit=(i+j*.4)>pr*.35;R(px+i,py+j,1,1,lit?K.p0:(i*i+j*j>(pr-1)*(pr-1)?K.p1:K.p2))}
   for(let i=-pr*2;i<=pr*2;i++){const ry=Math.round(i*.18);if(Math.abs(i)<pr-1&&ry>=0)continue;R(px+i,py+ry,1,1,'#a99a74')}
@@ -3958,7 +3959,7 @@ function drawLake(){const cv=$('#lakeCv');if(!cv)return;const w=Math.max(80,Math
   for(let j=hz+2;j<h;j+=3){const off=Math.round(Math.sin(ph+j*.7)*3),dash=6+(j%5),gap=9+(j%7);for(let i=-20+((off+j*5)%(dash+gap));i<w;i+=dash+gap)R(i,j,dash,1,j%2?K.d0:K.d1)}
   for(let k=0;k<pr+3;k++){const ry=hz+1+(py-(-pr))-hz+k;const yy=hz+2+k*2;if(yy>=h)break;const wob=Math.round(Math.sin(ph*1.3+k)*2),half=Math.round(Math.sqrt(Math.max(0,pr*pr-(k-1)*(k-1)))*(1-k/(pr+4)));if(half<1)continue;for(let i=-half;i<=half;i+=2+(k%2))R(px+i+wob,yy,1+(k%2),1,k<2?K.r0:K.r1)}
   for(let i=-pr*2;i<=pr*2;i+=3){const yy=hz+2+Math.round(Math.abs(py-hz)*1.1)+Math.round(Math.sin(ph+i)*1);if(yy<h)R(px+i,yy,2,1,K.ring)}
-  if(!isLight())L.stars.slice(0,14).forEach(st=>{const yy=hz+(hz-st.y);if(yy<h&&Math.sin(ph*2+st.x)>-.2)R(st.x+Math.round(Math.sin(ph+st.y)),yy,1,1,K.refl)});
+  if(!lday)L.stars.slice(0,14).forEach(st=>{const yy=hz+(hz-st.y);if(yy<h&&Math.sin(ph*2+st.x)>-.2)R(st.x+Math.round(Math.sin(ph+st.y)),yy,1,1,K.refl)});
   L.motes.forEach(m=>{const yy=Math.round(m.y-((ph*m.s*6)%(h-hz-4)));const yv=yy<hz+3?yy+(h-hz-4):yy;R(Math.round(m.x+Math.sin(ph+m.x)*2),yv,1,1,K.mote)})}
 let dexOpen=false,dexTab='c';
 function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],got=all.filter(id=>P.dex[id]).length;
@@ -4926,7 +4927,7 @@ function surfaceBackdrop(g,day,rnd){
   for(let k=0;k<60;k++){const x=rnd()*SW|0,y=HZ+3+rnd()*(SH-HZ-3)|0;px(x,y,day?'#7a6a62':'#2a2236');if(rnd()<.4)px(x+1,y,day?'#463a36':'#221c2c')}
 }
 function shipSceneBuild(st){
-  const day=isDay()||isLight();
+  const day=isDay();
   const c=document.createElement('canvas');c.width=SW;c.height=SH;const g=c.getContext('2d');
   let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
   const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
@@ -4971,7 +4972,7 @@ function shipSceneBuild(st){
   return{c,day,stars,glow,GX,GY,FX,FY,FIRES,lights:[[19,19],[23,18],[17,22],[25,23],[21,25],[15,20]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),tipL:hull.to(1.5,24).map(Math.round),tipR:hull.to(38.5,24).map(Math.round),run:[[6,19],[10,20.5],[14,22],[34,19],[30,20.5],[26,22]].map(([X,Y])=>hull.to(X,Y).map(Math.round)),breach:hull.to(25.5,17.5),seam:hull.to(31.5,21),tail:hull.to(20,37.5),mid:hull.to(20,22),nose:hull.to(20,2)};
 }
 function shipSceneDraw(cv,t){
-  const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('')+(isDay()||isLight()?'d':'n');
+  const st={};SHIP.forEach(p=>st[p.id]=shipDone(p));const key=SHIP.map(p=>st[p.id]?1:0).join('')+(isDay()?'d':'n');
   if(!shipBg||shipBgKey!==key){shipBg=shipSceneBuild(st);shipBgKey=key}
   const g=cv.getContext('2d'),B=shipBg;g.drawImage(B.c,0,0);
   const px=(x,y,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};
