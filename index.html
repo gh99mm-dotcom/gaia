@@ -5384,10 +5384,22 @@ function playOpening(done){if($('#opening'))return;const op=document.createEleme
   op.innerHTML=`<div class="opn-stage" id="opnStage"><canvas id="opnCv" width="256" height="144"></canvas><button class="opn-skip" type="button">건너뛰기 ▶▶</button>
    <div class="opn-txt"><span class="opn-act"></span><b class="opn-ttl"></b><div class="opn-body"></div><span class="opn-next" hidden>▼ 클릭 / Space</span></div></div><div class="opn-dots"></div>`;
   document.body.appendChild(op);
+  // the prologue, in the words of the game's own outline: ⓐ where we were (Terra) and ⓑ where we are now
   const ACTS=[
- ['ACT 1 · 발견','우주에서 보내오는 SOS','탐사선은 규칙적으로 반복되는 신호를 포착한다. 신호에는 인간의 통신 체계와 일치하는 패턴이 있지만, 발신 위치는 알려진 항성계 바깥이다.'],
- ['ACT 2 · 침입','우주의 법칙이 깨지는 순간','신호의 근처에서 중력과 전파의 이상 현상이 나타난다. 계측기는 데이터를 분석하지만, 쌓일수록 기존의 물리 모델과 맞지 않는다. 그 순간, 공간의 균열이 열리고 탐사선은 그 안으로 빨려 들어간다.'],
- ['ACT 3 · 불시착','이름 모를 암석 행성','균열을 빠져나온 탐사선은 통제를 잃고 낯선 행성으로 떨어진다. 붉은 바위와 먼지뿐인, 어느 성도에도 없는 암석형 행성. 대기는 호흡에 적합하지 않고, 탐사선은 그대로 지표에 처박힌다.']];
+ ["ⓐ 우리가 있던 곳 · 1/7", "모행성, 테라", "80억 인구가 머무는 우리의 모행성, 테라입니다. 역사적으로는 최근ㅡ짧은 시간 사이 근방 행성으로의 여행이 가능할 만큼의 발전을 이루어냈습니다."],
+ ["ⓐ 우리가 있던 곳 · 2/7", "우주 방위군", "그에 따라 해군, 공군의 개념과 마찬가지로 우주 구역을 지키고 감시하는 우주 방위군이 창설됐습니다. 바로 우리의 자랑스러운 직장이기도 합니다."],
+ ["ⓐ 우리가 있던 곳 · 3/7", "평화로운 근무", "본래 우리 우주 방위군의 주 역할은 누워서 별 구경하기, 동료와 농담 따먹기, 식량 축내기, 쓰레기 줍기, 우주 드라이브 즐기기 정도 뿐입니다."],
+ ["ⓐ 우리가 있던 곳 · 4/7", "알 수 없는 신호", "외곽 경비 함선과 초소에 알 수 없는 신호가 감지됩니다. 발전한 우리의 기술로도 짐작 못할 곳으로부터 도착한 이 신호는 꼭 구조 신호를 닮았습니다."],
+ ["ⓐ 우리가 있던 곳 · 5/7", "공문 도착", "오류일 확률은 희박한 상황, 결국 해당 신호를 추적하기 위한 프로젝트가 만들어집니다. 전 우주 방위군에게 공문이 도착합니다.\n[ 지원 가능한 새 프로젝트가 1건 있습니다. ]"],
+ ["ⓐ 우리가 있던 곳 · 6/7", "저마다의 이유", "그렇게 우리는 모였습니다. 막대한 지원금에 눈이 돌아갔다든가, 직업적인 효능감을 갖고 싶었다든가, 혹은 그냥 술김에 넣었다든가··· 저마다의 이유로요."],
+ ["ⓐ 우리가 있던 곳 · 7/7", "가이아 프로젝트", "‘가이아 프로젝트.’ 그것이 우리가 참여하게 된 계획의 이름입니다. 임무는 아주 간단합니다. 신호의 좌표를 역추적하여 원인을 확인할 것."],
+ ["ⓑ 우리가 있는 곳 · 1/7", "아주 먼 여행", "몇 초간 반짝 이어졌던 구조 신호의 좌표는 모행성으로부터 보다 먼 곳에 위치합니다. 그래서 우리는, 아주 먼 여행을 준비해야 했습니다."],
+ ["ⓑ 우리가 있는 곳 · 2/7", "불침번", "불침번을 서듯 포드에서 일어나 교대로 함선을 순찰하는 시간들이 이어지며, 조금씩 더 나아가던 중······."],
+ ["ⓑ 우리가 있는 곳 · 3/7", "비상", "비상 알림등에 불이 들어옵니다.\n함선 안으로 불길한 사이렌이 가득 들어찹니다.\n눈을 뜬 우리가 마주하게 된 것은 우주의 틈새입니다."],
+ ["ⓑ 우리가 있는 곳 · 4/7", "우주의 틈새", "갈라질 리 없는 곳, 그 사이에서 무언가의 시선마저 느껴지는 듯합니다.\n배수구 속으로 흐르는 물에 휩쓸린 것처럼 우리의 함선은 속수무책으로 빨려들어갑니다.\n······쿵!"],
+ ["ⓑ 우리가 있는 곳 · 5/7", "불시착", "빙그르르 돌아가는 계기판이 정신을 차릴 무렵에는 이미 우주의 다른 편으로 토해진 뒤입니다. 충돌은 불가피했습니다. 불시착한 검보랏빛의 행성은 낯설면서도 어디선가 본 것처럼 느껴집니다."],
+ ["ⓑ 우리가 있는 곳 · 6/7", "남겨진 우리", "생명유지장치를 포함한 우주선의 여러 기능들이 고장 및 반파되었습니다. 함장을 비롯하여 반절에 가까운 동료들이 사망했습니다."],
+ ["ⓑ 우리가 있는 곳 · 7/7", "다시 떠나기 위해", "우리는 그들의 무덤을 만들어주었고, 함선을 고쳐 이곳을 다시 탈출하는 것을 우선의 목표로 세웠습니다."]];
   // the ship as it flies (the game's own hull, seen from above, nose to the right) and the crash site from the 우주선 tab
   const IMG={};{const st={};SHIP.forEach(q=>st[q.id]=true);const Wd=56,Hd=56,c=document.createElement('canvas');c.width=Wd;c.height=Hd;const x=c.getContext('2d'),M=new Map();
     for(let y=0;y<Hd;y++)for(let i=0;i<Wd;i++){const vx=i+.5-Wd/2,vy=y+.5-Hd/2,X=20+vy/1.05,Y=22-vx/1.05,col=shipColorAt(X,Y,st);if(col)M.set(y*Wd+i,col)}
@@ -5408,20 +5420,26 @@ function text(s,x,y,c){g.fillStyle=c;g.font='7px monospace';g.fillText(s,x,y)}
 function rift(cx,cy,h,open,t){for(let y=-h;y<=h;y++){const w=Math.max(0,open*(1-Math.abs(y)/h)*12)+Math.sin(y*.9+t*6)*1.2,x=cx+Math.sin(y*.37)*5;
   R(x-w-1,cy+y,1,1,'#ff9aff');R(x-w,cy+y,w*2,1,'#1a0628');R(x-w*.4,cy+y,w*.8,1,'#3a1060');if(w>3&&((y+t*20|0)%7===0))P(x,cy+y,'#ffffff')}}
 
-  const SCENES=[
- t=>{R(0,0,W,H,'#03040c');stars(t,3);const sx=236,sy=22,on=(t*2|0)%2===0;R(sx-1,sy-1,3,3,on?'#ff5f6a':'#5a1a20');sosWave(sx,sy,t,'#ff8a92');
+  // a pixel planet: lit from the upper left, with blotchy land and a soft rim
+  function planet(cx,cy,r,sea,land,rim,t=0,spin=0){for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++){const d=x*x+y*y;if(d>r*r)continue;
+    const u=((x+t*spin)*0.21),v=y*0.23,n=Math.sin(u)*Math.cos(v*1.3)+Math.sin(u*2.3+v)*.5;let c=n>.55?land:sea;const sh=(x+y)/(r*1.6);
+    if(sh>.35)c='#0a0e22';else if(sh>.15&&((x+y)&1))c='#0a0e22';if(d>(r-1.2)*(r-1.2))c=rim;P(cx+x,cy+y,c)}}
+  function crew(x,y,c='#d8dce8',v='#4fb8e8'){R(x-2,y-6,5,5,c);R(x-1,y-5,3,2,v);R(x-2,y-1,5,4,c);R(x-2,y+3,2,2,'#8a8ea0');R(x+1,y+3,2,2,'#8a8ea0')}
+  function corridor(t,red){R(0,0,W,H,red?'#1a0608':'#0a0c18');for(let i=0;i<W;i+=16){R(i,8,2,82,red?'#2a0a0e':'#141a30')}R(0,8,W,2,'#232a48');R(0,88,W,4,'#232a48');
+    for(let k=0;k<6;k++){const x=14+k*40;R(x,40,30,40,'#1c2440');R(x+2,42,26,36,red?'#3a1418':'#2a3a66');R(x+4,44,22,6,red?'#ff6a6a':'#7fd4ff');if(k!==2)R(x+8,58,14,18,'#141a30')}}
+  const SCENE_SOS=t=>{R(0,0,W,H,'#03040c');stars(t,3);const sx=236,sy=22,on=(t*2|0)%2===0;R(sx-1,sy-1,3,3,on?'#ff5f6a':'#5a1a20');sosWave(sx,sy,t,'#ff8a92');
    ship(80+Math.sin(t*.8)*4,46+Math.sin(t*1.3)*2,1);for(let i=0;i<14;i++){const h=(i%4===((t*4)|0)%4)?7:2;R(10+i*4,84-h,2,h,'#7fd4ff')}text('· · · — — — · · ·',150,84,on?'#ff8a92':'#5a2a30')},
- t=>{R(0,0,W,H,'#05030e');const k=Math.min(1,t/3);stars(t,0,k*2,190,44);const open=Math.min(1,t/2.2);rift(190,44,40,open,t);
+  SCENE_RIFT=t=>{R(0,0,W,H,'#05030e');const k=Math.min(1,t/3);stars(t,0,k*2,190,44);const open=Math.min(1,t/2.2);rift(190,44,40,open,t);
    const m=Math.min(1,Math.max(0,(t-1.2)/2.6)),px=60+m*130,sh=Math.sin(t*40)*1.3;ship(px,44+sh,1,Math.sin(t*10)*.06,'fly',1-m*.55);
    for(let i=0;i<34;i++){const v=Math.sin(i*.6+t*5)*4+(t>1.5?(rnd()*10-5)*k:0);R(8+i*2,22+v,2,1,'#ffd65f')}text('GRAV ??',8,13,'#ffd65f')},
- t=>{// crash landing: a nameless rocky planet rushes up, the ship burns in, a flash, then the wreck in settling dust
+  SCENE_CRASH=t=>{// crash landing: a nameless rocky planet rushes up, the ship burns in, a flash, then the wreck in settling dust
    const T1=2.6,T2=3.0;
    if(t<T1){const k=t/T1,shk=k*2.2,ox=(Math.random()-.5)*shk,oy=(Math.random()-.5)*shk;g.save();g.translate(ox,oy);
      R(0,0,W,H,'#05040a');stars(0,0);
      // the planet: a huge cratered limb rising from the bottom, closer every moment
      const pr=210+k*260,pcx=128,pcy=TOP+pr-30-k*40;
      for(let y=0;y<H;y++)for(let x=0;x<W;x+=2){const d=Math.hypot(x-pcx,y-pcy);if(d>pr)continue;const e=(pr-d)/pr,n=((x*13+y*7)%11)/11;
-       let c=e<.02?'#e8a070':n>.82?'#5a3a2a':n>.55?'#8a5a3c':'#a06a44';if(((x*31+y*17)%97)<3)c='#3a2418';R(x,y,2,1,c)}
+       let c=e<.02?'#c79ae8':n>.82?'#2a1838':n>.55?'#4a2c62':'#5c3878';if(((x*31+y*17)%97)<3)c='#1a0e26';R(x,y,2,1,c)}
      g.globalAlpha=.25;R(0,0,W,H,'#ff8a4a');g.globalAlpha=1;
      // the ship diving in, nose first, with a fire trail
      const sx=40+k*120,sy=10+k*70;for(let i=0;i<26;i++){const f=i/26,w=9-f*6;g.globalAlpha=(1-f)*.95;R(sx-10-i*3.4-w/2,sy-8-i*2.5-w/2,w,w*.8,i<5?'#fff6c0':i<12?'#ffb050':'#d0582a');g.globalAlpha=1}
@@ -5429,11 +5447,37 @@ function rift(cx,cy,h,open,t){for(let y=-h;y<=h;y++){const w=Math.max(0,open*(1-
    if(t<T2){R(0,0,W,H,'#ffffff');g.globalAlpha=1-(t-T1)/(T2-T1);R(0,0,W,H,'#ffe0b0');g.globalAlpha=1;return}
    // aftermath: the game's crash site, shaking less and less, dust rolling out and settling
    const a=t-T2,shk=Math.max(0,2.5-a*1.4),im=IMG.crash;g.save();g.translate((Math.random()-.5)*shk,(Math.random()-.5)*shk);
-   R(0,0,W,H,'#2a2418');if(im)g.drawImage(im,0,0,256,128);R(0,126,W,18,'#3a2e22');g.restore();
-   g.globalAlpha=Math.max(0,.45-a*.08);R(0,0,W,H,'#c08a5a');g.globalAlpha=1;
-   for(let i=0;i<14;i++){const r=a*22+i*4,ang=i/14*Math.PI*2;g.globalAlpha=Math.max(0,.5-a*.1);R(128+Math.cos(ang)*r*1.6,92+Math.sin(ang)*r*.35,7,4,'#b08860');g.globalAlpha=1}
+   R(0,0,W,H,'#1a1426');if(im)g.drawImage(im,0,0,256,128);g.globalAlpha=.42;R(0,0,W,128,'#2a1046');g.globalAlpha=1;R(0,126,W,18,'#261c34');g.restore();
+   g.globalAlpha=Math.max(0,.45-a*.08);R(0,0,W,H,'#6a4a8a');g.globalAlpha=1;
+   for(let i=0;i<14;i++){const r=a*22+i*4,ang=i/14*Math.PI*2;g.globalAlpha=Math.max(0,.5-a*.1);R(128+Math.cos(ang)*r*1.6,92+Math.sin(ang)*r*.35,7,4,'#8a70a8');g.globalAlpha=1}
    for(let i=0;i<6;i++){const r=(a*10+i*9)%54;g.globalAlpha=Math.max(0,.6-r/90);R(122+Math.sin(i+a)*4,56-r,5,4,'#5a5450');g.globalAlpha=1}
-   if(((a*8)|0)%3===0)for(let i=0;i<3;i++)P(110+((a*97+i*41)%40),70+((a*53+i*17)%18),'#ffd65f')}];
+   if(((a*8)|0)%3===0)for(let i=0;i<3;i++)P(110+((a*97+i*41)%40),70+((a*53+i*17)%18),'#ffd65f')};
+  const TERRA=(t,extra)=>{R(0,0,W,H,'#02040c');stars(t,1.2);planet(178,52,40,'#2a62b8','#3e9a5a','#9fd8ff',t,3);extra&&extra(t)};
+  const SCENES=[
+ t=>TERRA(t,t=>{const a=t*.6;ship(178+Math.cos(a)*58,52+Math.sin(a)*18,0,0,'fly',.5)}),
+ t=>TERRA(t,t=>{for(let k=0;k<3;k++)ship(40+k*26+((t*14)%40),22+k*14+Math.sin(t*2+k)*2,1,0,'fly',.35);text('SPACE DEFENSE FORCE',8,84,'#7fd4ff')}),
+ t=>TERRA(t,t=>{ship(70,48+Math.sin(t*1.1)*3,0,Math.sin(t*.7)*.08,'fly',.6);for(let i=0;i<7;i++){const x=(20+i*31+t*6)%W,y=20+((i*37)%60)+Math.sin(t+i)*2;R(x,y,3,2,['#9a8a6a','#6a7a8a','#b05a5a'][i%3])}
+   const z=(t*1.5)%3;g.globalAlpha=Math.max(0,1-z/3);text('z',96+z*6,36-z*8,'#e8eeff');text('Z',100+z*8,30-z*10,'#e8eeff');g.globalAlpha=1}),
+ SCENE_SOS,
+ t=>{R(0,0,W,H,'#03040c');stars(t,.6);R(48,14,160,70,'#07080e');R(50,16,156,66,'#101838');R(50,16,156,10,'#2a3a80');text('SDF NOTICE',56,24,'#e8eeff');
+   const on=(t*2|0)%2===0;R(60,36,136,14,on?'#f2c66a':'#5a4a20');text('NEW PROJECT  x1',84,46,on?'#1a1408':'#f2c66a');
+   for(let i=0;i<3;i++)R(60,56+i*7,110-i*24,3,'#3a4a8a');const p=Math.min(1,t/2.5);R(60,76,136*p,3,'#7fd4ff')},
+ t=>{R(0,0,W,H,'#05061a');stars(t,.4);R(0,80,W,12,'#141a30');const icons=['$','!','♪','?','%'];for(let k=0;k<5;k++){const x=40+k*44,b=Math.sin(t*3+k)*1.5;crew(x,72+b,k===2?'#f2c66a':'#d8dce8');
+   if(t>k*.5){text(icons[k],x-2,56+b-Math.min(4,(t-k*.5)*8),['#ffd65f','#ff8a92','#7fd4ff','#c79ae8','#9fe8a0'][k])}}},
+ t=>{R(0,0,W,H,'#02040c');const k=Math.min(1,t/3);stars(t,0,k*1.6,200,46);planet(40,60,30,'#2a62b8','#3e9a5a','#9fd8ff',t,2);
+   ship(90+k*120,46-k*10,1,-.1,'fly',.7-k*.4);g.globalAlpha=Math.min(1,t/1.5);text('GAIA PROJECT',88,16,'#f2c66a');g.globalAlpha=1},
+ t=>{R(0,0,W,H,'#02030a');stars(t,24);planet(-10,46,22,'#2a62b8','#3e9a5a','#9fd8ff',t,2);ship(150,46+Math.sin(t*1.4)*2,1,0,'fly',.8)},
+ t=>{corridor(t,false);const x=10+((t*18)%236);crew(x,80);g.globalAlpha=.35;g.fillStyle='#f2e6a0';g.beginPath();g.moveTo(x+3,76);g.lineTo(x+40,66);g.lineTo(x+40,90);g.closePath();g.fill();g.globalAlpha=1},
+ t=>{const on=(t*3|0)%2===0;corridor(t,true);const r=(t*6)%(Math.PI*2);R(126,10,6,6,on?'#ff3a4a':'#5a1018');g.globalAlpha=.25;g.fillStyle='#ff3a4a';g.beginPath();g.moveTo(129,13);g.lineTo(129+Math.cos(r)*120,13+Math.sin(r)*60+40);g.lineTo(129+Math.cos(r+.3)*120,13+Math.sin(r+.3)*60+40);g.closePath();g.fill();g.globalAlpha=1;
+   if(on){g.globalAlpha=.18;R(0,0,W,H,'#ff2030');g.globalAlpha=1}text('!! WARNING !!',96,30,on?'#ffd0d0':'#ff5a6a')},
+ t=>{SCENE_RIFT(t);const o=Math.min(1,Math.max(0,(t-1.4)/1.2));if(o>0){g.globalAlpha=o;R(184,40,13,8,'#e8e0ff');R(188,41,5,6,'#7a2ad0');R(190,43,2,2,'#05030e');g.globalAlpha=1}
+   if(t>6.5){g.globalAlpha=Math.min(1,(t-6.5)*1.5);R(0,0,W,H,'#000');g.globalAlpha=1;}},
+ SCENE_CRASH,
+ t=>{SCENE_CRASH(t+12);g.globalAlpha=.45;R(0,0,W,H,'#08040e');g.globalAlpha=1;for(let i=0;i<5;i++){const r=(t*8+i*11)%50;g.globalAlpha=Math.max(0,.5-r/100);R(120+Math.sin(i*2+t)*6,60-r,6,5,'#4a4458');g.globalAlpha=1}
+   if(((t*5)|0)%4===0)P(98+((t*31)%30),74,'#ff8a4a')},
+ t=>{R(0,0,W,H,'#0c0618');stars(t,.3);const im=IMG.crash;if(im){g.globalAlpha=.55;g.drawImage(im,0,-6,256,128);g.globalAlpha=1;g.globalAlpha=.5;R(0,0,W,H,'#1a0a2e');g.globalAlpha=1}
+   R(0,78,W,14,'#2a1e3a');for(let k=0;k<7;k++){const x=30+k*30;R(x,66,4,14,'#8a80a8');R(x-3,70,10,3,'#8a80a8');R(x+1,80,2,2,'#4a3e5e');if(k%2===0)P(x+6,77,'#c79ae8')}
+   for(let k=0;k<3;k++)crew(196+k*14,84,'#c8ccd8');}];
   const q=sel=>op.querySelector(sel);let act=0,t0=performance.now(),done1=false,raf=0,over=false;
   function show(i){act=i;t0=performance.now();done1=false;q('.opn-act').textContent=ACTS[i][0];q('.opn-ttl').textContent=ACTS[i][1];q('.opn-body').textContent='';q('.opn-body').classList.remove('done');q('.opn-next').hidden=true;
     q('.opn-dots').innerHTML=ACTS.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');const s=q('#opnStage');s.classList.remove('fade');void s.offsetWidth;s.classList.add('fade')}
@@ -5444,7 +5488,7 @@ function rift(cx,cy,h,open,t){for(let y=-h;y<=h;y++){const w=Math.max(0,open*(1-
   const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'){e.preventDefault();finish()}};
   op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.opn-skip')){finish();return}next()});document.addEventListener('keydown',key,true);
   show(0);raf=requestAnimationFrame(loop)}
-function openingOnce(){if(!P||P.opSeen||!$('#joinModal').hidden)return;playOpening(()=>{P.opSeen=1;save()})}
+function openingOnce(){if(!P||(P.opSeen||0)>=2||!$('#joinModal').hidden)return;playOpening(()=>{P.opSeen=2;save()})}/* 2 = the prologue rewritten from the game's outline: everyone sees it once */
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat()}
 
 /* ───────── crew & chat ───────── */
