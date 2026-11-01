@@ -1057,6 +1057,12 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 
 .relkey{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 2px;font-size:12px;color:var(--mute)}.relkey span{display:inline-flex;align-items:center;gap:5px}.relkey i{width:18px;height:4px;display:inline-block}
 .pnotes{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}
+.affnotes{margin-top:16px;display:flex;flex-direction:column;gap:8px}.afhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.afhead b{font-family:var(--f-display);font-weight:400;font-size:15px;color:#ff8ab8}
+.afgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.ps-afn{min-height:96px}
+.ps-afn textarea{width:100%;resize:vertical;min-height:84px;font:inherit;font-size:13px;box-sizing:border-box}
+.aflocked{opacity:.75}.aflocked::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(255,138,184,.06) 0 6px,transparent 6px 12px)}
+.aflock{margin:auto 0;font-size:12.5px;color:var(--mute)}:root[data-skin="light"] .afhead b,:root[data-skin="light"] .ps-afn h4{color:#b8336a}
 .ps-trait{--pc:#6ad8b0}.ps-feat{--pc:#7fb8ff}.ps-note{--pc:#ffa860}
 .pnotes .pside{min-height:72px}.pnotes textarea{width:100%;resize:vertical;min-height:64px;font:inherit;font-size:13px}
 :root[data-skin="light"] .ps-trait{--pc:#1f8a64}:root[data-skin="light"] .ps-feat{--pc:#2a6ac8}:root[data-skin="light"] .ps-note{--pc:#c0601a}
@@ -5339,7 +5345,7 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
 let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
-const KEEP_FOCUS=new Set(['profBioIn','noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg']);
+const KEEP_FOCUS=new Set(['affIn','profBioIn','noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg']);
 function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrotask(renderSoc);tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
@@ -5687,6 +5693,8 @@ const A={
   if(d&&d.k==='no'){resetArm=false;renderInfo();return}if(!d||d.k!=='go'){resetArm=true;renderInfo();return}
   resetArm=false;take('statreset',1);log('능력치 초기화권을 써서 능력치 포인트를 모두 돌려받았다.','good');abPend={};P.as=Object.fromEntries(ABIL.map(([k])=>[k,2]));P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());save();renderInfo();renderPilot()},
  wtab(d){wardTab=d.k;renderPanel()},
+ affedit(d){const n=+d.k;if(!AFFN.includes(n))return;affEdit=affEdit===n?null:n;affDraft=(P.affNote||{})[n]||'';renderInfo();if(affEdit)setTimeout(()=>{const i=$('#affIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},0)},
+ affsave(d){const n=+d.k;if(!AFFN.includes(n))return;const v=affDraft.trim().slice(0,AFFN_MAX),o=Object.assign({},P.affNote);if(v)o[n]=v;else delete o[n];P.affNote=o;affEdit=null;log(`호감도 ${n} 이야기를 ${v?'적었다':'지웠다'}.`);save();renderInfo()},
  noteedit(d){noteEdit=noteEdit===d.k?null:d.k;renderInfo();if(noteEdit)setTimeout(()=>{const i=$('#noteIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},0)},
  notesave(d){const i=$('#noteIn');if(!i||!PNOTE.some(x=>x[0]===d.k))return;P[d.k]=i.value.trim().slice(0,noteMax(d.k));noteEdit=null;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
@@ -6273,6 +6281,14 @@ function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).fi
   return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-why','✎','프로젝트에 들어오게 된 이유',why)}${C('ps-aff','♡','호감도',aff)}</div>`}
 // free-text profile notes under the ID card (written on my own 내 프로필 tab, shown to everyone)
 const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐',2000],['feat','특징','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 늘 공구를 들고 다님',2000],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120,noteMax=k=>(PNOTE.find(x=>x[0]===k)||[])[5]||PNOTE_MAX;let noteEdit=null;
+/* affection notes: five short notes (200자) that open one by one as that member's 호감도 toward the viewer reaches 20·40·60·80·100 */
+const AFFN=[20,40,60,80,100],AFFN_MAX=200;let affEdit=null,affDraft='';
+function affNotesHTML(p,mine,af){const N=p.affNote||{};
+  return`<div class="affnotes"><div class="afhead"><b>♥ 호감도 이야기</b><span class="hint">${mine?'다른 선원의 나에 대한 호감도가 20 · 40 · 60 · 80 · 100이 되면 하나씩 열립니다.':'나에 대한 호감도가 오를수록 하나씩 열립니다.'}</span></div><div class="afgrid">${AFFN.map(n=>{const v=N[n]||'',open=mine||af>=n,ed=mine&&affEdit===n;
+    const body=ed?`<textarea id="affIn" class="sel" maxlength="${AFFN_MAX}" rows="4" placeholder="호감도 ${n}이 된 선원에게 보여줄 이야기" aria-label="호감도 ${n} 이야기">${esc(affDraft)}</textarea><div class="row" style="gap:4px"><button class="btn sm" data-act="affsave" data-k="${n}">저장</button><button class="qchip" data-act="affedit" data-k="${n}">취소</button><span class="hint notecnt"><b id="affCnt">${affDraft.length}</b> / ${AFFN_MAX}자</span></div>`
+      :open?`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):'<span class="hint">아직 적지 않았습니다.</span>'}</p>${mine?`<button class="qchip" data-act="affedit" data-k="${n}">${v?'고치기':'적기'}</button>`:''}`
+      :`<p class="aflock">🔒 호감도 ${n} 이상이면 열립니다</p>`;
+    return`<section class="pside ps-afn ${open?'':'aflocked'}" style="--pc:${{20:'#ffb0cc',40:'#ff8ab8',60:'#ff6a9a',80:'#ff4a78',100:'#ff2a5a'}[n]}"><h4><span>♥</span>호감도 ${n}</h4>${body}</section>`}).join('')}</div></div>`}
 function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,cls,ph])=>{const ed=mine&&noteEdit===k,v=p[k]||'',mx=noteMax(k);
   const body=ed?`<div class="sendrow"><textarea id="noteIn" class="sel" maxlength="${mx}" rows="${mx>500?8:3}" placeholder="${ph}" aria-label="${t}">${esc(v)}</textarea></div><div class="row" style="gap:4px"><button class="btn sm" data-act="notesave" data-k="${k}">저장</button><button class="qchip" data-act="noteedit" data-k="${k}">취소</button><span class="hint notecnt"><b id="noteCnt">${v.length.toLocaleString()}</b> / ${mx.toLocaleString()}자</span></div>`
     :`<p class="pside-why">${v?esc(v).replace(/\n/g,'<br>'):`<span class="hint">아직 적지 않았습니다.</span>`}</p>${mine?`<button class="qchip" data-act="noteedit" data-k="${k}">${v?'고치기':'적기'}</button>`:''}`;
@@ -6280,7 +6296,7 @@ function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,c
 /* the one-line intro, shown as a quote at the very top of a profile */
 const bioQ=(p,empty)=>`<div class="bioq${p.bio?'':' none'}"><span class="bqlbl">ONE WORD · 한마디</span><p>${p.bio?`<i>“</i>${esc(p.bio)}<i>”</i>`:esc(empty||'')}</p></div>`;
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
-  return`<div class="card profcard">${bioQ(p,'아직 한마디가 없습니다.')}<div class="bqedit">${profBio?`<input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한마디 (최대 40자)" aria-label="한마디" value="${esc(profBioDraft)}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button>`:`<button class="btn sm ghost" data-act="profbio">${p.bio?'한마디 고치기':'한마디 쓰기'}</button>`}</div><div class="profwrap"><div class="profleft">${idCardHTML(p,uid,!!p.pfp,false)}${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}</div>${profSideHTML(p,uid,true)}</div>${profNotesHTML(p,true)}
+  return`<div class="card profcard">${bioQ(p,'아직 한마디가 없습니다.')}<div class="bqedit">${profBio?`<input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한마디 (최대 40자)" aria-label="한마디" value="${esc(profBioDraft)}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button>`:`<button class="btn sm ghost" data-act="profbio">${p.bio?'한마디 고치기':'한마디 쓰기'}</button>`}</div><div class="profwrap"><div class="profleft">${idCardHTML(p,uid,!!p.pfp,false)}${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}</div>${profSideHTML(p,uid,true)}</div>${profNotesHTML(p,true)}${affNotesHTML(p,true,0)}
     <span class="hint">좋아하는·싫어하는 음식은 나에 대한 호감도가 10 이상, 프로필 사진은 30 이상이거나 -30 이하인 선원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span></div>`}
 /* status + greet/mail/gift, shown in the profile page's header row */
 function profActsHTML(id){const p=whoP(id);if(!p||id===uid||!PLAYERS[id])return'';const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
@@ -6292,7 +6308,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
     const af=affOf(p,uid),open=af>=10,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 10 이상이면 보입니다</span>';
     return`<div class="card profcard" id="profCard">${p.bio?bioQ(p):''}<div class="profwrap">${idCardHTML(p,id,!!p.pfp&&Math.abs(af)>=30,!!p.pfp&&Math.abs(af)<30)}${profSideHTML(p,id,open)}</div>${profNotesHTML(p,false)}
-     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
+     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>${affNotesHTML(p,false,af)}</div>`}
   return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'선원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한마디 (최대 40자)" aria-label="한마디" value="${esc(profBioDraft)}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한마디를 적으면 다른 선원에게 보입니다.':'아직 한마디가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
@@ -6398,7 +6414,7 @@ async function padWrite(raw,parent){const ctx=parent?'reply':'pad',L=imgList(ctx
   lastPost=Date.now();clearImgs(ctx);if(parent)replyDraft='';else{padDraft='';padTag='';padView='all'}stat('post');
   if(P.postDay!==dayKey()){P.postDay=dayKey();gainXp(10);log('오늘 첫 PAD 글을 남겼다. 경험치 +10','good')}else log(parent?`${parent.nick||'선원'} 님의 글에 답글을 달았다.`:'PAD에 글을 남겼다.');commit()}
 const isField=el=>el&&el.closest&&el.closest('#stage,#socStage')&&/^(TEXTAREA|INPUT)$/.test(el.tagName)&&el.type!=='file';
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='padIn'){padDraft=t.value;const c=$('#padCnt');if(c)c.textContent=t.value.length+'/'+PAD_MAX}else if(t.id==='padReply')replyDraft=t.value;else if(t.id==='bioIn')bioDraft=t.value;else if(t.id==='profBioIn')profBioDraft=t.value;else if(t.id==='dmIn')dmDraft=t.value});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='padIn'){padDraft=t.value;const c=$('#padCnt');if(c)c.textContent=t.value.length+'/'+PAD_MAX}else if(t.id==='padReply')replyDraft=t.value;else if(t.id==='bioIn')bioDraft=t.value;else if(t.id==='profBioIn')profBioDraft=t.value;else if(t.id==='affIn'){affDraft=t.value;const c=$('#affCnt');if(c)c.textContent=t.value.length}else if(t.id==='dmIn')dmDraft=t.value});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&socOpen&&!isField(e.target)){socDrawer(false);return}});
 document.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||e.isComposing||!isField(t))return;
   if(t.id==='dmIn'){e.preventDefault();A.dmsend();return}
