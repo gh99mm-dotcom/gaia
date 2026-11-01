@@ -775,6 +775,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .ccard{display:flex;flex-direction:column;gap:7px}
 .ccard.mine{box-shadow:inset 0 0 0 1px var(--gold)}
 .cc-top{display:flex;gap:9px;align-items:center;min-width:0}
+.profacts2{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}.stage-head .profacts2 .hint{margin-right:2px}
 .bio{margin:0;font-size:13.5px;color:var(--text);word-break:break-word}
 .bioq{margin:0 0 6px;text-align:center;min-width:0;font-family:var(--f-display);font-size:21px;line-height:1.35;color:var(--text);word-break:keep-all;overflow-wrap:anywhere}.bioq i{font-style:normal;font-size:1.5em;line-height:0;color:var(--gold);vertical-align:-.28em;margin:0 3px}.bioq.none{font-family:inherit;font-size:13px;color:var(--mute)}
 .gbe{display:flex;flex-direction:column;gap:5px}
@@ -5345,7 +5346,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox')){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll()}else adminRefresh();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
-  if(profView){const ph=profId&&profHTML();if(ph){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="profclose">← 돌아가기</button><h2>선원 프로필</h2><span class="loc">${esc((whoP(profId)||{}).nick||'')}</span></div>${ph}`;return}profView=false;profId=null}
+  if(profView){const ph=profId&&profHTML();if(ph){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="profclose">← 돌아가기</button><h2>선원 프로필</h2>${profActsHTML(profId)||`<span class="loc">${esc((whoP(profId)||{}).nick||'')}</span>`}</div>${ph}`;return}profView=false;profId=null}
   if(orgView){$('#stage').innerHTML=orgPage();return}
   if(rankView){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="orgclose">← 돌아가기</button><h2>개척단 랭킹</h2><span class="loc">레벨 · 생활레벨 · 기여도</span></div>${socRank()}`;return}
   if(secretView){$('#stage').innerHTML=secretHTML();startSecretScene();return}
@@ -6175,7 +6176,7 @@ function orgRole(id){if(isHead(id,whoP(id)))return'선장';return roleOf(id)||'�
 function orgNode(id,p,big){return`<button class="orgm ${id===uid?'me':''}" data-act="profopen" data-k="${esc(id)}" aria-pressed="${profId===id}" title="${esc(p.nick||'선원')} 프로필 보기"><span class="orgface">${headImg(2,p)}</span><span class="orgnm">${esc(p.nick||'선원')}</span></button>`}
 // the org chart page opened from the crew panel's 조직도 button (profiles still open in the phone)
 const orgPage=()=>{const keep=profId;profId=null;const h=socCrew();profId=keep;return`<div class="stage-head mehead"><button class="qchip" data-act="orgclose">← 돌아가기</button><h2>개척단 조직도</h2><span class="loc">이름을 누르면 프로필이 열립니다</span></div>${h}`};
-function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row"><button class="btn sm ghost" data-act="profclose">← 돌아가기</button><span class="hint">선원 프로필</span></div>`+ph;profId=null}
+function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row"><button class="btn sm ghost" data-act="profclose">← 돌아가기</button><span class="hint">선원 프로필</span></div>`+profActsHTML(profId)+ph;profId=null}
   const all=orgAll(),r=rolesNow(),heads=all.filter(([id,p])=>isHead(id,p)),valid=new Map(all.filter(([id,p])=>!isHead(id,p)));
   const officers=POSTS3.map(([k,n])=>[k,n,valid.has(r[k])?r[k]:null]),taken=new Set(officers.map(o=>o[2]).filter(Boolean));
   const crew=all.filter(([id,p])=>!isHead(id,p)&&!taken.has(id)).sort((a,b)=>(b[1].lvl||1)-(a[1].lvl||1));
@@ -6232,6 +6233,9 @@ function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(
     <span class="hint">좋아하는·싫어하는 음식은 나에 대한 호감도가 10 이상, 프로필 사진은 30 이상이거나 -30 이하인 선원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
     ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}
     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
+/* status + greet/mail/gift, shown in the profile page's header row */
+function profActsHTML(id){const p=whoP(id);if(!p||id===uid||!PLAYERS[id])return'';const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
+  return`<div class="profacts2"><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
   const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',jobOf(p)?jobOf(p).n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
@@ -6239,8 +6243,6 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
     const af=affOf(p,uid),open=af>=10,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 10 이상이면 보입니다</span>';
     return`<div class="card profcard" id="profCard">${p.bio?bioQ(p):''}<div class="profwrap">${idCardHTML(p,id,!!p.pfp&&Math.abs(af)>=30,!!p.pfp&&Math.abs(af)<30)}${profSideHTML(p,id,open)}</div>${profNotesHTML(p,false)}
-     <div class="profunder"><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
-      <div class="row" style="gap:5px;flex-wrap:wrap"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
      <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
   return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'선원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한 줄 소개 (최대 40자)" aria-label="한 줄 소개" value="${esc(P.bio||'')}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한 줄 소개를 적으면 다른 선원에게 보입니다.':'아직 한 줄 소개가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
