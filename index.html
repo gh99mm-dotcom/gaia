@@ -6203,7 +6203,7 @@ function idCardHTML(p,id,photo,lock){const logo=($('.lg2-em img')||{}).src||'',s
   const row=(k,v,big)=>`<div class="idc-row${big?' big':''}"><dt><i>✦</i>${k}</dt><span class="idc-arr">»</span><dd>${v}</dd></div>`;
   return`<div class="idc"><div class="idc-top"><span class="idc-tl">${L}</span><span class="idc-brand"><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div>
    <div class="idc-panel"><span class="idc-moto">Together<br>We Rebuild<br>Gaia</span><span class="idc-bigp">${L}</span>
-    <div class="idc-ph">${photo?pfpImg(p.pfp):`<span class="idc-av">${meImg(5,p)}</span>`}${lock?'<span class="pfplock">🔒 사진은 호감도 10 이상</span>':''}</div>
+    <div class="idc-ph">${photo?pfpImg(p.pfp):`<span class="idc-av">${meImg(5,p)}</span>`}${lock?'<span class="pfplock">🔒 사진은 호감도 30 이상</span>':''}</div>
     <dl class="idc-dl">${row('이름',esc(p.nick||'선원'),1)}${row('직군',j?esc(j.n):'없음')}${row('직급',esc(orgRole(id)))}${row('레벨','LV.'+(p.lvl||1))}${row('생활레벨','LV.'+lifeSum(p))}</dl>
     <svg class="idc-seal" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="sealT" d="M14 50 a36 36 0 0 1 72 0"/><path id="sealB" d="M10 50 a40 40 0 0 0 80 0"/></defs><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="3"/><text font-size="11.5" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealT" startOffset="50%">GAIA PROJECT</textPath></text><text font-size="10" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealB" startOffset="50%">★ SECTOR K-7 ★</textPath></text><circle cx="50" cy="50" r="12" fill="currentColor"/><ellipse cx="50" cy="51" rx="21" ry="6" fill="none" stroke="currentColor" stroke-width="3" transform="rotate(-18 50 50)"/></svg></div>
    <div class="idc-bot"><div class="idc-ttl"><span class="idc-wing">❖</span><span><b>${esc(ttlOf(p))}</b>${sn?`<small>${esc(sn)}</small>`:''}</span></div>
@@ -6229,7 +6229,7 @@ function profNotesHTML(p,mine){return`<div class="pnotes">${PNOTE.map(([k,t,ic,c
 const bioQ=(p,empty)=>p.bio?`<p class="bioq"><i>“</i>${esc(p.bio)}<i>”</i></p>`:`<p class="bioq none">${empty||''}</p>`;
 function myPubHTML(){const p=P,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
   return`<div class="card profcard">${bioQ(p,'아직 한 줄 소개가 없습니다.')}<div class="profwrap">${idCardHTML(p,uid,!!p.pfp,false)}${profSideHTML(p,uid,true)}</div>${profNotesHTML(p,true)}
-    <span class="hint">좋아하는·싫어하는 음식과 프로필 사진은 나에 대한 호감도가 10 이상인 선원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
+    <span class="hint">좋아하는·싫어하는 음식은 나에 대한 호감도가 10 이상, 프로필 사진은 30 이상인 선원에게만 보입니다. 사진은 3cm × 4cm 크기로 가운데를 맞춰 잘립니다.</span>
     ${ASSETS?`<div class="row pfpacts" style="gap:5px"><label class="btn sm ${pfpBusy?'ghost':''}">${pfpBusy?'올리는 중…':p.pfp?'사진 바꾸기':'사진 올리기'}<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden data-pfp="1" ${pfpBusy?'disabled':''}></label>${p.pfp?'<button class="btn sm ghost" data-act="pfpdel">캐릭터로 되돌리기</button>':''}</div>`:''}
     <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
@@ -6238,7 +6238,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
   if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up at 10
     const af=affOf(p,uid),open=af>=10,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 10 이상이면 보입니다</span>';
-    return`<div class="card profcard" id="profCard">${p.bio?bioQ(p):''}<div class="profwrap">${idCardHTML(p,id,!!p.pfp&&open,!!p.pfp&&!open)}${profSideHTML(p,id,open)}</div>${profNotesHTML(p,false)}
+    return`<div class="card profcard" id="profCard">${p.bio?bioQ(p):''}<div class="profwrap">${idCardHTML(p,id,!!p.pfp&&af>=30,!!p.pfp&&af<30)}${profSideHTML(p,id,open)}</div>${profNotesHTML(p,false)}
      <div class="profunder"><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span>
       <div class="row" style="gap:5px;flex-wrap:wrap"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}">우편</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}">선물</button></div></div>
      <div class="istats">${[['칭호',ttlOf(p)],['침략자 공격',`${(p.st&&p.st.boss)||0}회`],['내 호감도',`${affOf(P,id)}`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div></div>`}
