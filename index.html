@@ -3498,7 +3498,7 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
 /* 교류 lounge: a small live chat for whoever is on the 교류 tab right now, next to the PAD phone (last 40 lines kept) */
 const LOUNGE_MAX=40,loungeRef=()=>db.doc('boss/lounge');let LCHAT=[],loungeDraft='';
 const loungeHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='교류').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
-function loungeLogHTML(){return LCHAT.length?LCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b class="lgnm" data-act="lgmenu" data-k="${esc(m.uid||'')}" role="button" tabindex="0" title="${esc(m.n||'선원')} 프로필 보기">${headImg(2,whoP(m.uid))}${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 대화 탭에 있는 선원에게 말을 걸어 보십시오.</li>'}
+function loungeLogHTML(){return LCHAT.length?LCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b class="lgnm" data-act="lgmenu" data-k="${esc(m.uid||'')}" data-at="${+m.at||0}" role="button" tabindex="0" title="${esc(m.n||'선원')} 프로필 보기">${headImg(2,whoP(m.uid))}${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 대화 탭에 있는 선원에게 말을 걸어 보십시오.</li>'}
 function loungeHTML(){const h=loungeHere();return`<div class="card bosschat lounge"><div class="stat-row"><span>교류 대화</span><b id="lgHere">${h.length}명</b></div><span class="hint" id="lgWho">${h.map(esc).join(', ')}</span>
   <ol class="bosslog" id="lgLog">${loungeLogHTML()}</ol>
   <form class="bossform" id="lgForm"><input id="lgIn" value="${esc(loungeDraft)}" maxlength="120" autocomplete="off" placeholder="대화 중인 선원에게 말하기" aria-label="교류 대화 입력"><button class="btn sm" type="submit">보내기</button></form>
@@ -6015,9 +6015,15 @@ const SAFE_ACT=new Set(['lgmenu','lgpick','socside','orgopen','orgclose','rankop
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 function lgClose(){const m=document.getElementById('lgMenu');if(m)m.remove()}
+function lgPlace(m,r){const mw=m.offsetWidth,mh=m.offsetHeight;let x=Math.min(r.left,innerWidth-mw-6),y=r.bottom+4;if(y+mh>innerHeight-6)y=Math.max(6,r.top-mh-4);m.style.left=Math.max(6,x)+'px';m.style.top=y+'px'}
+// the chat redraws when a line arrives: keep the menu on the same name (found again by its message), close it once that name is gone or scrolled out
+let lgRaf=0;function lgFollow(){cancelAnimationFrame(lgRaf);const step=()=>{const m=document.getElementById('lgMenu');if(!m)return;
+  const el=document.querySelector(`#lgLog .lgnm[data-k="${CSS.escape(m.dataset.k)}"][data-at="${CSS.escape(m.dataset.at)}"]`),log=document.getElementById('lgLog');
+  if(!el||!log){lgClose();return}const r=el.getBoundingClientRect(),lr=log.getBoundingClientRect();if(r.bottom<lr.top||r.top>lr.bottom){lgClose();return}
+  lgPlace(m,r);lgRaf=requestAnimationFrame(step)};lgRaf=requestAnimationFrame(step)}
 document.addEventListener('pointerdown',e=>{const m=document.getElementById('lgMenu');if(m&&!m.contains(e.target)&&!(e.target.closest&&e.target.closest('.lgnm')))lgClose()},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('lgMenu')){e.stopPropagation();lgClose()}},true);
-addEventListener('scroll',lgClose,true);addEventListener('resize',lgClose);
+addEventListener('resize',lgClose);
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
   const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}if(t.dataset.tab==='req')brokerSeen=false;podArm=null;meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')sellCart={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset,e)}
@@ -6398,7 +6404,7 @@ const SA={
   const el=e&&e.target&&e.target.closest('[data-act]'),r=el?el.getBoundingClientRect():{left:innerWidth/2,bottom:innerHeight/2},gr=(P.greet||{})[k]===dayKey(),ke=esc(k);
   const m=document.createElement('div');m.id='lgMenu';m.className='lgmenu';m.setAttribute('role','menu');
   m.innerHTML=`<button type="button" role="menuitem" data-act="lgpick" data-a="profopen" data-k="${ke}">프로필</button><button type="button" role="menuitem" data-act="lgpick" data-a="hi" data-k="${ke}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button type="button" role="menuitem" data-act="lgpick" data-a="gift" data-k="${ke}">선물</button>`;
-  document.body.appendChild(m);const mw=m.offsetWidth,mh=m.offsetHeight;let x=Math.min(r.left,innerWidth-mw-6),y=r.bottom+4;if(y+mh>innerHeight-6)y=Math.max(6,r.top-mh-4);m.style.left=Math.max(6,x)+'px';m.style.top=y+'px';
+  m.dataset.k=k;m.dataset.at=el&&el.dataset.at||'';document.body.appendChild(m);lgPlace(m,r);lgFollow();
   setTimeout(()=>{const f=m.querySelector('button:not([disabled])');if(f)f.focus({preventScroll:true})},0)},
  lgpick(d){lgClose();if(A[d.a])A[d.a]({k:d.k})},
  profbio(){profBio=!profBio;profBioDraft=P.bio||'';renderPanel();if(profBio)setTimeout(()=>{const i=$('#profBioIn');if(i){i.focus();const n=i.value.length;try{i.setSelectionRange(n,n)}catch(e){}}},30)},
