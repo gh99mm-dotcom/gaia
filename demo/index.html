@@ -4833,7 +4833,7 @@ function shipGive(partId,only,qty){
     if(tab==='ship')renderPanel()
   }).catch(()=>{list.forEach(([id,n])=>add(id,n));P.cr-=cr;commit();toast('재료를 넣지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')})
 }
-const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['drink',30],['drink2',70],['drink1',140],['bandage',20],['kit',50],['kitpro',100]];
+const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['drink',30],['drink2',70],['drink1',110],['bandage',20],['kit',50],['kitpro',100]];
 const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,relic:25,drink:15,kit:18};
 const FSELL={c:12,r:50,u:200,l:1000};  // fish base values; the shop pays 30% of these → 일반 4 · 레어 15 · 유니크 60 · 레전더리 300 CR
 const sellPrice=id=>ITEMS[id].dish?dishSell(id):ITEMS[id].type==='relic'?1:crs(ITEMS[id].fish?FSELL[ITEMS[id].fish]:(ITEMS[id].sv||SELLP[id]||1));
@@ -4845,7 +4845,10 @@ let shopTab='sup',keeperLine=0;
 const SPECIAL=[['invite',10000],['statreset',1000]];
 /* food shows how much of the HP / energy gauge it refills, as a share of my current maximum */
 const gaugePct=(v,mx)=>v>=999?100:Math.max(1,Math.min(100,Math.round(v/Math.max(1,mx)*100)));
-function fxTxt(hp,en,sep=' · '){if(hp>=999)return'체력·에너지 완전 회복';return[hp?`체력 +${gaugePct(hp,maxHp())}%`:'',en?`에너지 +${gaugePct(en,maxEn())}%`:''].filter(Boolean).join(sep)}
+/* food energy is a share of my maximum, never more than half the gauge: the old points read against EN_REF (≈ a Lv.30 gauge),
+   so a 3급 drink gives 14%, 2급 36%, 1급 and the richest dishes 50% — the same at every level */
+const EN_REF=140,EN_CAP=.5,enShare=en=>en>=999?EN_CAP:Math.min(EN_CAP,Math.max(0,en)/EN_REF),foodEn=en=>en>0?Math.max(1,Math.round(maxEn()*enShare(en))):0;
+function fxTxt(hp,en,sep=' · ',got){if(hp>=999)return'체력 완전 회복 · 에너지 +'+Math.round(EN_CAP*100)+'%';return[hp?`체력 +${gaugePct(hp,maxHp())}%`:'',en?`에너지 +${got?gaugePct(en,maxEn()):Math.max(1,Math.round(enShare(en)*100))}%`:''].filter(Boolean).join(sep)}
 function itemDesc(id){const it=ITEMS[id];return it.type==='food'?fxTxt(it.hp||0,it.en||0)+(it.tier?` · ${it.tier}`:''):(it.d||'')}
 /* ───────── 제작대 (workbench, under the 우주선 tab): weapons, suits and crafted gear moved here from the shop ───────── */
 let benchTab='wpn';
@@ -5440,7 +5443,7 @@ const A={
  raidpick(d){raidPick=d.id;renderPanel()},
  async raideat(d){const id=d.id,it=ITEMS[id],r=MYRAID;if(!it||!(P.inv[id]>0)||!raidSoloRest(r)||raidBusy)return;raidBusy=true;const mk=P.job==='medic'?1.5:1;let h=0;
   const nx=await raidTx(r.id,cur=>{if(!raidSoloRest(cur))return null;const me=cur.m[uid];h=it.hp>=999?me.maxHp:Math.round((it.hp||0)*mk);me.hp=Math.min(me.maxHp,me.hp+h);return cur}).catch(()=>null);raidBusy=false;
-  if(!nx){toast('지금은 먹을 수 없습니다.');return}if(!take(id))return;const ee=it.en>=999?maxEn():Math.round((it.en||0)*mk);heal(0,ee);applyDish(id);MYRAID=Object.assign({},nx,{id:r.id});raidHpSync();
+  if(!nx){toast('지금은 먹을 수 없습니다.');return}if(!take(id))return;const ee=foodEn(it.en>=999?999:(it.en||0)*mk);heal(0,ee);applyDish(id);MYRAID=Object.assign({},nx,{id:r.id});raidHpSync();
   log(`원정 중 쉬면서 ${it.n}을(를) 먹었다. 체력 +${h}${ee?`, 에너지 +${ee}`:''}`,'good');commit();renderPanel()},
  raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID||!raidMyTurn())return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);raidBag=false;raidPick=null;commit();renderPanel()}})},
  raidnext(){raidNext()},
@@ -5651,7 +5654,7 @@ const A={
  scback(){const sc=scoutSt();if(sc.mv)return;sc.t=-1;sc.at=0;sc.pend=0;log('정착지로 귀환했다.');commit()},
  sel(d){selItem=d.id;renderPanel()},
  bagtoggle(){bagShow(!bagOpen)},
- use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){const mk=P.job==='medic'?1.5:1,hh=Math.round(it.hp*mk),ee=Math.round(it.en*mk);heal(hh,ee);applyDish(d.id);log(`${it.n}을 먹었다. ${fxTxt(hh,ee,', ')}${mk>1?' (의무원)':''}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
+ use(d){const it=ITEMS[d.id];if(!take(d.id))return;if(it.type==='food'){const mk=P.job==='medic'?1.5:1,hh=Math.round(it.hp*mk),ee=foodEn(it.en>=999?999:it.en*mk);heal(hh,ee);applyDish(d.id);log(`${it.n}을 먹었다. ${fxTxt(hh,ee,', ',1)}${mk>1?' (의무원)':''}`,'good')}else if(it.type==='relic'){const x=it.xp||100;gainXp(x);log(`${it.n}을(를) 해독했다. 경험치 +${x.toLocaleString()}`,'rare')}commit()},
  upboost(){upBoost=!upBoost&&(P.inv.upcat||0)>0;renderPanel()},
  upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;if((P.cr||0)<UP_CR[n]){toast(`크레딧이 모자랍니다. (${UP_CR[n].toLocaleString()} CR 필요)`);return}c.forEach(([id,k])=>take(id,k));P.cr-=UP_CR[n];const pct=upPct(n),usedB=upUseB();if(usedB){take('upcat',1);if(!(P.inv.upcat>0))upBoost=false}
   if(Math.random()*100<pct){P.wlv++;log(`무기 강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}${usedB?' (공명 촉매 사용)':''}`,'rare');toast(`강화 성공! ${WEAPONS[P.wlv]} +${P.wlv}`);sfxFanfare(false);
