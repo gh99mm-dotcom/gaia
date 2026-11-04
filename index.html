@@ -1632,7 +1632,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
         <label class="idf"><span>ID · 아이디</span><input id="authId" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="16" required placeholder="영문 소문자·숫자 4~16자" aria-label="아이디"></label>
         <label class="idf"><span>PASSCODE · 비밀번호</span><input id="authPw" type="password" autocomplete="current-password" required minlength="6" placeholder="6자 이상" aria-label="비밀번호"></label>
         <label class="idf"><span>CONFIRM · 비밀번호 확인</span><input id="authPw2" type="password" autocomplete="new-password" placeholder="한 번 더" aria-label="비밀번호 확인" hidden></label>
-        <label class="idf idcode"><span>SERVICE NO. · 군번</span><input id="authCode" maxlength="9" autocapitalize="characters" spellcheck="false" placeholder="ABCD-2345" aria-label="군번" hidden></label>
+        <label class="idf idcode"><span>SERVICE NO. · 군번</span><input id="authCode" maxlength="12" autocapitalize="characters" spellcheck="false" placeholder="GAIA-00-0000" aria-label="군번" hidden></label>
         <p class="hint" id="authMsg" role="status" style="margin:0;min-height:14px"></p>
         <button class="btn idgo" type="submit" id="authGo">로그인</button>
       </div>
@@ -1673,7 +1673,9 @@ const firebaseConfig={
 const STORAGE_ON=true;
 /* 로그인 아이디는 내부적으로 아이디@ID_DOMAIN 형태의 계정으로 저장됩니다. 운영자 아이디와 함께 firestore.rules의 ADMIN 값도 바꿔야 합니다. */
 const ID_DOMAIN='nebula-outpost.app',ADMIN_ID='gh99mm';
-const ID_RE=/^[a-z0-9_]{4,16}$/,idEmail=id=>id+'@'+ID_DOMAIN,normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const ID_RE=/^[a-z0-9_]{4,16}$/,idEmail=id=>id+'@'+ID_DOMAIN,normCode=c=>{const v=String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');return /^\d{6}$/.test(v)?'GAIA'+v:v},
+/* 군번: new ones read GAIA-00-0000 (GAIA + 6 random digits); the older 8-character codes still work */
+codeOk=c=>/^GAIA\d{6}$/.test(c)||(/^[A-Z0-9]{8}$/.test(c)&&!/^GAIA\d/.test(c)),fmtGaia=c=>/^GAIA\d/.test(c)?[c.slice(0,4),c.slice(4,6),c.slice(6,10)].filter(Boolean).join('-'):c.length>4?c.slice(0,4)+'-'+c.slice(4,8):c;
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
@@ -1765,10 +1767,10 @@ const AUTH_MSG={'auth/email-already-in-use':'이미 쓰고 있는 아이디입�
 const say=(m,bad)=>{const e=$('#authMsg');e.textContent=m||'';e.style.color=bad?'var(--red)':'var(--green)'};
 function setMode(m){modeA=m;document.querySelectorAll('[data-auth]').forEach(b=>b.setAttribute('aria-selected',b.dataset.auth===m));const su=m==='signup';$('#authPw2').hidden=!su;$('#authCode').hidden=!su;$('#authGo').textContent=su?'군번으로 가입하기':'로그인';$('#authTitle').textContent=su?'신규 선원 등록':'승선 인증';$('#authPw').autocomplete=su?'new-password':'current-password';say('')}
 document.querySelectorAll('[data-auth]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.auth)));
-$('#authCode').addEventListener('input',e=>{const c=normCode(e.target.value).slice(0,8);e.target.value=c.length>4?c.slice(0,4)+'-'+c.slice(4):c});
+$('#authCode').addEventListener('input',e=>{const raw=String(e.target.value||'').toUpperCase().replace(/[^A-Z0-9]/g,''),c=raw.slice(0,/^GAIA/.test(raw)?10:8);e.target.value=fmtGaia(c)});
 async function signup(id,pw,code){
   const admin=id===ADMIN_ID;
-  if(!admin){if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않습니다.'}}
+  if(!admin){if(!codeOk(code))throw{msg:'군번을 GAIA-00-0000 형식으로 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않습니다.'}}
   const c=await createUserWithEmailAndPassword(auth,idEmail(id),pw);
   try{const bt=writeBatch(fs);bt.set(doc(fs,'members',c.user.uid),{id,code:admin?'':code,at:Date.now()});if(!admin)bt.delete(doc(fs,'invites',code));await bt.commit()}
   catch(e){try{await deleteUser(c.user)}catch(_){await signOut(auth)}throw{msg:'다른 사람의 군번입니다. 함장에게 새 군번을 받아 주십시오.'}}
@@ -1780,7 +1782,7 @@ function showRejoin(u){rejoinU=u;modeA='rejoin';['#authId','#authPw','#authPw2']
   say(`${(u.email||'').split('@')[0]} 아이디의 승선 기록이 없습니다. 테스트가 끝나 기록이 초기화됐거나 운영자가 내보낸 계정입니다. 새 군번을 적으면 같은 아이디로 다시 합류할 수 있습니다.`,1);
   if(!$('#authOther')){const b=document.createElement('button');b.type='button';b.id='authOther';b.className='btn sm ghost';b.textContent='다른 아이디로 로그인';b.addEventListener('click',async()=>{await signOut(auth);location.reload()});$('#authGo').after(b)}
   setTimeout(()=>$('#authCode').focus(),50)}
-async function rejoin(code){const u=rejoinU;if(!u)return;if(code.length!==8)throw{msg:'군번 8자리를 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않습니다.'};
+async function rejoin(code){const u=rejoinU;if(!u)return;if(!codeOk(code))throw{msg:'군번을 GAIA-00-0000 형식으로 적어 주십시오.'};let ok=false;try{ok=(await getDoc(doc(fs,'invites',code))).exists()}catch(e){}if(!ok)throw{msg:'군번이 올바르지 않습니다.'};
   try{const bt=writeBatch(fs);bt.set(doc(fs,'members',u.uid),{id:(u.email||'').split('@')[0],code,at:Date.now()});bt.delete(doc(fs,'invites',code));await bt.commit()}catch(e){throw{msg:'다른 사람의 군번입니다. 함장에게 새 군번을 받아 주십시오.'}}}
 $('#authForm').addEventListener('submit',async e=>{e.preventDefault();
   if(modeA==='rejoin'){const btn=$('#authGo');btn.disabled=true;say('합류하는 중…');try{await rejoin(normCode($('#authCode').value));say('합류했습니다! 정거장으로 들어갑니다.');setTimeout(()=>location.reload(),600)}catch(x){say(x.msg||'합류하지 못했습니다.',1);btn.disabled=false}return}
@@ -1807,7 +1809,7 @@ onAuthStateChanged(auth,async u=>{
   const lb=$('#logoutBtn');if(lb){lb.hidden=false;lb.title=(u.email||'').split('@')[0]}
   const lobby=Object.assign(makeRoom('lobby'),{join:async n=>makeRoom(String(n).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,80))});
   const user={id:async()=>u.uid,me:async()=>({id:u.uid,name:u.displayName||''}),isOwner:async()=>admin,canEdit:async()=>admin,can:async()=>true,profiles:async()=>({})};
-  window.__fbInvite={mk:()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>A[x%32]).join('')}};
+  window.__fbInvite={mk:()=>'GAIA'+Array.from(crypto.getRandomValues(new Uint32Array(6)),x=>x%10).join('')};
   // photos go to Firebase Storage whenever it is switched on for the project; without it they fall back to Firestore (imgs/…)
   IMG_MODE=(await storageReady())?'storage':'firestore';
   window.__fbResolve({db,user,room:lobby,assets});setTimeout(fillImgs,0);
@@ -2472,7 +2474,7 @@ function renderSugg(){const box=$('#suggBox');if(!box)return;const old=$('#suggI
 function suggInboxHTML(){const items=fbItems(),seen=suggSeenAt;return`<span class="lbl">Inbox · 받은 건의 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>seen&&it.doc!==uid?' · 새 건의':''}</span></div><p>${esc(it.text)}</p>${isAdmin?`<div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div>`:''}</div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없습니다.</span>'}`}
 let suggSeenAt=0;
 function fbAdminHTML(){const items=fbItems();return`<div class="info-sec" data-adm="fb"><span class="lbl">Suggestions · 건의함 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>fbSeen()?' · 새 건의':''}</span></div><p>${esc(it.text)}</p><div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div></div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없습니다.</span>'}</div>`}
-let INV=[],MEMB=[],INVMEMO={};const fmtCode=c=>String(c).slice(0,4)+'-'+String(c).slice(4);
+let INV=[],MEMB=[],INVMEMO={};const fmtCode=c=>{c=String(c);return /^GAIA\d{6}$/.test(c)?c.slice(0,4)+'-'+c.slice(4,6)+'-'+c.slice(6):c.slice(0,4)+'-'+c.slice(4)};
 // right half: every member who joined with a code, newest first — code, who it is now, when they joined
 function invUsedHTML(){const L=MEMB.filter(m=>m.code).sort((a,b)=>(+b.at||0)-(+a.at||0));return`<div class="invcol"><span class="lbl">Used · 사용된 초대코드 · ${L.length}명 가입</span>${L.length?`<div class="fblist">${L.map(m=>{const p=PLAYERS[m.uid]||DELP[m.uid];return`<div class="fbitem invused"><div class="row"><b class="invcode">${fmtCode(m.code)}</b><span class="hint">${fbTime(+m.at||0)}</span></div><div class="row" style="gap:6px;align-items:center">${p?headImg(2,p):''}<b style="color:${colorOf(m.uid)}">${esc(p&&p.nick||'캐릭터를 아직 만들지 않음')}</b>${m.id?`<span class="hint">아이디 ${esc(m.id)}</span>`:''}${p&&p.deleted?'<span class="hint">(삭제됨)</span>':''}</div>${INVMEMO[m.code]?`<span class="hint">발급 메모 · ${esc(INVMEMO[m.code])}</span>`:''}</div>`}).join('')}</div>`:'<span class="hint">아직 초대코드로 가입한 선원이 없습니다.</span>'}</div>`}
 function invHTML(){if(mode!=='online'||!window.__fbInvite)return'';return`<div class="info-sec" data-adm="inv"><div class="invsplit"><div class="invcol"><span class="lbl">Invites · 초대장 · 남은 ${INV.length}장</span><span class="hint">초대장 한 장으로 한 명만 가입할 수 있고, 가입에 쓰이면 자동으로 사라집니다.</span>
