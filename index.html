@@ -1266,6 +1266,36 @@ b.no{color:var(--red)}
 @media (max-width:700px){.two{grid-template-columns:minmax(0,1fr)}}
 .waff{font-style:normal;color:var(--wt,var(--cyan));position:relative;display:inline-block}
 /* the rarer the affix, the more it shines — in pixels: hard outlines, hard-edged colour bands that step along, blinking pixel sparkles */
+#endLayer{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+.endm{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;background:none;border:0;padding:0;cursor:crosshair;display:flex;flex-direction:column;align-items:center;gap:2px;animation:endbob 1.4s steps(2) infinite}
+.endm .emi{display:block;line-height:0;filter:drop-shadow(1px 0 0 #07080e) drop-shadow(-1px 0 0 #07080e) drop-shadow(0 1px 0 #07080e) drop-shadow(0 -1px 0 #07080e) drop-shadow(0 3px 0 rgba(0,0,0,.45))}
+.endm .emi img,.endm .emi canvas{image-rendering:pixelated}
+.endm.tgt .emi{filter:drop-shadow(1px 0 0 #ff5a5a) drop-shadow(-1px 0 0 #ff5a5a) drop-shadow(0 1px 0 #ff5a5a) drop-shadow(0 -1px 0 #ff5a5a) drop-shadow(0 3px 0 rgba(0,0,0,.45))}
+.endm.tgt::before{content:'▼';position:absolute;top:-14px;color:#ff5a5a;font-size:10px;line-height:1;animation:wafblink .6s steps(1) infinite;text-shadow:1px 1px 0 #000}
+.ehp{display:block;width:40px;height:4px;background:#2a0a10;border:1px solid #07080e;box-sizing:content-box}.ehp i{display:block;height:100%;background:#e85a5a}
+.endm.boss .ehp{width:58px}
+.ehp.big{width:100%;max-width:220px;height:6px;margin:4px 0}
+.endm.hit .emi{animation:endshake .2s steps(2)}
+.endm.dead{animation:endpoof .45s steps(4) forwards;pointer-events:none}
+.endnum{position:fixed;z-index:46;transform:translateX(-50%);pointer-events:none;font-family:var(--f-pix,monospace);font-size:12px;color:#c9c3b9;text-shadow:1px 0 0 #000,-1px 0 0 #000,0 1px 0 #000,0 -1px 0 #000;animation:endnum .85s steps(6) forwards}
+.endnum.me{color:#fff;font-size:14px}.endnum.crit{color:#ffd65f;font-size:16px}
+@keyframes endbob{50%{transform:translate(-50%,calc(-50% - 3px))}}
+@keyframes endshake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@keyframes endpoof{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6);filter:brightness(3)}}
+@keyframes endnum{from{opacity:1;margin-top:0}to{opacity:0;margin-top:-34px}}
+.endcard{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;box-shadow:inset 0 0 0 1px var(--line),inset 3px 0 0 #e85a5a}
+.endch{display:flex;flex-direction:column;gap:3px}.endch b{font-family:var(--f-display);font-weight:400;font-size:20px;color:#ff8a8a}
+.endbar{position:relative;height:18px;background:#2a0a10;border:2px solid var(--ink)}.endbar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,#e85a5a 0 6px,#c04848 6px 8px)}
+.endbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:#fff;text-shadow:1px 1px 0 #000}
+.endrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.endtg{display:flex;gap:10px;align-items:center;min-width:0;flex:1}.endtg>div{display:flex;flex-direction:column;min-width:0;flex:1}.endtg b{color:var(--text)}
+.endbtns{display:flex;gap:8px}.endbtns .btn{min-width:96px;justify-content:center;font-size:15px;padding:10px 14px}
+.endmeta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute)}.endmeta b{color:var(--gold)}.endmeta .me{color:var(--cyan)}
+.endwin{max-width:420px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center}.endwin h2{margin:0;font-size:24px;color:#ffd65f}
+.endttl{display:flex;flex-direction:column;gap:3px;padding:10px 18px;border:2px solid #e0b860;background:rgba(224,184,96,.1)}.endttl b{font-size:18px;color:#ffe08a}
+.endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:3px 8px;background:var(--deep)}.endrank li.me{color:var(--cyan)}.endrank em{font-style:normal;color:var(--mute)}
+@media (max-width:600px){.endm .emi img{width:36px!important;height:auto!important}.endm.boss .emi img{width:48px!important}.ehp{width:30px}.endbtns{width:100%}.endbtns .btn{flex:1}}
+@media (prefers-reduced-motion:reduce){.endm,.endnum{animation:none}}
 .waff{text-shadow:none!important;--wo:#07080e;filter:drop-shadow(1px 0 0 var(--wo)) drop-shadow(-1px 0 0 var(--wo)) drop-shadow(0 1px 0 var(--wo)) drop-shadow(0 -1px 0 var(--wo))}
 .waff.wt1{filter:drop-shadow(1px 0 0 var(--wo)) drop-shadow(-1px 0 0 var(--wo)) drop-shadow(0 1px 0 var(--wo)) drop-shadow(0 -1px 0 var(--wo)) drop-shadow(2px 2px 0 #2f5a32)}
 .waff.wt2,.waff.wt3,.waff.wt4{text-shadow:none!important;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:32px 100%;background-repeat:repeat}
@@ -2604,7 +2634,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
   const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
   box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
   const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
-  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
   if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
   const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
@@ -2677,6 +2707,7 @@ const TITLES=[
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
  ['rich2','녹슨 7호의 단골','크레딧 50,000 보유',()=>(P.cr||0)>=50000],
  ['wpn','은하를 쥔 손','무기 +8 강화',()=>(P.wlv||0)>=8],
+ ['ending','가이아의 마지막 수호자','최종 레이드에서 승리',()=>(P.st?.ending||0)>=1],
  ['suit','성운을 입은 자','성운 강화복 착용',()=>(P.suit||0)>=3],
  ['lv20','스무 번째 궤도','레벨 20 달성',()=>P.lvl>=20],
  ['lv40','마흔 번째 궤도','레벨 40 달성',()=>P.lvl>=40],
@@ -3546,6 +3577,7 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
   if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;
   P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
+  endSub();
   bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint()},()=>{});
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
@@ -3756,6 +3788,102 @@ function bossMainHTML(){const b=BOSS;
     <p class="hint">마지막 일격에는 은하 결정 2개가 더해집니다.</p></div>${alive?'':asigHTML()}`}
 // admin page: pick one of the 14 invaders and a level, then summon it
 let bossPick=0;
+/* ───────── 최종 레이드 · 가이아 수호전 ─────────
+   the admin starts it from 운영자 › 침략자 소환. 24 invaders swarm over the whole page (logo, notice bar, menu, the empty space around);
+   everyone online fights them together from the 우주선 tab. No time limit; when the last one falls everyone who dealt damage gets the ending title.
+   while testing it can be run again and again (the admin resets it) */
+const endRef=()=>db.doc('boss/ending');
+let END=null,endPend={},endPendN=0,endFlushT=0,endTgt=-1,endAt=0,endSkAt=0,endPrevHp=null,endSeenDone=0,endBusy=false;
+const END_N=24,END_CD=700,END_SKCD=8000;
+const END_MON=['평원의 포식자 「그라울」','결정 여왕 「셀레네」','함대 제어 AI 「아르고스」','심연의 서리용 「니블」','핵의 문지기 「이그니스」','붉은 별의 심장 「카를로스」','안개의 주인 「모르가」','수정 골렘','빙결 거인','화염 와이번','폭주 경비로봇','고철 전갈','결정 거미','빛먹이 박쥐','독안개 해파리','얼음 망령','용암 정령','붉은 망령 기사','유령 신호','녹슨 포탑','심연 박쥐','서리 늑대','떠돌이 드론','태양 벌레'];
+const END_TINT=['#e85a5a','#b48cf0','#5fb8f0','#9adcf0','#f08a3a','#ff6a8a','#8fc87a','#a9c3d4','#cfe6f0','#f0a040','#c9a06a','#a87a5a','#c08cf0','#8a7ab0','#b8e08a','#d0e8ff','#ff8040','#d05a5a','#9ad0c0','#a89a80','#7a6ab0','#c0d8e8','#9aa0b4','#ffd060'];
+// where each invader clings: [selector, x, y] as fractions of that element's box, or ['L'|'R'|'T', x, y] for the empty space around the layout
+const END_SPOT=[['header .logo',.2,.3],['header .logo',.75,.65],['#ticker',.3,.5],['#ticker',.7,.5],['#nav',.08,.5],['#nav',.36,.4],['#nav',.62,.6],['#nav',.92,.45],
+ ['#netChip',.5,.5],['#skinBtn',.4,.6],['#pilot',.5,.15],['#pilot',.3,.7],['#stage',.12,.08],['#stage',.88,.12],['L',.5,.12],['L',.3,.42],['L',.6,.75],['R',.5,.18],['R',.35,.5],['R',.6,.82],['T',.12,.5],['T',.5,.4],['T',.88,.55],['L',.45,.95]];
+const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done;
+const endHp=(e,i)=>Math.max(0,+((e.hp||{})[i])||0);
+const endAlive=e=>e&&e.mons?e.mons.map((m,i)=>endHp(e,i)>0?i:-1).filter(i=>i>=0):[];
+const endSkill=()=>({mech:['과부하 일격','대상에게 공격력 ×4'],nav:['궤도 휩쓸기','대상과 주변 둘에게 ×1.5'],medic:['응급 지원 사격','대상에게 ×2 · 다른 하나에게 ×1']}[P.job]||['전력 공격','대상에게 ×2']);
+// what I see = the server's HP minus my hits not sent yet (endPend) and sent but not yet seen back (endUnseen);
+// any other drop in the server's HP is someone else's hit and pops up as a grey number
+let endUnseen={};
+const endShow=i=>END?Math.max(0,endHp(END,i)-(endPend[i]||0)-(endUnseen[i]||0)):0;
+const endAliveV=()=>END&&END.mons?END.mons.map((m,i)=>endShow(i)>0?i:-1).filter(i=>i>=0):[];
+function endSub(){endRef().onSnapshot(sn=>{const was=END;END=sn.exists?sn.data():null;
+  if(END&&was&&was.gen===END.gen&&endPrevHp)END.mons.forEach((m,i)=>{const dl=(endPrevHp[i]||0)-endHp(END,i);if(dl<=0)return;const mine=Math.min(dl,endUnseen[i]||0);endUnseen[i]=(endUnseen[i]||0)-mine;if(dl-mine>0)endFloat(i,dl-mine,false)});
+  else{endUnseen={};endPend={};endPendN=0}
+  endPrevHp=END&&END.mons?END.mons.map((m,i)=>endHp(END,i)):null;
+  if(END&&END.on&&!END.done&&END.mons&&!endAlive(END).length)endFinish();
+  if(END&&END.done)endReward();endRender();if(tab==='ship')endPaint()},()=>{})}
+function endFloat(i,d,mine,crit){const L=$('#endLayer'),el=L&&L.querySelector(`.endm[data-k="${i}"]`);if(!el)return;const r=el.getBoundingClientRect(),n=document.createElement('span');
+  n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(r.left+r.width/2+(Math.random()*24-12))+'px';n.style.top=(r.top+4)+'px';L.appendChild(n);setTimeout(()=>n.remove(),900);
+  el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit')}
+function endSpotXY(i){const s=END_SPOT[i%END_SPOT.length],W=innerWidth,H=innerHeight,g=$('.grid')||document.body,gr=g.getBoundingClientRect();
+  if(s[0]==='L'||s[0]==='R'||s[0]==='T'){const side=s[0]==='L'?[0,gr.left]:s[0]==='R'?[gr.right,W]:[gr.left,gr.right];
+    if(s[0]==='T')return[side[0]+(side[1]-side[0])*s[1],Math.max(30,Math.min(H-30,(($('header')||g).getBoundingClientRect().top||0)-10+40*s[2]))];
+    const w=side[1]-side[0];if(w<70)return[s[0]==='L'?24+((i*37)%40):W-24-((i*37)%40),H*s[2]];return[side[0]+w*s[1],H*s[2]]}
+  const el=document.querySelector(s[0]);if(!el)return[W*((i*0.37)%1),H*((i*0.61)%1)];const r=el.getBoundingClientRect();
+  return[Math.max(20,Math.min(W-20,r.left+r.width*s[1])),Math.max(20,Math.min(H-20,r.top+r.height*s[2]))]}
+function endRender(){let L=$('#endLayer');const show=endOn()&&P&&P.joined&&$('#joinModal').hidden;
+  if(!show){if(L)L.remove();return}
+  if(!L){L=document.createElement('div');L.id='endLayer';L.setAttribute('aria-label','최종 레이드 침략자');document.body.appendChild(L)}
+  const alive=endAliveV();if(endTgt<0||!alive.includes(endTgt))endTgt=alive[0]??-1;
+  END.mons.forEach((m,i)=>{let el=L.querySelector(`.endm[data-k="${i}"]`);const hp=endShow(i),dead=hp<=0;
+    if(!el){if(dead)return;el=document.createElement('button');el.type='button';el.className='endm'+(i<6?' boss':'');el.dataset.act='endtgt';el.dataset.k=i;el.style.animationDelay=(-(i*0.17)%1.4)+'s';
+      el.innerHTML=`<span class="emi">${img(MON_SPRS[m.n]||MON_SPR,m.t,i<6?4:3,'',MON_PO)}</span><span class="ehp"><i></i></span>`;L.appendChild(el)}
+    if(dead){if(!el.classList.contains('dead')){el.classList.add('dead');setTimeout(()=>el.remove(),450)}return}
+    el.querySelector('.ehp i').style.width=Math.max(2,hp/m.max*100)+'%';el.classList.toggle('tgt',i===endTgt);el.setAttribute('aria-label',`${m.n} 체력 ${hp.toLocaleString()}/${m.max.toLocaleString()}`)});
+  endLayout()}
+function endLayout(){const L=$('#endLayer');if(!L)return;L.querySelectorAll('.endm').forEach(el=>{const [x,y]=endSpotXY(+el.dataset.k);el.style.left=x+'px';el.style.top=y+'px'})}
+addEventListener('resize',endLayout);addEventListener('scroll',endLayout,{passive:true});setInterval(()=>{if($('#endLayer'))endRender()},500);
+function endHit(mul,extra){if(!endOn()||isFaint())return false;const alive=endAliveV();if(!alive.length)return false;if(!alive.includes(endTgt))endTgt=alive[0];
+  const roll=m=>{const c=Math.random()*100<critPct();return[Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(c?critMul():1)*m)),c]};
+  const hits=[[endTgt,mul]];(extra||[]).forEach(([n,m])=>{alive.filter(i=>i!==endTgt&&!hits.some(h=>h[0]===i)).sort(()=>Math.random()-.5).slice(0,n).forEach(i=>hits.push([i,m]))});
+  hits.forEach(([i,m])=>{let [d,c]=roll(m);d=Math.min(d,endShow(i));if(d<=0)return;endPend[i]=(endPend[i]||0)+d;endPendN++;endFloat(i,d,true,c)});
+  clearTimeout(endFlushT);endFlushT=setTimeout(endFlush,600);endRender();endPaint();return true}
+async function endFlush(){if(endBusy||!endPendN){return}const p=endPend,n=endPendN;endPend={};endPendN=0;endBusy=true;let sum=0;const m={hits:n};
+  for(const i in p){m['hp.'+i]=-p[i];sum+=p[i];endUnseen[i]=(endUnseen[i]||0)+p[i]}m['dmg.'+uid+'.d']=sum;
+  try{await docInc(endRef(),m,{['dmg.'+uid+'.n']:P.nick,last:uid})}catch(e){for(const i in p)endUnseen[i]=Math.max(0,(endUnseen[i]||0)-p[i]);toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.')}
+  endBusy=false;if(endPendN)endFlush();else if(END&&!endAlive(END).length)endFinish()}
+function endFinish(){if(!END||END.done)return;const g=END.gen;bossTx(endRef(),cur=>{if(!cur||cur.done||cur.gen!==g||!cur.mons)return null;if(cur.mons.some((m,i)=>(+((cur.hp||{})[i])||0)>0))return null;cur.done=true;cur.doneAt=Date.now();cur.on=false;return cur})
+  .then(nx=>{if(nx)sys(`[공지] 최종 레이드 승리! 선원 모두의 힘으로 가이아를 지켜냈습니다.`,true,'beacon')}).catch(()=>{})}
+function endReward(){const e=END;if(!e||!e.done||P.endGen===e.gen)return;const me=(e.dmg||{})[uid];P.endGen=e.gen;
+  if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「가이아의 마지막 수호자」를 얻었다.','rare');sfxFanfare(true)}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
+function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)),me=(e.dmg||{})[uid];
+  let M=$('#endWin');if(!M){M=document.createElement('div');M.id='endWin';M.className='modal';document.body.appendChild(M)}M.hidden=false;
+  M.innerHTML=`<div class="px infobox endwin" role="dialog" aria-label="최종 레이드 승리"><span class="lbl">Final Raid · 가이아 수호전</span><h2>가이아를 지켜냈습니다</h2>
+   <p class="hint">${top.length}명의 선원이 함께 싸워 침략자 ${END_N}마리를 모두 물리쳤습니다.</p>
+   ${me&&me.d>0?`<div class="endttl"><span class="lbl">엔딩 칭호</span><b>가이아의 마지막 수호자</b><span class="hint">내 정보 › 칭호에서 달 수 있습니다.</span></div>`:'<p class="hint">이번 전투에서 피해를 주지 못해 칭호를 받지 못했습니다.</p>'}
+   <ol class="endrank">${top.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><b>${esc(v.n||'선원')}</b><span>${Math.round(v.d||0).toLocaleString()}</span></li>`).join('')}</ol>
+   <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
+function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>가이아 수호전</b><span class="hint">화면 곳곳에 들러붙은 침략자를 누르면 그 침략자를 겨눕니다. 제한 시간은 없습니다.</span></div>
+   <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
+   <div class="endrow"><div class="endtg" id="endTgtBox"></div><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button></div></div>
+   <div class="endmeta" id="endMeta"></div></div>`}
+function endPaint(){const c=$('#endCard');if(!c){if(endOn()&&tab==='ship'&&!$('#endCard'))renderPanel();return}if(!endOn()){renderPanel();return}
+  const e=END,tot=e.mons.reduce((a,m)=>a+m.max,0),left=e.mons.reduce((a,m,i)=>a+endShow(i),0),al=endAliveV().length;
+  $('#endBarI').style.width=(left/tot*100)+'%';$('#endBarT').textContent=`남은 침략자 ${al} / ${END_N} · 전체 체력 ${Math.round(left).toLocaleString()} / ${tot.toLocaleString()}`;
+  const t=e.mons[endTgt];$('#endTgtBox').innerHTML=t?`${img(MON_SPRS[t.n]||MON_SPR,t.t,2,'',MON_PO)}<div><span class="lbl">겨눈 침략자</span><b>${esc(t.n)}</b><span class="ehp big"><i style="width:${endShow(endTgt)/t.max*100}%"></i></span><span class="hint">${endShow(endTgt).toLocaleString()} / ${t.max.toLocaleString()}</span></div>`:'';
+  const now=Date.now(),sk=Math.max(0,END_SKCD-(now-endSkAt)),ab=$('#endAtkB'),sb=$('#endSkB');if(ab)ab.disabled=now-endAt<END_CD;if(sb){sb.disabled=sk>0;sb.textContent=sk>0?`✦ ${endSkill()[0]} ${Math.ceil(sk/1000)}초`:`✦ ${endSkill()[0]}`}
+  const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)).slice(0,5),me=((e.dmg||{})[uid]||{}).d||0,meP=Object.values(endPend).reduce((a,b)=>a+b,0);
+  $('#endMeta').innerHTML=`<span>내 피해 <b>${Math.round(me+meP).toLocaleString()}</b></span>${top.map(([u,v],i)=>`<span class="${u===uid?'me':''}">${i+1}. ${esc(v.n||'선원')} ${Math.round(v.d||0).toLocaleString()}</span>`).join('')}`}
+setInterval(()=>{if(endOn()&&tab==='ship')endPaint()},250);
+const EA={
+ endtgt(d){if(!endOn())return;const i=+d.k;if(endShow(i)>0){endTgt=i;endRender();if(tab==='ship')endPaint();else toast(`${END.mons[i].n} 겨눔 · 우주선 탭에서 공격하십시오.`)}},
+ endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1)){endAt=Date.now();sfxCoin()}},
+ endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.5,[[2,1.5]]):j==='medic'?endHit(2,[[1,1]]):endHit(2);if(ok){endSkAt=Date.now();sfxFanfare(false)}},
+ async endstart(){if(!isAdmin||mode!=='online')return;const hp=Math.max(100,Math.min(10000000,+(($('#admEndHp')||{}).value)||5000));
+  const mons=END_MON.map((n,i)=>({n,t:END_TINT[i],max:Math.round(hp*(i<6?3:1))})),e={on:true,done:false,gen:Date.now(),startAt:Date.now(),by:P.nick,mons,hp:Object.fromEntries(mons.map((m,i)=>[i,m.max])),dmg:{},hits:0};
+  try{await endRef().set(e);sys('[공지] 최종 레이드 시작! 침략자들이 정거장 화면을 뒤덮었습니다. 우주선 탭에서 모두 함께 물리치십시오!',true,'siren');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
+ async endreset(){if(!isAdmin||mode!=='online')return;try{await endRef().delete();toast('최종 레이드를 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
+};
+function endAdminHTML(){if(mode!=='online')return'';const e=END,al=e&&e.mons?endAlive(e).length:0;
+  return`<div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
+   <span class="hint">침략자 ${END_N}마리가 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 모두 물리치면 피해를 준 선원에게 엔딩 칭호 「가이아의 마지막 수호자」가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
+   <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 남은 침략자 ${al}/${END_N} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
+   <div class="row" style="gap:6px;flex-wrap:wrap"><label class="hint">침략자 하나의 체력 <input id="admEndHp" class="sel" type="number" min="100" step="500" value="5000" style="width:110px"></label><span class="hint">(앞의 큰 침략자 6마리는 3배)</span>
+    <button class="btn sm" data-act="endstart" ${e&&e.on&&!e.done?'disabled':''}>최종 레이드 시작</button><button class="btn sm ghost" data-act="endreset" ${e?'':'disabled'}>초기화</button></div></div>`}
+
 function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Invader · 탐사 침략자 소환</span>
    ${alive?`<div class="row" style="gap:8px;align-items:center">${bossSpr(b,2)}<span class="hint">지금 <b>${esc(b.name)}</b> Lv.${b.lv} 출현 중 · 체력 ${b.hp.toLocaleString()}/${b.max.toLocaleString()} · ${bossClock(b)}</span><button class="btn sm ghost" data-act="admbossoff">돌려보내기</button></div><span class="hint">돌려보내면 보상도 저주도 없이 사라집니다. 침략자가 있는 동안에는 새로 소환할 수 없습니다.</span>`
@@ -5033,7 +5161,7 @@ function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='room'
   const top=Object.entries(rank).filter(([,r])=>r.n>0).sort((a,b)=>b[1].n-a[1].n).slice(0,8);
   const mine=(rank[uid]||{}).n||0;
   const canAny=open&&pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0),prevN=(SHIP[SHIP.indexOf(pt)-1]||{}).n;
-  return head()+shipSubTabs()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 가이아 풍경"></canvas></div><div class="shiptop card">
+  return head()+shipSubTabs()+endCardHTML()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 가이아 풍경"></canvas></div><div class="shiptop card">
    <div class="sinfo"><b>${all>=1?'가이아 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 가이아'}</b><span class="hint">${all>=1?'모든 선원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 선원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
    <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
@@ -5731,7 +5859,7 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
   op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.stv-skip')){finish();return}next()});document.addEventListener('keydown',key,true);
   q('.stv-art').classList.add('in');setLine();raf=requestAnimationFrame(loop)}
 function openingOnce(){if(!P||(P.opSeen||0)>=2||!$('#joinModal').hidden)return;playOpening(()=>{P.opSeen=2;save()})}/* 2 = the prologue rewritten from the game's outline: everyone sees it once */
-function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat()}
+function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat();endRender()}
 
 /* ───────── crew & chat ───────── */
 // name colour = job: 기관사 orange, 항해사 sky, 의무원 green; no job yet → plain text colour
@@ -6738,6 +6866,7 @@ const JA={
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
 };
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
+Object.assign(A,EA);
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},180e3);
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v){if(J)jGo(1);toast('이름을 적어 주십시오.');setTimeout(()=>$('#callsign').focus(),40);return}
