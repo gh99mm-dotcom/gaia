@@ -6601,7 +6601,7 @@ setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v)return;if(J&&!J.job){toast('직업을 골라 주십시오.');const c=$('#joinBody .jobcards');if(c)c.scrollIntoView({block:'center',behavior:'smooth'});return}
   if(P.joined&&P.nick!=='새 선원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
-  $('#joinModal').hidden=true;log(`「${v}」라는 이름으로 개척단에 합류했다.`,'rare');sys(`새 선원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
+  $('#joinModal').hidden=true;log(`「${v}」라는 이름의 선원으로 승선했다.`,'rare');sys(`새 선원 ${v} 님이 정거장에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
 
 /* ───────── bgm ───────── */
 const bgm=new Audio('bgm.mp3?v=storm');bgm.loop=true;bgm.preload='auto';
