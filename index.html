@@ -1264,7 +1264,28 @@ b.no{color:var(--red)}
 .slot em{position:absolute;right:3px;bottom:0;font-style:normal;font-family:var(--f-pix);font-size:10px;text-shadow:1px 1px 0 var(--ink)}
 .two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}
 @media (max-width:700px){.two{grid-template-columns:minmax(0,1fr)}}
-.waff{font-style:normal;color:var(--wt,var(--cyan));text-shadow:0 0 8px color-mix(in srgb,var(--wt,var(--cyan)) 45%,transparent)}
+.waff{font-style:normal;color:var(--wt,var(--cyan));position:relative;display:inline-block}
+/* the rarer the affix, the more it shines: 일반 plain · 고급 soft glow · 희귀 a light sweep · 영웅 flowing colours · 전설 gold with twinkling stars */
+.waff.wt1{text-shadow:0 0 6px color-mix(in srgb,var(--wt) 55%,transparent)}
+.waff.wt2,.waff.wt3,.waff.wt4{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:250% 100%}
+.waff.wt2{background-image:linear-gradient(100deg,var(--wt) 35%,#e8f6ff 50%,var(--wt) 65%);filter:drop-shadow(0 0 5px rgba(95,184,240,.55));animation:wafsweep 3.2s linear infinite}
+.waff.wt3{background-image:linear-gradient(90deg,#b48cf0,#f08cd8,#8cc8f0,#b48cf0);filter:drop-shadow(0 0 6px rgba(180,140,240,.7));animation:wafflow 3s linear infinite,wafpulse 2s ease-in-out infinite}
+.waff.wt4{background-image:linear-gradient(90deg,#e0b860,#fff3c4,#ffb347,#fff7d6,#e0b860);filter:drop-shadow(0 0 7px rgba(224,184,96,.85)) drop-shadow(0 0 2px #fff6);animation:wafflow 2.2s linear infinite,wafpulse 1.6s ease-in-out infinite;padding:0 .15em}
+.waff.wt3::after,.waff.wt4::before,.waff.wt4::after{content:'✦';position:absolute;-webkit-text-fill-color:initial;font-size:.6em;line-height:1;pointer-events:none;animation:waftw 1.8s ease-in-out infinite}
+.waff.wt3::after{color:#f0d0ff;top:-.35em;right:-.45em}
+.waff.wt4::before{color:#fff3c4;top:-.4em;left:-.35em;animation-delay:.9s}.waff.wt4::after{color:#ffe08a;bottom:-.25em;right:-.4em}
+.idc-row dd:has(.idc-wpn){white-space:normal;overflow:visible}.idc-wpn{display:inline;font-size:.88em;line-height:1.3}
+/* on the pale ID card the affix gets a dark outline so even the gold stays readable */
+.idc .waff{filter:drop-shadow(1px 0 0 #0f1f4a) drop-shadow(-1px 0 0 #0f1f4a) drop-shadow(0 1px 0 #0f1f4a) drop-shadow(0 -1px 0 #0f1f4a)}
+.idc .waff.wt1{text-shadow:none}
+.idc .waff.wt2{filter:drop-shadow(1px 0 0 #0f1f4a) drop-shadow(-1px 0 0 #0f1f4a) drop-shadow(0 1px 0 #0f1f4a) drop-shadow(0 -1px 0 #0f1f4a) drop-shadow(0 0 4px rgba(95,184,240,.8))}
+.idc .waff.wt3{animation:wafflow 3s linear infinite;filter:drop-shadow(1px 0 0 #2a1450) drop-shadow(-1px 0 0 #2a1450) drop-shadow(0 1px 0 #2a1450) drop-shadow(0 -1px 0 #2a1450) drop-shadow(0 0 5px rgba(180,140,240,.9))}
+.idc .waff.wt4{animation:wafflow 2.2s linear infinite;filter:drop-shadow(1px 0 0 #5a3a00) drop-shadow(-1px 0 0 #5a3a00) drop-shadow(0 1px 0 #5a3a00) drop-shadow(0 -1px 0 #5a3a00) drop-shadow(0 0 6px rgba(255,190,60,.95))}
+@keyframes wafsweep{from{background-position:100% 0}to{background-position:-150% 0}}
+@keyframes wafflow{from{background-position:0 0}to{background-position:250% 0}}
+@keyframes wafpulse{50%{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--wt) 90%,transparent)) drop-shadow(0 0 2px #fff8)}}
+@keyframes waftw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1.1) rotate(45deg)}}
+@media (prefers-reduced-motion:reduce){.waff{animation:none!important}.waff::before,.waff::after{animation:none!important;opacity:.8}}
 .waffcard{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .wafnow{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),inset 3px 0 0 var(--wt)}
 .wafname{font-family:var(--f-display);font-weight:400;font-size:17px}
@@ -2260,7 +2281,9 @@ const wAff=()=>P&&P.waff?WAFF.find(a=>a[0]===P.waff)||null:null;
 const WA=k=>{const a=wAff();return a&&a[2][k]||0};
 const waffFx=a=>Object.entries(a[2]).map(([k,v])=>`<span class="${v>0?'wafp':'wafn'}">${WAFF_N[k]} ${v>0?'+':''}${v}%</span>`).join('');
 const wNm=()=>(wAff()?P.waff+' ':'')+WEAPONS[P.wlv||0];
-const wNmH=()=>{const a=wAff();return(a?`<em class="waff" style="--wt:${WAFF_T[a[1]][1]}">${esc(a[0])}</em> `:'')+esc(WEAPONS[P.wlv||0])};
+const waffOf=p=>p&&p.waff?WAFF.find(a=>a[0]===p.waff)||null:null;
+const waffTag=a=>a?`<em class="waff wt${a[1]}" style="--wt:${WAFF_T[a[1]][1]}" data-t="${esc(a[0])}">${esc(a[0])}</em>`:'';
+const wNmH=(p=P)=>{const a=waffOf(p);return(a?waffTag(a)+' ':'')+esc(WEAPONS[Math.max(0,Math.min(WEAPONS.length-1,(p&&p.wlv)|0))])};
 function waffRoll(){let r=Math.random()*100,t=0;for(;t<WAFF_T.length-1;t++){r-=WAFF_T[t][2];if(r<0)break}const L=WAFF.filter(a=>a[1]===t);return L[Math.floor(Math.random()*L.length)]}
 const UP_CR=[10,15,30,45,70,90,120,150,200,250,300,380,450,530,640,750,900,1050,1200,1420];
 // one 64px pixel picture per weapon stage, drawn to match its name (orbit trails and glints grow with the stage)
@@ -5425,11 +5448,11 @@ let bagF=null;
 let waffTbl=false;
 function waffCardHTML(){const a=wAff(),can=(P.cr||0)>=WAFF_CR&&WAFF_MAT.every(([id,c])=>(P.inv[id]||0)>=c);
   return`<div class="card waffcard"><span class="lbl">Workshop · 무기 수식어</span>
-   <div class="wafnow" style="--wt:${a?WAFF_T[a[1]][1]:'var(--line)'}"><b class="wafname">${a?`<em class="waff">${esc(a[0])}</em> `:''}${esc(WEAPONS[P.wlv||0])} +${P.wlv||0}</b>${a?`<span class="waftier">${WAFF_T[a[1]][0]} 수식어</span><div class="waffx">${waffFx(a)}</div>`:'<span class="hint">아직 수식어가 없습니다. 뽑으면 무기 이름 앞에 붙고, 강화해도 그대로 남습니다.</span>'}</div>
+   <div class="wafnow" style="--wt:${a?WAFF_T[a[1]][1]:'var(--line)'}"><b class="wafname">${wNmH()} +${P.wlv||0}</b>${a?`<span class="waftier">${WAFF_T[a[1]][0]} 수식어</span><div class="waffx">${waffFx(a)}</div>`:'<span class="hint">아직 수식어가 없습니다. 뽑으면 무기 이름 앞에 붙고, 강화해도 그대로 남습니다.</span>'}</div>
    <div class="waftiers">${WAFF_T.map(([n,c,p])=>`<span style="--wt:${c}">${n} ${p}%</span>`).join('')}</div>
    <div class="cost-list">${WAFF_MAT.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=WAFF_CR?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${WAFF_CR.toLocaleString()} CR</b></div></div>
    <div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="hint">${a?'다시 뽑으면 지금 수식어는 사라지고 새 수식어로 바뀝니다.':'등급은 위 확률대로 정해집니다.'}</span><button class="btn" data-act="waffroll" ${can?'':'disabled'}>${a?'수식어 다시 뽑기':'수식어 뽑기'}</button></div>
-   <details class="uptable waftbl" ${waffTbl?'open':''}><summary>수식어 40종 보기</summary><table><thead><tr><th>수식어</th><th>등급</th><th>효과</th></tr></thead><tbody>${WAFF.map(x=>`<tr class="${a&&a[0]===x[0]?'now':''}" style="--wt:${WAFF_T[x[1]][1]}"><td><em class="waff">${esc(x[0])}</em></td><td>${WAFF_T[x[1]][0]}</td><td class="waffx">${waffFx(x)}</td></tr>`).join('')}</tbody></table></details>
+   <details class="uptable waftbl" ${waffTbl?'open':''}><summary>수식어 40종 보기</summary><table><thead><tr><th>수식어</th><th>등급</th><th>효과</th></tr></thead><tbody>${WAFF.map(x=>`<tr class="${a&&a[0]===x[0]?'now':''}" style="--wt:${WAFF_T[x[1]][1]}"><td>${waffTag(x)}</td><td>${WAFF_T[x[1]][0]}</td><td class="waffx">${waffFx(x)}</td></tr>`).join('')}</tbody></table></details>
   </div>`}
 document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('waftbl'))waffTbl=e.target.open},true);
 function upCardHTML(){const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n];
@@ -6500,7 +6523,7 @@ function idCardHTML(p,id,photo,lock){const logo=($('.lg2-em img')||{}).src||'',s
   return`<div class="idc"><div class="idc-top"><span class="idc-tl">${L}</span><span class="idc-brand"><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div>
    <div class="idc-panel"><span class="idc-moto">Together<br>We Rebuild<br>Gaia</span><span class="idc-bigp">${L}</span>
     <div class="idc-ph">${photo?pfpImg(p.pfp):`<span class="idc-av">${meImg(5,p)}</span>`}${lock?'<span class="pfplock">🔒 사진은 호감도 ±30부터</span>':''}</div>
-    <dl class="idc-dl">${row('이름',esc(p.nick||'선원'),1)}${row('직군',j?esc(j.n):'없음')}${row('직급',esc(orgRole(id)))}${row('레벨','LV.'+(p.lvl||1))}${row('생활레벨','LV.'+lifeSum(p))}</dl>
+    <dl class="idc-dl">${row('이름',esc(p.nick||'선원'),1)}${row('직군',j?esc(j.n):'없음')}${row('직급',esc(orgRole(id)))}${row('무기',`<span class="idc-wpn">${wNmH(p)} +${(p.wlv|0)}</span>`)}${row('레벨','LV.'+(p.lvl||1))}${row('생활레벨','LV.'+lifeSum(p))}</dl>
     <svg class="idc-seal" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="sealT" d="M14 50 a36 36 0 0 1 72 0"/><path id="sealB" d="M10 50 a40 40 0 0 0 80 0"/></defs><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="3"/><text font-size="11.5" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealT" startOffset="50%">GAIA PROJECT</textPath></text><text font-size="10" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealB" startOffset="50%">★ SECTOR K-7 ★</textPath></text><circle cx="50" cy="50" r="12" fill="currentColor"/><ellipse cx="50" cy="51" rx="21" ry="6" fill="none" stroke="currentColor" stroke-width="3" transform="rotate(-18 50 50)"/></svg></div>
    <div class="idc-bot"><div class="idc-ttl"><span class="idc-wing">❖</span><span><b>${esc(ttlOf(p))}</b>${sn?`<small>${esc(sn)}</small>`:''}</span></div>
     <div class="idc-logo">${L}<span><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div></div></div>`}
