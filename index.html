@@ -1337,7 +1337,7 @@ b.no{color:var(--red)}
 .joinpage{position:fixed;inset:0;z-index:55;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(28px,5vh) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%),rgba(6,7,13,.55)}
 body:has(#joinModal:not([hidden])) .wrap{display:none}
 .joinwrap{width:100%;max-width:640px;display:flex;flex-direction:column;gap:12px}
-.joinhead{display:flex;align-items:center;gap:14px}.joinhead h1{font-size:28px;line-height:1;text-shadow:2px 2px 0 var(--ink)}.joinhead .lbl{display:block;margin-top:6px}
+.joinhead{display:flex;align-items:center;justify-content:flex-start;gap:14px;text-align:left}.joinhead h1{font-size:28px;line-height:1;text-shadow:2px 2px 0 var(--ink)}.joinhead .lbl{display:block;margin-top:6px}
 .joincard{padding:18px;display:flex;flex-direction:column;gap:16px}
 .joincard input#callsign{background:var(--deep);color:var(--text);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:9px 10px;font:inherit;font-size:16px}
 .jsec{display:flex;flex-direction:column;gap:7px}
@@ -1352,6 +1352,22 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .jst b{font-family:var(--f-display);font-weight:400;font-size:15px}
 .jst .ctl{display:flex;align-items:center;gap:6px}.jst .ctl .abv{font-family:var(--f-pix);font-size:16px;color:var(--gold);min-width:24px;text-align:center}
 .jst .btn{padding:3px 9px;min-width:30px;justify-content:center}
+.jdress{display:grid;grid-template-columns:200px 1fr;gap:16px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:14px}
+.jstage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:210px;padding:12px 8px 10px;overflow:hidden;background:radial-gradient(ellipse 70% 55% at 50% 42%,rgba(127,208,208,.16),transparent 70%),repeating-linear-gradient(0deg,transparent 0 15px,rgba(127,208,208,.05) 15px 16px),repeating-linear-gradient(90deg,transparent 0 15px,rgba(127,208,208,.05) 15px 16px);border:1px solid var(--line)}
+.jav{position:relative;z-index:1;animation:jbob 2.6s ease-in-out infinite}.jav img{display:block;filter:drop-shadow(0 0 10px rgba(127,208,208,.25))}
+@keyframes jbob{50%{transform:translateY(-4px)}}
+.jped{display:block;width:120px;height:18px;margin-top:-10px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(127,208,208,.45),rgba(127,208,208,.08) 60%,transparent 72%);border-top:2px solid rgba(127,208,208,.5)}
+.jtag{margin-top:10px;padding:3px 10px;border:2px solid var(--cyan);color:var(--cyan);font-size:13px;letter-spacing:.04em;background:rgba(127,208,208,.08);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jtag.empty{border-color:var(--line);color:var(--mute)}
+.jpal{display:flex;flex-direction:column;gap:12px;min-width:0}
+.jpg{display:flex;flex-direction:column;gap:6px}
+.jpgh{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}.jpgh b{color:var(--text)}.jpgh span{color:var(--cyan);font-size:12px}
+.jsws{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;margin:0}
+.jsws .sw{width:auto;height:auto;aspect-ratio:1;max-width:30px;transition:transform .12s}
+.jsws .sw:hover{transform:translateY(-2px)}
+.jsws .sw[aria-pressed="true"]{transform:scale(1.12);outline-offset:2px}
+@media (max-width:520px){.jdress{grid-template-columns:1fr;padding:10px}.jstage{min-height:190px}}
+@media (prefers-reduced-motion:reduce){.jav{animation:none}}
 .jstephd{display:flex;flex-direction:column;align-items:center;gap:10px;padding-bottom:14px;border-bottom:2px dashed var(--line)}
 .jsteps{display:flex;align-items:center;justify-content:center;width:100%;max-width:320px}
 .jsteps .jsd{flex:none;width:30px;height:30px;padding:0;display:grid;place-items:center;border:2px solid var(--line);background:var(--deep);color:var(--mute);font:inherit;font-weight:700;font-size:13px;cursor:default}
@@ -1567,7 +1583,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <main class="joinpage" id="joinModal" hidden>
   <div class="joinwrap">
-    <header class="joinhead"><span id="joinIc"></span><div><h1>선원 등록</h1><span class="lbl">Crew registration</span></div></header>
+    <header class="joinhead"><span id="joinIc" hidden></span><div><h1>선원 등록</h1><span class="lbl">Crew registration</span></div></header>
     <p class="lead">섹터 K-7 궤도 정거장에 오신 걸 환영합니다. 승선하기 전에 나를 소개해 주십시오. 정한 내용은 다른 선원의 프로필 화면에 보입니다.</p>
     <form class="px joincard" id="joinForm">
       <div class="jstephd" id="joinSteps"></div>
@@ -6568,6 +6584,7 @@ document.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||e.i
   if(!act)return;e.preventDefault();t.blur();A[act]({})});
 document.addEventListener('keydown',e=>{if(e.target.id==='profBioIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();A.profbiosave()}});
 // live character count while writing a profile note
+document.addEventListener('input',e=>{if(e.target.id!=='callsign')return;const g=$('#jTag');if(g){const v=e.target.value.trim();g.textContent=v||'이름 없음';g.classList.toggle('empty',!v)}});
 document.addEventListener('input',e=>{if(e.target.id!=='noteIn')return;const c=$('#noteCnt');if(c){const n=e.target.value.length,mx=+e.target.maxLength||0;c.textContent=n.toLocaleString();c.style.color=mx&&n>=mx?'var(--red)':mx&&n>=mx*.9?'var(--gold)':''}});
 document.addEventListener('keydown',e=>{if(e.target.id==='whyIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();A.whysave()}});
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.imgctx&&t.files&&t.files.length){addImgs(t.dataset.imgctx,[...t.files]);t.value=''}if(t.dataset&&t.dataset.pfp&&t.files&&t.files[0]){pfpUpload(t.files[0]);t.value=''}if(t.dataset&&t.dataset.padpfp&&t.files&&t.files[0]){padPfpUpload(t.files[0]);t.value=''}});
@@ -6589,7 +6606,7 @@ const jLeft=()=>J_START*ABIL.length+J_FREE-ABIL.reduce((a,[k])=>a+(J.as[k]||0),0
 function jChips(list,kind){return list.length?list.map(id=>`<span class="ichip ${kind}">${iicon(id,1)}${esc(ITEMS[id].n)}<button type="button" class="pvx" data-act="junpick" data-k="${id}" aria-label="${esc(ITEMS[id].n)} 빼기">×</button></span>`).join(''):`<span class="hint">아직 고르지 않았습니다.</span>`}
 function renderJoin(){if(!J)return;const b=$('#joinBody');if(!b)return;const prev={look:J.look},left=jLeft();
   const st=J.step||1;
-  b.innerHTML=st===1?`<div class="jsec"><span class="lbl">Look · 내 모습</span><div class="jlook"><div class="jprev">${meImg(6,prev)}</div><div class="looks">${Object.entries(LOOKS).map(([k,g])=>`<div><span class="lbl">${g.n}</span><div class="swatches">${g.opts.map(([col,nm])=>`<button type="button" class="sw" style="background:${col}" data-act="jlook" data-k="${k}" data-c="${col}" aria-pressed="${J.look[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`).join('')}<span class="hint">네온 색은 게임 안 옷장에서 살 수 있습니다.</span></div></div></div>`:st===2?`<div class="jsec"><span class="lbl">Taste · 좋아하는 요리 · 싫어하는 요리 (각 ${J_MAX}개)</span>
+  b.innerHTML=st===1?`<div class="jsec"><span class="lbl">Look · 내 모습</span><div class="jdress"><div class="jstage"><div class="jav">${meImg(7,prev)}</div><i class="jped"></i><span class="jtag${($('#callsign').value||'').trim()?'':' empty'}" id="jTag">${esc(($('#callsign').value||'').trim())||'이름 없음'}</span></div><div class="jpal">${Object.entries(LOOKS).map(([k,g])=>{const cur=g.opts.find(o=>o[0]===J.look[k]);return`<div class="jpg"><div class="jpgh"><b>${g.n}</b><span>${cur?cur[1]:''}</span></div><div class="swatches jsws">${g.opts.map(([col,nm])=>`<button type="button" class="sw" style="background:${col}" data-act="jlook" data-k="${k}" data-c="${col}" aria-pressed="${J.look[k]===col}" title="${nm}" aria-label="${g.n} ${nm}"></button>`).join('')}</div></div>`}).join('')}<span class="hint">네온 색은 게임 안 옷장에서 살 수 있습니다.</span></div></div></div>`:st===2?`<div class="jsec"><span class="lbl">Taste · 좋아하는 요리 · 싫어하는 요리 (각 ${J_MAX}개)</span>
    <div class="jpicked"><b style="color:var(--pink);font-size:13px;margin-right:4px">♥ 좋아함</b>${jChips(J.likes,'like')}</div>
    <div class="jpicked"><b style="color:var(--red);font-size:13px;margin-right:4px">✕ 싫어함</b>${jChips(J.hates,'hate')}</div>
    <div class="row" style="gap:5px"><button type="button" class="qchip" data-act="jmode" data-k="like" aria-pressed="${J.mode==='like'}">♥ 좋아하는 것 고르기</button><button type="button" class="qchip" data-act="jmode" data-k="hate" aria-pressed="${J.mode==='hate'}">✕ 싫어하는 것 고르기</button></div>
