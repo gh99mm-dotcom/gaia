@@ -1273,14 +1273,17 @@ b.no{color:var(--red)}
 .waff.wt3{--wo:#2a1450;background-image:linear-gradient(90deg,#b48cf0 0 8px,#f08cd8 8px 16px,#8cc8f0 16px 24px,#d8b4ff 24px 32px);animation:wafstep 1.6s steps(8) infinite}
 .waff.wt4{--wo:#5a3400;background-size:24px 100%;background-image:linear-gradient(90deg,#e0b860 0 8px,#ffe08a 8px 14px,#fffbe6 14px 17px,#ffb347 17px 24px);animation:wafstep4 1.2s steps(6) infinite;padding:0 3px}
 .wafw{position:relative;display:inline-block}
-.wsp{position:absolute;width:1px;height:1px;background:#fff;box-shadow:1px 0 #f0d0ff,-1px 0 #f0d0ff,0 1px #f0d0ff,0 -1px #f0d0ff;pointer-events:none;opacity:0;animation:wafblink .8s steps(1) infinite}
+.wsp{position:absolute;z-index:2;width:1px;height:1px;background:#fff;box-shadow:1px 0 #f0d0ff,-1px 0 #f0d0ff,0 1px #f0d0ff,0 -1px #f0d0ff;pointer-events:none;opacity:0;animation:wafblink .8s steps(1) infinite}
 .wt4~.wsp{box-shadow:1px 0 #ffe08a,-1px 0 #ffe08a,0 1px #ffe08a,0 -1px #ffe08a}
 .wt4~.wsp.gd{box-shadow:none;background:#fff6c8}
+:root[data-skin="light"] .wsp{background:#fff;box-shadow:1px 0 #7a3fd0,-1px 0 #7a3fd0,0 1px #7a3fd0,0 -1px #7a3fd0,1px 1px #3a1a70,-1px -1px #3a1a70,1px -1px #3a1a70,-1px 1px #3a1a70!important}
+:root[data-skin="light"] .wt4~.wsp{background:#fff;box-shadow:1px 0 #e0a020,-1px 0 #e0a020,0 1px #e0a020,0 -1px #e0a020,1px 1px #6a3c00,-1px -1px #6a3c00,1px -1px #6a3c00,-1px 1px #6a3c00!important}
+:root[data-skin="light"] .wt4~.wsp.gd{background:#e0a020;box-shadow:1px 0 #6a3c00,-1px 0 #6a3c00,0 1px #6a3c00,0 -1px #6a3c00!important}
 .idc-row dd:has(.idc-wpn){white-space:normal;overflow:visible}.idc-wpn{display:inline;font-size:.88em;line-height:1.3}
 .idc .waff.wt0,.idc .waff.wt1{--wo:#0f1f4a}
 @keyframes wafstep{from{background-position:0 0}to{background-position:32px 0}}
 @keyframes wafstep4{from{background-position:0 0}to{background-position:24px 0}}
-@keyframes wafblink{0%,30%{opacity:1}35%,100%{opacity:0}}
+@keyframes wafblink{0%,50%{opacity:1}55%,100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.waff,.wsp{animation:none!important}.wsp{opacity:.9}}
 .waffcard{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .wafnow{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),inset 3px 0 0 var(--wt)}
