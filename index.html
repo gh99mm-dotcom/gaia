@@ -5574,11 +5574,16 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     if(((t*3)|0)%4===0){P(cx+Math.round(sw),top+20,B[7]);P(cx+Math.round(sw)+1,top+21,B[6])}}
   function smoke(t,k){for(let i=0;i<9;i++){const ph=(t*.25+i/9)%1,x=24+i*24+Math.sin(t+i)*6,y=H-18-ph*60,r=5+ph*12;g.globalAlpha=(1-ph)*.35*k;g.fillStyle=B[3+(i%2)];g.beginPath();g.arc(x,y,r,0,7);g.fill()}g.globalAlpha=1}
   // inside the ship looking out: only the sky shows through the hole (the game's night sky with its moon, nothing of the wreck)
-  // the band of night sky around the moon, cut from the game's scene, its edges feathered so it melts into the dark around it
-  let SKYB=null,SKC=[B[1],B[0]];if(SCN){const sw=150,sh=50,c=document.createElement('canvas');c.width=sw;c.height=sh;const x=c.getContext('2d');x.drawImage(SCN,0,0,sw,sh,0,0,sw,sh);
-    const px=x.getImageData(0,0,sw,sh).data,avg=(y0,y1)=>{let r=0,gg=0,b=0,n=0;for(let y=y0;y<y1;y++)for(let X=0;X<sw;X+=3){const k=(y*sw+X)*4;r+=px[k];gg+=px[k+1];b+=px[k+2];n++}return`rgb(${r/n|0},${gg/n|0},${b/n|0})`};SKC=[avg(0,6),avg(sh-8,sh)];
-    x.globalCompositeOperation='destination-in';const m=x.createRadialGradient(sw*.32,sh*.42,4,sw*.4,sh*.5,sw*.55);m.addColorStop(0,'#000');m.addColorStop(.55,'rgba(0,0,0,.85)');m.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=m;x.fillRect(0,0,sw,sh);SKYB=c}
-  const sky=t=>{const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,SKC[0]);gr.addColorStop(.45,SKC[1]);gr.addColorStop(1,B[0]);g.fillStyle=gr;g.fillRect(0,0,W,H);if(SKYB)g.drawImage(SKYB,0,0,150,50,62,14,96,32);stars(t,80)};
+  // the night sky, drawn fresh in the same blues as the hull: a dithered gradient, a faint nebula band, a small moon with its halo
+  const BY=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];let SKY=null;{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),px=(X,Y,col)=>{x.fillStyle=col;x.fillRect(X,Y,1,1)};
+    for(let y=0;y<H;y++)for(let X=0;X<W;X++){let v=2.25-(y/H)*2.1;const nb=Math.exp(-Math.pow((y-H*.62+X*.28-W*.14)/14,2))*(.55+.45*Math.sin(X*.07+y*.05)*Math.sin(X*.023));v+=nb*.9;
+      const mx=X-W*.36,my=y-H*.3,md=Math.sqrt(mx*mx+my*my);if(md<26)v+=(1-md/26)*1.1;
+      const lo=Math.max(0,Math.min(6,Math.floor(v))),fr=v-lo;px(X,y,B[fr*16>BY[y&3][X&3]?Math.min(7,lo+1):lo])}
+    const cx=Math.round(W*.36),cy=Math.round(H*.3),r=9;for(let y=-r;y<=r;y++)for(let X=-r;X<=r;X++){const d=X*X+y*y;if(d>r*r)continue;const lit=(-X*.7-y*.6)/r+.35,cr=[[3,-2,2.2],[-3,3,1.6],[2,4,1.3],[-4,-3,1.2]].some(([a,b,q])=>(X-a)*(X-a)+(y-b)*(y-b)<q*q);
+      let v=4.2+lit*2.4-(cr?1.1:0);if(d>(r-1)*(r-1))v-=.6;const lo=Math.max(3,Math.min(6,Math.floor(v))),fr=v-lo;px(cx+X,cy+y,B[fr*16>BY[(y+16)&3][(X+16)&3]?Math.min(7,lo+1):lo])}
+    for(let k=0;k<90;k++){const X=(rnd()*W)|0,Y=(rnd()*H*.8)|0;if(Math.hypot(X-cx,Y-cy)<16)continue;px(X,Y,rnd()<.2?B[6]:B[4])}
+    SKY=c}
+  const sky=t=>{if(SKY)g.drawImage(SKY,0,0);else R(0,0,W,H,B[0]);stars(t,40)};
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
