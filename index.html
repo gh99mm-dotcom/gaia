@@ -2809,6 +2809,9 @@ async function connect(){
   farmLoad();
   shipSubscribe();
   tabSub(()=>tab==='fish',()=>db.doc('duel/current').onSnapshot(sn=>{DUEL=sn.exists?sn.data():null;if(tab==='fish')renderPanel()},()=>{}));
+  {const pq={};const pinSet=()=>{PINS=[...(pq.a||[]),...(pq.b||[])];renderChat()};
+   db.collection('chat').where('adm','==',true).onSnapshot(sn=>{pq.a=sn.docs.map(d=>Object.assign({id:d.id},d.data()));pinSet()},()=>{});
+   db.collection('chat').where('snd','in',['beacon','static']).onSnapshot(sn=>{pq.b=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(m=>m.sys);pinSet()},()=>{});}
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
     // every notice sent from the admin side (adm:true) that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
     // invader notices carry their own sound: the beacon coming back on after a win, crackling static after a loss
@@ -5703,8 +5706,10 @@ const tickKind=t=>t.startsWith('[공지]')?'n':t.startsWith('새 선원')?'j':'c
 // the admin can strike any notice off the ticker
 const tickDel=x=>isAdmin&&mode==='online'&&x&&x.id?`<button type="button" class="tk-x" data-act="tickdel" data-k="${esc(x.id)}" title="이 알림 삭제" aria-label="이 알림 삭제">×</button>`:'';
 /* ticker: the latest admin notice stays pinned; everyone else's news slides past once (6 s each) and is gone */
+// the pinned notice comes from its own little query, so it stays up however much chat piles on after it (the main feed only holds the last 50)
+let PINS=[];
 let tickSeen=null,tickQ=[],tickCur=null,tickUntil=0;
-const tickPin=()=>{let p=null;CHAT.forEach(m=>{if(tickPinned(m)&&(!p||(+m.at||0)>(+p.at||0)))p=m});return p};
+const tickPin=()=>{let p=null;[...CHAT,...PINS].forEach(m=>{if(tickPinned(m)&&(!p||(+m.at||0)>(+p.at||0)))p=m});return p};
 function renderChat(fresh){
   const el=$('#ticker');if(!el)return;const L=tickList(),pin=tickPin();
   const news=CHAT.filter(m=>m.sys&&!tickPinned(m)&&TICK_RE.test(m.text||''));
@@ -5944,7 +5949,7 @@ const A={
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[],cr:n,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'선원'} 님에게 ${n.toLocaleString()} CR을 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true,adm:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now(),adm:true}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
- tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
+ tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);PINS=PINS.filter(m=>m.id!==d.k);renderChat();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
  admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
  profile(){meView=true;mailView=false;orgView=false;rankView=false;profView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
