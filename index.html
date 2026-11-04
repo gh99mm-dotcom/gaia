@@ -1270,7 +1270,9 @@ b.no{color:var(--red)}
 .endnum{position:fixed;z-index:46;transform:translateX(-50%);pointer-events:none;font-family:var(--f-pix,monospace);font-size:12px;color:#c9c3b9;text-shadow:1px 0 0 #000,-1px 0 0 #000,0 1px 0 #000,0 -1px 0 #000;animation:endnum .85s steps(6) forwards}
 .endnum.me{color:#fff;font-size:14px}.endnum.crit{color:#ffd65f;font-size:16px}
 @keyframes endnum{from{opacity:1;margin-top:0}to{opacity:0;margin-top:-34px}}
-.endcard{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;box-shadow:inset 0 0 0 1px var(--line),inset 3px 0 0 #e8b4b0}
+.endhud{position:fixed;z-index:47;left:50%;bottom:max(12px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(680px,calc(100vw - 24px));display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:rgba(10,8,18,.92);border:2px solid #07080e;box-shadow:inset 0 0 0 1px #6a5a80,inset 3px 0 0 #e8b4b0,0 0 0 2px rgba(232,180,176,.25)}
+.endhud .endch .hint{display:none}
+body:has(#endHud) .toast{bottom:190px!important}.endhud .endch b{font-size:17px}
 .endch{display:flex;flex-direction:column;gap:3px}.endch b{font-family:var(--f-display);font-weight:400;font-size:20px;color:#e8b4b0}
 .endbar{position:relative;height:18px;background:#2a0a10;border:2px solid var(--ink)}.endbar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,#e85a5a 0 6px,#c04848 6px 8px)}
 .endbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:#fff;text-shadow:1px 1px 0 #000}
@@ -3792,7 +3794,7 @@ function endSub(){endRef().onSnapshot(sn=>{const was=END;END=sn.exists?sn.data()
   else{endUnseen=0;endPend=0}
   endPrevHp=END?endHpS():null;
   if(END&&END.on&&!END.done&&endHpS()<=0)endFinish();
-  if(END&&END.done)endReward();endRender();if(tab==='ship')endPaint()},()=>{})}
+  if(END&&END.done)endReward();endRender();endPaint()},()=>{})}
 /* ── drawing: low-res canvases scaled up so every dot is a crisp pixel ── */
 const EPX=3;
 function endSpotXY(s){const W=innerWidth,H=innerHeight,g=$('.grid')||document.body,gr=g.getBoundingClientRect();
@@ -3800,7 +3802,7 @@ function endSpotXY(s){const W=innerWidth,H=innerHeight,g=$('.grid')||document.bo
   if(s[0]==='T'){const hd=$('header');const t=hd?hd.getBoundingClientRect().top:0;return[gr.left+gr.width*s[1],Math.max(14,t-18+40*s[2])]}
   const el=document.querySelector(s[0]);if(!el)return[W*s[1],H*s[2]];const r=el.getBoundingClientRect();return[r.left+r.width*s[1],r.top+r.height*s[2]]}
 function endCv(id,z){let c=document.getElementById(id);if(!c){c=document.createElement('canvas');c.id=id;c.className='endcv';c.style.zIndex=z;c.setAttribute('aria-hidden','true');
-  const st=$('#stars');if(id==='endBg'&&st)st.after(c);else document.body.appendChild(c)}
+  document.body.appendChild(c)}
   const w=Math.ceil(innerWidth/EPX),h=Math.ceil(innerHeight/EPX);if(c.width!==w||c.height!==h){c.width=w;c.height=h}return c}
 const ePx=(x,c,X,Y,w=1,h=1)=>{x.fillStyle=c;x.fillRect(Math.round(X),Math.round(Y),w,h)};
 function endEye(x,X,Y,r,open,look,hurt,t){X=Math.round(X);Y=Math.round(Y);const rx=Math.max(3,Math.round(r*1.6)),ry=Math.max(2,Math.round(r));
@@ -3814,30 +3816,30 @@ function endEye(x,X,Y,r,open,look,hurt,t){X=Math.round(X);Y=Math.round(Y);const 
   if(oy>1)ePx(x,'#ffffff',px-Math.max(1,pr)-0,py-Math.max(1,pr),1,1)}
 function endDraw(){if(!endOn()){['endBg','endFg'].forEach(i=>{const c=document.getElementById(i);if(c)c.remove()});return}
   const t=performance.now()/1000,frac=END.max?endShow()/END.max:1,hurt=performance.now()-endHitT<160;
-  const bg=endCv('endBg',0),x=bg.getContext('2d'),W=bg.width,H=bg.height;x.clearRect(0,0,W,H);
+  const bg=endCv('endBg',43),x=bg.getContext('2d'),W=bg.width,H=bg.height;x.clearRect(0,0,W,H);
   const g=($('.grid')||document.body).getBoundingClientRect(),hd=$('header'),ht=hd?hd.getBoundingClientRect().top:0;
-  const cx=W*.5,cy=Math.max(26,(ht+40)/EPX),R=Math.max(W,H);
+  const cx=W*.5,cy=H*.4,R=Math.max(W,H);
   // six wings: tapered feathers laid along curved spines sweeping out and down from the eye (white bars across like a great bird's).
   // they are heavy to draw, so each wingbeat pose is drawn once into a spare canvas and reused until the window size or the boss's HP band changes
   const fp=Math.floor(t/.6)%2,fb=Math.ceil(frac*10),ck=`${W}x${H}|${Math.round(cy)}|${fb}`;if(endWingK!==ck){endWingK=ck;endWing=[]}
   if(!endWing[fp]){const oc=document.createElement('canvas');oc.width=W;oc.height=H;const x0=x;{const x=oc.getContext('2d'),flap=fp?.04:-.04,frac=fb/10;
-  for(const sd of [-1,1])for(let k=0;k<3;k++){const A0=sd*(1.3+k*.45)+sd*flap*(k+1),len=R*(.55+k*.08);
-    for(let r=len;r>10;r-=2.2){const q=r/len,dir=A0-sd*(1.05+k*.25)*q*q,sx=cx+Math.sin(dir)*r,sy=cy+Math.cos(dir)*r*.95;if(sx<-60||sx>W+60||sy>H+60)continue;
-      const fl=6+q*Math.min(70,R*.16),fa=dir+sd*(1.25-q*.5),ca=Math.cos(fa),sa=Math.sin(fa),nx=ca,ny=-sa;
+  for(const sd of [-1,1])for(let k=0;k<3;k++){const A0=sd*(.75+k*.8)+sd*flap*(k+1),len=R*(.42+(k===1?.1:0));
+    for(let r=len;r>10;r-=2.2){const q=r/len,dir=A0+sd*(k===2?-.35:.3)*q*q,sx=cx+Math.sin(dir)*r,sy=cy+Math.cos(dir)*r*.95;if(sx<-60||sx>W+60||sy>H+60)continue;
+      const fl=6+q*Math.min(120,R*.24),fa=dir+sd*(1.25-q*.5),ca=Math.cos(fa),sa=Math.sin(fa),nx=ca,ny=-sa;
       for(let i=0;i<fl;i++){const u=i/fl,w=Math.max(0,Math.round((1-u*u)*2.2)),fx=sx+sa*i,fy=sy+ca*i*.95;
         const col=u>.52&&u<.72&&k!==1?'#d8d4e8':u<.2?'#1a1626':(((Math.round(r)+i)>>1)&1)?'#3a3552':'#4e4868';
         ePx(x,'#0c0a14',fx+nx*(w+1),fy+ny*(w+1));for(let v=-w;v<=w;v++)ePx(x,v===w?'#6a6488':col,fx+nx*v,fy+ny*v)}
       if(Math.round(r/2.2)%14===0&&q>.2&&q<.85)endEye(x,sx+sa*fl*.35,sy+ca*fl*.33,1.6+q*1.6,frac>q*.9?1:0,[Math.sin(r)*.5,0],false,0)}}
     }endWing[fp]=oc}
-  x.drawImage(endWing[fp],0,0);
+  x.globalAlpha=.9;x.drawImage(endWing[fp],0,0);x.globalAlpha=1;
   // rings turning around the eye, studded with little eyes
-  for(let k=0;k<3;k++){const rx=44+k*16,ry=14+k*5,rot=t*(.25+k*.12)*(k%2?-1:1)+k;
+  for(let k=0;k<3;k++){const rx=Math.min(W*.42,70+k*26),ry=22+k*9,rot=t*(.25+k*.12)*(k%2?-1:1)+k;
     for(let a=0;a<Math.PI*2;a+=.045){const ex=Math.cos(a)*rx,ey=Math.sin(a)*ry,X=cx+ex*Math.cos(rot)-ey*Math.sin(rot),Y=cy+ex*Math.sin(rot)*.45+ey*Math.cos(rot);
       ePx(x,'#3a1a20',X,Y+1,2,1);ePx(x,(Math.floor(a*20)&1)?'#c88a8a':'#e8b4b0',X,Y,2,1)}
     for(let a=0;a<Math.PI*2;a+=Math.PI/5){const ex=Math.cos(a+t*.1)*rx,ey=Math.sin(a+t*.1)*ry,X=cx+ex*Math.cos(rot)-ey*Math.sin(rot),Y=cy+ex*Math.sin(rot)*.45+ey*Math.cos(rot);endEye(x,X,Y,1.8,frac>(k*.25+a/20)?1:0,[0,0],hurt,t)}}
   // the great eye at the centre
   const blink=(Math.sin(t*.7)>.985)?.15:1,look=endMx<0?[Math.sin(t*.5)*.6,.2]:[Math.max(-1,Math.min(1,(endMx/EPX-cx)/(W*.4))),Math.max(-1,Math.min(1,(endMy/EPX-cy)/(H*.5)))];
-  endEye(x,cx,cy,15,frac>0?blink:0,look,hurt,t);
+  endEye(x,cx,cy,Math.max(14,Math.min(30,W*.05)),frac>0?blink:0,look,hurt,t);
   // eyes opening on top of the page itself; one shuts for good each time the boss loses a ninth of its HP
   const fg=endCv('endFg',44),y=fg.getContext('2d');y.clearRect(0,0,fg.width,fg.height);
   END_EYES.forEach((s,i)=>{const [X,Y]=endSpotXY(s),lk=endMx<0?[Math.sin(t*.6+i)*.7,Math.cos(t*.4+i)*.5]:[Math.max(-1,Math.min(1,(endMx-X)/260)),Math.max(-1,Math.min(1,(endMy-Y)/200))];
@@ -3846,7 +3848,9 @@ setInterval(()=>{if(endOn()||document.getElementById('endBg'))endDraw()},125);
 addEventListener('pointermove',e=>{endMx=e.clientX;endMy=e.clientY},{passive:true});
 function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYES.length)],[X,Y]=endSpotXY(s),n=document.createElement('span');
   n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(X+(Math.random()*30-15))+'px';n.style.top=(Y-10)+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),900);endHitT=performance.now()}
-function endRender(){endDraw()}
+// the fight controls float above the boss at the bottom of the screen, on every tab
+function endRender(){endDraw();let h=$('#endHud');if(!endOn()||!P||!P.joined||!$('#joinModal').hidden){if(h)h.remove();return}
+  if(!h){document.body.insertAdjacentHTML('beforeend',endCardHTML().replace('class="card endcard" id="endCard"','class="px endhud" id="endHud"'));endPaint()}}
 function endHit(mul,times){if(!endOn()||isFaint()||endShow()<=0)return false;let tot=0;
   for(let k=0;k<(times||1);k++){const c=Math.random()*100<critPct();let d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(c?critMul():1)*mul));d=Math.min(d,endShow());if(d<=0)break;endPend+=d;tot+=d;setTimeout(()=>endFloat(d,true,c),k*120)}
   clearTimeout(endFlushT);endFlushT=setTimeout(endFlush,600);endPaint();return tot>0}
@@ -3868,12 +3872,12 @@ function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id=
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
    <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button></div><span class="hint">스킬 · ${endSkill()[1]}</span></div>
    <div class="endmeta" id="endMeta"></div></div>`}
-function endPaint(){const c=$('#endCard');if(!c){if(endOn()&&tab==='ship')renderPanel();return}if(!endOn()){renderPanel();return}
+function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
   const e=END,left=endShow();$('#endBarI').style.width=(left/e.max*100)+'%';$('#endBarT').textContent=`체력 ${Math.round(left).toLocaleString()} / ${e.max.toLocaleString()} (${(left/e.max*100).toFixed(1)}%)`;
   const now=Date.now(),sk=Math.max(0,END_SKCD-(now-endSkAt)),ab=$('#endAtkB'),sb=$('#endSkB');if(ab)ab.disabled=now-endAt<END_CD;if(sb){sb.disabled=sk>0;sb.textContent=sk>0?`✦ ${endSkill()[0]} ${Math.ceil(sk/1000)}초`:`✦ ${endSkill()[0]}`}
   const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)).slice(0,5),me=((e.dmg||{})[uid]||{}).d||0;
   $('#endMeta').innerHTML=`<span>내 피해 <b>${Math.round(me+endPend).toLocaleString()}</b></span><span>참여 ${Object.keys(e.dmg||{}).length}명</span>${top.map(([u,v],i)=>`<span class="${u===uid?'me':''}">${i+1}. ${esc(v.n||'선원')} ${Math.round(v.d||0).toLocaleString()}</span>`).join('')}`}
-setInterval(()=>{if(endOn()&&tab==='ship')endPaint()},250);
+setInterval(()=>{if(endOn())endPaint()},250);
 const EA={
  endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1)){endAt=Date.now();sfxCoin()}},
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok){endSkAt=Date.now();sfxFanfare(false)}},
@@ -5166,7 +5170,7 @@ function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='room'
   const top=Object.entries(rank).filter(([,r])=>r.n>0).sort((a,b)=>b[1].n-a[1].n).slice(0,8);
   const mine=(rank[uid]||{}).n||0;
   const canAny=open&&pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0),prevN=(SHIP[SHIP.indexOf(pt)-1]||{}).n;
-  return head()+shipSubTabs()+endCardHTML()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 가이아 풍경"></canvas></div><div class="shiptop card">
+  return head()+shipSubTabs()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 가이아 풍경"></canvas></div><div class="shiptop card">
    <div class="sinfo"><b>${all>=1?'가이아 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 가이아'}</b><span class="hint">${all>=1?'모든 선원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 선원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
    <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
