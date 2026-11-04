@@ -5704,7 +5704,7 @@ const A={
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
  opreplay(){playOpening()},
- padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');renderSoc()},
+ padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
  metab(d){meTab=d.k==='look'||d.k==='prof'?d.k:'me';renderPanel()},
  mltab(d){if(d.k==='color'||d.k==='gear'||WARD[d.k])mlTab=d.k;renderPanel()},
@@ -6273,8 +6273,10 @@ let pfpBusy=false;const pfpImg=id=>ASSET_ID.test(String(id))?`<img class="pfpimg
 /* PAD-only photo: shown on my PAD posts, my PAD composer and PAD notifications; the ID card keeps its own photo and its 호감도 rule */
 let padPfpBusy=false;
 const padAv=(p,sc=3)=>p&&p.padPfp?`<img class="padpfp" data-img="1" data-k="${esc(p.padPfp)}" src="${window.__blobURL?window.__blobURL(p.padPfp):'/_blob/'+p.padPfp}" alt="">`:headImg(sc,p);
-async function padPfpUpload(f){if(!ASSETS||padPfpBusy||!f)return;if(!IMG_TYPES.test(f.type)){toast('PNG·JPG·GIF·WEBP 이미지만 올릴 수 있습니다.');return}padPfpBusy=true;renderSoc();
-  try{const r=await ASSETS.upload(f,{type:f.type});const old=P.padPfp;P.padPfp=r.id;if(old&&old!==r.id)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 바꿨습니다.')}catch(e){imgErr(e)}padPfpBusy=false;renderSoc()}
+// the PAD box may still hold focus after the file picker closes, which holds back the drawer's redraw: let go of it so the new photo shows at once
+const padAvNow=()=>{const ae=document.activeElement,st=$('#socStage');if(ae&&st&&st.contains(ae)&&ae.blur)ae.blur();socPend=false;renderSoc()};
+async function padPfpUpload(f){if(!ASSETS||padPfpBusy||!f)return;if(!IMG_TYPES.test(f.type)){toast('PNG·JPG·GIF·WEBP 이미지만 올릴 수 있습니다.');return}padPfpBusy=true;padAvNow();
+  try{const r=await ASSETS.upload(f,{type:f.type});const old=P.padPfp;P.padPfp=r.id;if(old&&old!==r.id)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 바꿨습니다.')}catch(e){imgErr(e)}padPfpBusy=false;padAvNow()}
 async function pfpUpload(f){if(!ASSETS||pfpBusy||!f)return;if(!IMG_TYPES.test(f.type)){toast('PNG·JPG·GIF·WEBP 이미지만 올릴 수 있습니다.');return}pfpBusy=true;renderInfo();
   try{const r=await ASSETS.upload(f,{type:f.type});const old=P.pfp;P.pfp=r.id;if(old&&old!==r.id)ASSETS.delete(old).catch(()=>{});save();toast('프로필 사진을 올렸습니다.')}catch(e){imgErr(e)}pfpBusy=false;renderInfo()}
 // the profile as a crew ID card: title over the photo, job · rank · levels on the right, name and 군번 below, the game logo in the corner
