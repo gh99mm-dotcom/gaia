@@ -1032,11 +1032,11 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 .pside h4 span{display:inline-grid;place-items:center;width:20px;height:20px;background:var(--pc);color:#07080e;font-size:12px;filter:drop-shadow(2px 2px 0 #07080e)}
 .ps-like{--pc:#ff8ab8}.ps-hate{--pc:#ff6a6a}.ps-why{--pc:#f2c66a}.ps-suwi{--pc:#ff9ac0;grid-column:1/-1}.ps-aff{--pc:#9a8cff;grid-column:1/-1}
 .pside .jpicked{display:flex;flex-wrap:wrap;gap:4px}.pside .ichip{background:#07080e88}
-.suwi{display:flex;gap:8px;max-width:260px}
-.suwib{flex:1;min-width:0;height:46px;display:grid;place-items:center;font-family:var(--f-pix,monospace);font-size:24px;font-weight:700;line-height:1;background:transparent;color:var(--mute);border:2px solid var(--line);cursor:pointer;padding:0}
+.suwi{display:flex;gap:12px;max-width:440px}
+.suwib{flex:1;min-width:0;height:84px;display:grid;place-items:center;font-family:var(--f-pix,monospace);font-size:44px;border-width:3px!important;font-weight:700;line-height:1;background:transparent;color:var(--mute);border:2px solid var(--line);cursor:pointer;padding:0}
 .suwib.s-o[aria-pressed="true"],.suwib.s-o.on{color:#6ad8a0;border-color:#6ad8a0;background:rgba(106,216,160,.12);text-shadow:0 0 6px rgba(106,216,160,.5)}
 .suwib.s-x[aria-pressed="true"],.suwib.s-x.on{color:#ff6a6a;border-color:#ff6a6a;background:rgba(255,106,106,.12);text-shadow:0 0 6px rgba(255,106,106,.5)}
-b.suwib{cursor:default;flex:0 0 64px}
+b.suwib{cursor:default;flex:0 0 120px}
 .suwib:hover:not(b){border-color:var(--pc)}
 .pside-why{margin:0;font-size:13px;line-height:1.5;color:#fff;word-break:keep-all;overflow-wrap:anywhere}
 .pside .qchip{align-self:flex-start}.pside .hint{color:#aab8d8}
@@ -6096,7 +6096,7 @@ const A={
  affsave(d){const n=+d.k;if(!AFFN.includes(n))return;const v=affDraft.trim().slice(0,AFFN_MAX),o=Object.assign({},P.affNote);if(v)o[n]=v;else delete o[n];P.affNote=o;affEdit=null;log(`호감도 ${n} 이야기를 ${v?'적었다':'지웠다'}.`);save();renderInfo()},
  noteedit(d){noteEdit=noteEdit===d.k?null:d.k;renderInfo();if(noteEdit)setTimeout(()=>{const i=$('#noteIn');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},0)},
  notesave(d){const i=$('#noteIn');if(!i||!PNOTE.some(x=>x[0]===d.k))return;P[d.k]=i.value.trim().slice(0,noteMax(d.k));noteEdit=null;save();renderInfo()},
- suwi(d){if(d.k!=='o'&&d.k!=='x')return;P.suwi=P.suwi===d.k?'':d.k;save();renderInfo()},
+ suwi(d){if(d.k!=='o'&&d.k!=='x'||P.suwi===d.k)return;P.suwi=d.k;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
  opreplay(){playOpening()},
@@ -6701,7 +6701,7 @@ function whyHTML(p,mine){
   return`<section class="pside ps-why"><h4><span>✎</span>프로젝트에 들어오게 된 이유</h4>${why}</section>`}
 // 수위 여부: O or X, picked on my own profile, shown to everyone
 const suwiHTML=(p,mine)=>{const v=p.suwi==='o'||p.suwi==='x'?p.suwi:'';
-  if(mine)return`<div class="suwi" role="group" aria-label="수위 여부">${[['o','O','수위 괜찮음'],['x','X','수위 안 됨']].map(([k,t,n])=>`<button type="button" class="suwib s-${k}" data-act="suwi" data-k="${k}" aria-pressed="${v===k}" aria-label="${n}">${t}</button>`).join('')}</div><span class="hint">${v?'한 번 더 누르면 선택을 지웁니다.':'O 또는 X를 골라 주십시오.'}</span>`;
+  if(mine)return`<div class="suwi" role="group" aria-label="수위 여부">${[['o','O','수위 괜찮음'],['x','X','수위 안 됨']].map(([k,t,n])=>`<button type="button" class="suwib s-${k}" data-act="suwi" data-k="${k}" aria-pressed="${v===k}" aria-label="${n}">${t}</button>`).join('')}</div>${v?'':'<span class="hint">O 또는 X 중 하나를 골라 주십시오.</span>'}`;
   return v?`<div class="suwi"><b class="suwib s-${v} on">${v==='o'?'O':'X'}</b></div>`:'<span class="hint">아직 고르지 않았습니다.</span>'};
 function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>',
   lock='<span class="hint">🔒 호감도 10 이상이면 보입니다</span>';
