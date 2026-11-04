@@ -2558,9 +2558,14 @@ const TOUCHY=matchMedia('(pointer:coarse)').matches;let scrollWaitT=null;const s
 function waitScroll(fn){if(!TOUCHY||!userScrolling())return false;scrollWaits.add(fn);if(!scrollWaitT){const go=()=>{if(userScrolling()){scrollWaitT=setTimeout(go,200);return}scrollWaitT=null;const L=[...scrollWaits];scrollWaits.clear();L.forEach(f=>f())};scrollWaitT=setTimeout(go,200)}return true}
 function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},ae=document.activeElement,fid=ae&&box.contains(ae)&&ae.id?ae.id:null,sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   box.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{if(el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value});
+  // keep every scroll position (the crew list, the page itself) so a redraw doesn't throw me back to the top
+  const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
+  box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
+  const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
   renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
-  if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}}
+  if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
+  const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
 // background updates (another member saving, new feedback…) must not redraw the admin page under my fingers:
 // while I'm in one of its inputs, selects or textareas — or composing Korean — the redraw waits until I leave the field
 let admPend=false;
