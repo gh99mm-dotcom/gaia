@@ -5559,9 +5559,22 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     for(let i=0;i<a.length;i+=4){if(!a[i+3])continue;const L=(a[i]*.3+a[i+1]*.59+a[i+2]*.11)/255,k=Math.min(7,Math.round(Math.pow(L,.8)*7.4));[a[i],a[i+1],a[i+2]]=pal[k]}x.putImageData(d,0,0);return c};
   let SCN=null,BOT=null;try{const bk={};SHIP.forEach(q=>bk[q.id]=shipDone(q));SCN=blue(shipSceneBuild(bk,true).c)}catch(e){}
   try{const T=IC.robot,c=document.createElement('canvas');c.width=T[0].length;c.height=T.length;const x=c.getContext('2d');T.forEach((row,y)=>[...row].forEach((ch,xx)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(xx,y,1,1)}}));BOT=blue(c)}catch(e){}
+  // looking out from inside the wreck: the hull's inner wall in the same blue, a hole torn through it, hot edges, a cable swinging
+  const HC={x:W*.5,y:H*.46,rx:W*.34,ry:H*.36},HJ=Array.from({length:64},()=>.82+rnd()*.3);
+  const inHole=(x,y)=>{const dx=(x-HC.x)/HC.rx,dy=(y-HC.y)/HC.ry,ang=Math.atan2(dy,dx),k=Math.floor(((ang+Math.PI)/(2*Math.PI))*64)%64,r=HJ[k]*(1+.06*Math.sin(ang*7));return dx*dx+dy*dy<r*r};
+  let WALL=null;{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),px=(X,Y,col)=>{x.fillStyle=col;x.fillRect(X,Y,1,1)};
+    for(let y=0;y<H;y++)for(let X=0;X<W;X++){if(inHole(X,y))continue;const seam=X%40===0||y%30===0,riv=(X%40===5||X%40===35)&&(y%30===5||y%30===25),d=(X*7+y*13)%9;
+      let col=seam?B[0]:d<2?B[2]:B[1];if(riv)col=B[4];
+      let near=0;for(const [ox,oy] of [[3,0],[-3,0],[0,3],[0,-3],[2,2],[-2,-2]])if(inHole(X+ox,y+oy))near++;
+      if(near){col=near>2?B[6]:B[3];if(near===1&&(X+y)%2)col=B[2]}px(X,y,col)}
+    // bent plates curling into the hole
+    for(let i=0;i<9;i++){const ang=i/9*Math.PI*2+.3,r=.92,bx=HC.x+Math.cos(ang)*HC.rx*r,by=HC.y+Math.sin(ang)*HC.ry*r;for(let j=0;j<6;j++){px(Math.round(bx-Math.cos(ang)*j),Math.round(by-Math.sin(ang)*j*.8),j<2?B[5]:B[3])}}
+    WALL=c}
+  function wall(t){if(WALL)g.drawImage(WALL,0,0);const sw=Math.sin(t*1.4)*3,cx=Math.round(HC.x+HC.rx*.5),top=Math.round(HC.y-HC.ry*.86);for(let i=0;i<20;i++){const x=Math.round(cx+sw*i/20+Math.sin(i*.6)*1.2);P(x,top+i,B[4]);P(x+1,top+i,B[1])}
+    if(((t*3)|0)%4===0){P(cx+Math.round(sw),top+20,B[7]);P(cx+Math.round(sw)+1,top+21,B[6])}}
   function smoke(t,k){for(let i=0;i<9;i++){const ph=(t*.25+i/9)%1,x=24+i*24+Math.sin(t+i)*6,y=H-18-ph*60,r=5+ph*12;g.globalAlpha=(1-ph)*.35*k;g.fillStyle=B[3+(i%2)];g.beginPath();g.arc(x,y,r,0,7);g.fill()}g.globalAlpha=1}
-  const ART={sky:t=>{R(0,0,W,H,B[0]);if(SCN){g.drawImage(SCN,0,0,W,H*.8,0,0,W,H)}stars(t,40)},
-    robot:t=>{R(0,0,W,H,B[0]);if(SCN)g.drawImage(SCN,0,0);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=4+e*3.4,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*70),ry=Math.round(H/2-bw*.47+(1-e)*18+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7))}};
+  const ART={sky:t=>{R(0,0,W,H,B[0]);if(SCN){g.drawImage(SCN,0,0,W,H*.8,0,0,W,H)}stars(t,40);wall(t)},
+    robot:t=>{R(0,0,W,H,B[0]);if(SCN)g.drawImage(SCN,0,0);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=4+e*3.4,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*70),ry=Math.round(H/2-bw*.47+(1-e)*18+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent='▶ '+(L.btn||(last?'확인한다.':'다음'))}
