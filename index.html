@@ -6176,46 +6176,81 @@ function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M
   const L=M.querySelector('.oslines'),roll=M.querySelector('.osroll'),T=M.querySelector('.ost'),ok=M.querySelector('.osok');let dead=false;
   const end=()=>{if(dead)return;dead=true;M.classList.add('out');setTimeout(()=>{M.remove();done&&done()},700)};M.querySelector('.osskip').onclick=end;ok.onclick=end;
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
-  // ── the backdrop: a muted, low-saturation blue night. Few faint stars up top (the text stays readable), more and more toward the ground;
-  //    a ringed planet low on the right inside a huge faint orbit; thin ridge lines for the ground with scraps of junk scattered on it;
-  //    and a small 녹슨 7호 rolling along the nearest ridge ──
+  // ── the backdrop, hand-built pixel art in one blue palette (12 steps, ordered dithering): a soft nebula, stars thickening toward the
+  //    ground, a banded ringed planet with a lit rim, three layers of cratered hills, detailed scrap (girders, hull plates, pipes, a broken
+  //    dish, rubble) with rivets and rim light, and a small 녹슨 7호 rolling along the nearest ridge ──
   const cv=M.querySelector('.osbg'),x=cv.getContext('2d'),BOT=opBlueBot();
-  const C=['#03060f','#0a1530','#132550','#1f3b78','#33589e','#5a82c8','#9ab8ec','#e2ecff'];
-  let W=0,H=0,ST=[],BG=null,RID=[],A_TIP=[0,0];
-  const size=()=>{W=Math.ceil(innerWidth/2);H=Math.ceil(innerHeight/2);cv.width=W;cv.height=H;let sd=9;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
-    // stars: sparse and even, a few brighter ones
-    ST=[];// few and faint near the top (the text stays readable), more and brighter toward the hills
-    const n=Math.round(W*H/150);for(let i=0;i<n;i++){const y=r()*H*.86;if(r()>Math.pow(y/H,1.7)+.04)continue;ST.push({x:r()*W|0,y:y|0,b:r()*(.3+.7*y/H),p:r()*6.3,big:r()<.025&&y>H*.4})}
-    // ground: two soft dark hills rolling across the bottom
-    const ridge=(base,amp,seed)=>Array.from({length:W+2},(_,i)=>Math.round(H*base-Math.sin(i*.009+seed)*amp-Math.sin(i*.023+seed*2)*amp*.45));
-    RID=[ridge(.84,H*.03,1),ridge(.9,H*.025,4)];
-    const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),px=(X,Y,col)=>{g.fillStyle=col;g.fillRect(X|0,Y|0,1,1)};
-    const BY=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]],dith=(X,Y,v)=>{const lo=Math.max(0,Math.min(6,Math.floor(v))),fr=v-lo;return C[fr*16>BY[Y&3][X&3]?lo+1:lo]};
-    // faint dithered glow over the horizon
-    for(let y=Math.round(H*.45);y<H;y++)for(let X=0;X<W;X++){const v=Math.pow((y-H*.45)/(H*.4),1.6)*1.4;if(v>.02)px(X,y,dith(X,y,Math.min(1.4,v)))}
-    // the ringed planet, upper right, lit from the left, ring tilted
-    const pc=[W*.8,H*.22],pr=Math.max(12,Math.round(Math.min(W,H)*.075)),tilt=-.32;
-    const ring=(front)=>{for(let a2=0;a2<Math.PI*2;a2+=.004){const sn=Math.sin(a2);if(front!==(sn>0))continue;const rx=pr*1.95,ry=pr*.34,ux=Math.cos(a2)*rx,uy=sn*ry,X=pc[0]+ux*Math.cos(tilt)-uy*Math.sin(tilt),Y=pc[1]+ux*Math.sin(tilt)+uy*Math.cos(tilt);px(X,Y,C[5])}};
-    ring(false);for(let y=-pr;y<=pr;y++)for(let X=-pr;X<=pr;X++){const d=X*X+y*y;if(d>pr*pr)continue;const lit=(-X*.7-y*.55)/pr;px(pc[0]+X,pc[1]+y,dith(pc[0]+X,pc[1]+y,2.7+lit*2.1))}ring(true);
-    // hills: far one a little lighter, near one darkest
-    for(let X=0;X<W;X++){for(let y=RID[0][X];y<H;y++)px(X,y,C[1]);px(X,RID[0][X],C[3]);for(let y=RID[1][X];y<H;y++)px(X,y,'#050812');px(X,RID[1][X],C[2])}
-    // scraps of junk here and there on the hills: slabs, a bent plate, a pipe, rubble — dark blue with a cold rim light
-    [[.02,0,'slab',22,12],[.12,1,'rock',12,6],[.3,1,'plate',22,9],[.46,0,'rock',8,4],[.55,1,'pipe',24,6],[.68,0,'slab',14,8],[.8,1,'rock',14,7],[.88,0,'plate',20,12],[.96,1,'slab',24,13]].forEach(([fx,ri,k,w,h])=>{const X0=Math.round(W*fx),gy=RID[ri][Math.max(0,Math.min(W,X0))]+1;
-      for(let i=0;i<w;i++){let top;if(k==='rock')top=Math.round(h*Math.sin(Math.PI*i/w));else if(k==='slab')top=Math.round(h-(i*h*.6/w));else if(k==='plate')top=Math.round(h*(1-Math.abs(i-w*.35)/w))+(i%5===0?1:0);else top=i%6<4?h:h-1;
-        for(let y=0;y<top;y++)px(X0+i,gy-y,y===top-1?C[4]:(ri?'#060a16':C[1]));if(top>0)px(X0+i,gy-top,C[5])}});
+  const C=['#02040b','#050a18','#0a1226','#101b36','#172648','#20335c','#2b4372','#3a578c','#4d6fa8','#6a8cc4','#93b2e0','#cfe0fa'];
+  const BY=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+  let W=0,H=0,ST=[],BG=null,RID=[];
+  const size=()=>{W=Math.ceil(innerWidth/3);H=Math.ceil(innerHeight/3);cv.width=W;cv.height=H;let sd=9;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),px=(X,Y,col)=>{if(X<0||Y<0||X>=W||Y>=H)return;g.fillStyle=col;g.fillRect(X|0,Y|0,1,1)};
+    const dv=(X,Y,v)=>{v=Math.max(0,Math.min(C.length-1.001,v));const lo=Math.floor(v),fr=v-lo;return C[fr*16>BY[(Y|0)&3][(X|0)&3]?lo+1:lo]};
+    const nz=(X,Y)=>{const s=Math.sin(X*12.9898+Y*78.233)*43758.5453;return s-Math.floor(s)};
+    const sm=(X,Y,f)=>{const x0=Math.floor(X*f),y0=Math.floor(Y*f),fx=X*f-x0,fy=Y*f-y0,a=nz(x0,y0),b=nz(x0+1,y0),c2=nz(x0,y0+1),d=nz(x0+1,y0+1),u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy);return a+(b-a)*u+(c2-a)*v+(a-b-c2+d)*u*v};
+    // hills: far, mid, near
+    const ridge=(base,amp,f,seed)=>Array.from({length:W+2},(_,i)=>Math.round(H*base-Math.sin(i*f+seed)*amp-Math.sin(i*f*2.7+seed*2)*amp*.4-sm(i,seed,.15)*amp*.35));
+    const R0=ridge(.78,H*.035,.011,1),R1=ridge(.84,H*.03,.016,4),R2=ridge(.91,H*.025,.022,7);RID=[R1,R2,R0];
+    // sky: dithered gradient + soft nebula
+    for(let Y=0;Y<H;Y++)for(let X=0;X<W;X++){let v=.2+Math.pow(Y/H,1.8)*2.6;const n=sm(X,Y,.035)*.6+sm(X+50,Y+20,.08)*.4,band=Math.exp(-Math.pow((Y-H*.42+X*.18-W*.05)/(H*.16),2));v+=band*n*1.6;px(X,Y,dv(X,Y,v))}
+    // the ringed planet
+    const pc=[Math.round(W*.85),Math.round(H*.19)],pr=Math.max(12,Math.round(H*.085)),tl=-.3,ct=Math.cos(tl),stl=Math.sin(tl);
+    const ringPt=(a,rr)=>{const ux=Math.cos(a)*rr,uy=Math.sin(a)*rr*.27;return[pc[0]+ux*ct-uy*stl,pc[1]+ux*stl+uy*ct]};
+    const ring=front=>{for(let rr=pr*1.55;rr<pr*2.25;rr+=.45){const k=(rr-pr*1.55)/(pr*.7);if(k>.42&&k<.5)continue;for(let a=0;a<Math.PI*2;a+=.5/rr){const sn=Math.sin(a);if(front!==(sn>0))continue;const [X,Y]=ringPt(a,rr);
+      const lit=.5-.5*Math.cos(a+.6),v=(k<.42?6.4:5.2)+lit*3.4-(k>.9?1:0);px(X,Y,dv(X,Y,v))}}};
+    ring(false);
+    for(let Y=-pr;Y<=pr;Y++)for(let X=-pr;X<=pr;X++){const d2=(X*X+Y*Y)/(pr*pr);if(d2>1)continue;const z=Math.sqrt(1-d2),nx=X/pr,ny=Y/pr,dot=-nx*.62-ny*.48+z*.62;
+      const lat=(ny*ct-nx*stl),bands=Math.sin(lat*9+sm(X,Y,.3)*1.4)*.55;let v=2.2+Math.max(0,dot)*7+bands;if(dot<0)v=1.6+bands*.4;
+      if(d2>.82&&nx>.2)v+=(d2-.82)*9;                                   // back-lit rim on the dark side
+      if(d2>.94&&dot>0)v-=.8;px(pc[0]+X,pc[1]+Y,dv(pc[0]+X,pc[1]+Y,v))}
+    // the ring's shadow across the planet, then the front of the ring
+    for(let a=0;a<Math.PI;a+=.01){const [X,Y]=ringPt(a,pr*1.7);for(let k=1;k<4;k++){const Yy=Math.round(Y+k+2);if((X-pc[0])**2+(Yy-pc[1])**2<pr*pr)px(X,Yy,C[2])}}
+    ring(true);
+    // stars: few and faint high up, more and brighter toward the hills; the brightest get sparkle arms
+    ST=[];const n=Math.round(W*H/38);for(let i=0;i<n;i++){const Y=r()*H*.86;if(r()>Math.pow(Y/H,1.9)+.025)continue;const X=r()*W|0;if((X-pc[0])**2+(Y-pc[1])**2<(pr*2.3)**2)continue;
+      const b=r()*(.25+.75*Y/H);ST.push({x:X,y:Y|0,b,p:r()*6.3,big:b>.78&&r()<.25,huge:b>.9&&r()<.12})}
+    // hills: far (lighter, hazy), mid, near (darkest, cratered, pebbled)
+    const hill=(Rr,base,rim,tex)=>{for(let X=0;X<W;X++){const top=Rr[X],sl=Rr[X+1]-Rr[X];for(let Y=top;Y<H;Y++){const dy=Y-top;let v=base-dy*.025+(tex?(sm(X,Y,.12)-.5)*.9:0);if(dy<2)v=rim+(sl>0?-.8:.6)-dy*.9;px(X,Y,dv(X,Y,v))}}};
+    hill(R0,3.4,6.2,1);hill(R1,2.5,5.2,1);hill(R2,1.3,4.2,1);
+    // craters on the near hill
+    [[.22,9],[.58,6],[.83,11]].forEach(([fx,cr])=>{const cx=Math.round(W*fx),cy=R2[cx]+Math.round(cr*.55)+3;for(let Y=-cr;Y<=cr;Y++)for(let X=-cr;X<=cr;X++){const e=(X*X)/(cr*cr)+(Y*Y)/(cr*cr*.18);if(e>1)continue;const v=e>.75?(X>0?4.2:1.8):(X<0?.6:1.2);px(cx+X,cy+Y*.42,dv(cx+X,cy+Y,v))}});
+    // pebbles
+    for(let i=0;i<W*.5;i++){const X=r()*W|0,hi=r()<.5?R1:R2,Y=hi[X]+3+r()*(H-hi[X]-3)|0,s2=1+(r()<.3?1:0);for(let a=0;a<s2;a++){px(X+a,Y,C[1]);px(X+a,Y-1,C[4])}}
+    // ── scrap ──
+    const line=(x0,y0,x1,y1,col)=>{const m=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))|0;for(let i=0;i<=m;i++)px(Math.round(x0+(x1-x0)*i/m),Math.round(y0+(y1-y0)*i/m),col)};
+    const shadow=(X0,Y0,w)=>{for(let i=0;i<w+2;i++){px(X0+i,Y0+1,C[1])}};
+    const girder=(X0,gy,len,ang)=>{const ca=Math.cos(ang),sa=Math.sin(ang);shadow(X0,gy,Math.abs(ca*len)|0);
+      for(let i=0;i<len;i++){const X=X0+ca*i,Y=gy-sa*i;px(X,Y-5,C[8]);px(X,Y-4,C[6]);px(X,Y,C[5]);px(X,Y+1,C[3]);if(i%6===0)for(let k=-4;k<=0;k++)px(X,Y+k,C[4]);}
+      for(let i=0;i+6<len;i+=6){line(X0+ca*i,gy-sa*i-4,X0+ca*(i+6),gy-sa*(i+6)-1,C[4]);px(X0+ca*i,gy-sa*i-5,C[10])}};
+    const plate=(X0,gy,w,h)=>{shadow(X0,gy,w);const sk=Math.round(h*.35);for(let i=0;i<w;i++){const top=Math.round(h-(i/w)*sk-(i%7===3?1:0)-(i>w*.75?Math.round((i-w*.75)*.9):0));
+      for(let y=0;y<top;y++){let v=y===top-1?7.2:(y>top-3?5.4:3.6+((i+y)%9===0?.6:0));if(i===0)v=6;if(i%9===0&&i>0&&y<top-1)v=2.4;px(X0+i,gy-y,dv(X0+i,gy-y,v))}
+      if(i%9===4&&top>4){px(X0+i,gy-top+3,C[9]);px(X0+i,gy-2,C[7])}}};
+    const pipe=(X0,gy,len,rr)=>{shadow(X0,gy,len);for(let i=0;i<len;i++)for(let k=0;k<rr*2;k++){const u=k/(rr*2),v=2.4+Math.sin(u*Math.PI)*4.4-(u>.6?1.2:0)+(i%8===0?-1:0);px(X0+i,gy-k,dv(X0+i,gy-k,v))}
+      for(let k=0;k<rr*2;k++){px(X0+len,gy-k,C[1]);px(X0+len-1,gy-k,k===rr*2-1?C[9]:C[3])}};
+    const dish=(X0,gy,rr)=>{shadow(X0-rr,gy,rr*2);for(let a=Math.PI*1.05;a<Math.PI*1.95;a+=.02){for(let d=0;d<rr;d++){const X=X0+Math.cos(a)*d*1.2,Y=gy+Math.sin(a)*d*.9;const v=d>rr-2?7.6:2.6+(a-Math.PI)*1.6;px(X,Y,dv(X,Y,v))}}
+      line(X0,gy-rr*.4,X0+rr*.9,gy-rr*1.3,C[7]);px(X0+rr*.9,gy-rr*1.3,C[10])};
+    const rubble=(X0,gy,w)=>{for(let j=0;j<4;j++){const cx=X0+j*w/4+(j%2)*2,rr=2+(j%3);for(let Y=-rr;Y<=0;Y++)for(let X=-rr;X<=rr;X++){if(X*X+Y*Y>rr*rr)continue;px(cx+X,gy+Y,dv(cx+X,gy+Y,(X<0&&Y<-rr/2)?6.2:Y===0?1.6:3.4))}}};
+    const at=(Rr,fx)=>{const X=Math.round(W*fx);return[X,Rr[Math.max(0,Math.min(W,X))]+2]};
+    {let [X,Y]=at(R1,.03);plate(X,Y,30,15)}{let [X,Y]=at(R1,.14);rubble(X,Y,14)}{let [X,Y]=at(R2,.27);girder(X,Y,34,.22)}{let [X,Y]=at(R1,.4);dish(X+6,Y,9)}
+    {let [X,Y]=at(R2,.5);pipe(X,Y,28,3)}{let [X,Y]=at(R1,.63);rubble(X,Y,12)}{let [X,Y]=at(R1,.7);plate(X,Y,22,11)}{let [X,Y]=at(R2,.78);girder(X,Y,28,-.15)}{let [X,Y]=at(R2,.9);plate(X,Y,30,17)}{let [X,Y]=at(R0,.53);rubble(X,Y,8)}
     BG=c};size();addEventListener('resize',size);
   const P=(X,Y,c)=>{x.fillStyle=c;x.fillRect(X|0,Y|0,1,1)};const t0=performance.now();
   // robot timeline (s): roll in to the middle, stop, the meteor falls, roll on and out; then again from the left
   const CYC=26,STOP0=9,STOP1=13.5,MET=10.2;
   const draw=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000;x.fillStyle=C[0];x.fillRect(0,0,W,H);
     if(BG)x.drawImage(BG,0,0);
-    ST.forEach(q=>{const tw=(Math.sin(t*1.3+q.p)+1)/2;const v=q.b*(.45+.55*tw);if(v<.1||q.y>=RID[0][q.x]-1)return;const col=v>.8?C[7]:v>.55?C[6]:v>.32?C[5]:C[4];P(q.x,q.y,col);if(q.big&&tw>.5){P(q.x-1,q.y,C[4]);P(q.x+1,q.y,C[4]);P(q.x,q.y-1,C[4]);P(q.x,q.y+1,C[4])}});
-    // the meteor: a long streak from the upper right toward the horizon, a pale flash where it lands
-    const ct=t%CYC,mt=ct-MET;if(mt>0&&mt<1.7){const k=Math.min(1,mt/1.15),hx=W*(.88-.42*k),hy=H*(.08+.8*k);for(let i=0;i<60;i++){const px2=hx+i*1.5,py=hy-i*1.25;if(i<3){P(px2,py,C[7]);P(px2+1,py,C[7]);P(px2,py+1,C[7])}else if(Math.random()<1-i/60)P(px2,py,i<18?C[7]:C[5])}
-      if(mt>1.15){const f=(mt-1.15)/.55;x.globalAlpha=(1-f)*.45;x.fillStyle=C[6];x.fillRect(0,0,W,H);x.globalAlpha=1}}
-    // 녹슨 7호: small, rolling on the near ridge
-    if(BOT){const bw=16;let k;if(ct<STOP0)k=ct/STOP0*.5;else if(ct<STOP1)k=.5;else k=.5+(ct-STOP1)/(CYC-STOP1)*.6;const rx=Math.round(-bw+(W+bw)*k),gx=Math.max(0,Math.min(W,rx+bw/2|0)),gy=RID[0][gx],moving=!(ct>=STOP0&&ct<STOP1),ry=gy-bw+1-(moving&&Math.floor(t*8)%2?1:0);
-      x.drawImage(BOT,rx,ry,bw,bw);if(moving)for(let i=0;i<3;i++){const ph=(t*2+i/3)%1;x.globalAlpha=(1-ph)*.5;P(rx-1-ph*5,gy-1-ph*2,C[5]);x.globalAlpha=1}}
+    ST.forEach(q=>{if(q.y>=RID[2][q.x]-1)return;const tw=(Math.sin(t*1.3+q.p)+1)/2,v=q.b*(.5+.5*tw);if(v<.08)return;const col=C[Math.min(11,Math.round(3+v*8.5))];P(q.x,q.y,col);
+      if(q.big&&tw>.45){const a=C[Math.min(11,Math.round(2+v*6))];P(q.x-1,q.y,a);P(q.x+1,q.y,a);P(q.x,q.y-1,a);P(q.x,q.y+1,a)}
+      if(q.huge&&tw>.6){const a=C[Math.round(3+v*4)];P(q.x-2,q.y,a);P(q.x+2,q.y,a);P(q.x,q.y-2,a);P(q.x,q.y+2,a)}});
+    // the meteor: a glowing head and a tapering, dithered tail; a pale flash where it lands
+    const ct=t%CYC,mt=ct-MET;if(mt>0&&mt<1.7){const k=Math.min(1,mt/1.15),hx=W*(.86-.4*k),hy=H*(.06+.72*k);
+      for(let i=0;i<70;i++){const px2=Math.round(hx+i*1.45),py=Math.round(hy-i*1.15),f=1-i/70;if(f*16<BY[py&3][px2&3]&&i>8)continue;P(px2,py,C[Math.max(4,Math.round(4+f*7))]);if(i<14)P(px2,py+1,C[Math.round(3+f*5)])}
+      P(hx-1,hy,C[10]);P(hx,hy,C[11]);P(hx+1,hy,C[11]);P(hx,hy+1,C[11]);P(hx,hy-1,C[10]);x.globalAlpha=.35;P(hx-2,hy,C[9]);P(hx,hy+2,C[9]);P(hx+2,hy+1,C[9]);x.globalAlpha=1;
+      if(mt>1.15){const f=(mt-1.15)/.55;x.globalAlpha=(1-f)*.4;x.fillStyle=C[9];x.fillRect(0,0,W,H);x.globalAlpha=1}}
+    // 녹슨 7호: small, rolling on the mid ridge, with a soft shadow and kicked-up dust
+    if(BOT){const bw=14;let k;if(ct<STOP0)k=ct/STOP0*.5;else if(ct<STOP1)k=.5;else k=.5+(ct-STOP1)/(CYC-STOP1)*.6;const rx=Math.round(-bw+(W+bw)*k),gx=Math.max(0,Math.min(W,rx+bw/2|0)),gy=RID[0][gx],moving=!(ct>=STOP0&&ct<STOP1),ry=gy-bw+1-(moving&&Math.floor(t*8)%2?1:0);
+      x.globalAlpha=.6;x.fillStyle=C[0];x.fillRect(rx+2,gy,bw-3,1);x.globalAlpha=1;x.drawImage(BOT,rx,ry,bw,bw);
+      if(moving)for(let i=0;i<4;i++){const ph=(t*2+i/4)%1;x.globalAlpha=(1-ph)*.55;P(rx-1-ph*6,gy-1-ph*3,C[6]);x.globalAlpha=1}}
     requestAnimationFrame(draw)};requestAnimationFrame(draw);
   const follow=()=>{const h=L.scrollHeight;roll.style.transform=`translateY(${Math.round(innerHeight*.5-h)}px)`};
   (async()=>{await wait(700);
