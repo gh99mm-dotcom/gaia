@@ -1282,8 +1282,8 @@ b.no{color:var(--red)}
 body:has(#endHud) .toast{bottom:210px!important;z-index:48}
 #endBlock{position:fixed;inset:0;z-index:45;cursor:not-allowed;background:transparent}
 .endchat{display:flex;gap:6px}.endchat input{flex:1;min-width:0;padding:6px 8px;font-size:13px}
-.echb{position:fixed;z-index:46;pointer-events:none;max-width:230px;display:flex;flex-direction:column;gap:1px;padding:6px 10px 7px;background:#f4f0f8;color:#1a1626;border:2px solid #07080e;box-shadow:3px 3px 0 rgba(0,0,0,.5);font-size:13px;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;animation:echIn .25s steps(3)}
-.echb b{font-size:11px;color:#7a3fd0}.echb.me{background:#e6fbff}.echb.me b{color:#1d7a8a}
+.echb{position:fixed;z-index:46;pointer-events:none;max-width:300px;display:flex;flex-direction:column;gap:2px;padding:9px 14px 10px;background:#f4f0f8;color:#1a1626;border:2px solid #07080e;box-shadow:3px 3px 0 rgba(0,0,0,.5);font-size:16px;line-height:1.4;word-break:keep-all;overflow-wrap:anywhere;animation:echIn .25s steps(3)}
+.echb b{font-size:13px;color:#7a3fd0}.echb.me{background:#e6fbff}.echb.me b{color:#1d7a8a}
 .echb::after{content:'';position:absolute;bottom:-8px;width:10px;height:8px;background:inherit;border:2px solid #07080e;border-top:0;clip-path:polygon(0 0,100% 0,0 100%)}
 .echb.tl::after{left:12px}.echb.tr::after{right:12px;clip-path:polygon(0 0,100% 0,100% 100%)}
 .echb.out{animation:echOut .6s steps(3) forwards}
@@ -3950,7 +3950,7 @@ function echSub(on){if(on&&!echUn){echUn=echRef().onSnapshot(sn=>{const L=sn.exi
 function echBubble(m){const W=innerWidth,H=innerHeight,b=document.createElement('div');b.className='echb'+(m.u===uid?' me':'');
   b.innerHTML=`<b>${esc(m.n||'선원')}</b><span>${esc(m.t)}</span>`;
   // a random spot around the edges of the sky (left, right or along the top), clear of the great eye and the fight window
-  const side=Math.random(),x=side<.42?W*(.02+Math.random()*.16):side<.84?W*(.66+Math.random()*.16):W*(.1+Math.random()*.6),y=side<.84?H*(.06+Math.random()*.52):H*(.02+Math.random()*.08);b.style.left=Math.min(W-240,x)+'px';b.style.top=y+'px';b.classList.add(Math.random()<.5?'tl':'tr');
+  const side=Math.random(),x=side<.42?W*(.02+Math.random()*.16):side<.84?W*(.66+Math.random()*.16):W*(.1+Math.random()*.6),y=side<.84?H*(.06+Math.random()*.52):H*(.02+Math.random()*.08);b.style.left=Math.min(W-310,x)+'px';b.style.top=y+'px';b.classList.add(Math.random()<.5?'tl':'tr');
   document.body.appendChild(b);setTimeout(()=>b.classList.add('out'),5600);setTimeout(()=>b.remove(),6300)}
 document.addEventListener('submit',e=>{if(e.target.id!=='endChatF')return;e.preventDefault();const i=$('#endChatIn');const v=(i.value||'').trim().slice(0,ECH_MAX);if(!v||!endOn())return;
   if(Date.now()-echLast<1500){toast('조금 천천히 외쳐 주십시오.');return}echLast=Date.now();i.value='';const m={u:uid,n:P.nick,t:v,at:Date.now()};
