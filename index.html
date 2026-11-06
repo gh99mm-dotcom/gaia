@@ -1279,7 +1279,8 @@ b.no{color:var(--red)}
 @keyframes endnum{from{opacity:1;margin-top:0}to{opacity:0;margin-top:-34px}}
 .endhud{position:fixed;z-index:47;left:50%;bottom:max(12px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(680px,calc(100vw - 24px));display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:rgba(10,8,18,.92);border:2px solid #07080e;box-shadow:inset 0 0 0 1px #6a5a80,inset 3px 0 0 #e8b4b0,0 0 0 2px rgba(232,180,176,.25)}
 .endhud .endch .hint{display:none}
-body:has(#endHud) .toast{bottom:210px!important}
+body:has(#endHud) .toast{bottom:210px!important;z-index:48}
+#endBlock{position:fixed;inset:0;z-index:45;cursor:not-allowed;background:transparent}
 body:has(#endHud){padding-bottom:200px}
 .endwarn{font-size:12px;color:var(--mute)}.endwarn.on{color:#ff6a6a;font-weight:700;animation:wafblink .5s steps(1) infinite}
 .endflash{position:fixed;inset:0;z-index:48;pointer-events:none;background:rgba(232,72,72,.35);animation:endfl .7s steps(4) forwards}
@@ -3933,7 +3934,9 @@ setInterval(orbisCheck,1500);
 function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYES.length)],[X,Y]=endSpotXY(s),n=document.createElement('span');
   n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(X+(Math.random()*30-15))+'px';n.style.top=(Y-10)+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),900);endHitT=performance.now()}
 // the fight controls float above the boss at the bottom of the screen, on every tab
-function endRender(){endDraw();let h=$('#endHud');if(!endOn()||!P||!P.joined||!$('#joinModal').hidden){if(h)h.remove();return}
+// while 오르비스 is in the sky a clear shield covers the whole page: only the fight window (and toasts) can be used
+function endBlock(on){let b=$('#endBlock');if(!on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='endBlock';b.setAttribute('aria-hidden','true');b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toast('오르비스와 싸우는 중에는 다른 곳을 누를 수 없습니다.')},true);document.body.appendChild(b)}}
+function endRender(){endDraw();let h=$('#endHud');const live=endOn()&&P&&P.joined&&$('#joinModal').hidden;endBlock(live);if(!live){if(h)h.remove();return}
   if(!h){document.body.insertAdjacentHTML('beforeend',endCardHTML().replace('class="card endcard" id="endCard"','class="px endhud" id="endHud"'));endPaint()}}
 // alien blaster shots (three takes, picked at random) for every blow on the boss
 const END_SHOT=[1,2,3].map(n=>{const a=new Audio(`shoot${n}.mp3`);a.preload='auto';return a});
@@ -3957,7 +3960,7 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
 function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
-   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button></div><span class="hint">스킬 · ${endSkill()[1]}</span></div>
+   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button></div><span class="hint">스킬 · ${endSkill()[1]}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
    <div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div></div>`}
 function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
   const e=END,left=endShow();$('#endBarI').style.width=(left/e.max*100)+'%';$('#endBarT').textContent=`체력 ${Math.round(left).toLocaleString()} / ${e.max.toLocaleString()} (${(left/e.max*100).toFixed(1)}%)`;
