@@ -6067,17 +6067,67 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     for(let k=0;k<90;k++){const X=(rnd()*W)|0,Y=(rnd()*H*.8)|0;if(Math.hypot(X-cx,Y-cy)<16)continue;px(X,Y,rnd()<.2?B[6]:B[4])}
     SKY=c}
   const sky=t=>{if(SKY)g.drawImage(SKY,0,0);else R(0,0,W,H,B[0]);stars(t,40)};
+  // ── art kit for the opening pictures (built once, all in one dusk palette with ordered dithering) ──
+  const s16=(bw,n)=>Math.round(bw/16*n);
+  let OPA=null;function opA(){if(OPA)return OPA;const D=['#07060f','#0d0a1b','#151027','#1e1733','#281e40','#34264d','#44325c','#58436e','#71598a','#9480ad'];
+    const BY4=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]],dv=(x,y,v)=>{const lo=Math.max(0,Math.min(D.length-2,Math.floor(v))),fr=v-lo;return D[fr*16>BY4[y&3][x&3]?lo+1:lo]};
+    let sd=21;const rn=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    const mk=(w,h,fn)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),px=(X,Y,col)=>{x.fillStyle=col;x.fillRect(X|0,Y|0,1,1)};fn(x,px,w,h);return c};
+    const HZ=.66;
+    // the landscape: sky gradient, a few stars, big pale moon, two ridges of hills, dithered desert, rocks, and the far wreck
+    function landscape(w,h,wreckX){return mk(w,h,(x,px)=>{const hz=Math.round(h*HZ);
+      for(let y=0;y<hz;y++)for(let X=0;X<w;X++){const v=.4+Math.pow(y/hz,1.6)*6.2;px(X,y,dv(X,y,v))}
+      for(let i=0;i<w*h/240;i++){const X=rn()*w|0,Y=rn()*hz*.75|0;px(X,Y,rn()<.2?'#e8e0f4':'#8a7cab')}
+      // moon with craters, dithered shading
+      const mx=Math.round(w===W?W*.2:w*.12),my=Math.round(h*.24),mr=13;for(let y=-mr;y<=mr;y++)for(let X=-mr;X<=mr;X++){const d=X*X+y*y;if(d>mr*mr)continue;const lit=(-X*.75-y*.55)/mr,cr=[[4,-3,3],[-4,4,2.3],[3,5,1.7],[-6,-4,1.6]].some(([a,b,q])=>(X-a)*(X-a)+(y-b)*(y-b)<q*q);let v=6.6+lit*2.2-(cr?1.3:0)-(d>(mr-1)*(mr-1)?1:0);px(mx+X,my+y,dv(mx+X,my+y,Math.min(9,v)))}
+      for(let a=0;a<6.3;a+=.02){const r=mr+2+Math.sin(a*3)*.5;if(Math.floor(a*50)%2)px(mx+Math.cos(a)*r,my+Math.sin(a)*r,D[4])}
+      // far hills then near hills
+      const ridge=(base,amp,f,ph)=>X=>Math.round(h*base-Math.abs(Math.sin(X*f+ph))*amp-Math.sin(X*f*3.1+ph)*amp*.25);
+      const r1=ridge(HZ,h*.2,.021,1.3),r2=ridge(HZ+.03,h*.11,.034,4.1);
+      for(let X=0;X<w;X++){for(let y=r1(X);y<hz+4;y++)px(X,y,dv(X,y,2.2+(y-r1(X))*.03));px(X,r1(X),D[4]);for(let y=r2(X);y<hz+6;y++)px(X,y,dv(X,y,1.2+(y-r2(X))*.02));px(X,r2(X),D[3])}
+      // desert floor, darker toward us, dithered, with dunes and pebbles
+      for(let y=hz;y<h;y++)for(let X=0;X<w;X++){const k=(y-hz)/(h-hz),du=Math.sin(X*.05+y*.3)*.4;px(X,y,dv(X,y,3.1-k*1.6+du*.6))}
+      for(let i=0;i<w*.25;i++){const X=rn()*w|0,Y=hz+3+Math.pow(rn(),.7)*(h-hz-3)|0,sz=1+(Y-hz)/(h-hz)*2.4|0;for(let a=0;a<sz;a++){px(X+a,Y,'#3a2b3e');px(X+a,Y-1,'#5e4a5c')}}
+      // the crashed ship, far: a long hull nose-down in the sand, tail and engine raised, one wing snapped upward, lit windows broken, plates strewn
+      const wx=Math.round(wreckX),wy=hz+12,Lh=100,cyA=u=>wy-14+u*12,hh=u=>17-11*u,tp=u=>cyA(u)-hh(u)/2,bt=u=>cyA(u)+hh(u)/2;
+      for(let i=0;i<30;i++){const X=wx+44-i*.55,Y=tp(.44)-i*.95;for(let k=0;k<6;k++)px(X+k,Y+k*.15,k===0?'#a497bf':k<2?'#62567c':k<5?'#3f3554':'#231c31')}
+      for(let i=0;i<=Lh;i++){const u=i/Lh,T=Math.round(tp(u)),Bt=Math.round(bt(u));for(let y=T;y<=Bt;y++){const sh=(y-T)/Math.max(1,Bt-T);let c=y===T?'#a497bf':sh<.3?'#62567c':sh<.62?'#433858':'#2a2239';if(i%11===0&&y>T)c='#1d1729';px(wx+i,y,c)}
+        if(u>.22&&u<.74&&i%5<3){const Y=T+3;px(wx+i,Y,(i*7)%9<5?'#e0965a':'#3a2a2a')}}
+      for(let i=0;i<10;i++)for(let k=0;k<=10-i;k++)px(wx+3+i,tp(0)-k,k===10-i?'#a497bf':'#4b405f');
+      {const ex=wx-3,ey=Math.round(cyA(0)+1);for(let y=-6;y<=6;y++)for(let X=-6;X<=6;X++){const d=X*X+y*y;if(d>36)continue;px(ex+X,ey+y,d>25?'#7a6d94':d>12?'#2e263f':'#0e0b16')}}
+      for(let i=0;i<20;i++){const X=wx+48+i,Y=Math.round(cyA((48+i)/Lh))+Math.round(Math.sin(i*.7));px(X,Y,'#0c0912');px(X,Y+1,'#0c0912');if(i%4===0)px(X,Y-1,'#5a4a6a')}
+      for(let X=wx+80;X<wx+Lh+16;X++){const top=Math.round(wy+4-Math.sin(Math.PI*(X-wx-80)/36)*9);for(let y=top;y<wy+8;y++)px(X,y,dv(X,y,4.6-(y-top)*.12));px(X,top,'#7a6478');px(X,top+1,'#5e4a5c')}
+      for(let i=0;i<10;i++){const X=wx-14-i*7+(i%3)*2,Y=wy+6+(i%3);px(X,Y,'#62567c');px(X+1,Y,'#433858');px(X+2,Y,'#2a2239');px(X,Y-1,'#a497bf')}})}
+    const A={};const wreckAt=W*.18;
+    A.wide=landscape(W*2,H,W*.82);A.std=landscape(W,H,wreckAt);A.land=k=>k?A.wide:A.std;
+    // closer view (for the robot's portrait): hills big and blurry, warm dust, no wreck
+    A.near=mk(W,H,(x,px)=>{const hz=Math.round(H*.7);for(let y=0;y<hz;y++)for(let X=0;X<W;X++)px(X,y,dv(X,y,.6+Math.pow(y/hz,1.5)*6.4));
+      for(let i=0;i<40;i++)px(rn()*W,rn()*hz*.6,rn()<.2?'#e8e0f4':'#8a7cab');
+      for(let X=0;X<W;X++){const r=Math.round(hz-Math.abs(Math.sin(X*.012+2))*H*.24);for(let y=r;y<hz+3;y++)px(X,y,dv(X,y,2.4+(y-r)*.02));px(X,r,D[4])}
+      for(let y=hz;y<H;y++)for(let X=0;X<W;X++){const k=(y-hz)/(H-hz);px(X,y,dv(X,y,3.4-k*1.9+Math.sin(X*.07+y*.4)*.3))}});
+    // looking out through the torn hull: dark plates with seams and rivets, a jagged hole, its rim lit and still glowing hot in places
+    A.hole=mk(W,H,(x,px)=>{const cx=W*.5,cy=H*.46,rx=W*.4,ry=H*.42,J=Array.from({length:80},()=>.84+rn()*.28),inH=(X,Y)=>{const dx=(X-cx)/rx,dy=(Y-cy)/ry,a=Math.atan2(dy,dx),k=Math.floor((a+Math.PI)/(2*Math.PI)*80)%80;return dx*dx+dy*dy<J[k]*J[k]};
+      for(let Y=0;Y<H;Y++)for(let X=0;X<W;X++){if(inH(X,Y))continue;const seam=X%48===0||Y%34===0,riv=(X%48===6||X%48===42)&&(Y%34===6||Y%34===28);let near=0;for(const [a,b] of [[2,0],[-2,0],[0,2],[0,-2]])if(inH(X+a,Y+b))near++;
+        let col=seam?'#05040a':((X*7+Y*11)%13<2?'#151020':'#0e0b17');if(riv)col='#2c2440';if(near)col=near>1?((X+Y)%7===0?'#d07a3a':'#5a4a78'):'#2e2645';px(X,Y,col)}});
+    A.cable=(g2,t)=>{const sw=Math.sin(t*1.3)*3,cx=Math.round(W*.66),top=Math.round(H*.08);for(let i=0;i<26;i++){const X=Math.round(cx+sw*i/26+Math.sin(i*.5));g2.fillStyle='#3a3050';g2.fillRect(X,top+i,1,1);g2.fillStyle='#120e1a';g2.fillRect(X+1,top+i,1,1)}if(Math.floor(t*3)%5===0){g2.fillStyle='#ffd27a';g2.fillRect(cx+Math.round(sw),top+26,1,1)}};
+    A.embers=(g2,t,ox)=>{const bx=Math.round((ox?ox+W*.82:wreckAt)+50),by=Math.round(H*HZ)+12-7;for(let i=0;i<6;i++){if(((t*4+i*1.7)|0)%3===0)continue;g2.fillStyle=i%2?'#ff9a4a':'#d0602a';g2.fillRect(bx+i*2.6|0,by-(i%2),1,1)}};
+    A.smokeAt=(g2,t,sx,sy,k)=>{for(let i=0;i<8;i++){const ph=(t*.18+i/8)%1,X=sx+Math.sin(t*.7+i)*4+ph*10,Y=sy-ph*44,r=2+ph*7;g2.globalAlpha=(1-ph)*.3*k;g2.fillStyle=i%2?'#5a4e6e':'#3e3550';g2.beginPath();g2.arc(X,Y,r,0,7);g2.fill()}g2.globalAlpha=1};
+    A.dust=(g2,t,X,Y,on)=>{if(!on)return;for(let i=0;i<4;i++){const ph=(t*2.2+i/4)%1;g2.globalAlpha=(1-ph)*.6;g2.fillStyle='#6e5a7a';g2.fillRect(X+ph*8|0,Y-1-ph*3|0,1,1)}g2.globalAlpha=1};
+    A.bot=(g2,X,Y,bw)=>{if(BOT0)g2.drawImage(BOT0,Math.round(X),Math.round(Y),bw,bw)};
+    OPA=A;return A}
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
-    // ── far-view arts for the opening, in the game's own night colours: the crash site seen whole, 녹슨 7호 small ──
-    o_sky:t=>{if(SCN0){g.drawImage(SCN0,0,0)}else sky(t);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(0,0,W,H);oSmoke(t,.5)},
-    o_robot:t=>{if(SCN0)g.drawImage(SCN0,0,0);const k=Math.min(1,t/3.2),e=1-Math.pow(1-k,2),bw=14,rx=Math.round(W*.92-e*W*.2),ry=Math.round(H*.86-bw+(k<1&&Math.floor(t*8)%2?1:0));oSmoke(t,1-k*.6,rx+bw/2,ry+bw);if(BOT0)g.drawImage(BOT0,rx,ry,bw,bw)},
-    o_pan:t=>{if(SCN0){const s=1.18,w=W*s,h=H*s,k=Math.min(1,t/8),x=-(w-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(SCN0,Math.round(x),Math.round(H-h),Math.round(w),Math.round(h))}else sky(t);if(BOT0)g.drawImage(BOT0,Math.round(W*.66),Math.round(H*.86-14),14,14)},
-    o_side:t=>{if(SCN0)g.drawImage(SCN0,0,0);g.fillStyle='rgba(0,0,0,.18)';g.fillRect(0,0,W,H);const bw=24;if(BOT0)g.drawImage(BOT0,Math.round(W*.66),Math.round(H*.9-bw+Math.sin(t*3)*.6),bw,bw)},
-    o_tally:t=>{if(SCN0)g.drawImage(SCN0,0,0);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,0,W,H);const bw=40,rx=Math.round(W*.5-bw/2),ry=Math.round(H*.88-bw);if(BOT0)g.drawImage(BOT0,rx,ry,bw,bw);
-      const s=bw/16,ox=rx+s*4.6,oy=ry+s*10.4,mk=(x0,y0,x1,y1)=>{const n=Math.max(1,Math.max(Math.abs(x1-x0),Math.abs(y1-y0))|0);for(let i=0;i<=n;i++)P(x0+(x1-x0)*i/n,y0+(y1-y0)*i/n,'#f2ecd8')};
+    // ── the opening's own pictures, drawn fresh: a dusk-purple desert seen from afar, a small crashed ship, a small 녹슨 7호 ──
+    o_sky:t=>{const A=opA();g.drawImage(A.land(0),0,0);A.embers(g,t,0);g.drawImage(A.hole,0,0);A.cable(g,t)},
+    o_robot:t=>{const A=opA();g.drawImage(A.land(0),0,0);A.embers(g,t,0);A.smokeAt(g,t,W*.18+56,H*.62,1);const k=Math.min(1,t/3.4),e=1-Math.pow(1-k,2),bw=12,rx=Math.round(W+4-e*(W*.42)),gy=Math.round(H*.88);
+      A.dust(g,t,rx+bw,gy,k<1);A.bot(g,rx,gy-bw+(k<1&&Math.floor(t*8)%2?1:0),bw)},
+    o_pan:t=>{const A=opA(),wide=A.land(1),k=Math.min(1,t/9),x=-(wide.width-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(wide,Math.round(x),0);A.embers(g,t,Math.round(x));A.smokeAt(g,t,Math.round(x)+W*.82+56,H*.62,1);A.bot(g,Math.round(x+wide.width*.7),Math.round(H*.88)-12,12)},
+    o_side:t=>{const A=opA();g.drawImage(A.land(0),0,0);A.embers(g,t,0);A.smokeAt(g,t,W*.18+56,H*.62,.7);const bw=20,rx=Math.round(W*.66),gy=Math.round(H*.9);g.fillStyle='rgba(8,5,14,.55)';g.fillRect(rx+2,gy,bw-2,2);A.bot(g,rx,gy-bw+Math.round(Math.sin(t*3)*.6),bw)},
+    o_tally:t=>{const A=opA();g.drawImage(A.near,0,0);const bw=44,rx=Math.round(W*.5-bw/2),gy=Math.round(H*.95);g.fillStyle='rgba(8,5,14,.5)';g.fillRect(rx+3,gy-1,bw-4,3);A.bot(g,rx,gy-bw,bw);
+      const s=bw/16,ox=rx+s*4.6,oy=gy-bw+s*10.4,mk=(x0,y0,x1,y1)=>{const n=Math.max(1,Math.max(Math.abs(x1-x0),Math.abs(y1-y0))|0);for(let i=0;i<=n;i++)P(x0+(x1-x0)*i/n,y0+(y1-y0)*i/n,'#f0e6cc')};
       const sh=Math.min(7,Math.floor(t*3));for(let i=0;i<Math.min(4,sh);i++)mk(ox+i*s*1.1,oy,ox+i*s*1.1+s*.2,oy+s*2.6);if(sh>4)mk(ox-s*.4,oy+s*2.2,ox+s*3.8,oy+s*.3);for(let i=5;i<sh;i++)mk(ox+s*4.9+(i-5)*s*1.1,oy,ox+s*4.9+(i-5)*s*1.1+s*.2,oy+s*2.6)},
-    o_face:t=>{if(SCN0)g.drawImage(SCN0,0,0);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,0,W,H);const k=Math.min(1,t/2.4),e=.5-.5*Math.cos(k*Math.PI),bw=Math.round(40+e*16),rx=Math.round(W*.5-bw/2),ry=Math.round(H*.88-bw-e*6);if(BOT0)g.drawImage(BOT0,rx,ry,bw,bw)},
+    o_face:t=>{const A=opA(),k=Math.min(1,t/2.6),e=.5-.5*Math.cos(k*Math.PI);g.drawImage(A.near,0,0);const bw=Math.round(44+e*12),rx=Math.round(W*.5-bw/2),gy=Math.round(H*.95+(1-e)*20);A.bot(g,rx,gy-bw,bw);
+      if(e>.9&&Math.floor(t*1.5)%3===0){P(rx+s16(bw,5),gy-bw+s16(bw,6),'#fff8d0');P(rx+s16(bw,10),gy-bw+s16(bw,6),'#fff8d0')}},
     // the wreck and the ground around it, wide, the camera sliding slowly from left to right
     pan:t=>{R(0,0,W,H,B[0]);if(SCN){const s=1.7,w=SCN.width*s,h=SCN.height*s,k=Math.min(1,t/9),x=-(w-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(SCN,Math.round(x),Math.round(H-h+8),Math.round(w),Math.round(h))}else sky(t);smoke(t,.35)},
     // 녹슨 7호 side-on, big, against the sky
