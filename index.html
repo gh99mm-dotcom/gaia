@@ -1309,6 +1309,22 @@ body:has(#endHud){padding-bottom:200px}
 #orbisFx .orbtx{position:relative;z-index:1;margin-top:46vh;max-width:min(560px,90vw);text-align:center;color:#f4e8ff;font-size:15px;line-height:1.7;text-shadow:2px 2px 0 #000;padding:10px 14px;background:rgba(5,3,10,.6)}
 #orbisFx.red{animation:orbRed .25s steps(2) 3}
 @keyframes orbIn{from{opacity:0}}@keyframes orbRed{50%{background:#5a0a12}}
+#opCrawl{position:fixed;inset:0;z-index:200;background:#000;color:#e8e6f0;overflow:hidden;font-family:var(--f-body,monospace);animation:orbIn .6s steps(4)}
+#opCrawl .osroll{position:absolute;left:0;right:0;top:0;transition:transform .6s ease-out}
+#opCrawl .oslines{max-width:min(760px,90vw);margin:0 auto;text-align:center}
+#opCrawl .osl{margin:0 0 18px;font-size:17px;line-height:1.7;word-break:keep-all;min-height:1.7em;text-shadow:0 0 6px rgba(200,190,255,.25)}
+#opCrawl .osl.big{font-size:30px;font-weight:700;font-style:italic;letter-spacing:.04em;color:#fff;margin-bottom:26px}
+#opCrawl .osgap{height:30px;margin:0}
+#opCrawl .ostitle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;opacity:0;pointer-events:none}
+#opCrawl.titled .ostitle{opacity:1}
+#opCrawl .ost{font-size:clamp(52px,9vw,96px);font-weight:700;letter-spacing:.18em;color:#fff;text-shadow:0 0 18px rgba(200,140,255,.55),3px 3px 0 #2a1450}
+#opCrawl .osc{display:inline-block;width:clamp(10px,1.6vw,18px);height:clamp(50px,8.6vw,92px);background:#f4f4f4;margin-left:.1em;animation:wafblink .9s steps(1) infinite}
+#opCrawl .osskip{position:absolute;right:16px;bottom:16px;background:transparent;border:1px solid #444;color:#999;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer}
+#opCrawl.shake .oslines{animation:osShake .45s steps(6) 2}
+#opCrawl.out{animation:osOut .7s steps(5) forwards}
+@keyframes osShake{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(3px,4px)}}
+@keyframes osOut{to{opacity:0}}
+
 .waff{text-shadow:none!important;--wo:#07080e;filter:drop-shadow(1px 0 0 var(--wo)) drop-shadow(-1px 0 0 var(--wo)) drop-shadow(0 1px 0 var(--wo)) drop-shadow(0 -1px 0 var(--wo))}
 .waff.wt1{filter:drop-shadow(1px 0 0 var(--wo)) drop-shadow(-1px 0 0 var(--wo)) drop-shadow(0 1px 0 var(--wo)) drop-shadow(0 -1px 0 var(--wo)) drop-shadow(2px 2px 0 #2f5a32)}
 .waff.wt2,.waff.wt3,.waff.wt4{text-shadow:none!important;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:32px 100%;background-repeat:repeat}
@@ -6048,7 +6064,30 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
   const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'){e.preventDefault();finish()}};
   op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.stv-skip')){finish();return}next()});document.addEventListener('keydown',key,true);
   q('.stv-art').classList.add('in');setLine();raf=requestAnimationFrame(loop)}
-function openingOnce(){if(!P||(P.opSeen||0)>=2||!$('#joinModal').hidden)return;playOpening(()=>{P.opSeen=2;save()})}/* 2 = the prologue rewritten from the game's outline: everyone sees it once */
+/* 게임 시작 인트로 (오프닝): 글자만 — 한 줄씩 타자로 찍히며 위로 흘러 올라가고, 끝에 큰 제목 「조우」가 커서와 함께 찍힘 */
+const OP_CRAWL=[['쿵!','big'],null,['이 우주가 태어날 때 커다란 폭발이 있었다고 합니다.'],['아무 것도 존재하지 않던 공간에서 모든 것들이 만들어지기까지.'],['그 최초의 울림이 얼마나 컸을지, 감히 누구도 짐작할 수 없겠지만,'],['지금 이 순간 우리 역시 삶에서 가장 거대한 흔들림을 겪고 있습니다.'],null,['모든 것이 재배치되고 있습니다.'],['나의 낯선 얼굴을 마주볼 수 있었다가, 일그러진 은하단이 번쩍이며 발 밑을 스쳐 지나가기도 합니다.'],['압착된 성간을 지나며 보아서는 안 될 것을 본 듯도 합니다. 그것이, 그러니까 그것이……']];
+function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M.setAttribute('role','dialog');M.setAttribute('aria-label','조우');
+  M.innerHTML='<div class="osroll"><div class="oslines"></div></div><div class="ostitle"><span class="ost"></span><i class="osc"></i></div><button type="button" class="osskip">건너뛰기 ›</button>';document.body.appendChild(M);
+  const L=M.querySelector('.oslines'),roll=M.querySelector('.osroll'),T=M.querySelector('.ost');let dead=false;
+  const end=()=>{if(dead)return;dead=true;M.classList.add('out');setTimeout(()=>{M.remove();done&&done()},700)};M.querySelector('.osskip').onclick=end;
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  // keep the line being typed a little below the middle; everything above drifts up like a crawl
+  const follow=()=>{const h=L.scrollHeight;roll.style.transform=`translateY(${Math.round(innerHeight*.58-h)}px)`};
+  (async()=>{await wait(500);
+    for(const it of OP_CRAWL){if(dead)return;
+      if(!it){const g=document.createElement('p');g.className='osgap';L.appendChild(g);follow();await wait(700);continue}
+      const p=document.createElement('p');p.className='osl'+(it[1]?' '+it[1]:'');L.appendChild(p);follow();
+      if(it[1]==='big'){p.textContent=it[0];M.classList.add('shake');try{sfxStatic()}catch(e){}await wait(900);M.classList.remove('shake');continue}
+      for(const ch of it[0]){if(dead)return;p.textContent+=ch;await wait(ch===' '?20:ch===','||ch==='.'?140:42)}
+      await wait(650)}
+    await wait(1200);if(dead)return;
+    // the crawl rolls away upward, then the title is typed big in the middle with a blinking cursor
+    roll.style.transition='transform 2.4s ease-in, opacity 2.4s';roll.style.transform=`translateY(${-L.scrollHeight-100}px)`;roll.style.opacity='0';await wait(2400);
+    M.classList.add('titled');for(const ch of '[조우]'){if(dead)return;T.textContent+=ch;try{sfxBeep()}catch(e){}await wait(380)}
+    await wait(2600);end()})()}
+
+// 3 = the opening is now the typed crawl ending in [조우]: everyone sees it once
+function openingOnce(){if(!P||(P.opSeen||0)>=3||!$('#joinModal').hidden)return;storyCrawl(()=>{P.opSeen=3;save()})}
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat();endRender()}
 
 /* ───────── crew & chat ───────── */
@@ -6255,7 +6294,7 @@ const A={
  suwi(d){if(d.k!=='o'&&d.k!=='x'||P.suwi===d.k)return;P.suwi=d.k;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
- opreplay(){playOpening()},
+ opreplay(){storyCrawl()},
  storyplay(d){playStory(d.k)},
  padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
