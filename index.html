@@ -1280,8 +1280,8 @@ b.no{color:var(--red)}
 .endhud{position:fixed;z-index:47;left:50%;bottom:max(12px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(680px,calc(100vw - 24px));display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:rgba(10,8,18,.92);border:2px solid #07080e;box-shadow:inset 0 0 0 1px #6a5a80,inset 3px 0 0 #e8b4b0,0 0 0 2px rgba(232,180,176,.25)}
 .endhud .endch .hint{display:none}
 body:has(#endHud) .toast{bottom:210px!important;z-index:48}
-/* the shield sits between the page and 오르비스: it dims the page to half so the boss and the fight stand out, and swallows clicks */
-#endBlock{position:fixed;inset:0;z-index:42;cursor:not-allowed;background:rgba(0,0,0,.5)}
+/* the shield sits between the page and 오르비스: a black sea of stars hides the page so the boss and the fight stand out, and swallows clicks */
+#endBlock{position:fixed;inset:0;z-index:42;cursor:not-allowed;background:#05040c;overflow:hidden}#endBlock canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
 .endchat{display:flex;gap:6px}.endchat input{flex:1;min-width:0;padding:6px 8px;font-size:13px}
 .echb{position:fixed;z-index:46;pointer-events:none;max-width:300px;display:flex;flex-direction:column;gap:2px;padding:9px 14px 10px;background:#f4f0f8;color:#1a1626;border:2px solid #07080e;box-shadow:3px 3px 0 rgba(0,0,0,.5);font-size:16px;line-height:1.4;word-break:keep-all;overflow-wrap:anywhere;animation:echIn .25s steps(3)}
 .echb b{font-size:13px;color:#7a3fd0}.echb.me{background:#e6fbff}.echb.me b{color:#1d7a8a}
@@ -3956,7 +3956,14 @@ function echBubble(m){const W=innerWidth,H=innerHeight,b=document.createElement(
 document.addEventListener('submit',e=>{if(e.target.id!=='endChatF')return;e.preventDefault();const i=$('#endChatIn');const v=(i.value||'').trim().slice(0,ECH_MAX);if(!v||!endOn())return;
   if(Date.now()-echLast<1500){toast('조금 천천히 외쳐 주십시오.');return}echLast=Date.now();i.value='';const m={u:uid,n:P.nick,t:v,at:Date.now()};
   bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>Date.now()-x.at<120e3),m].slice(-30)})).catch(()=>toast('보내지 못했습니다.'))});
-function endBlock(on){echSub(on);let b=$('#endBlock');if(!on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='endBlock';b.setAttribute('aria-hidden','true');b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toast('오르비스와 싸우는 중에는 다른 곳을 누를 수 없습니다.')},true);document.body.appendChild(b)}}
+function endBlock(on){echSub(on);let b=$('#endBlock');if(!on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='endBlock';b.setAttribute('aria-hidden','true');b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toast('오르비스와 싸우는 중에는 다른 곳을 누를 수 없습니다.')},true);document.body.appendChild(b);
+   // pixel stars (a few twinkle, the brightest get a little cross) over faint nebula glows
+   const cv=document.createElement('canvas');b.appendChild(cv);const W=Math.ceil(innerWidth/3),H=Math.ceil(innerHeight/3);cv.width=W;cv.height=H;const x=cv.getContext('2d');
+   const st=Array.from({length:Math.round(W*H/90)},()=>({x:Math.random()*W|0,y:Math.random()*H|0,b:Math.random(),p:Math.random()*6.28,c:['#ffffff','#cfd8ff','#ffe8c8','#c8b4ff'][Math.random()*4|0]}));
+   const neb=[[W*.2,H*.7,W*.35,'rgba(90,40,140,.18)'],[W*.8,H*.25,W*.3,'rgba(40,70,150,.16)'],[W*.55,H*.85,W*.25,'rgba(140,40,90,.12)']];
+   const draw=()=>{if(!b.isConnected)return;const t=performance.now()/1000;x.fillStyle='#05040c';x.fillRect(0,0,W,H);
+     neb.forEach(([cx,cy,r,c])=>{const g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,W,H)});
+     st.forEach(q=>{const a=q.b<.85?.35+q.b*.5:.6+.4*Math.sin(t*2+q.p);x.globalAlpha=Math.max(.15,a);x.fillStyle=q.c;x.fillRect(q.x,q.y,1,1);if(q.b>.97){x.fillRect(q.x-1,q.y,1,1);x.fillRect(q.x+1,q.y,1,1);x.fillRect(q.x,q.y-1,1,1);x.fillRect(q.x,q.y+1,1,1)}});x.globalAlpha=1;setTimeout(()=>requestAnimationFrame(draw),120)};draw()}}
 function endRender(){endDraw();let h=$('#endHud');const live=endOn()&&P&&P.joined&&$('#joinModal').hidden;endBlock(live);if(!live){if(h)h.remove();return}
   if(!h){document.body.insertAdjacentHTML('beforeend',endCardHTML().replace('class="card endcard" id="endCard"','class="px endhud" id="endHud"'));endPaint()}}
 // alien blaster shots (three takes, picked at random) for every blow on the boss
