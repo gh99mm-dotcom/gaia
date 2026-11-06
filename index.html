@@ -1312,7 +1312,7 @@ body:has(#endHud){padding-bottom:200px}
 #orbisFx .orbtx{position:relative;z-index:1;margin-top:46vh;max-width:min(560px,90vw);text-align:center;color:#f4e8ff;font-size:15px;line-height:1.7;text-shadow:2px 2px 0 #000;padding:10px 14px;background:rgba(5,3,10,.6)}
 #orbisFx.red{animation:orbRed .25s steps(2) 3}
 @keyframes orbIn{from{opacity:0}}@keyframes orbRed{50%{background:#5a0a12}}
-#opCrawl{position:fixed;inset:0;z-index:200;background:#04050a;color:#e4e8f0;overflow:hidden;font-family:'Galmuri11',var(--f-body,monospace);animation:orbIn .6s steps(4)}
+#opCrawl{position:fixed;inset:0;z-index:200;background:#03060f;color:#e8eeff;overflow:hidden;font-family:'Galmuri11',var(--f-body,monospace);animation:orbIn .6s steps(4)}
 #opCrawl .osbg{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
 #opCrawl .osroll{position:absolute;left:0;right:0;top:0;transition:transform .6s ease-out}
 #opCrawl .osok{position:absolute;right:20px;bottom:56px;z-index:2;font-family:inherit;font-size:16px;padding:8px 18px;background:#0a1530;color:#f2f7ff;border:2px solid #7ea6f0;box-shadow:3px 3px 0 #000;cursor:pointer;animation:echIn .3s steps(3)}
@@ -6113,7 +6113,7 @@ function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M
   //    a ringed planet low on the right inside a huge faint orbit; thin ridge lines for the ground with scraps of junk scattered on it;
   //    and a small 녹슨 7호 rolling along the nearest ridge ──
   const cv=M.querySelector('.osbg'),x=cv.getContext('2d'),BOT=opBlueBot();
-  const C=['#04050a','#0b0d15','#141823','#222837','#3a4254','#5f697f','#9aa3b6','#dde2ec'];
+  const C=['#03060f','#0a1530','#132550','#1f3b78','#33589e','#5a82c8','#9ab8ec','#e2ecff'];
   let W=0,H=0,ST=[],BG=null,RID=[];
   const size=()=>{W=Math.ceil(innerWidth/2);H=Math.ceil(innerHeight/2);cv.width=W;cv.height=H;let sd=9;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
     // stars: density grows toward the bottom (squared), the upper ones stay dim
@@ -6126,7 +6126,6 @@ function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M
     const BY=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]],dith=(X,Y,v)=>{const lo=Math.max(0,Math.min(6,Math.floor(v))),fr=v-lo;return C[fr*16>BY[Y&3][X&3]?lo+1:lo]};
     const pc=[W*.62,H*.66],pr=Math.max(10,Math.round(Math.min(W,H)*.055));
     // huge faint orbit (dashed), mostly on the left of the planet
-    for(let a2=0;a2<Math.PI*2;a2+=.004){const ox=pc[0]-W*.08+Math.cos(a2)*W*.2,oy=pc[1]+H*.02+Math.sin(a2)*H*.17;if(Math.cos(a2)>.55)continue;if(Math.floor(a2*160)%3===0)px(ox,oy,C[3])}
     // ring behind, sphere, ring in front
     const ring=(front)=>{for(let a2=0;a2<Math.PI*2;a2+=.006){const sn=Math.sin(a2);if(front!==(sn>0))continue;const rx=pr*2.05,ry=pr*.42,X=pc[0]+Math.cos(a2)*rx,Y=pc[1]+sn*ry-Math.cos(a2)*rx*.22;px(X,Y,C[6]);px(X,Y+1,C[4])}};
     ring(false);for(let y=-pr;y<=pr;y++)for(let X=-pr;X<=pr;X++){const d=X*X+y*y;if(d>pr*pr)continue;const lit=(-X*.6-y*.75)/pr;px(pc[0]+X,pc[1]+y,dith(pc[0]+X,pc[1]+y,3.4+lit*2.6-(d>(pr-1)*(pr-1)?.8:0)))}ring(true);
