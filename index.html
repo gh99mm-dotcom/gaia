@@ -3835,7 +3835,9 @@ const END_LV=100,END_K=1.5,endHpMax=()=>{let k=0;BOSS_KINDS.forEach((q,i)=>{if(q
 const END_CD=10000,END_SKCD=30000,END_NAME='하늘을 뒤덮은 눈 「오르비스」';
 // the boss's eyes over the page: [anchor, x, y] — anchors are page parts, or 'L'/'R'/'T' for the empty space around the layout
 const END_EYES=[['L',.45,.09,1.1],['L',.6,.24,.9],['header .logo',.32,.42,.8],['T',.47,.35,1.3],['#ticker',.36,.05,.7],['#netChip',.4,1.4,.9],['R',.5,.36,1.1],['L',.35,.6,.8],['R',.45,.75,.8]];
-const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done;
+// the first encounter (mode 'first', after the 통신 장치 repair) only lasts until END.until; the final raid runs until it falls
+const endFirst=()=>!!END&&END.mode==='first';
+const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&(!endFirst()||Date.now()<(+END.until||0));
 const endHpS=()=>END?Math.max(0,+END.hp||0):0;
 const endShow=()=>Math.max(0,endHpS()-endPend-endUnseen);
 const endSkill=()=>({mech:['과부하 일격','공격력 ×4 한 방'],nav:['궤도 휩쓸기','×1.4 세 번'],medic:['응급 지원 사격','×2.5 한 방']}[P.job]||['전력 공격','×2 한 방']);
@@ -3894,26 +3896,40 @@ function endDraw(){if(!endOn()){['endBg','endFg'].forEach(i=>{const c=document.g
   const fg=endCv('endFg',44),y=fg.getContext('2d');y.clearRect(0,0,fg.width,fg.height);
   END_EYES.forEach((s,i)=>{const [X,Y]=endSpotXY(s),lk=endMx<0?[Math.sin(t*.6+i)*.7,Math.cos(t*.4+i)*.5]:[Math.max(-1,Math.min(1,(endMx-X)/260)),Math.max(-1,Math.min(1,(endMy-Y)/200))];
     const open=frac>(i+1)/(END_EYES.length+1)?((Math.sin(t*.9+i*2.1)>.97)?.2:1):0;endEye(y,X/EPX,Y/EPX,3.2*s[3],open,lk,hurt,t)})}
-setInterval(()=>{if(endOn()||document.getElementById('endBg'))endDraw()},125);
+setInterval(()=>{if(endOn()||document.getElementById('endBg')||document.getElementById('endHud'))endRender()},125);
 addEventListener('pointermove',e=>{endMx=e.clientX;endMy=e.clientY},{passive:true});
 /* 통신 장치 repaired: the signal reaches something. For every crew member, once, the sky splits and the great eye 「오르비스」 looks down
    on the base camp — everyone who meets its gaze collapses (the usual faint: rescue by a crewmate, or wake after the timer) */
 let orbisBusy=false;
-function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||P.orbis||!$('#joinModal').hidden)return;const q=SHIP.find(x=>x.id==='comm');if(!q||!shipDone(q))return;orbisBusy=true;orbisPlay()}
-function orbisPlay(){const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스 등장');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
-  const LINES=['통신 장치에 불이 들어왔다. 첫 신호가 하늘 너머로 뻗어 나간다…','…그리고 무언가가 대답했다.','하늘이 갈라지고, 거대한 눈 「오르비스」가 베이스캠프를 내려다본다.','그 시선을 마주친 순간, 선원들이 하나둘 쓰러졌다.'];
-  const t0=performance.now();let li=-1;try{sfxStatic()}catch(e){}
+const ORB_BATTLE=120e3;   // how long the first fight lasts before 오르비스 ends it
+// P.orbis: 1 = saw the intro (fighting), 2 = knocked out and saw it leave
+function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||!$('#joinModal').hidden)return;const q=SHIP.find(x=>x.id==='comm');if(!q||!shipDone(q))return;
+  const st=(+P.orbis||0);if(st>=2)return;
+  if(END&&!endFirst()){P.orbis=2;save();return}                          // the final raid is already on the board: the first encounter is long past
+  const over=endFirst()&&Date.now()>=(+END.until||0);
+  if(over){orbisBusy=true;orbisLeave();return}
+  if(!st){orbisBusy=true;orbisPlay(ORB_INTRO,()=>{orbisBusy=false;P.orbis=1;save();orbisStart()})}}
+// whoever finishes the intro first opens the fight on the server; everyone else just joins it
+function orbisStart(){if(END)return;const t0=Date.now();bossTx(endRef(),cur=>{if(cur)return null;const hp=endHpMax();return{on:true,done:false,mode:'first',gen:t0,startAt:t0,until:t0+ORB_BATTLE,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0}})
+  .then(nx=>{if(nx)sys(`[공지] ${END_NAME}이(가) 베이스캠프 위에 나타났습니다! 모두 맞서 싸우십시오!`,true,'siren')}).catch(()=>{})}
+const ORB_INTRO=['통신 장치에 불이 들어왔다. 첫 신호가 하늘 너머로 뻗어 나간다…','…그리고 무언가가 대답했다.','하늘이 갈라지고, 거대한 눈 「오르비스」가 베이스캠프를 내려다본다.','선원들이여, 무기를 들어라!'];
+const ORB_LEAVE=['「오르비스」의 모든 눈이 한꺼번에 베이스캠프를 바라본다.','그 시선을 마주친 순간, 선원들이 하나둘 쓰러졌다…','쓰러진 선원들을 내려다보던 거대한 눈은, 천천히 하늘 너머로 사라졌다.'];
+function orbisPlay(LINES,done,leave){const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
+  const t0=performance.now(),STEP=2.4,TOTAL=LINES.length*STEP+.6;let li=-1;try{sfxStatic()}catch(e){}
   const draw=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000,W=Math.ceil(innerWidth/EPX),H=Math.ceil(innerHeight/EPX);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
     const x=cv.getContext('2d');x.fillStyle='#05030a';x.fillRect(0,0,W,H);
-    // a crack of light opening across the sky, then the eye behind it
-    const open=Math.max(0,Math.min(1,(t-2.2)/1.6)),cx=W/2,cy=H*.38,r=Math.min(W*.09,H*.16);
-    if(t>1){const crack=Math.min(1,(t-1)/1.2);for(let i=-W*.4*crack;i<=W*.4*crack;i++){const y=cy+Math.round(Math.sin(i*.31)*1.5);x.fillStyle=Math.abs(i)%7<2?'#ffd0e0':'#c88aff';x.fillRect(cx+i,y,1,1)}}
-    if(open>0)endEye(x,cx,cy,r,open,[Math.sin(t*.8)*.3,.3],t>5.2&&Math.floor(t*6)%2===0,t);
-    const k=Math.min(LINES.length-1,Math.floor(t/2.2));if(k!==li){li=k;tx.textContent=LINES[k];if(k===2){try{sfxStatic()}catch(e){}}if(k===3)M.classList.add('red')}
-    if(t<9.5)requestAnimationFrame(draw);else orbisEnd(M)};
+    const cx=W/2,cy=H*.38,r=Math.min(W*.09,H*.16);
+    // intro: a crack of light, then the eye opens; leave: the eye stares, then closes and shrinks away into the sky
+    let open,sc=1;if(leave){open=t<TOTAL-2.2?1:Math.max(0,1-(t-(TOTAL-2.2))/1.4);sc=t<TOTAL-2.2?1:Math.max(.2,1-(t-(TOTAL-2.2))/2)}
+    else{open=Math.max(0,Math.min(1,(t-2.2)/1.6));if(t>1){const crack=Math.min(1,(t-1)/1.2);for(let i=-W*.4*crack;i<=W*.4*crack;i++){const y=cy+Math.round(Math.sin(i*.31)*1.5);x.fillStyle=Math.abs(i)%7<2?'#ffd0e0':'#c88aff';x.fillRect(cx+i,y,1,1)}}}
+    if(open>0)endEye(x,cx,cy-(1-sc)*H*.3,r*sc,open,[Math.sin(t*.8)*.3,.3],leave&&t<STEP*2&&Math.floor(t*6)%2===0,t);
+    const k=Math.min(LINES.length-1,Math.floor(t/STEP));if(k!==li){li=k;tx.textContent=LINES[k];if(leave&&k===1){M.classList.add('red');try{sfxStatic()}catch(e){}}}
+    if(t<TOTAL)requestAnimationFrame(draw);else{M.remove();done&&done()}};
   requestAnimationFrame(draw)}
-function orbisEnd(M){M.remove();orbisBusy=false;P.orbis=1;if(!isFaint()){P.hp=0;checkFaint()}log('「오르비스」의 시선에 쓰러졌다. 이제 탐사 탭이 열린다.','bad');toast('「오르비스」의 시선에 쓰러졌습니다. 동료가 구조하거나 시간이 지나면 깨어납니다.');commit()}
-setInterval(orbisCheck,3000);
+// the fight is over: everyone still standing is struck down, and 오르비스 leaves the sky
+function orbisLeave(){if(END&&endFirst()&&END.on){const g=END.gen;bossTx(endRef(),cur=>cur&&cur.mode==='first'&&cur.gen===g&&cur.on?Object.assign(cur,{on:false,left:true,leftAt:Date.now()}):null).then(nx=>{if(nx)sys(`[공지] ${END_NAME}의 시선에 선원 모두가 쓰러졌습니다. 거대한 눈은 하늘 너머로 사라졌습니다…`,true,'static')}).catch(()=>{})}
+  endRender();orbisPlay(ORB_LEAVE,()=>{orbisBusy=false;P.orbis=2;if(!isFaint()){P.hp=0;checkFaint()}log(`「오르비스」의 시선에 쓰러졌다. 거대한 눈은 하늘 너머로 사라졌다.`,'bad');toast('「오르비스」의 시선에 쓰러졌습니다. 동료가 구조하거나 시간이 지나면 깨어납니다.');commit();syncBgm()},true)}
+setInterval(orbisCheck,1500);
 function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYES.length)],[X,Y]=endSpotXY(s),n=document.createElement('span');
   n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(X+(Math.random()*30-15))+'px';n.style.top=(Y-10)+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),900);endHitT=performance.now()}
 // the fight controls float above the boss at the bottom of the screen, on every tab
@@ -3923,12 +3939,12 @@ function endRender(){endDraw();let h=$('#endHud');if(!endOn()||!P||!P.joined||!$
 const END_SHOT=[1,2,3].map(n=>{const a=new Audio(`shoot${n}.mp3`);a.preload='auto';return a});
 function endShot(){if(!soundOn||!sfxVol)return;const a=END_SHOT[Math.floor(Math.random()*END_SHOT.length)].cloneNode();a.volume=Math.min(1,sfxVol/100*.8);const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{})}
 function endHit(mul,times){if(!endOn()||isFaint()||endShow()<=0)return false;let tot=0;
-  for(let k=0;k<(times||1);k++){const c=Math.random()*100<critPct();let d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(c?critMul():1)*mul));d=Math.min(d,endShow());if(d<=0)break;endPend+=d;tot+=d;setTimeout(()=>{endFloat(d,true,c);endShot()},k*160)}
+  for(let k=0;k<(times||1);k++){const c=Math.random()*100<critPct();let d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(c?critMul():1)*mul));d=Math.min(d,endShow()-(endFirst()?1:0));if(d<=0)break;endPend+=d;tot+=d;setTimeout(()=>{endFloat(d,true,c);endShot()},k*160)}
   clearTimeout(endFlushT);endFlushT=setTimeout(endFlush,600);endPaint();return tot>0}
 async function endFlush(){if(endBusy||endPend<=0)return;const d=endPend;endPend=0;endUnseen+=d;endBusy=true;
   try{await docInc(endRef(),{hp:-d,hits:1,['dmg.'+uid+'.d']:d},{['dmg.'+uid+'.n']:P.nick,last:uid})}catch(e){endUnseen=Math.max(0,endUnseen-d);toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.')}
   endBusy=false;if(endPend>0)endFlush();else if(END&&endHpS()<=0)endFinish()}
-function endFinish(){if(!END||END.done)return;const g=END.gen;bossTx(endRef(),cur=>{if(!cur||cur.done||cur.gen!==g||(+cur.hp||0)>0)return null;cur.done=true;cur.doneAt=Date.now();cur.on=false;return cur})
+function endFinish(){if(!END||END.done||endFirst())return;const g=END.gen;bossTx(endRef(),cur=>{if(!cur||cur.done||cur.gen!==g||(+cur.hp||0)>0)return null;cur.done=true;cur.doneAt=Date.now();cur.on=false;return cur})
   .then(nx=>{if(nx)sys(`[공지] 최종 레이드 승리! ${END_NAME}이(가) 쓰러졌습니다. 선원 모두의 힘으로 가이아를 지켜냈습니다.`,true,'beacon')}).catch(()=>{})}
 function endReward(){const e=END;if(!e||!e.done||P.endGen===e.gen)return;const me=(e.dmg||{})[uid];P.endGen=e.gen;
   if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「가이아의 마지막 수호자」를 얻었다.','rare');sfxFanfare(true)}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
@@ -3946,7 +3962,7 @@ function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id=
 function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
   const e=END,left=endShow();$('#endBarI').style.width=(left/e.max*100)+'%';$('#endBarT').textContent=`체력 ${Math.round(left).toLocaleString()} / ${e.max.toLocaleString()} (${(left/e.max*100).toFixed(1)}%)`;
   const now=Date.now(),sk=Math.max(0,END_SKCD-(now-endSkAt)),ab=$('#endAtkB'),sb=$('#endSkB');const ac2=Math.max(0,END_CD-(now-endAt));if(ab){ab.disabled=ac2>0;ab.textContent=ac2>0?`⚔ 공격 ${Math.ceil(ac2/1000)}초`:'⚔ 공격'}if(sb){sb.disabled=sk>0;sb.textContent=sk>0?`✦ ${endSkill()[0]} ${Math.ceil(sk/1000)}초`:`✦ ${endSkill()[0]}`}
-  const ai=endAoeIn(),w=$('#endWarn');if(w){w.className='endwarn'+(ai<=END_WARN?' on':'');w.textContent=ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초`:`다음 시선까지 ${Math.ceil(ai/1000)}초 · 선원 모두가 피해를 입습니다`}
+  const ai=endAoeIn(),w=$('#endWarn');if(w&&endFirst()){const left=Math.max(0,(+END.until||0)-Date.now()),mm=Math.floor(left/60000),ss=String(Math.floor(left/1000)%60).padStart(2,'0');w.className='endwarn'+(ai<=END_WARN||left<15000?' on':'');w.textContent=(ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초 · `:'')+`오르비스가 모든 눈을 뜨기까지 ${mm}:${ss}`}else if(w){w.className='endwarn'+(ai<=END_WARN?' on':'');w.textContent=ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초`:`다음 시선까지 ${Math.ceil(ai/1000)}초 · 선원 모두가 피해를 입습니다`}
   const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)).slice(0,5),me=((e.dmg||{})[uid]||{}).d||0;
   $('#endMeta').innerHTML=`<span>내 피해 <b>${Math.round(me+endPend).toLocaleString()}</b></span><span>참여 ${Object.keys(e.dmg||{}).length}명</span>${top.map(([u,v],i)=>`<span class="${u===uid?'me':''}">${i+1}. ${esc(v.n||'선원')} ${Math.round(v.d||0).toLocaleString()}</span>`).join('')}`}
 setInterval(()=>{if(endOn())endPaint()},250);
@@ -7023,7 +7039,7 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
   if(J&&!J.job){toast('직업을 골라 주십시오.');jGo(3);return}
   if(P.joined&&P.nick!=='새 선원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
-  {const q=SHIP.find(x=>x.id==='comm');if(q&&mode==='online'&&shipDone(q))P.orbis=1}
+  {const q=SHIP.find(x=>x.id==='comm');if(q&&mode==='online'&&shipDone(q))P.orbis=2}
   $('#joinModal').hidden=true;log(`선원 「${v}」${jo(v,'이','가')} 승선했다.`,'rare');sys(`새 선원 ${v} 님이 베이스캠프에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
 
 /* ───────── bgm ───────── */
