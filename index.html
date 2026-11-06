@@ -2131,7 +2131,7 @@ const GX={
 const SITE_NAME={crater:'크레이터 평원',cave:'결정 동굴',marsh:'이끼 습지',wreck:'잔해 지대',geyser:'얼음 간헐천',canyon:'붉은 협곡'};
 for(const [site,g] of Object.entries(GX)){
   g.mats.forEach(([id,n,ic,t,sv,d])=>ITEMS[id]={n,ic,t,type:'mat',sv,d:`${d}. ${SITE_NAME[site]}에서만 나옵니다.`});
-  g.crops.forEach(([id,n,pl,t,grow,hp,en,sv])=>{ITEMS[id]={n,ic:pl==='berry'?'berry':'veg',t,type:'food',hp,en,sv,pl};ITEMS['seed_'+id]={n:n+' 씨앗',ic:'seed',t,type:'seed',grow,crop:id,sv:Math.round(sv/3),d:`${Math.round(grow/60e3*10)/10}분이면 자랍니다. ${SITE_NAME[site]} 채집과 탐사(구식 신호기·침략자 토벌)에서 얻을 수 있습니다.`}});
+  g.crops.forEach(([id,n,pl,t,grow,hp,en,sv])=>{ITEMS[id]={n,ic:pl==='berry'?'berry':'veg',t,type:'food',hp,en,sv,pl};ITEMS['seed_'+id]={n:n+' 씨앗',ic:'seed',t,type:'seed',grow,crop:id,sv:Math.round(sv/3),d:`${Math.round(grow/60e3*10)/10}분이면 자랍니다. ${SITE_NAME[site]} 채집과 탐사(구식 신호기)에서 얻을 수 있습니다.`}});
 }
 // expedition-only ship parts: each 원정 zone yields one material, and each ship section needs the one from its zone
 const RAID_MATS=[['r1','plainSpore','평원 정화 포자','leaf','#b9c48a',30,'공기를 맑게 걸러 내는 하얀 포자','먼지 평원'],['r2','mazeCore','미궁 결정핵','gem','#5fd8ff',40,'스스로 빛을 내는 결정의 심장','결정 미궁'],
@@ -3676,7 +3676,7 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
     Object.entries(bossSplit(cur,dealt,d)).forEach(([u,v])=>{const e=cur.dmg[u]||{n:u===uid?P.nick:'선원',d:0};if(u===uid)e.n=P.nick;e.d=(+e.d||0)+v;cur.dmg[u]=e});
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
-  if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');const xp=Math.max(5,Math.round(xpBase(P.lvl)*.015));gainXp(xp);{const loot=advLoot(.08,.05);loot.forEach(([id,n])=>{add(id,n);log(`침략자를 공격하다 ${ITEMS[id].n} ×${n}을(를) 주웠다.`,'good')});if(loot.length)toast(`${loot.map(([id,n])=>ITEMS[id].n+' ×'+n).join(', ')} 획득!`)}
+  if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
   let back='';if(!kill){const dodge=Math.random()*100<Math.min(45,Math.max(0,AS('agi')*1.5+BUFF('dodge')+WA('dodge')));if(dodge)back='회피!';else{const [hit,sv]=bossBlow2(b);heal(-hit,0);bossDefCredit(BOSS||b,sv);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
