@@ -2753,13 +2753,20 @@ async function seasonCleanMine(){const gone=async(col,q)=>{try{const sn=await q.
     (async()=>{try{const sn=await db.collection('posts').where('uid','==',uid).get();const ids=[].concat(...sn.docs.map(d=>d.data().img||[]));if(ASSETS)await Promise.all(ids.map(id=>ASSETS.delete(id).catch(()=>{})))}catch(e){}})()])}
 let seasonSeen=false,seasonFromDoc=false;
 // stop for good: no more saving, clear what only I can clear, then sign out so I can't slip back in before the wipe is done
-async function seasonQuit(){seasonLock=true;clearTimeout(saveT);dirty=false;toast('테스트 기록이 초기화됩니다. 잠시 뒤 다시 로그인해 주십시오.');await seasonCleanMine();setTimeout(()=>{if(window.__fbLogout)window.__fbLogout();else location.reload()},1200)}
+async function seasonQuit(){seasonLock=true;clearTimeout(saveT);dirty=false;toast('테스트 기록이 초기화됩니다. 잠시 뒤 다시 로그인해 주십시오.');await Promise.race([seasonCleanMine(),new Promise(r=>setTimeout(r,8000))]);
+  // my old character goes too, or signing back in would bring it back and send me round this loop again
+  try{await Promise.race([myRef.delete(),new Promise(r=>setTimeout(r,5000))])}catch(e){}setTimeout(()=>{if(window.__fbLogout)window.__fbLogout();else location.reload()},1200)}
 function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn=>{const n=sn.exists?(+sn.data().n||0):0,first=!seasonSeen;seasonSeen=true;SEASON=n;window.__season=n;
   if(!n||(P.season||0)===n||seasonLock)return;
   if(isAdmin&&seasonBusy)return;                       // the admin's own reset is already doing the work
   // another window of the admin's own account: signing out here would sign out the resetting window too (they share one login)
   // and its wipe would stop halfway, so this window only stops saving and reloads once the wipe has had time to finish
-  if(isAdmin){seasonLock=true;clearTimeout(saveT);dirty=false;toast('다른 창에서 테스트 기록을 초기화하고 있습니다. 이 창은 잠시 뒤 새로고침됩니다.');setTimeout(()=>location.reload(),45000);return}
+  if(isAdmin){seasonLock=true;clearTimeout(saveT);dirty=false;const at=sn.exists?(+sn.data().at||0):0;
+    // a reset still running in another window: wait for it, then reload once
+    if(Date.now()-at<120e3){toast('다른 창에서 테스트 기록을 초기화하고 있습니다. 이 창은 잠시 뒤 새로고침됩니다.');setTimeout(()=>location.reload(),Math.max(5e3,at+120e3-Date.now()));return}
+    // the reset is long over but my old character survived it: clear it and my crew record, so I join again with a 군번 like everyone else
+    toast('지난 초기화 이전의 운영자 기록을 정리합니다…');try{await Promise.race([Promise.all([myRef.delete().catch(()=>{}),db.doc('members/'+uid).delete().catch(()=>{})]),new Promise(r=>setTimeout(r,8000))])}catch(e){}
+    setTimeout(()=>location.reload(),1200);return}
   // a brand-new character made before the season number reached me: just take the number
   if(first&&!seasonFromDoc){P.season=n;if(P.nick!=='새 선원')save();return}
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
