@@ -1281,6 +1281,13 @@ b.no{color:var(--red)}
 .endhud .endch .hint{display:none}
 body:has(#endHud) .toast{bottom:210px!important;z-index:48}
 #endBlock{position:fixed;inset:0;z-index:45;cursor:not-allowed;background:transparent}
+.endchat{display:flex;gap:6px}.endchat input{flex:1;min-width:0;padding:6px 8px;font-size:13px}
+.echb{position:fixed;z-index:46;pointer-events:none;max-width:230px;display:flex;flex-direction:column;gap:1px;padding:6px 10px 7px;background:#f4f0f8;color:#1a1626;border:2px solid #07080e;box-shadow:3px 3px 0 rgba(0,0,0,.5);font-size:13px;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;animation:echIn .25s steps(3)}
+.echb b{font-size:11px;color:#7a3fd0}.echb.me{background:#e6fbff}.echb.me b{color:#1d7a8a}
+.echb::after{content:'';position:absolute;bottom:-8px;width:10px;height:8px;background:inherit;border:2px solid #07080e;border-top:0;clip-path:polygon(0 0,100% 0,0 100%)}
+.echb.tl::after{left:12px}.echb.tr::after{right:12px;clip-path:polygon(0 0,100% 0,100% 100%)}
+.echb.out{animation:echOut .6s steps(3) forwards}
+@keyframes echIn{from{opacity:0;transform:translateY(6px) scale(.9)}}@keyframes echOut{to{opacity:0;transform:translateY(-8px)}}
 body:has(#endHud){padding-bottom:200px}
 .endwarn{font-size:12px;color:var(--mute)}.endwarn.on{color:#ff6a6a;font-weight:700;animation:wafblink .5s steps(1) infinite}
 .endflash{position:fixed;inset:0;z-index:48;pointer-events:none;background:rgba(232,72,72,.35);animation:endfl .7s steps(4) forwards}
@@ -3935,7 +3942,20 @@ function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYE
   n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(X+(Math.random()*30-15))+'px';n.style.top=(Y-10)+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),900);endHitT=performance.now()}
 // the fight controls float above the boss at the bottom of the screen, on every tab
 // while 오르비스 is in the sky a clear shield covers the whole page: only the fight window (and toasts) can be used
-function endBlock(on){let b=$('#endBlock');if(!on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='endBlock';b.setAttribute('aria-hidden','true');b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toast('오르비스와 싸우는 중에는 다른 곳을 누를 수 없습니다.')},true);document.body.appendChild(b)}}
+/* raid shouts: a line typed in the fight window pops up as a speech bubble somewhere over the sky for everyone in the fight */
+const ECH_MAX=60,echRef=()=>db.doc('boss/endchat');let ECH=[],echSeen=new Set(),echUn=null,echLast=0;
+function echSub(on){if(on&&!echUn){echUn=echRef().onSnapshot(sn=>{const L=sn.exists?(sn.data().msgs||[]):[],since=(END&&+END.startAt)||0;
+    L.forEach(m=>{const k=m.at+'|'+m.u;if(echSeen.has(k))return;echSeen.add(k);if(m.at>=since&&Date.now()-m.at<15e3)echBubble(m)})},()=>{})}
+  else if(!on&&echUn){try{echUn()}catch(e){}echUn=null;document.querySelectorAll('.echb').forEach(e=>e.remove())}}
+function echBubble(m){const W=innerWidth,H=innerHeight,b=document.createElement('div');b.className='echb'+(m.u===uid?' me':'');
+  b.innerHTML=`<b>${esc(m.n||'선원')}</b><span>${esc(m.t)}</span>`;
+  // a random spot around the edges of the sky (left, right or along the top), clear of the great eye and the fight window
+  const side=Math.random(),x=side<.42?W*(.02+Math.random()*.16):side<.84?W*(.66+Math.random()*.16):W*(.1+Math.random()*.6),y=side<.84?H*(.06+Math.random()*.52):H*(.02+Math.random()*.08);b.style.left=Math.min(W-240,x)+'px';b.style.top=y+'px';b.classList.add(Math.random()<.5?'tl':'tr');
+  document.body.appendChild(b);setTimeout(()=>b.classList.add('out'),5600);setTimeout(()=>b.remove(),6300)}
+document.addEventListener('submit',e=>{if(e.target.id!=='endChatF')return;e.preventDefault();const i=$('#endChatIn');const v=(i.value||'').trim().slice(0,ECH_MAX);if(!v||!endOn())return;
+  if(Date.now()-echLast<1500){toast('조금 천천히 외쳐 주십시오.');return}echLast=Date.now();i.value='';const m={u:uid,n:P.nick,t:v,at:Date.now()};
+  bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>Date.now()-x.at<120e3),m].slice(-30)})).catch(()=>toast('보내지 못했습니다.'))});
+function endBlock(on){echSub(on);let b=$('#endBlock');if(!on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='endBlock';b.setAttribute('aria-hidden','true');b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toast('오르비스와 싸우는 중에는 다른 곳을 누를 수 없습니다.')},true);document.body.appendChild(b)}}
 function endRender(){endDraw();let h=$('#endHud');const live=endOn()&&P&&P.joined&&$('#joinModal').hidden;endBlock(live);if(!live){if(h)h.remove();return}
   if(!h){document.body.insertAdjacentHTML('beforeend',endCardHTML().replace('class="card endcard" id="endCard"','class="px endhud" id="endHud"'));endPaint()}}
 // alien blaster shots (three takes, picked at random) for every blow on the boss
@@ -3961,7 +3981,8 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
 function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
    <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button></div><span class="hint">스킬 · ${endSkill()[1]}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
-   <div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div></div>`}
+   <div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div>
+   <form class="endchat" id="endChatF" autocomplete="off"><input id="endChatIn" class="sel" maxlength="${ECH_MAX}" placeholder="함께 싸우는 선원에게 외치기 (Enter)" aria-label="레이드 채팅"><button class="btn sm" type="submit">보내기</button></form></div>`}
 function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
   const e=END,left=endShow();$('#endBarI').style.width=(left/e.max*100)+'%';$('#endBarT').textContent=`체력 ${Math.round(left).toLocaleString()} / ${e.max.toLocaleString()} (${(left/e.max*100).toFixed(1)}%)`;
   const now=Date.now(),sk=Math.max(0,END_SKCD-(now-endSkAt)),ab=$('#endAtkB'),sb=$('#endSkB');const ac2=Math.max(0,END_CD-(now-endAt));if(ab){ab.disabled=ac2>0;ab.textContent=ac2>0?`⚔ 공격 ${Math.ceil(ac2/1000)}초`:'⚔ 공격'}if(sb){sb.disabled=sk>0;sb.textContent=sk>0?`✦ ${endSkill()[0]} ${Math.ceil(sk/1000)}초`:`✦ ${endSkill()[0]}`}
