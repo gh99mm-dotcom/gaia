@@ -3996,7 +3996,7 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
 function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
-   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button>${endUlt()?`<button class="btn gold endult" type="button" data-act="endult" id="endUltB" title="${endUlt()[1]}">★ ${endUlt()[0]}</button>`:''}</div><span class="hint">스킬 · ${endSkill()[1]}${endUlt()?` · 비기 · ${endUlt()[1]}`:''}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
+   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button>${endUlt()&&!endFirst()?`<button class="btn gold endult" type="button" data-act="endult" id="endUltB" title="${endUlt()[1]}">★ ${endUlt()[0]}</button>`:''}</div><span class="hint">스킬 · ${endSkill()[1]}${endUlt()&&!endFirst()?` · 비기 · ${endUlt()[1]}`:''}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
    <div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div>
    <form class="endchat" id="endChatF" autocomplete="off"><input id="endChatIn" class="sel" maxlength="${ECH_MAX}" placeholder="함께 싸우는 선원에게 외치기 (Enter)" aria-label="레이드 채팅"><button class="btn sm" type="submit">보내기</button></form></div>`}
 function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
@@ -4021,7 +4021,7 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const k=END.gen+':'+Math.floo
   const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=Math.max(1,Math.round(raw-def()*.4));heal(-hit,0);sfxStatic&&sfxStatic();
   toast(`${END_NAME}의 시선! 선원 모두가 체력 -${hit}`);log(`${END_NAME}의 시선이 베이스캠프를 훑었다. 체력 -${hit}`,'bad');checkFaint();commit()},400);
 const EA={
- async endult(){if(!endOn()||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
+ async endult(){if(!endOn()||endFirst()||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
   if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);echSay(`★ ${u[0]}!`)}return}
   const tick=Math.floor((Date.now()-END.startAt)/END_AOE)+1;
   if(j==='nav'){try{await endRef().update({shield:{k:END.gen+':'+tick,u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}! 다음 시선은 내가 막는다!`);return}
