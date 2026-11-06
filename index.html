@@ -1055,6 +1055,9 @@ b.suwib{cursor:default;flex:0 0 120px}
 .stv-art{position:absolute;left:0;right:0;top:0;height:70vh;z-index:1;overflow:hidden;background:#000;-webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%),radial-gradient(ellipse 60% 80% at 50% 40%,#000 55%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,#000 55%,transparent 100%),radial-gradient(ellipse 60% 80% at 50% 40%,#000 55%,transparent 100%);mask-composite:intersect}
 .stv-art::after{content:"";position:absolute;inset:0;pointer-events:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);-webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 40%,transparent 45%,#000 90%);mask-image:radial-gradient(ellipse 60% 70% at 50% 40%,transparent 45%,#000 90%)}
 .stv-art.in{animation:opnIn .7s steps(6) both}.stv-art canvas{width:100%;height:100%;display:block;object-fit:cover;image-rendering:pixelated}
+/* the opening shows its pictures as a framed window seen from afar instead of filling the screen */
+.stv-far .stv-art{left:50%;right:auto;top:6vh;transform:translateX(-50%);width:min(760px,88vw,96vh);height:auto;aspect-ratio:2/1;-webkit-mask-image:none;mask-image:none;border:3px solid #1a1626;box-shadow:0 0 0 2px #3a3452,0 10px 40px rgba(0,0,0,.6)}
+.stv-far .stv-art canvas{object-fit:contain}
 .stv-box{position:relative;z-index:2;width:min(96vw,1320px);min-height:clamp(150px,30vh,270px);box-sizing:border-box;padding:clamp(22px,4vh,40px) clamp(24px,4vw,52px) 64px;background:radial-gradient(1px 1px at 8% 22%,#fff7 50%,transparent 51%),radial-gradient(1px 1px at 23% 68%,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 41% 35%,#fff6 50%,transparent 51%),radial-gradient(1px 1px at 58% 80%,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 72% 28%,#fff7 50%,transparent 51%),radial-gradient(1px 1px at 86% 62%,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 94% 15%,#fff6 50%,transparent 51%),#03040a;border:2px solid #6f7d9c;outline:2px solid #6f7d9c;outline-offset:-9px;cursor:pointer}
 .stv-box::before,.stv-box::after{content:"";position:absolute;width:7px;height:7px;background:#9aa8c6;top:-4px;left:-4px}
 .stv-box::after{top:auto;bottom:-4px;left:auto;right:-4px}
@@ -5993,10 +5996,10 @@ function rift(cx,cy,h,open,t){for(let y=-h;y<=h;y++){const w=Math.max(0,open*(1-
   show(0);raf=requestAnimationFrame(loop)}
 /* ───────── stories: an illustration in one blue tone above, a starry dialogue box below; spoken lines chirp like a garbled radio ───────── */
 const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
-  {art:'sky',lines:[{v:'이봐, 도움이 필요해?',who:'???'},{t:'먹먹한 귓가에 누군가의 목소리가 들린다. 우리는 반사적으로 그곳을 바라보게 된다.'},{t:'뻥 뚫린 선체 외벽 너머로 검은 하늘이 보인다.'},{t:'어디선가 본 것 같지만, 전혀 다르다….'}]},
-  {art:'robot',lines:[{t:'고르지 않은 땅을 건너는 바퀴 소리 같은 것이 들린 후 나타난 것은, 어떻게 봐도 낡아보이는 로봇 하나.'},{v:'완전히 초박살났군.',who:'???'}]},
-  {art:'pan',lines:[{v:'이곳은 생명체가 활동하기에 그닥 적합하지 않아. 헬멧을 벗지 않는 게 좋을걸.',who:'???'},{v:'이런 걸 어떻게 알고 있냐고? 글쎄…… 그건 나도 모르겠어.',who:'???',art:'side'},{v:'하지만 난 이곳에서 아주 오래 살아왔어. 기억을 여섯 번 잃을 동안 말이야.',who:'???',art:'side'},{t:'그렇게 말하는 로봇의 몸뚱이에는 빗금이 일곱 개 그어져 있다.',art:'tally'}]},
-  {art:'face',lines:[{v:'나는 녹슨 로봇 7호, 고물상 주인이지.',who:'녹슨 7호'},{v:'필요한 게 있거든 찾아와. 손님이라면 언제든 환영이니까.',who:'녹슨 7호'}]},
+  {art:'o_sky',lines:[{v:'이봐, 도움이 필요해?',who:'???'},{t:'먹먹한 귓가에 누군가의 목소리가 들린다. 우리는 반사적으로 그곳을 바라보게 된다.'},{t:'뻥 뚫린 선체 외벽 너머로 검은 하늘이 보인다.'},{t:'어디선가 본 것 같지만, 전혀 다르다….'}]},
+  {art:'o_robot',lines:[{t:'고르지 않은 땅을 건너는 바퀴 소리 같은 것이 들린 후 나타난 것은, 어떻게 봐도 낡아보이는 로봇 하나.'},{v:'완전히 초박살났군.',who:'???'}]},
+  {art:'o_pan',lines:[{v:'이곳은 생명체가 활동하기에 그닥 적합하지 않아. 헬멧을 벗지 않는 게 좋을걸.',who:'???'},{v:'이런 걸 어떻게 알고 있냐고? 글쎄…… 그건 나도 모르겠어.',who:'???',art:'o_side'},{v:'하지만 난 이곳에서 아주 오래 살아왔어. 기억을 여섯 번 잃을 동안 말이야.',who:'???',art:'o_side'},{t:'그렇게 말하는 로봇의 몸뚱이에는 빗금이 일곱 개 그어져 있다.',art:'o_tally'}]},
+  {art:'o_face',lines:[{v:'나는 녹슨 로봇 7호, 고물상 주인이지.',who:'녹슨 7호'},{v:'필요한 게 있거든 찾아와. 손님이라면 언제든 환영이니까.',who:'녹슨 7호'}]},
   {art:'monitor',lines:[{t:'화면에 파손된 우주선의 내부 구조도가 표시된다. 복구가 필요한 장치들이 붉은색으로 점멸하고 있다.'},{t:'……생명 유지 장치를 먼저 손보는 게 좋겠다.',btn:'확인한다.'}]}]},
  intro:{n:'인트로 · 녹슨 7호',scenes:[
   {art:'sky',lines:[{v:'이봐, 도움이 필요해?',who:'???'},{t:'먹먹한 귓가에 누군가의 목소리가 들립니다. 우리는 반사적으로 그곳을 바라보게 됩니다.'},{t:'뻥 뚫린 선체 외벽 너머로 검은 하늘이 보입니다.'}]},
@@ -6021,7 +6024,7 @@ function voiceSyl(a,t,ch,out,o={}){const c=ch.charCodeAt(0);let F=[600,1200],con
     const hp=a.createBiquadFilter();hp.type=cons==='f'?'bandpass':'highpass';hp.frequency.value=cons==='f'?5200:2600;const ng=a.createGain();ng.gain.value=(o.vol||.11)*(cons==='f'?.9:1.3);n.connect(hp).connect(ng).connect(out);n.start(t)}
   return dur}
 function sfxVoice(ch,o){if(!soundOn||!ch)return;const a=ac();if(!a)return;voiceSyl(a,a.currentTime+.005,ch,sfxOut(a),o)}
-function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv';op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
+function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv'+(sid==='opening'?' stv-far':'');op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
   op.innerHTML=`<canvas class="stv-bg"></canvas><button class="stv-skip" type="button">건너뛰기 ▶▶</button><div class="stv-art"><canvas width="240" height="120"></canvas></div>
    <div class="stv-box"><b class="stv-who" hidden></b><p class="stv-txt"></p><button class="stv-next" type="button">▶ 다음</button></div>`;
   document.body.appendChild(op);
@@ -6034,7 +6037,9 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
   // the game's own pictures, recoloured into the one blue: the 우주선 tab's crash site at night, and the junk-shop robot 녹슨 7호
   const blue=src=>{const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const x=c.getContext('2d');x.drawImage(src,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data,pal=B.map(h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)));
     for(let i=0;i<a.length;i+=4){if(!a[i+3])continue;const L=(a[i]*.3+a[i+1]*.59+a[i+2]*.11)/255,k=Math.min(7,Math.round(Math.pow(L,.8)*7.4));[a[i],a[i+1],a[i+2]]=pal[k]}x.putImageData(d,0,0);return c};
-  let SCN=null,BOT=null;try{const bk={};SHIP.forEach(q=>bk[q.id]=shipDone(q));SCN=blue(shipSceneBuild(bk,true).c)}catch(e){}
+  let SCN=null,BOT=null,SCN0=null,BOT0=null;try{const bk0={};SHIP.forEach(q=>bk0[q.id]=false);SCN0=shipSceneBuild(bk0,true).c}catch(e){}
+  try{const T=IC.robot,c=document.createElement('canvas');c.width=T[0].length;c.height=T.length;const x=c.getContext('2d');T.forEach((row,y)=>[...row].forEach((ch,xx)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(xx,y,1,1)}}));BOT0=c}catch(e){}
+  try{const bk={};SHIP.forEach(q=>bk[q.id]=shipDone(q));SCN=blue(shipSceneBuild(bk,true).c)}catch(e){}
   try{const T=IC.robot,c=document.createElement('canvas');c.width=T[0].length;c.height=T.length;const x=c.getContext('2d');T.forEach((row,y)=>[...row].forEach((ch,xx)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(xx,y,1,1)}}));BOT=blue(c)}catch(e){}
   // looking out from inside the wreck: the hull's inner wall in the same blue, a hole torn through it, hot edges, a cable swinging
   const HC={x:W*.5,y:H*.46,rx:W*.34,ry:H*.36},HJ=Array.from({length:64},()=>.82+rnd()*.3);
@@ -6049,6 +6054,7 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     WALL=c}
   function wall(t){if(WALL)g.drawImage(WALL,0,0);const sw=Math.sin(t*1.4)*3,cx=Math.round(HC.x+HC.rx*.5),top=Math.round(HC.y-HC.ry*.86);for(let i=0;i<20;i++){const x=Math.round(cx+sw*i/20+Math.sin(i*.6)*1.2);P(x,top+i,B[4]);P(x+1,top+i,B[1])}
     if(((t*3)|0)%4===0){P(cx+Math.round(sw),top+20,B[7]);P(cx+Math.round(sw)+1,top+21,B[6])}}
+  function oSmoke(t,k,cx,cy){for(let i=0;i<7;i++){const ph=(t*.25+i/7)%1,x=(cx||W*.45)+(i-3)*8+Math.sin(t+i)*3,y=(cy||H*.8)-ph*30,r=2+ph*6;g.globalAlpha=(1-ph)*.28*k;g.fillStyle=i%2?'#6a6280':'#4a4458';g.beginPath();g.arc(x,y,r,0,7);g.fill()}g.globalAlpha=1}
   function smoke(t,k){for(let i=0;i<9;i++){const ph=(t*.25+i/9)%1,x=24+i*24+Math.sin(t+i)*6,y=H-18-ph*60,r=5+ph*12;g.globalAlpha=(1-ph)*.35*k;g.fillStyle=B[3+(i%2)];g.beginPath();g.arc(x,y,r,0,7);g.fill()}g.globalAlpha=1}
   // inside the ship looking out: only the sky shows through the hole (the game's night sky with its moon, nothing of the wreck)
   // the night sky, drawn fresh in the same blues as the hull: a dithered gradient, a faint nebula band, a small moon with its halo
@@ -6063,6 +6069,15 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
   const sky=t=>{if(SKY)g.drawImage(SKY,0,0);else R(0,0,W,H,B[0]);stars(t,40)};
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
+    // ── far-view arts for the opening, in the game's own night colours: the crash site seen whole, 녹슨 7호 small ──
+    o_sky:t=>{if(SCN0){g.drawImage(SCN0,0,0)}else sky(t);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(0,0,W,H);oSmoke(t,.5)},
+    o_robot:t=>{if(SCN0)g.drawImage(SCN0,0,0);const k=Math.min(1,t/3.2),e=1-Math.pow(1-k,2),bw=14,rx=Math.round(W*.92-e*W*.2),ry=Math.round(H*.86-bw+(k<1&&Math.floor(t*8)%2?1:0));oSmoke(t,1-k*.6,rx+bw/2,ry+bw);if(BOT0)g.drawImage(BOT0,rx,ry,bw,bw)},
+    o_pan:t=>{if(SCN0){const s=1.18,w=W*s,h=H*s,k=Math.min(1,t/8),x=-(w-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(SCN0,Math.round(x),Math.round(H-h),Math.round(w),Math.round(h))}else sky(t);if(BOT0)g.drawImage(BOT0,Math.round(W*.66),Math.round(H*.86-14),14,14)},
+    o_side:t=>{if(SCN0)g.drawImage(SCN0,0,0);g.fillStyle='rgba(0,0,0,.18)';g.fillRect(0,0,W,H);const bw=24;if(BOT0)g.drawImage(BOT0,Math.round(W*.66),Math.round(H*.9-bw+Math.sin(t*3)*.6),bw,bw)},
+    o_tally:t=>{if(SCN0)g.drawImage(SCN0,0,0);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,0,W,H);const bw=40,rx=Math.round(W*.5-bw/2),ry=Math.round(H*.88-bw);if(BOT0)g.drawImage(BOT0,rx,ry,bw,bw);
+      const s=bw/16,ox=rx+s*4.6,oy=ry+s*10.4,mk=(x0,y0,x1,y1)=>{const n=Math.max(1,Math.max(Math.abs(x1-x0),Math.abs(y1-y0))|0);for(let i=0;i<=n;i++)P(x0+(x1-x0)*i/n,y0+(y1-y0)*i/n,'#f2ecd8')};
+      const sh=Math.min(7,Math.floor(t*3));for(let i=0;i<Math.min(4,sh);i++)mk(ox+i*s*1.1,oy,ox+i*s*1.1+s*.2,oy+s*2.6);if(sh>4)mk(ox-s*.4,oy+s*2.2,ox+s*3.8,oy+s*.3);for(let i=5;i<sh;i++)mk(ox+s*4.9+(i-5)*s*1.1,oy,ox+s*4.9+(i-5)*s*1.1+s*.2,oy+s*2.6)},
+    o_face:t=>{if(SCN0)g.drawImage(SCN0,0,0);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,0,W,H);const k=Math.min(1,t/2.4),e=.5-.5*Math.cos(k*Math.PI),bw=Math.round(40+e*16),rx=Math.round(W*.5-bw/2),ry=Math.round(H*.88-bw-e*6);if(BOT0)g.drawImage(BOT0,rx,ry,bw,bw)},
     // the wreck and the ground around it, wide, the camera sliding slowly from left to right
     pan:t=>{R(0,0,W,H,B[0]);if(SCN){const s=1.7,w=SCN.width*s,h=SCN.height*s,k=Math.min(1,t/9),x=-(w-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(SCN,Math.round(x),Math.round(H-h+8),Math.round(w),Math.round(h))}else sky(t);smoke(t,.35)},
     // 녹슨 7호 side-on, big, against the sky
