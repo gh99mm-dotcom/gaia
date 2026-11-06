@@ -1303,7 +1303,10 @@ body:has(#endHud){padding-bottom:200px}
 .endttl{display:flex;flex-direction:column;gap:3px;padding:10px 18px;border:2px solid #e0b860;background:rgba(224,184,96,.1)}.endttl b{font-size:18px;color:#ffe08a}
 .endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:3px 8px;background:var(--deep)}.endrank li.me{color:var(--cyan)}.endrank em{font-style:normal;color:var(--mute)}
 @media (max-width:600px){.endbtns{width:100%}.endbtns .btn{flex:1}}
-.tablock{opacity:.5;filter:grayscale(.7)}.tablock .tlk{position:absolute;top:3px;right:4px;font-size:11px;line-height:1}
+.tablock{opacity:.5;filter:grayscale(.7)}
+/* the lock sits in the top-right corner like the count badges; if a tab shows both (staff preview), the badge steps left */
+.nav button .tlk{position:absolute;top:-7px;right:-6px;font-size:12px;line-height:1;padding:1px 2px;background:var(--panel);border:2px solid var(--ink)}
+.nav button:has(.tlk) .badge{right:20px}
 #orbisFx{position:fixed;inset:0;z-index:96;background:#05030a;display:flex;align-items:center;justify-content:center;animation:orbIn .8s steps(4)}
 #orbisFx canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
 #orbisFx .orbtx{position:relative;z-index:1;margin-top:46vh;max-width:min(560px,90vw);text-align:center;color:#f4e8ff;font-size:15px;line-height:1.7;text-shadow:2px 2px 0 #000;padding:10px 14px;background:rgba(5,3,10,.6)}
