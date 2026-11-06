@@ -1279,7 +1279,7 @@ b.no{color:var(--red)}
 @keyframes endnum{from{opacity:1;margin-top:0}to{opacity:0;margin-top:-34px}}
 .endhud{position:fixed;z-index:47;left:50%;bottom:max(12px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(680px,calc(100vw - 24px));display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:rgba(10,8,18,.92);border:2px solid #07080e;box-shadow:inset 0 0 0 1px #6a5a80,inset 3px 0 0 #e8b4b0,0 0 0 2px rgba(232,180,176,.25)}
 .endhud .endch .hint{display:none}
-body:has(#endHud) .toast{bottom:210px!important;z-index:48}
+body:has(#endHud) .toast{bottom:290px!important;z-index:48}
 /* the shield sits between the page and 오르비스: a black sea of stars hides the page so the boss and the fight stand out, and swallows clicks */
 #endBlock{position:fixed;inset:0;z-index:42;cursor:not-allowed;background:#05040c;overflow:hidden}#endBlock canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
 .endchat{display:flex;gap:6px}.endchat input{flex:1;min-width:0;padding:6px 8px;font-size:13px}
@@ -1297,7 +1297,7 @@ body:has(#endHud){padding-bottom:200px}
 .endbar{position:relative;height:18px;background:#2a0a10;border:2px solid var(--ink)}.endbar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,#e85a5a 0 6px,#c04848 6px 8px)}
 .endbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:#fff;text-shadow:1px 1px 0 #000}
 .endrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.endbtns{display:flex;gap:8px}.endbtns .btn{min-width:110px;justify-content:center;font-size:15px;padding:10px 14px}
+.endbtns{display:flex;gap:8px;flex-wrap:wrap}.endbtns .endult{background:#e0b860;color:#1a1200}.endbtns .btn{min-width:110px;justify-content:center;font-size:15px;padding:10px 14px}
 .endmeta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute)}.endmeta b{color:var(--gold)}.endmeta .me{color:var(--cyan)}
 .endwin{max-width:420px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center}.endwin h2{margin:0;font-size:24px;color:#ffd65f}
 .endttl{display:flex;flex-direction:column;gap:3px;padding:10px 18px;border:2px solid #e0b860;background:rgba(224,184,96,.1)}.endttl b{font-size:18px;color:#ffe08a}
@@ -3849,12 +3849,19 @@ const endFirst=()=>!!END&&END.mode==='first';
 const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&(!endFirst()||Date.now()<(+END.until||0));
 const endHpS=()=>END?Math.max(0,+END.hp||0):0;
 const endShow=()=>Math.max(0,endHpS()-endPend-endUnseen);
+// 직업 비기 (once a minute): 항해사 shields everyone from the next gaze and takes it alone, 의무원 heals the whole crew (waking the fallen), 기관사 hits far harder
+const END_ULTCD=60000;let endUltAt=0,endHealSeen='';
+const endUlt=()=>({mech:['오버드라이브 파쇄','공격력 ×10 한 방'],nav:['수호의 방패','다음 시선을 혼자 대신 맞음'],medic:['생명의 파동','모든 선원 체력 50% 회복 · 기절한 선원도 일으킴']}[P.job]||null);
 const endSkill=()=>({mech:['과부하 일격','공격력 ×4 한 방'],nav:['궤도 휩쓸기','×1.4 세 번'],medic:['응급 지원 사격','×2.5 한 방']}[P.job]||['전력 공격','×2 한 방']);
 function endSub(){endRef().onSnapshot(sn=>{const was=END;END=sn.exists?sn.data():null;
   if(END&&was&&was.gen===END.gen&&endPrevHp!=null){const dl=endPrevHp-endHpS();if(dl>0){const mine=Math.min(dl,endUnseen);endUnseen-=mine;if(dl-mine>0)endFloat(dl-mine,false)}}
   else{endUnseen=0;endPend=0}
   endPrevHp=END?endHpS():null;
   if(END&&END.on&&!END.done&&endHpS()<=0)endFinish();
+  // 의무원's 생명의 파동 reaches everyone in the fight once
+  if(END&&END.heal&&END.heal.id!==endHealSeen&&Date.now()-(+END.heal.at||0)<15e3&&P&&P.joined){endHealSeen=END.heal.id;const by=END.heal.u===uid?'':END.heal.n;
+    if(isFaint())wake(by||P.nick,true);P.hp=Math.min(maxHp(),Math.max(P.hp,0)+Math.round(maxHp()*.5));toast(`${by?by+' 님의 ':''}생명의 파동! 체력이 회복됐습니다.`);try{sfxCoin()}catch(e){}commit()}
+  else if(END&&END.heal&&!endHealSeen)endHealSeen=END.heal.id;
   if(END&&END.done)endReward();endRender();endPaint();if(!!(was&&was.on&&!was.done)!==endOn())syncBgm()},()=>{})}
 /* ── drawing: low-res canvases scaled up so every dot is a crisp pixel ── */
 const EPX=3;
@@ -3956,6 +3963,7 @@ function echBubble(m){const W=innerWidth,H=innerHeight,b=document.createElement(
 document.addEventListener('submit',e=>{if(e.target.id!=='endChatF')return;e.preventDefault();const i=$('#endChatIn');const v=(i.value||'').trim().slice(0,ECH_MAX);if(!v||!endOn())return;
   if(Date.now()-echLast<1500){toast('조금 천천히 외쳐 주십시오.');return}echLast=Date.now();i.value='';const m={u:uid,n:P.nick,t:v,at:Date.now()};
   bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>Date.now()-x.at<120e3),m].slice(-30)})).catch(()=>toast('보내지 못했습니다.'))});
+function echSay(t){if(!endOn())return;const m={u:uid,n:P.nick,t:String(t).slice(0,ECH_MAX),at:Date.now()};bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>Date.now()-x.at<120e3),m].slice(-30)})).catch(()=>{})}
 function endBlock(on){echSub(on);let b=$('#endBlock');if(!on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='endBlock';b.setAttribute('aria-hidden','true');b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toast('오르비스와 싸우는 중에는 다른 곳을 누를 수 없습니다.')},true);document.body.appendChild(b);
    // pixel stars (a few twinkle, the brightest get a little cross) over faint nebula glows
    const cv=document.createElement('canvas');b.appendChild(cv);const W=Math.ceil(innerWidth/3),H=Math.ceil(innerHeight/3);cv.width=W;cv.height=H;const x=cv.getContext('2d');
@@ -3988,12 +3996,13 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
 function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
-   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button></div><span class="hint">스킬 · ${endSkill()[1]}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
+   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button>${endUlt()?`<button class="btn gold endult" type="button" data-act="endult" id="endUltB" title="${endUlt()[1]}">★ ${endUlt()[0]}</button>`:''}</div><span class="hint">스킬 · ${endSkill()[1]}${endUlt()?` · 비기 · ${endUlt()[1]}`:''}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
    <div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div>
    <form class="endchat" id="endChatF" autocomplete="off"><input id="endChatIn" class="sel" maxlength="${ECH_MAX}" placeholder="함께 싸우는 선원에게 외치기 (Enter)" aria-label="레이드 채팅"><button class="btn sm" type="submit">보내기</button></form></div>`}
 function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
   const e=END,left=endShow();$('#endBarI').style.width=(left/e.max*100)+'%';$('#endBarT').textContent=`체력 ${Math.round(left).toLocaleString()} / ${e.max.toLocaleString()} (${(left/e.max*100).toFixed(1)}%)`;
   const now=Date.now(),sk=Math.max(0,END_SKCD-(now-endSkAt)),ab=$('#endAtkB'),sb=$('#endSkB');const ac2=Math.max(0,END_CD-(now-endAt));if(ab){ab.disabled=ac2>0;ab.textContent=ac2>0?`⚔ 공격 ${Math.ceil(ac2/1000)}초`:'⚔ 공격'}if(sb){sb.disabled=sk>0;sb.textContent=sk>0?`✦ ${endSkill()[0]} ${Math.ceil(sk/1000)}초`:`✦ ${endSkill()[0]}`}
+  {const ub=$('#endUltB'),u=endUlt(),uc=Math.max(0,END_ULTCD-(now-endUltAt));if(ub&&u){ub.disabled=uc>0||isFaint();ub.textContent=uc>0?`★ ${u[0]} ${Math.ceil(uc/1000)}초`:`★ ${u[0]}`}}
   const ai=endAoeIn(),w=$('#endWarn');if(w&&endFirst()){const left=Math.max(0,(+END.until||0)-Date.now()),mm=Math.floor(left/60000),ss=String(Math.floor(left/1000)%60).padStart(2,'0');w.className='endwarn'+(ai<=END_WARN||left<15000?' on':'');w.textContent=(ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초 · `:'')+`오르비스가 모든 눈을 뜨기까지 ${mm}:${ss}`}else if(w){w.className='endwarn'+(ai<=END_WARN?' on':'');w.textContent=ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초`:`다음 시선까지 ${Math.ceil(ai/1000)}초 · 선원 모두가 피해를 입습니다`}
   const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)).slice(0,5),me=((e.dmg||{})[uid]||{}).d||0;
   $('#endMeta').innerHTML=`<span>내 피해 <b>${Math.round(me+endPend).toLocaleString()}</b></span><span>참여 ${Object.keys(e.dmg||{}).length}명</span>${top.map(([u,v],i)=>`<span class="${u===uid?'me':''}">${i+1}. ${esc(v.n||'선원')} ${Math.round(v.d||0).toLocaleString()}</span>`).join('')}`}
@@ -4004,12 +4013,19 @@ const END_AOE=20000,END_WARN=3000;
 const endAoeIn=()=>END&&END.startAt?END_AOE-((Date.now()-END.startAt)%END_AOE):END_AOE;
 let endFlashT=0;
 setInterval(()=>{if(!endOn()||!P||!P.joined)return;const k=END.gen+':'+Math.floor((Date.now()-END.startAt)/END_AOE);if(!P.endHitK){P.endHitK=k;return}if(P.endHitK===k)return;P.endHitK=k;
-  if(isFaint())return;endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
+  if(isFaint())return;
+  {const sh=END.shield;if(sh&&sh.k===k&&sh.u!==uid){toast(`${sh.n} 님이 수호의 방패로 시선을 대신 막았습니다!`);log(`${sh.n} 님이 수호의 방패로 오르비스의 시선을 대신 맞았다.`,'good');return}}
+  endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
   const dodge=Math.random()*100<Math.min(40,Math.max(0,AS('agi')*1.2+BUFF('dodge')+WA('dodge')));
   if(dodge){toast(`${END_NAME}의 시선을 피했다!`);log(`${END_NAME}의 시선을 피했다.`,'good');return}
   const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=Math.max(1,Math.round(raw-def()*.4));heal(-hit,0);sfxStatic&&sfxStatic();
   toast(`${END_NAME}의 시선! 선원 모두가 체력 -${hit}`);log(`${END_NAME}의 시선이 베이스캠프를 훑었다. 체력 -${hit}`,'bad');checkFaint();commit()},400);
 const EA={
+ async endult(){if(!endOn()||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
+  if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);echSay(`★ ${u[0]}!`)}return}
+  const tick=Math.floor((Date.now()-END.startAt)/END_AOE)+1;
+  if(j==='nav'){try{await endRef().update({shield:{k:END.gen+':'+tick,u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}! 다음 시선은 내가 막는다!`);return}
+  if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}!`)}},
  endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1))endAt=Date.now()},
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok)endSkAt=Date.now()},
  async endstart(){if(!isAdmin||mode!=='online')return;const hp=endHpMax();
