@@ -6286,7 +6286,7 @@ const A={
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spendKeep(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
   // 탐사 now pays like a proper outing: experience scaled to level, and the regional seeds and crops once found only in 채집
-  {const xp=Math.max(20,Math.round(need(P.lvl)*.05));gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`}
+  {const xp=Math.max(5,Math.round(need(P.lvl)*.01));gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`}
   {const loot=advLoot(.6,.35);loot.forEach(([id,n])=>{add(id,n);got.push([id,n])})}
   stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
  scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=SC_N)return;if(!spendKeep(scEn(from+1)))return;
