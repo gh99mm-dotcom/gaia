@@ -3830,6 +3830,8 @@ let bossPick=0;
    when it falls everyone who dealt damage gets the ending title. While testing it can be reset and run again. */
 const endRef=()=>db.doc('boss/ending');
 let endWing=[],endWingK='',END=null,endPend=0,endUnseen=0,endFlushT=0,endAt=0,endSkAt=0,endPrevHp=null,endSeenDone=0,endBusy=false,endHitT=0,endMx=-1,endMy=-1;
+// 오르비스 is a Lv.100 invader made 1.5× tougher: HP from the invaders' own formula (with their toughest kind), and its gaze hits like their blow
+const END_LV=100,END_K=1.5,endHpMax=()=>{let k=0;BOSS_KINDS.forEach((q,i)=>{if(q.hp>BOSS_KINDS[k].hp)k=i});return Math.round(bossHpFor(END_LV,k)*END_K)},endAtkK=()=>Math.max(...BOSS_KINDS.map(q=>q.atk))*END_K;
 const END_CD=10000,END_SKCD=30000,END_NAME='하늘을 뒤덮은 눈 「오르비스」';
 // the boss's eyes over the page: [anchor, x, y] — anchors are page parts, or 'L'/'R'/'T' for the empty space around the layout
 const END_EYES=[['L',.45,.09,1.1],['L',.6,.24,.9],['header .logo',.32,.42,.8],['T',.47,.35,1.3],['#ticker',.36,.05,.7],['#netChip',.4,1.4,.9],['R',.5,.36,1.1],['L',.35,.6,.8],['R',.45,.75,.8]];
@@ -3937,7 +3939,7 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
    ${me&&me.d>0?`<div class="endttl"><span class="lbl">엔딩 칭호</span><b>가이아의 마지막 수호자</b><span class="hint">내 정보 › 칭호에서 달 수 있습니다.</span></div>`:'<p class="hint">이번 전투에서 피해를 주지 못해 칭호를 받지 못했습니다.</p>'}
    <ol class="endrank">${top.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><b>${esc(v.n||'선원')}</b><span>${Math.round(v.d||0).toLocaleString()}</span></li>`).join('')}</ol>
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
-function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>${esc(END_NAME)}</b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
+function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
    <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button></div><span class="hint">스킬 · ${endSkill()[1]}</span></div>
    <div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div></div>`}
@@ -3957,13 +3959,13 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const k=END.gen+':'+Math.floo
   if(isFaint())return;endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
   const dodge=Math.random()*100<Math.min(40,Math.max(0,AS('agi')*1.2+BUFF('dodge')+WA('dodge')));
   if(dodge){toast(`${END_NAME}의 시선을 피했다!`);log(`${END_NAME}의 시선을 피했다.`,'good');return}
-  const mh=maxHp(),hit=Math.max(Math.round(mh*.05),Math.round(mh*.15-def()*.5));heal(-hit,0);sfxStatic&&sfxStatic();
+  const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=Math.max(1,Math.round(raw-def()*.4));heal(-hit,0);sfxStatic&&sfxStatic();
   toast(`${END_NAME}의 시선! 선원 모두가 체력 -${hit}`);log(`${END_NAME}의 시선이 베이스캠프를 훑었다. 체력 -${hit}`,'bad');checkFaint();commit()},400);
 const EA={
  endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1))endAt=Date.now()},
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok)endSkAt=Date.now()},
- async endstart(){if(!isAdmin||mode!=='online')return;const hp=Math.max(100,Math.min(1e9,+(($('#admEndHp')||{}).value)||200000));
-  const e={on:true,done:false,gen:Date.now(),startAt:Date.now(),by:P.nick,max:hp,hp,dmg:{},hits:0};
+ async endstart(){if(!isAdmin||mode!=='online')return;const hp=endHpMax();
+  const e={on:true,done:false,gen:Date.now(),startAt:Date.now(),by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0};
   try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'siren');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
  async rankreset(){if(!isAdmin||mode!=='online')return;try{await bossTx(shipTRef(),cur=>cur?Object.assign({},cur,{v:1,u:{}}):{v:1,p:{},u:{},at:Date.now()});toast('기여도 랭킹을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async memreset(){if(!isAdmin||mode!=='online')return;try{await memRef().delete();toast('기억모듈 발견 기록을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
@@ -3976,7 +3978,7 @@ function endAdminHTML0(){const e=END;
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
    <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 엔딩 칭호 「가이아의 마지막 수호자」가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
-   <div class="row" style="gap:6px;flex-wrap:wrap"><label class="hint">보스 체력 <input id="admEndHp" class="sel" type="number" min="100" step="10000" value="200000" style="width:120px"></label>
+   <div class="row" style="gap:6px;flex-wrap:wrap"><span class="hint">Lv.${END_LV} · 체력 ${endHpMax().toLocaleString()} · 시선 피해 약 ${Math.round((20+END_LV*6.5)*endAtkK()).toLocaleString()} (침략자 Lv.${END_LV}의 1.5배)</span>
     <button class="btn sm" data-act="endstart" ${e&&e.on&&!e.done?'disabled':''}>최종 레이드 시작</button><button class="btn sm ghost" data-act="endreset" ${e?'':'disabled'}>초기화</button></div></div>`}
 
 function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
