@@ -2757,11 +2757,14 @@ async function seasonQuit(){seasonLock=true;clearTimeout(saveT);dirty=false;toas
 function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn=>{const n=sn.exists?(+sn.data().n||0):0,first=!seasonSeen;seasonSeen=true;SEASON=n;window.__season=n;
   if(!n||(P.season||0)===n||seasonLock)return;
   if(isAdmin&&seasonBusy)return;                       // the admin's own reset is already doing the work
+  // another window of the admin's own account: signing out here would sign out the resetting window too (they share one login)
+  // and its wipe would stop halfway, so this window only stops saving and reloads once the wipe has had time to finish
+  if(isAdmin){seasonLock=true;clearTimeout(saveT);dirty=false;toast('다른 창에서 테스트 기록을 초기화하고 있습니다. 이 창은 잠시 뒤 새로고침됩니다.');setTimeout(()=>location.reload(),45000);return}
   // a brand-new character made before the season number reached me: just take the number
   if(first&&!seasonFromDoc){P.season=n;save();return}
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
   seasonQuit()},()=>{})}
-const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','guest','shipdon','farmlog','parties','duel','farm','boss'];
+const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss'];
 function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox"><span class="lbl">Season · 테스트 기록 초기화</span>
   <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 선원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
   <span class="hint">로그인 아이디와 비밀번호는 남아서, 선원들은 같은 아이디로 로그인한 뒤 <b>새 초대코드</b>를 적어 다시 합류합니다. 아이디까지 지우려면 Firebase 콘솔의 Authentication에서 사용자를 삭제하십시오.</span>
@@ -4615,7 +4618,7 @@ function shipSubscribe(){const redraw=()=>{if(tab==='ship'||rankView)renderPanel
     else if(!shipSlipsUn)shipSlipsUn=db.collection('shipdon').onSnapshot(s=>{SHIPDON=s.docs.map(d=>d.data());shipTC=null;shipMigrate();redraw()},()=>{})||(()=>{});
     redraw()},()=>{})}
 // one-time, admin only: add up the old slips and write them as the starting totals
-function shipMigrate(){if(!isAdmin||shipMig||(SHIPT&&SHIPT.v))return;shipMig=true;
+function shipMigrate(){if(!isAdmin||shipMig||seasonLock||seasonBusy||(SHIPT&&SHIPT.v))return;shipMig=true;
   db.collection('shipdon').get().then(s=>{const p={},u={};s.docs.forEach(x=>{const d=x.data(),n=+d.n||0;if(d.part){const q=p[d.part]=p[d.part]||{};q[d.id]=(q[d.id]||0)+n}if(d.uid&&!isCropId(d.id)){const r=u[d.uid]=u[d.uid]||{n:0,nick:d.nick};r.n+=n;if(d.nick)r.nick=d.nick}});
     return bossTx(shipTRef(),cur=>cur&&cur.v?null:{v:1,p,u,at:Date.now()})}).catch(()=>{}).finally(()=>{shipMig=false})}
 const shipGot=part=>Object.assign({},shipTotals().p[part]||{});
@@ -6186,7 +6189,12 @@ const A={
   seasonLock=true;let n=0;
   for(const col of SEASON_WIPE){try{const sn=await db.collection(col).get();const ids=sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid));
     for(let i=0;i<ids.length;i+=40){await Promise.all(ids.slice(i,i+40).map(id=>db.doc(col+'/'+id).delete().then(()=>n++).catch(()=>{})))}}catch(e){}}
+  // a second pass catches anything a crew member's open window wrote back while the wipe ran (the lounge, ship totals…)
+  await new Promise(r=>setTimeout(r,3000));const left=[];
+  for(const col of SEASON_WIPE){try{const sn=await db.collection(col).get();const ids=sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid));
+    await Promise.all(ids.map(id=>db.doc(col+'/'+id).delete().then(()=>n++).catch(()=>left.push(col+'/'+id))))}catch(e){left.push(col+' (읽기 실패)')}}
   try{await db.doc('members/'+uid).delete()}catch(e){}
+  if(left.length){console.warn('초기화 후 남은 기록',left);toast(`초기화를 마쳤지만 ${left.length}건은 지우지 못했습니다: ${left.slice(0,4).join(', ')}${left.length>4?' …':''}`);setTimeout(()=>location.reload(),8000);return}
   toast(`초기화를 마쳤습니다. 기록 ${n}건을 지웠습니다. 새로 시작합니다.`);setTimeout(()=>location.reload(),2500)},
  admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 선원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
  admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
