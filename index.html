@@ -7055,7 +7055,7 @@ const JA={
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
 };
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
-Object.assign(A,EA);
+Object.assign(A,EA);SAFE_ACT.add('endreset');   // the admin can always call the raid off, even knocked out
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},180e3);
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v){if(J)jGo(1);toast('이름을 적어 주십시오.');setTimeout(()=>$('#callsign').focus(),40);return}
