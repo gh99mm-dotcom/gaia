@@ -1874,7 +1874,7 @@ function makeRoom(name){
   const flush=()=>{lastW=Date.now();return setDoc(me,{p:state,ts:Date.now(),st:serverTimestamp()}).catch(()=>{})};
   const write=()=>{if(left)return;clearTimeout(wT);wT=setTimeout(flush,Math.max(0,1200-(Date.now()-lastW)))};
   const hb=setInterval(()=>{if(!left)flush()},60e3),tick=setInterval(emitPeers,30e3);
-  const unP=onSnapshot(peersC,{includeMetadataChanges:true},qs=>{peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));const mine=qs.docs.find(d=>d.id===ME.uid&&!d.metadata.hasPendingWrites);if(mine){const v=mine.data(),st=stMs(v);if(st&&v.ts&&Date.now()-v.ts<30e3)clockOff=st-v.ts}emitPeers()},()=>{});
+  const unP=onSnapshot(peersC,{includeMetadataChanges:true},qs=>{peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));const mine=qs.docs.find(d=>d.id===ME.uid&&!d.metadata.hasPendingWrites);if(mine){const v=mine.data(),st=stMs(v);if(st&&v.ts&&Date.now()-v.ts<30e3)clockOff=st-v.ts;window.__clockOff=clockOff}emitPeers()},()=>{});
   const onVis=()=>{if(!left&&document.visibilityState==='visible'){flush();emitPeers()}};document.addEventListener('visibilitychange',onVis);
   const api={
     presence:async patch=>{for(const k in patch){if(patch[k]==null)delete state[k];else state[k]=patch[k]}write()},
@@ -3845,8 +3845,10 @@ const END_CD=10000,END_SKCD=30000,END_NAME='하늘을 뒤덮은 눈 「오르비
 // the boss's eyes over the page: [anchor, x, y] — anchors are page parts, or 'L'/'R'/'T' for the empty space around the layout
 const END_EYES=[['L',.45,.09,1.1],['L',.6,.24,.9],['header .logo',.32,.42,.8],['T',.47,.35,1.3],['#ticker',.36,.05,.7],['#netChip',.4,1.4,.9],['R',.5,.36,1.1],['L',.35,.6,.8],['R',.45,.75,.8]];
 // the first encounter (mode 'first', after the 통신 장치 repair) only lasts until END.until; the final raid runs until it falls
+// raid timing runs on the server's clock (the bridge learns each device's offset), so a phone whose clock is off still sees the same fight
+const sNow=()=>Date.now()+(+window.__clockOff||0);
 const endFirst=()=>!!END&&END.mode==='first';
-const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&(!endFirst()||Date.now()<(+END.until||0));
+const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&(!endFirst()||sNow()<(+END.until||0));
 const endHpS=()=>END?Math.max(0,+END.hp||0):0;
 const endShow=()=>Math.max(0,endHpS()-endPend-endUnseen);
 // 직업 비기 (once a minute): 항해사 shields everyone from the next gaze and takes it alone, 의무원 heals the whole crew (waking the fallen), 기관사 hits far harder
@@ -3859,7 +3861,7 @@ function endSub(){endRef().onSnapshot(sn=>{const was=END;END=sn.exists?sn.data()
   endPrevHp=END?endHpS():null;
   if(END&&END.on&&!END.done&&endHpS()<=0)endFinish();
   // 의무원's 생명의 파동 reaches everyone in the fight once
-  if(END&&END.heal&&END.heal.id!==endHealSeen&&Date.now()-(+END.heal.at||0)<15e3&&P&&P.joined){endHealSeen=END.heal.id;const by=END.heal.u===uid?'':END.heal.n;
+  if(END&&END.heal&&END.heal.id!==endHealSeen&&sNow()-(+END.heal.at||0)<15e3&&P&&P.joined){endHealSeen=END.heal.id;const by=END.heal.u===uid?'':END.heal.n;
     if(isFaint())wake(by||P.nick,true);P.hp=Math.min(maxHp(),Math.max(P.hp,0)+Math.round(maxHp()*.5));toast(`${by?by+' 님의 ':''}생명의 파동! 체력이 회복됐습니다.`);try{sfxCoin()}catch(e){}commit()}
   else if(END&&END.heal&&!endHealSeen)endHealSeen=END.heal.id;
   if(END&&END.done)endReward();endRender();endPaint();if(!!(was&&was.on&&!was.done)!==endOn())syncBgm()},()=>{})}
@@ -3922,11 +3924,11 @@ const ORB_BATTLE=120e3;   // how long the first fight lasts before 오르비스 
 function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||!$('#joinModal').hidden)return;const q=SHIP.find(x=>x.id==='comm');if(!q||!shipDone(q))return;
   const st=(+P.orbis||0);if(st>=2)return;
   if(END&&!endFirst()){P.orbis=2;save();return}                          // the final raid is already on the board: the first encounter is long past
-  const over=endFirst()&&Date.now()>=(+END.until||0);
+  const over=endFirst()&&sNow()>=(+END.until||0);
   if(over){orbisBusy=true;orbisLeave();return}
   if(!st){orbisBusy=true;orbisPlay(ORB_INTRO,()=>{orbisBusy=false;P.orbis=1;save();orbisStart()})}}
 // whoever finishes the intro first opens the fight on the server; everyone else just joins it
-function orbisStart(){if(END)return;const t0=Date.now();bossTx(endRef(),cur=>{if(cur)return null;const hp=endHpMax();return{on:true,done:false,mode:'first',gen:t0,startAt:t0,until:t0+ORB_BATTLE,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0}})
+function orbisStart(){if(END)return;const t0=sNow();bossTx(endRef(),cur=>{if(cur)return null;const hp=endHpMax();return{on:true,done:false,mode:'first',gen:t0,startAt:t0,until:t0+ORB_BATTLE,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0}})
   .then(nx=>{if(nx)sys(`[공지] ${END_NAME}이(가) 베이스캠프 위에 나타났습니다! 모두 맞서 싸우십시오!`,true,'siren')}).catch(()=>{})}
 const ORB_INTRO=['통신 장치에 불이 들어왔다. 첫 신호가 하늘 너머로 뻗어 나간다…','…그리고 무언가가 대답했다.','하늘이 갈라지고, 거대한 눈 「오르비스」가 베이스캠프를 내려다본다.','선원들이여, 무기를 들어라!'];
 const ORB_LEAVE=['「오르비스」의 모든 눈이 한꺼번에 베이스캠프를 바라본다.','그 시선을 마주친 순간, 선원들이 하나둘 쓰러졌다…','쓰러진 선원들을 내려다보던 거대한 눈은, 천천히 하늘 너머로 사라졌다.'];
@@ -3953,7 +3955,7 @@ function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYE
 /* raid shouts: a line typed in the fight window pops up as a speech bubble somewhere over the sky for everyone in the fight */
 const ECH_MAX=60,echRef=()=>db.doc('boss/endchat');let ECH=[],echSeen=new Set(),echUn=null,echLast=0;
 function echSub(on){if(on&&!echUn){echUn=echRef().onSnapshot(sn=>{const L=sn.exists?(sn.data().msgs||[]):[],since=(END&&+END.startAt)||0;
-    L.forEach(m=>{const k=m.at+'|'+m.u;if(echSeen.has(k))return;echSeen.add(k);if(m.at>=since&&Date.now()-m.at<15e3)echBubble(m)})},()=>{})}
+    L.forEach(m=>{const k=m.at+'|'+m.u;if(echSeen.has(k))return;echSeen.add(k);if(m.at>=since&&sNow()-m.at<15e3)echBubble(m)})},()=>{})}
   else if(!on&&echUn){try{echUn()}catch(e){}echUn=null;document.querySelectorAll('.echb').forEach(e=>e.remove())}}
 function echBubble(m){const W=innerWidth,H=innerHeight,b=document.createElement('div');b.className='echb'+(m.u===uid?' me':'');
   b.innerHTML=`<b>${esc(m.n||'선원')}</b><span>${esc(m.t)}</span>`;
@@ -3961,9 +3963,9 @@ function echBubble(m){const W=innerWidth,H=innerHeight,b=document.createElement(
   const side=Math.random(),x=side<.42?W*(.02+Math.random()*.16):side<.84?W*(.66+Math.random()*.16):W*(.1+Math.random()*.6),y=side<.84?H*(.06+Math.random()*.52):H*(.02+Math.random()*.08);b.style.left=Math.min(W-310,x)+'px';b.style.top=y+'px';b.classList.add(Math.random()<.5?'tl':'tr');
   document.body.appendChild(b);setTimeout(()=>b.classList.add('out'),5600);setTimeout(()=>b.remove(),6300)}
 document.addEventListener('submit',e=>{if(e.target.id!=='endChatF')return;e.preventDefault();const i=$('#endChatIn');const v=(i.value||'').trim().slice(0,ECH_MAX);if(!v||!endOn())return;
-  if(Date.now()-echLast<1500){toast('조금 천천히 외쳐 주십시오.');return}echLast=Date.now();i.value='';const m={u:uid,n:P.nick,t:v,at:Date.now()};
-  bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>Date.now()-x.at<120e3),m].slice(-30)})).catch(()=>toast('보내지 못했습니다.'))});
-function echSay(t){if(!endOn())return;const m={u:uid,n:P.nick,t:String(t).slice(0,ECH_MAX),at:Date.now()};bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>Date.now()-x.at<120e3),m].slice(-30)})).catch(()=>{})}
+  if(Date.now()-echLast<1500){toast('조금 천천히 외쳐 주십시오.');return}echLast=Date.now();i.value='';const m={u:uid,n:P.nick,t:v,at:sNow()};
+  bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>sNow()-x.at<120e3),m].slice(-30)})).catch(()=>toast('보내지 못했습니다.'))});
+function echSay(t){if(!endOn())return;const m={u:uid,n:P.nick,t:String(t).slice(0,ECH_MAX),at:sNow()};bossTx(echRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]).filter(x=>sNow()-x.at<120e3),m].slice(-30)})).catch(()=>{})}
 function endBlock(on){echSub(on);let b=$('#endBlock');if(!on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='endBlock';b.setAttribute('aria-hidden','true');b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toast('오르비스와 싸우는 중에는 다른 곳을 누를 수 없습니다.')},true);document.body.appendChild(b);
    // pixel stars (a few twinkle, the brightest get a little cross) over faint nebula glows
    const cv=document.createElement('canvas');b.appendChild(cv);const W=Math.ceil(innerWidth/3),H=Math.ceil(innerHeight/3);cv.width=W;cv.height=H;const x=cv.getContext('2d');
@@ -3994,7 +3996,7 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
    ${me&&me.d>0?`<div class="endttl"><span class="lbl">엔딩 칭호</span><b>가이아의 마지막 수호자</b><span class="hint">내 정보 › 칭호에서 달 수 있습니다.</span></div>`:'<p class="hint">이번 전투에서 피해를 주지 못해 칭호를 받지 못했습니다.</p>'}
    <ol class="endrank">${top.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><b>${esc(v.n||'선원')}</b><span>${Math.round(v.d||0).toLocaleString()}</span></li>`).join('')}</ol>
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
-function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">Final Raid · 최종 레이드</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
+function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">${endFirst()?'First Contact · 오르비스 첫 등장':'Final Raid · 최종 레이드'}</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
    <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button>${endUlt()&&!endFirst()?`<button class="btn gold endult" type="button" data-act="endult" id="endUltB" title="${endUlt()[1]}">★ ${endUlt()[0]}</button>`:''}</div><span class="hint">스킬 · ${endSkill()[1]}${endUlt()&&!endFirst()?` · 비기 · ${endUlt()[1]}`:''}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
    <div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div>
@@ -4003,16 +4005,16 @@ function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
   const e=END,left=endShow();$('#endBarI').style.width=(left/e.max*100)+'%';$('#endBarT').textContent=`체력 ${Math.round(left).toLocaleString()} / ${e.max.toLocaleString()} (${(left/e.max*100).toFixed(1)}%)`;
   const now=Date.now(),sk=Math.max(0,END_SKCD-(now-endSkAt)),ab=$('#endAtkB'),sb=$('#endSkB');const ac2=Math.max(0,END_CD-(now-endAt));if(ab){ab.disabled=ac2>0;ab.textContent=ac2>0?`⚔ 공격 ${Math.ceil(ac2/1000)}초`:'⚔ 공격'}if(sb){sb.disabled=sk>0;sb.textContent=sk>0?`✦ ${endSkill()[0]} ${Math.ceil(sk/1000)}초`:`✦ ${endSkill()[0]}`}
   {const ub=$('#endUltB'),u=endUlt(),uc=Math.max(0,END_ULTCD-(now-endUltAt));if(ub&&u){ub.disabled=uc>0||isFaint();ub.textContent=uc>0?`★ ${u[0]} ${Math.ceil(uc/1000)}초`:`★ ${u[0]}`}}
-  const ai=endAoeIn(),w=$('#endWarn');if(w&&endFirst()){const left=Math.max(0,(+END.until||0)-Date.now()),mm=Math.floor(left/60000),ss=String(Math.floor(left/1000)%60).padStart(2,'0');w.className='endwarn'+(ai<=END_WARN||left<15000?' on':'');w.textContent=(ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초 · `:'')+`오르비스가 모든 눈을 뜨기까지 ${mm}:${ss}`}else if(w){w.className='endwarn'+(ai<=END_WARN?' on':'');w.textContent=ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초`:`다음 시선까지 ${Math.ceil(ai/1000)}초 · 선원 모두가 피해를 입습니다`}
+  const ai=endAoeIn(),w=$('#endWarn');if(w&&endFirst()){const left=Math.max(0,(+END.until||0)-sNow()),mm=Math.floor(left/60000),ss=String(Math.floor(left/1000)%60).padStart(2,'0');w.className='endwarn'+(ai<=END_WARN||left<15000?' on':'');w.textContent=(ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초 · `:'')+`오르비스가 모든 눈을 뜨기까지 ${mm}:${ss}`}else if(w){w.className='endwarn'+(ai<=END_WARN?' on':'');w.textContent=ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초`:`다음 시선까지 ${Math.ceil(ai/1000)}초 · 선원 모두가 피해를 입습니다`}
   const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)).slice(0,5),me=((e.dmg||{})[uid]||{}).d||0;
   $('#endMeta').innerHTML=`<span>내 피해 <b>${Math.round(me+endPend).toLocaleString()}</b></span><span>참여 ${Object.keys(e.dmg||{}).length}명</span>${top.map(([u,v],i)=>`<span class="${u===uid?'me':''}">${i+1}. ${esc(v.n||'선원')} ${Math.round(v.d||0).toLocaleString()}</span>`).join('')}`}
 setInterval(()=>{if(endOn())endPaint()},250);
 /* every 20 s the boss turns its gaze on the whole station: everyone online takes a hit at the same moment
    (timed from the raid's start, so no extra writes); a red warning counts down the last 3 s, agility/회피 can dodge it */
 const END_AOE=20000,END_WARN=3000;
-const endAoeIn=()=>END&&END.startAt?END_AOE-((Date.now()-END.startAt)%END_AOE):END_AOE;
+const endAoeIn=()=>END&&END.startAt?END_AOE-((sNow()-END.startAt)%END_AOE):END_AOE;
 let endFlashT=0;
-setInterval(()=>{if(!endOn()||!P||!P.joined)return;const k=END.gen+':'+Math.floor((Date.now()-END.startAt)/END_AOE);if(!P.endHitK){P.endHitK=k;return}if(P.endHitK===k)return;P.endHitK=k;
+setInterval(()=>{if(!endOn()||!P||!P.joined)return;const k=END.gen+':'+Math.floor((sNow()-END.startAt)/END_AOE);if(!P.endHitK){P.endHitK=k;return}if(P.endHitK===k)return;P.endHitK=k;
   if(isFaint())return;
   {const sh=END.shield;if(sh&&sh.k===k&&sh.u!==uid){toast(`${sh.n} 님이 수호의 방패로 시선을 대신 막았습니다!`);log(`${sh.n} 님이 수호의 방패로 오르비스의 시선을 대신 맞았다.`,'good');return}}
   endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
@@ -4023,13 +4025,13 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const k=END.gen+':'+Math.floo
 const EA={
  async endult(){if(!endOn()||endFirst()||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
   if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);echSay(`★ ${u[0]}!`)}return}
-  const tick=Math.floor((Date.now()-END.startAt)/END_AOE)+1;
+  const tick=Math.floor((sNow()-END.startAt)/END_AOE)+1;
   if(j==='nav'){try{await endRef().update({shield:{k:END.gen+':'+tick,u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}! 다음 시선은 내가 막는다!`);return}
-  if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}!`)}},
+  if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:sNow()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}!`)}},
  endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1))endAt=Date.now()},
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok)endSkAt=Date.now()},
  async endstart(){if(!isAdmin||mode!=='online')return;const hp=endHpMax();
-  const e={on:true,done:false,gen:Date.now(),startAt:Date.now(),by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0};
+  const e={on:true,done:false,gen:sNow(),startAt:sNow(),by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0};
   try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'siren');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
  async rankreset(){if(!isAdmin||mode!=='online')return;try{await bossTx(shipTRef(),cur=>cur?Object.assign({},cur,{v:1,u:{}}):{v:1,p:{},u:{},at:Date.now()});toast('기여도 랭킹을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async memreset(){if(!isAdmin||mode!=='online')return;try{await memRef().delete();toast('기억모듈 발견 기록을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
@@ -4041,7 +4043,7 @@ function rankAdminHTML(){const n=Object.keys(shipTotals().u||{}).length;return`<
 function endAdminHTML0(){const e=END;
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
    <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 엔딩 칭호 「가이아의 마지막 수호자」가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
-   <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
+   <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.mode==='first'?(e.on&&sNow()<(+e.until||0)?'첫 등장 전투 진행 중':'첫 등장 끝남 (오르비스 퇴장) · 최종 레이드를 시작할 수 있습니다'):e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="hint">Lv.${END_LV} · 체력 ${endHpMax().toLocaleString()} · 시선 피해 약 ${Math.round((20+END_LV*6.5)*endAtkK()).toLocaleString()} (침략자 Lv.${END_LV}의 1.5배)</span>
     <button class="btn sm" data-act="endstart" ${e&&e.on&&!e.done?'disabled':''}>최종 레이드 시작</button><button class="btn sm ghost" data-act="endreset" ${e?'':'disabled'}>초기화</button></div></div>`}
 
