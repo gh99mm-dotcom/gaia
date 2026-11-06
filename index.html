@@ -2131,7 +2131,7 @@ const GX={
 const SITE_NAME={crater:'크레이터 평원',cave:'결정 동굴',marsh:'이끼 습지',wreck:'잔해 지대',geyser:'얼음 간헐천',canyon:'붉은 협곡'};
 for(const [site,g] of Object.entries(GX)){
   g.mats.forEach(([id,n,ic,t,sv,d])=>ITEMS[id]={n,ic,t,type:'mat',sv,d:`${d}. ${SITE_NAME[site]}에서만 나옵니다.`});
-  g.crops.forEach(([id,n,pl,t,grow,hp,en,sv])=>{ITEMS[id]={n,ic:pl==='berry'?'berry':'veg',t,type:'food',hp,en,sv,pl};ITEMS['seed_'+id]={n:n+' 씨앗',ic:'seed',t,type:'seed',grow,crop:id,sv:Math.round(sv/3),d:`${Math.round(grow/60e3*10)/10}분이면 자랍니다. ${SITE_NAME[site]} 채집에서만 얻을 수 있습니다.`}});
+  g.crops.forEach(([id,n,pl,t,grow,hp,en,sv])=>{ITEMS[id]={n,ic:pl==='berry'?'berry':'veg',t,type:'food',hp,en,sv,pl};ITEMS['seed_'+id]={n:n+' 씨앗',ic:'seed',t,type:'seed',grow,crop:id,sv:Math.round(sv/3),d:`${Math.round(grow/60e3*10)/10}분이면 자랍니다. ${SITE_NAME[site]} 채집과 탐사(구식 신호기·침략자 토벌)에서 얻을 수 있습니다.`}});
 }
 // expedition-only ship parts: each 원정 zone yields one material, and each ship section needs the one from its zone
 const RAID_MATS=[['r1','plainSpore','평원 정화 포자','leaf','#b9c48a',30,'공기를 맑게 걸러 내는 하얀 포자','먼지 평원'],['r2','mazeCore','미궁 결정핵','gem','#5fd8ff',40,'스스로 빛을 내는 결정의 심장','결정 미궁'],
@@ -3676,7 +3676,7 @@ async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(t
     Object.entries(bossSplit(cur,dealt,d)).forEach(([u,v])=>{const e=cur.dmg[u]||{n:u===uid?P.nick:'선원',d:0};if(u===uid)e.n=P.nick;e.d=(+e.d||0)+v;cur.dmg[u]=e});
     if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
   bossBusy=false;if(!dealt){bossPaint();return}
-  if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
+  if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');const xp=Math.max(5,Math.round(xpBase(P.lvl)*.015));gainXp(xp);{const loot=advLoot(.08,.05);loot.forEach(([id,n])=>{add(id,n);log(`침략자를 공격하다 ${ITEMS[id].n} ×${n}을(를) 주웠다.`,'good')});if(loot.length)toast(`${loot.map(([id,n])=>ITEMS[id].n+' ×'+n).join(', ')} 획득!`)}
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
   let back='';if(!kill){const dodge=Math.random()*100<Math.min(45,Math.max(0,AS('agi')*1.5+BUFF('dodge')+WA('dodge')));if(dodge)back='회피!';else{const [hit,sv]=bossBlow2(b);heal(-hit,0);bossDefCredit(BOSS||b,sv);back=`${hit} 피해`}
     bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
@@ -4303,6 +4303,9 @@ function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],g
   <div class="dex">${FISHES[dexTab].map(id=>`<div title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span>${P.dex[id]&&(P.fsz||{})[id]?`<span class="hint dexlen">최대 ${fmtLen(P.fsz[id])}</span>`:''}</div>`).join('')}</div>`:''}</div>`}
 // 탐사's old signal receiver: catches a stray signal every 30 minutes (up to 5) while no invader is loose; investigating works like 조사
 const ASIG_MS=30*60e3,ASIG_MAX=5;let lastAsig=null;
+// a random regional seed (chance ps, 1–2 of them) and/or regional crop (chance pc) from any of the six 채집 sites
+const GX_SEEDS=()=>Object.values(GX).flatMap(g=>g.crops.map(c=>'seed_'+c[0])),GX_CROPS=()=>Object.values(GX).flatMap(g=>g.crops.map(c=>c[0]));
+function advLoot(ps,pc){const out=[];if(Math.random()<ps){const L=GX_SEEDS();out.push([L[ri(0,L.length-1)],ri(1,2)])}if(Math.random()<pc){const L=GX_CROPS();out.push([L[ri(0,L.length-1)],1])}return out}
 function asigState(){if(!P.asig)P.asig={n:1,t:Date.now()};if(P.asig.off)return{n:Math.min(ASIG_MAX,P.asig.n),next:0,off:true};const el=Date.now()-P.asig.t,gain=Math.floor(el/ASIG_MS),n=Math.min(ASIG_MAX,P.asig.n+gain);return{n,next:n>=ASIG_MAX?0:ASIG_MS-(el%ASIG_MS)}}
 const asigMsg=sg=>sg.off?'신호기가 꺼져 있습니다. 새 신호가 잡히지 않습니다.':sg.n>=ASIG_MAX?'신호가 가득 찼습니다. 조사하러 가십시오.':'다음 신호까지 '+fmtClock(sg.next);
 function useAsig(){const st=asigState();if(st.n<=0)return false;if(st.off){P.asig={n:st.n-1,t:Date.now(),off:1};return true}const el=Date.now()-P.asig.t,gain=Math.floor(el/ASIG_MS);P.asig={n:st.n-1,t:st.n>=ASIG_MAX?Date.now():P.asig.t+gain*ASIG_MS};return true}
@@ -6282,7 +6285,10 @@ const A={
  asigpow(){if(bossAlive(BOSS))return;const sg=asigState();P.asig=sg.off?{n:sg.n,t:Date.now()}:{n:sg.n,t:Date.now(),off:1};log(sg.off?'구식 신호기를 다시 켰다. SOS 신호를 보내기 시작한다.':'구식 신호기를 껐다.');commit()},
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spendKeep(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
   if(r.hp){heal(r.hp,0);extra+=`<span class="ichip minus">${img(IC.heart,null,2)}체력 ${r.hp}</span>`}if(r.en){heal(0,r.en);extra+=`<span class="ichip">${img(IC.bolt,null,2)}에너지 +${r.en}</span>`}if(r.xp){gainXp(r.xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${r.xp}</span>`}
-  gainXp(6);stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
+  // 탐사 now pays like a proper outing: experience scaled to level, and the regional seeds and crops once found only in 채집
+  {const xp=Math.max(20,Math.round(need(P.lvl)*.05));gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`}
+  {const loot=advLoot(.6,.35);loot.forEach(([id,n])=>{add(id,n);got.push([id,n])})}
+  stat('scan');lxp('scan',8);lastAsig={t:ev.t,got,extra};log('구식 신호기: '+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()},
  scgo(d){const sc=scoutSt(),i=+d.t;if(sc.mv||!TRAILS[i])return;if(sc.pend){toast('먼저 이 지점을 조사하십시오.');return}if(sc.t>=0&&sc.t!==i){toast('먼저 정착지로 돌아가야 합니다.');return}const from=sc.t<0?0:sc.at;if(from>=SC_N)return;if(!spendKeep(scEn(from+1)))return;
   const ms=TRAILS[i].m[from]*60e3*(P.job==='nav'?.75:1);sc.mv={t:i,from,to:from+1,s:Date.now(),e:Date.now()+ms};log(`${TRAILS[i].n} ${from+1}지점으로 출발. ${scWay(i,from+1)} (${TRAILS[i].m[from]}분 뒤 도착)`);commit()},
  scsearch(){scoutSearch()},
