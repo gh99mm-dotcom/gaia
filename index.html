@@ -2883,14 +2883,14 @@ async function connect(){
   const canW=await user.can('data.write');
   if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
   mode='online';myRef=db.doc('players/'+uid);
-  try{const s=await myRef.get();if(s.exists&&!s.data().deleted){seasonFromDoc=true;P=Object.assign(newPlayer('선원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
+  try{const s=await myRef.get();if(s.exists&&!s.data().deleted&&s.data().nick&&(s.data().job||(+s.data().lvl||1)>1)){seasonFromDoc=true;P=Object.assign(newPlayer('선원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
   if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
   // claim the character for this window at once, so any older window still open stops saving
-  if(!P._fresh){P.tab=TAB_ID;P.sv=(+P.sv||0)+1;myRef.update({tab:TAB_ID,sv:P.sv}).catch(()=>{})}
+  if(seasonFromDoc&&!P._fresh&&P.nick!=='새 선원'){P.tab=TAB_ID;P.sv=(+P.sv||0)+1;myRef.update({tab:TAB_ID,sv:P.sv}).catch(()=>{})}
   renderNet();renderAll();seasonWatch();seenSync();loadMySn();setTimeout(openingOnce,400);
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
   let plT=null;const plDraw=()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()};
-  db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}m[d.id]=v});if(m[uid])tabCheck(m[uid]);PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
+  db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}if(!v||!v.nick)return;m[d.id]=v});if(m[uid])tabCheck(m[uid]);PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
   db.collection('grants').onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
     if(!r.adm&&r.by&&r.by!==uid&&r.at!==P.rescueSeen&&(!P.faintAt||r.at>=P.faintAt)){P.rescueSeen=r.at;P.rescuedAt=r.at;addAff(r.by,AFF.rescue,'구조');P.rnoti=[{by:r.by,nick:r.nick||'선원',at:r.at},...(P.rnoti||[])].slice(0,20);if(isFaint())wake(r.nick||'누군가',r.med);else{log(`${r.nick||'누군가'} 님이 구조해 줬다.`,'good');commit()}bellRefresh()}
