@@ -1030,8 +1030,9 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 .pside{--pc:#7fd4ff;position:relative;display:flex;flex-direction:column;gap:6px;padding:10px 10px 9px;background:linear-gradient(170deg,#1c2236,#121522);border:3px solid #07080e;outline:2px solid color-mix(in srgb,var(--pc) 70%,transparent);outline-offset:-5px;color:#e6eeff;min-width:0}
 .pside h4{display:flex;align-items:center;gap:6px;margin:0;font-family:var(--f-display);font-weight:400;font-size:14px;color:var(--pc);letter-spacing:.02em}
 .pside h4 span{display:inline-grid;place-items:center;width:20px;height:20px;background:var(--pc);color:#07080e;font-size:12px;filter:drop-shadow(2px 2px 0 #07080e)}
-.ps-like{--pc:#ff8ab8}.ps-hate{--pc:#ff6a6a}.ps-why{--pc:#f2c66a}.ps-suwi{--pc:#ff9ac0;grid-column:1/-1}.ps-aff{--pc:#9a8cff;grid-column:1/-1}
+.ps-like{--pc:#ff8ab8}.ps-hate{--pc:#ff6a6a}.ps-why{--pc:#f2c66a}.ps-mem{--pc:#7fd0d0;grid-column:1/-1}.ps-suwi{--pc:#ff9ac0;grid-column:1/-1}.ps-aff{--pc:#9a8cff;grid-column:1/-1}
 .pside .jpicked{display:flex;flex-wrap:wrap;gap:4px}.pside .ichip{background:#07080e88}
+.memadm{display:flex;flex-direction:column;gap:4px}.memadm>div{display:flex;align-items:center;gap:8px}
 .suwi{display:flex;gap:12px;max-width:440px}
 .suwib{flex:1;min-width:0;height:84px;display:grid;place-items:center;font-family:var(--f-pix,monospace);font-size:44px;border-width:3px!important;font-weight:700;line-height:1;background:transparent;color:var(--mute);border:2px solid var(--line);cursor:pointer;padding:0}
 .suwib.s-o[aria-pressed="true"],.suwib.s-o.on{color:#6ad8a0;border-color:#6ad8a0;background:rgba(106,216,160,.12);text-shadow:0 0 6px rgba(106,216,160,.5)}
@@ -1989,6 +1990,7 @@ veg:["....kk....","...kgk....","..kkkkkk..",".kaahaaak.",".kahaaaak.",".kaaaaaak
 berry:[".....kk...","....kgk...","..kk.k.kk.",".kahkkahk.",".kaakkaak.","..kkahkk..","...kaak...","...kbbk...","....kk....",".........."],
 fishs:["..........","..........","...kkkk...","..kaaaak.k",".kawaaaakk",".kaaaabbak","..kbbbbk.k","...kkkk...","..........",".........."],
 rock:["..........","..........","...kkkk...","..khaaak..",".khaabaak.",".kaabaaak.",".kaaaabbk.","..kbbbbk..","...kkkk...",".........."],
+memmod:["..k.k.k...",".kkkkkkkk.",".khhhhhak.",".khkkkkak.","kkhkbbkakk",".khkbbkak.","kkhkkkkakk",".kaaaaaab.",".kkkkkkkk.","..k.k.k..."],
 gem:["..........","...kkkk...","..khhaak..",".khhaaaak.",".kaaaaaak.","..kaaabk..","...kabk...","....kk....","..........",".........."],
 goo:["..........","..........","...k..k...","..kak.kak.",".kahakaak.",".kaaaaaaak","..kbbbbbk.","...kkkkk..","..........",".........."],
 eel:["..........","..........","...kkk....","kkkaaakkk.","kaaaaaaahk","kbbkkbbwak",".kk..kkkk.",".........."],
@@ -2106,6 +2108,9 @@ const ITEMS={
  relic2:{n:'고대 신호 기록 2급',ic:'scroll',t:'#ffd65f',type:'relic',xp:6000,sv:300,d:'Lv.40~49에서 발견되는 기록. 해독하면 경험치 +6,000.'},
  invite:{n:'고물상 수제 초대장',ic:'scroll',t:'#c9b98a',type:'keep',bound:1,once:1,d:'고물상 로봇 녹슨 7호가 고철을 두드려 손수 만든 초대장. 산 사람에게 귀속되어 팔거나 보낼 수 없고, 한 계정에 한 장만 살 수 있습니다. 오른쪽 버튼을 눌러 사용할 수 있습니다.'},
  statreset:{n:'능력치 초기화권',ic:'scroll',t:'#8fb8e8',type:'keep',bound:1,once:1,d:'녹슨 7호가 고쳐 쓴 낡은 재조정 칩. 내 정보의 능력치 칸에서 초기화를 누르면 한 장을 써서 능력치 포인트를 모두 돌려받습니다. 귀속 · 한 계정에 한 장만 살 수 있습니다.'},
+ mem1:{n:'기억모듈 1호',ic:'memmod',t:'#7fd0d0',type:'keep',bound:1,once:1,mem:1,d:'반파된 가이아의 기록 장치에서 떨어져 나온 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
+ mem2:{n:'기억모듈 2호',ic:'memmod',t:'#b48cf0',type:'keep',bound:1,once:1,mem:1,d:'두 번째로 발견된 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
+ mem6:{n:'기억모듈 6호',ic:'memmod',t:'#e0b860',type:'keep',bound:1,once:1,mem:1,d:'번호가 건너뛴 채 발견된 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
  relic1:{n:'고대 신호 기록 1급',ic:'scroll',t:'#ff8a5a',type:'relic',xp:12000,sv:600,d:'Lv.50~60에서 발견되는 기록. 해독하면 경험치 +12,000.'},
 };
 /* gather-only materials & crops */
@@ -3583,7 +3588,7 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
   if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;
   P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
-  endSub();
+  endSub();memSub();
   bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint()},()=>{});
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
@@ -3918,9 +3923,11 @@ const EA={
  async endstart(){if(!isAdmin||mode!=='online')return;const hp=Math.max(100,Math.min(1e9,+(($('#admEndHp')||{}).value)||200000));
   const e={on:true,done:false,gen:Date.now(),startAt:Date.now(),by:P.nick,max:hp,hp,dmg:{},hits:0};
   try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'siren');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
+ async memreset(){if(!isAdmin||mode!=='online')return;try{await memRef().delete();toast('기억모듈 발견 기록을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async endreset(){if(!isAdmin||mode!=='online')return;try{await endRef().delete();toast('최종 레이드를 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
 };
-function endAdminHTML(){if(mode!=='online')return'';const e=END;
+function endAdminHTML(){if(mode!=='online')return'';return endAdminHTML0()+memAdminHTML()}
+function endAdminHTML0(){const e=END;
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
    <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 엔딩 칭호 「가이아의 마지막 수호자」가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
@@ -4568,7 +4575,7 @@ function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;cons
   // 1% of searches turn up a 마이룸 piece found nowhere else
   {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했습니다.`)}}
   const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0]*SC_XP_K/XP_PACE)+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
-  stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,ev:ev.t,got,extra,acts:scLegLines&&scLegLines.length?scLegLines:scActs(sc.t),tr:sc.t,k,at:Date.now()};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
+  memTry();stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,ev:ev.t,got,extra,acts:scLegLines&&scLegLines.length?scLegLines:scActs(sc.t),tr:sc.t,k,at:Date.now()};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
 // 귀중품 도감: every one found so far; the rest show as black silhouettes
 function junkDexHTML(){const got=new Set([...(P.jdex||[]),...JUNK.map(j=>j[0]).filter(id=>P.inv[id]>0)]);
   return`<section class="card jdex"><div class="row" style="justify-content:space-between;gap:8px"><span class="lbl">Field guide · 귀중품 도감</span><b class="jdexn">${got.size} / ${JUNK.length}</b></div>
@@ -4614,6 +4621,18 @@ const shipPct=pt=>{if(shipKept(pt))return 1;const g=shipGot(pt.id);let a=0,b=0;p
 function shipFuelMark(){if(!SHIPT||!SHIPT.v||SHIPT.fuel||shipFuelMark.busy)return;shipFuelMark.busy=1;
   bossTx(shipTRef(),cur=>{if(!cur||!cur.v||cur.fuel)return null;const pre={};SHIP.forEach(pt=>{if(shipOldDone(pt,cur.p))pre[pt.id]=1});cur.fuel={at:Date.now(),pre};return cur}).catch(()=>{}).finally(()=>{shipFuelMark.busy=0})}
 const shipDone=pt=>shipPct(pt)>=1;
+/* 기억모듈: one of each exists in the whole game. Once the ship has 2 / 4 / 6 parts repaired, 1호 / 2호 / 6호 can turn up in 조사 (5% a search);
+   the first crew member to find one claims it on the server, and after that it never drops again for anyone */
+const MEMS=[['mem1',2],['mem2',4],['mem6',6]],memRef=()=>db.doc('boss/memmods');let MEMC={},memBusy=false;
+function memSub(){memRef().onSnapshot(sn=>{MEMC=sn.exists?sn.data():{};if(adminShown&&adminShown())adminRefresh()},()=>{})}
+function memTry(){if(mode!=='online'||memBusy)return;const done=SHIP.filter(shipDone).length,pool=MEMS.filter(([id,st])=>done>=st&&!MEMC[id]&&!(P.inv[id]>0));if(!pool.length||Math.random()>=.05)return;
+  const id=pool[0][0];memBusy=true;bossTx(memRef(),cur=>{cur=cur||{};if(cur[id])return null;cur[id]={uid,nick:P.nick,at:Date.now()};return cur}).then(nx=>{memBusy=false;if(!nx)return;
+    add(id,1);log(`조사 중 이 세계에 단 하나뿐인 「${ITEMS[id].n}」를 찾았다!`,'rare');toast(`「${ITEMS[id].n}」 발견! 이 세계에 단 하나뿐인 귀중품입니다.`);sfxFanfare(true);
+    sys(`[공지] ${P.nick} 님이 조사 중 「${ITEMS[id].n}」를 찾았습니다. 이 세계에 단 하나뿐인 기억모듈입니다.`);commit()}).catch(()=>{memBusy=false})}
+function memAdminHTML(){if(mode!=='online')return'';const done=SHIP.filter(shipDone).length;
+  return`<div class="info-sec" data-adm="boss"><span class="lbl">Memory · 기억모듈</span><span class="hint">우주선 수리 2·4·6단계를 마치면 조사에서 기억모듈 1호·2호·6호가 5% 확률로 나옵니다. 각각 게임 전체에 단 하나뿐입니다. (지금 수리 ${done}/6단계)</span>
+   <div class="memadm">${MEMS.map(([id,st])=>{const c=MEMC[id];return`<div>${iicon(id,2)}<b>${ITEMS[id].n}</b><span class="hint">${c?`${esc(c.nick||'선원')} · ${new Date(c.at||0).toLocaleDateString()}`:done>=st?'아직 아무도 찾지 못함':`수리 ${st}단계부터`}</span></div>`}).join('')}</div>
+   <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="memreset" ${Object.keys(MEMC).length?'':'disabled'}>발견 기록 초기화 (시험용)</button><span class="hint">이미 가진 선원의 모듈은 사라지지 않습니다.</span></div></div>`}
 const shipOpen=pt=>SHIP.slice(0,SHIP.indexOf(pt)).every(shipDone);
 const shipAll=()=>SHIP.reduce((a,pt)=>a+shipPct(pt),0)/SHIP.length;
 const roomShown=()=>tab==='ship'&&shipView==='room';
@@ -6718,7 +6737,7 @@ function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).fi
     aff=`<div class="pside-big" style="color:${affColor(avg)}">${v.length?avg:'—'}<small>${v.length?affLabel(avg):''}</small></div><div class="bar"><i style="--c:${affColor(avg)};width:${Math.min(100,Math.abs(avg))}%"></i></div><span class="hint">나를 아는 선원 ${v.length}명의 평균 · 선원에게는 그 선원의 호감도가 보입니다</span>`}
   else{const af=affOf(P,id);aff=`<div class="pside-big" style="color:${affColor(af)}">${af}<small>${affLabel(af)}</small></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div><span class="hint">내가 ${esc(p.nick||'선원')} 님을 생각하는 마음</span>`}
   const C=(cls,ic,t,b)=>`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${b}</section>`;
-  return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-suwi','◐','수위 여부',suwiHTML(p,mine))}${C('ps-aff','♡','호감도',aff)}</div>`}
+  return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-suwi','◐','수위 여부',suwiHTML(p,mine))}${MEMS.some(([id])=>(p.inv||{})[id]>0)?C('ps-mem','◆','귀중품',`<div class="jpicked">${MEMS.filter(([id])=>(p.inv||{})[id]>0).map(([id])=>`<span class="ichip memchip" style="color:${ITEMS[id].t}">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</div>`):''}${C('ps-aff','♡','호감도',aff)}</div>`}
 // free-text profile notes under the ID card (written on my own 내 프로필 tab, shown to everyone)
 const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐',2000],['feat','특징','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 늘 공구를 들고 다님',2000],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120,noteMax=k=>(PNOTE.find(x=>x[0]===k)||[])[5]||PNOTE_MAX;let noteEdit=null;
 /* affection notes: five short notes (200자) that open one by one as that member's 호감도 toward the viewer reaches 20·40·60·80·100 */
