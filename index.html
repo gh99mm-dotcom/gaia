@@ -6116,6 +6116,9 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     A.dust=(g2,t,X,Y,on)=>{if(!on)return;for(let i=0;i<4;i++){const ph=(t*2.2+i/4)%1;g2.globalAlpha=(1-ph)*.6;g2.fillStyle=B[4];g2.fillRect(X+ph*8|0,Y-1-ph*3|0,1,1)}g2.globalAlpha=1};
     A.bot=(g2,X,Y,bw)=>{if(BOT)g2.drawImage(BOT,Math.round(X),Math.round(Y),bw,bw)};
     OPA=A;return A}
+  // a tiny 3×5 pixel font for the console labels, so they stay crisp when the picture is scaled up
+  const F35={A:'010101111101101',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',Y:'101101010010010','-':'000000111000000','·':'000000010000000',' ':'000000000000000'};
+  const ptext=(str,X,Y,col)=>{let cx=X;for(const ch of str){const f=F35[ch]||F35[' '];for(let i=0;i<15;i++)if(f[i]==='1')R(cx+(i%3),Y+((i/3)|0),1,1,col);cx+=4}};
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
     // ── the opening's own pictures, drawn fresh: a dusk-purple desert seen from afar, a small crashed ship, a small 녹슨 7호 ──
@@ -6149,9 +6152,9 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
       for(let x=56;x<170;x++){P(x,48,hull);P(x,72,hull)}for(let y=48;y<=72;y++){P(56,y,hull);P(170,y,hull)}for(let i=0;i<14;i++){P(170+i,48+i*.9,hull);P(170+i,72-i*.9,hull)}
       for(let i=0;i<26;i++){P(96+i,48-i*.9,hull);P(96+i,72+i*.9,hull)}for(let y=52;y<69;y+=4)R(44,y,12,2,hull);
       const sys=[['LIFE SUPPORT',100,56],['HULL INTEGRITY',130,40],['PROPULSION',48,60],['NAVIGATION',176,60]];
-      g.font='6px monospace';g.textBaseline='top';
-      sys.forEach(([n,x,y],i)=>{const blink=(Math.floor(t*2.4+i*.5)%2===0);R(x-3,y-1,6,6,blink?'#ff4a5a':'#5a1018');g.fillStyle=blink?'#ff8a94':'#8a2a34';const tx=[x-24,x-28,24,x-36][i];g.fillText(n,tx,i===1?y-10:y+8)});
-      g.fillStyle=red;g.fillText('SYSTEM DAMAGE · REPAIR REQUIRED',62,98);g.fillStyle=B[5];g.fillText('GAIA · SHIP STATUS',24,14);g.globalAlpha=1}};
+      
+      sys.forEach(([n,x,y],i)=>{const blink=(Math.floor(t*2.4+i*.5)%2===0);R(x-3,y-1,6,6,blink?'#ff4a5a':'#5a1018');const tx=[x-24,x-28,24,x-36][i];ptext(n,tx,i===1?y-10:i===3?y+16:y+8,blink?'#ff8a94':'#8a2a34')});
+      ptext('SYSTEM DAMAGE - REPAIR REQUIRED',58,98,red);ptext('GAIA - SHIP STATUS',24,14,B[5]);g.globalAlpha=1}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent='▶ '+(L.btn||(last?'확인한다.':'다음'))}
