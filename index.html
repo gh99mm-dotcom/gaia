@@ -4625,16 +4625,16 @@ const shipPct=pt=>{if(shipKept(pt))return 1;const g=shipGot(pt.id);let a=0,b=0;p
 function shipFuelMark(){if(!SHIPT||!SHIPT.v||SHIPT.fuel||shipFuelMark.busy)return;shipFuelMark.busy=1;
   bossTx(shipTRef(),cur=>{if(!cur||!cur.v||cur.fuel)return null;const pre={};SHIP.forEach(pt=>{if(shipOldDone(pt,cur.p))pre[pt.id]=1});cur.fuel={at:Date.now(),pre};return cur}).catch(()=>{}).finally(()=>{shipFuelMark.busy=0})}
 const shipDone=pt=>shipPct(pt)>=1;
-/* 기억모듈: one of each exists in the whole game. Once the ship has 2 / 4 / 6 parts repaired, 1호 / 2호 / 6호 can turn up in 조사 (5% a search);
+/* 기억모듈: one of each exists in the whole game. Once the ship has 2 / 4 / 6 parts repaired, 6호 / 2호 / 1호 can turn up in 조사 (5% a search);
    the first crew member to find one claims it on the server, and after that it never drops again for anyone */
-const MEMS=[['mem1',2],['mem2',4],['mem6',6]],memRef=()=>db.doc('boss/memmods');let MEMC={},memBusy=false;
+const MEMS=[['mem6',2],['mem2',4],['mem1',6]],memRef=()=>db.doc('boss/memmods');let MEMC={},memBusy=false;
 function memSub(){memRef().onSnapshot(sn=>{MEMC=sn.exists?sn.data():{};if(adminShown&&adminShown())adminRefresh()},()=>{})}
 function memTry(){if(mode!=='online'||memBusy)return;const done=SHIP.filter(shipDone).length,pool=MEMS.filter(([id,st])=>done>=st&&!MEMC[id]&&!(P.inv[id]>0));if(!pool.length||Math.random()>=.05)return;
   const id=pool[0][0];memBusy=true;bossTx(memRef(),cur=>{cur=cur||{};if(cur[id])return null;cur[id]={uid,nick:P.nick,at:Date.now()};return cur}).then(nx=>{memBusy=false;if(!nx)return;
     add(id,1);log(`조사 중 이 세계에 단 하나뿐인 「${ITEMS[id].n}」를 찾았다!`,'rare');toast(`「${ITEMS[id].n}」 발견! 이 세계에 단 하나뿐인 귀중품입니다.`);sfxFanfare(true);
     sys(`[공지] ${P.nick} 님이 조사 중 「${ITEMS[id].n}」를 찾았습니다. 이 세계에 단 하나뿐인 기억모듈입니다.`);commit()}).catch(()=>{memBusy=false})}
 function memAdminHTML(){if(mode!=='online')return'';const done=SHIP.filter(shipDone).length;
-  return`<div class="info-sec" data-adm="boss"><span class="lbl">Memory · 기억모듈</span><span class="hint">우주선 수리 2·4·6단계를 마치면 조사에서 기억모듈 1호·2호·6호가 5% 확률로 나옵니다. 각각 게임 전체에 단 하나뿐입니다. (지금 수리 ${done}/6단계)</span>
+  return`<div class="info-sec" data-adm="boss"><span class="lbl">Memory · 기억모듈</span><span class="hint">우주선 수리 2단계를 마치면 6호, 4단계면 2호, 6단계면 1호가 조사에서 5% 확률로 나옵니다. 각각 게임 전체에 단 하나뿐입니다. (지금 수리 ${done}/6단계)</span>
    <div class="memadm">${MEMS.map(([id,st])=>{const c=MEMC[id];return`<div>${iicon(id,2)}<b>${ITEMS[id].n}</b><span class="hint">${c?`${esc(c.nick||'선원')} · ${new Date(c.at||0).toLocaleDateString()}`:done>=st?'아직 아무도 찾지 못함':`수리 ${st}단계부터`}</span></div>`}).join('')}</div>
    <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="memreset" ${Object.keys(MEMC).length?'':'disabled'}>발견 기록 초기화 (시험용)</button><span class="hint">이미 가진 선원의 모듈은 사라지지 않습니다.</span></div></div>`}
 const shipOpen=pt=>SHIP.slice(0,SHIP.indexOf(pt)).every(shipDone);
