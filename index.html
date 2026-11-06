@@ -1294,6 +1294,12 @@ body:has(#endHud){padding-bottom:200px}
 .endttl{display:flex;flex-direction:column;gap:3px;padding:10px 18px;border:2px solid #e0b860;background:rgba(224,184,96,.1)}.endttl b{font-size:18px;color:#ffe08a}
 .endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:3px 8px;background:var(--deep)}.endrank li.me{color:var(--cyan)}.endrank em{font-style:normal;color:var(--mute)}
 @media (max-width:600px){.endbtns{width:100%}.endbtns .btn{flex:1}}
+.tablock{opacity:.5;filter:grayscale(.7)}.tablock .tlk{position:absolute;top:3px;right:4px;font-size:11px;line-height:1}
+#orbisFx{position:fixed;inset:0;z-index:96;background:#05030a;display:flex;align-items:center;justify-content:center;animation:orbIn .8s steps(4)}
+#orbisFx canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+#orbisFx .orbtx{position:relative;z-index:1;margin-top:46vh;max-width:min(560px,90vw);text-align:center;color:#f4e8ff;font-size:15px;line-height:1.7;text-shadow:2px 2px 0 #000;padding:10px 14px;background:rgba(5,3,10,.6)}
+#orbisFx.red{animation:orbRed .25s steps(2) 3}
+@keyframes orbIn{from{opacity:0}}@keyframes orbRed{50%{background:#5a0a12}}
 .waff{text-shadow:none!important;--wo:#07080e;filter:drop-shadow(1px 0 0 var(--wo)) drop-shadow(-1px 0 0 var(--wo)) drop-shadow(0 1px 0 var(--wo)) drop-shadow(0 -1px 0 var(--wo))}
 .waff.wt1{filter:drop-shadow(1px 0 0 var(--wo)) drop-shadow(-1px 0 0 var(--wo)) drop-shadow(0 1px 0 var(--wo)) drop-shadow(0 -1px 0 var(--wo)) drop-shadow(2px 2px 0 #2f5a32)}
 .waff.wt2,.waff.wt3,.waff.wt4{text-shadow:none!important;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:32px 100%;background-repeat:repeat}
@@ -2108,8 +2114,10 @@ const ITEMS={
  relic2:{n:'고대 신호 기록 2급',ic:'scroll',t:'#ffd65f',type:'relic',xp:6000,sv:300,d:'Lv.40~49에서 발견되는 기록. 해독하면 경험치 +6,000.'},
  invite:{n:'고물상 수제 초대장',ic:'scroll',t:'#c9b98a',type:'keep',bound:1,once:1,d:'고물상 로봇 녹슨 7호가 고철을 두드려 손수 만든 초대장. 산 사람에게 귀속되어 팔거나 보낼 수 없고, 한 계정에 한 장만 살 수 있습니다. 오른쪽 버튼을 눌러 사용할 수 있습니다.'},
  statreset:{n:'능력치 초기화권',ic:'scroll',t:'#8fb8e8',type:'keep',bound:1,once:1,d:'녹슨 7호가 고쳐 쓴 낡은 재조정 칩. 내 정보의 능력치 칸에서 초기화를 누르면 한 장을 써서 능력치 포인트를 모두 돌려받습니다. 귀속 · 한 계정에 한 장만 살 수 있습니다.'},
- mem1:{n:'기억모듈 1호',ic:'memmod',t:'#7fd0d0',type:'keep',bound:1,once:1,mem:1,d:'반파된 가이아의 기록 장치에서 떨어져 나온 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
+ mem1:{n:'기억모듈 1호',ic:'memmod',t:'#7fd0d0',type:'keep',bound:1,once:1,mem:1,d:'선체 외벽을 다시 덮은 뒤 발견된 첫 번째 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
  mem2:{n:'기억모듈 2호',ic:'memmod',t:'#b48cf0',type:'keep',bound:1,once:1,mem:1,d:'두 번째로 발견된 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
+ mem3:{n:'기억모듈 3호',ic:'memmod',t:'#7dff9b',type:'keep',bound:1,once:1,mem:1,d:'항법 장치를 고친 뒤 발견된 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
+ mem5:{n:'기억모듈 5호',ic:'memmod',t:'#ff8a6a',type:'keep',bound:1,once:1,mem:1,d:'주 엔진을 고친 뒤 발견된 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
  mem6:{n:'기억모듈 6호',ic:'memmod',t:'#e0b860',type:'keep',bound:1,once:1,mem:1,d:'번호가 건너뛴 채 발견된 기억모듈. 이 세계에 단 하나뿐인 귀중품입니다.'},
  relic1:{n:'고대 신호 기록 1급',ic:'scroll',t:'#ff8a5a',type:'relic',xp:12000,sv:600,d:'Lv.50~60에서 발견되는 기록. 해독하면 경험치 +12,000.'},
 };
@@ -2402,8 +2410,8 @@ const DISH_PNG={"d_potRoast": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACA
 // four dishes added later, drawn in the same 32px style
 Object.assign(DISH_PNG,{"d_pizza": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACEUlEQVR4nO2TMWgTURyHv0gJElSChKbedBQayk2hQ5EOAR07ZHASkUwdDofiINUxq7pIpiCOIu3SRchqueGgTjcdIV1CIdc0hBAQQrdzkP/Lu0vuuM3lviXHvbv3++73/oGcnJycnJyc/0wh64P976/CLM/tvv6Rec9UAT1w/m0IgNWtsxgHDNsTrG4d3/bUr075yMwstLIowRIqSHhpy1CBVreO7S0YXU842y9S3bb4s5irdWc+U++feP21IveSwq1uXYUAkfCOXeP9YRnf9ujWS5ztFyltGVy2LvBtD2c+w5nPsE+f0yg/pvluL/EIN5Kq0evt2DVGvyd87P27dyxrPY/FOKC6bfG5ea7e9T48ZXQ9oTUOInv++vQiBHh2cq7aUBdf3+yFjYNdpAFBP+uHpTKXrQt1T69YQn82TXzbw2xvqsZkJhy3z6Pig4hUAeD0bSOsGhWeGPcjAmZ7c2Xg5MwlSB9CkdTnAJZDeRPccRtMcQfT9QJXwyHSQloTUrsExSXkWv83OG6fHdPkNliGRwQAqkYFYEUkLpOGHqoH64jEyy9OYQPAHUw5qFXUAzumyU1wx9VwGdo4igol4bj9yD7xcEGOQQ3h8aEVioQ0sQ5dSicpSEe+3B1M6fT8QkRAJIBIG2kyWdDPXL5awlcE0kR0kqTiA5YWnCoQF9FJkoqH6awLziSQVSprWM46/gI45COSlZ8ijwAAAABJRU5ErkJggg==", "d_jeon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAB40lEQVR4nO2Uv0sbYRzGP5YK0sUMEkIaMDgcxSEIQhDtkEAnEXV2ilAcO3RwCA5ZzJCCf4AUkylDpgRChlLqDSKaSTLYcBT7CqUU6+AYcEiHcm/e9360dy2BUu+Z7r7v932fz/vcvS9EihQpUgh9uvreC1IbN0QtSG1c5g88gUj/pSbCNItmYehVT2/WQq0TGEA1jKWS3H35yjfLImEYrl61HgbokZ+xc7fTi/sADDJ1YqkkALMbVTmeMAzEVAmAs8qya76fXKSiWRiqux1k6qQHJTn+7nMBIQQ7eRPQk+lNlrUxgEbD0tbfrZ9qntrLZV8Mn/RLWpy24frTQ8/oxVRJAsZSSaYX9zl/s0LCMGg0LJrdK61/MzunQchPcNkXMjLVKHNfZCdvahGr0VsfBYfHOQD6H0yuW9skDINipeuCtbW1PC+9JIkN0Hu7ytLzrOdENX7nTzm7UeW6ta31FytdFtIxrXYh7tg76jD/LD3hCQAQj8/wvpz1BQF8TwPA2UmXF8VRAq/Wfq6zd9SRtV8COEHCSDW2dXNz66rZAI/tQrtjsraac03MvBxRx+MzgSC8DFW1O6Z81k5B5aAmU3DC/K1U093XBenre2OpMH8CpBo6TVUFvjKdQL+Tn2Gkf04/AGcL43WqJAMVAAAAAElFTkSuQmCC", "d_punch": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACAUlEQVR4nO2WMWgTURjHf5FAAxYpHQyUUrpYihSxSwgINlOHLHYqYguFglk66yjF0SGbIBkEwcExUyg3nSJiQqGhiIQT5IYQmk4vkCsRCs8hfUff3btcUqSRkj8c3Hfvf9///33v8d6DCcaMxHWI/Gy4Ur3fX17UNG9dh4H/AvbXuoxnjUH85k9BXOtvdgeGWXhj70DkRiRLZcnS/JUTf04mWTs/7wdOk0Rhw6ildUCWylLah1Lah3JvwSJXe+WPtfeLtPeLI5nw+UvzqLyyVNamJTwFThOcJm9Tu9iZ136idD6nJ40RXvtW0/h7vfdaQQpaW45aPfmw9r0fnAp4/oRqBxY3trSf0s829SwRPI1/dwaAeibL6lzK19U6sDqXStQzWTzHxROCaiecbDq/ztadZR79TuEJofFUl4J8Twg8xw2JAySNli8QrGg6vw5A8V1/ariIV0of6FYs2gZuYSGLW3exZk+MGsaVedTqyXsfPwHQrVhawm7FIp3P0a7Y2ncT9zJ+bT8NVR9pIGjiMpSIgklsWPGBBpQJgKCRQZUC3H6xQ7UDU2d/ACLFYw3EGYnCj8IOANmZRGz+ka9kykwUBlX7T3HQELLVlf5z0BBXuvGM/TAauA8E8Sawj0eNv4w4eEwYimgSfvA4F+Idf7G1eBgjIy2YuA6MIjzBBAp/AR773v6hSItVAAAAAElFTkSuQmCC", "d_gratin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABeElEQVR4nO2UsUvDQBTGv4iDSyCIFOmgAbGDk4NQyVAcxSmDUwfBpaOjcycHwcUxi+Lg5NBJHEuGYMFBRDoELVcHh1ok0D8gDiXnS3KXxLaC4P2m4/Lufd/7cgmgUCgUioK89D6eZrE/rYnLWexPKv7PE1D8FlqRovtTK4zWG7VKZm3X9fl6+9jL7S8tiETzBAFAr15g1DnMNCQzk9q8s/dCwwpQbRwJGzZvXtHcXxM7cRbQZwyrJ8upRx3nHIFnYLd1G9PUHGuLx7tSKgEADCtITa67NvqMYfHgUSwugCbTdX0EngEAeBsMeM1ckSYAMKq1YuK6a+PzalN45ux5fXxG8loowgSAcQrMD3IbFMGsGHx6IJ4Afx+REWqCmgGKXUjg++JR0aR4w3vQYgbqZTPcMZd4ocjINNCp22yI63emAcA8LWqzISIT9MCkZmgPqkGJfRL1ssnvA01jFlDhaPqUAZmZn5pKTpkUpRT6FcsMZSETVPw5vgDBVadPOJ5PGQAAAABJRU5ErkJggg=="});
 // 기억모듈 icons: a little circuit board — gold edge pins, a chip with its number on a paper label, and an indicator light in the module's colour
-{const G={"1": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksssnsskyLGk.", ".klkssnnsskgYGk.", ".kyksssnsskygGk.", ".klksssnsskggGk.", ".kyksssnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "2": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksnnssskyLGk.", ".klksssnsskgYGk.", ".kykssnssskygGk.", ".klksnsssskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "6": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kykssnnsskyLGk.", ".klksnsssskgYGk.", ".kyksnnnsskygGk.", ".klksnsnsskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."]},PO={k:'#07080e',l:'#3f8a66',g:'#24604a',G:'#183e30',c:'#22242e',C:'#444a5c',s:'#d8d4c8',n:'#1a1a22',y:'#e0b860',Y:'#9a7430',w:'#ffffff'};
- [['mem1','1','#7fe0e0'],['mem2','2','#c8a0ff'],['mem6','6','#ffd060']].forEach(([id,n,L])=>{ITEM_PNG[id]=spr(G[n],null,Object.assign({},PO,{L})).src})}
+{const G={"1": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksssnsskyLGk.", ".klkssnnsskgYGk.", ".kyksssnsskygGk.", ".klksssnsskggGk.", ".kyksssnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "2": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksnnssskyLGk.", ".klksssnsskgYGk.", ".kykssnssskygGk.", ".klksnsssskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "6": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kykssnnsskyLGk.", ".klksnsssskgYGk.", ".kyksnnnsskygGk.", ".klksnsnsskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "3": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksnnnsskyLGk.", ".klksssnsskgYGk.", ".kykssnnsskygGk.", ".klksssnsskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "5": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksnnnsskyLGk.", ".klksnsssskgYGk.", ".kyksnnnsskygGk.", ".klksssnsskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."]},PO={k:'#07080e',l:'#3f8a66',g:'#24604a',G:'#183e30',c:'#22242e',C:'#444a5c',s:'#d8d4c8',n:'#1a1a22',y:'#e0b860',Y:'#9a7430',w:'#ffffff'};
+ [['mem1','1','#7fe0e0'],['mem2','2','#c8a0ff'],['mem3','3','#7dff9b'],['mem5','5','#ff8a6a'],['mem6','6','#ffd060']].forEach(([id,n,L])=>{ITEM_PNG[id]=spr(G[n],null,Object.assign({},PO,{L})).src})}
 
 const iicon=(id,sc=3)=>{const it=ITEMS[id];if(it.dish&&DISH_PNG[it.tasty||id])return`<img class="pix${it.tasty?' tasty':''}" src="${DISH_PNG[it.tasty||id]}" width="${16*sc}" height="${16*sc}" alt="">`;if(ITEM_PNG[id])return`<img class="pix" src="${ITEM_PNG[id]}" width="${16*sc}" height="${16*sc}" alt="">`;if(it.big){const sp=spr(TPL[it.big],it.t,it.po),boost={c:1,r:1.08,u:1.16,l:1.26}[it.fish]||1,w=Math.round(sc*12*boost),h=Math.round(w*sp.h/sp.w);return`<img class="pix ${it.fish==='l'?'legend':''}" src="${sp.src}" width="${w}" height="${h}" alt="">`}if(it.dish){const v=mix(it.t,'#5d6274',.18);return img(TPL[it.ic],null,sc,'',{a:v,b:mix(v,'#07080e',.45),h:mix(v,'#f4f2ee',.4)})}return img(TPL[it.ic],it.t,sc)};
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400)}
@@ -2983,7 +2991,7 @@ function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const a
   const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender()}
 function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
-  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}">${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
+  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}" class="${tabGate(t.id)?'tablock':''}" ${tabGate(t.id)?`title="${tabGate(t.id).n} 수리 후 열림"`:''}>${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${tabGate(t.id)?'<span class="tlk">🔒</span>':''}${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
 }
 function head(id=tab){const t=TABS.find(x=>x.id===id);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${id==='social'?(socTab==='chat'?'로비':''):t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
@@ -3886,6 +3894,24 @@ function endDraw(){if(!endOn()){['endBg','endFg'].forEach(i=>{const c=document.g
     const open=frac>(i+1)/(END_EYES.length+1)?((Math.sin(t*.9+i*2.1)>.97)?.2:1):0;endEye(y,X/EPX,Y/EPX,3.2*s[3],open,lk,hurt,t)})}
 setInterval(()=>{if(endOn()||document.getElementById('endBg'))endDraw()},125);
 addEventListener('pointermove',e=>{endMx=e.clientX;endMy=e.clientY},{passive:true});
+/* 통신 장치 repaired: the signal reaches something. For every crew member, once, the sky splits and the great eye 「오르비스」 looks down
+   on the base camp — everyone who meets its gaze collapses (the usual faint: rescue by a crewmate, or wake after the timer) */
+let orbisBusy=false;
+function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||P.orbis||!$('#joinModal').hidden)return;const q=SHIP.find(x=>x.id==='comm');if(!q||!shipDone(q))return;orbisBusy=true;orbisPlay()}
+function orbisPlay(){const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스 등장');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
+  const LINES=['통신 장치에 불이 들어왔다. 첫 신호가 하늘 너머로 뻗어 나간다…','…그리고 무언가가 대답했다.','하늘이 갈라지고, 거대한 눈 「오르비스」가 베이스캠프를 내려다본다.','그 시선을 마주친 순간, 선원들이 하나둘 쓰러졌다.'];
+  const t0=performance.now();let li=-1;try{sfxStatic()}catch(e){}
+  const draw=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000,W=Math.ceil(innerWidth/EPX),H=Math.ceil(innerHeight/EPX);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+    const x=cv.getContext('2d');x.fillStyle='#05030a';x.fillRect(0,0,W,H);
+    // a crack of light opening across the sky, then the eye behind it
+    const open=Math.max(0,Math.min(1,(t-2.2)/1.6)),cx=W/2,cy=H*.38,r=Math.min(W*.09,H*.16);
+    if(t>1){const crack=Math.min(1,(t-1)/1.2);for(let i=-W*.4*crack;i<=W*.4*crack;i++){const y=cy+Math.round(Math.sin(i*.31)*1.5);x.fillStyle=Math.abs(i)%7<2?'#ffd0e0':'#c88aff';x.fillRect(cx+i,y,1,1)}}
+    if(open>0)endEye(x,cx,cy,r,open,[Math.sin(t*.8)*.3,.3],t>5.2&&Math.floor(t*6)%2===0,t);
+    const k=Math.min(LINES.length-1,Math.floor(t/2.2));if(k!==li){li=k;tx.textContent=LINES[k];if(k===2){try{sfxStatic()}catch(e){}}if(k===3)M.classList.add('red')}
+    if(t<9.5)requestAnimationFrame(draw);else orbisEnd(M)};
+  requestAnimationFrame(draw)}
+function orbisEnd(M){M.remove();orbisBusy=false;P.orbis=1;if(!isFaint()){P.hp=0;checkFaint()}log('「오르비스」의 시선에 쓰러졌다. 이제 탐사 탭이 열린다.','bad');toast('「오르비스」의 시선에 쓰러졌습니다. 동료가 구조하거나 시간이 지나면 깨어납니다.');commit()}
+setInterval(orbisCheck,3000);
 function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYES.length)],[X,Y]=endSpotXY(s),n=document.createElement('span');
   n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(X+(Math.random()*30-15))+'px';n.style.top=(Y-10)+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),900);endHitT=performance.now()}
 // the fight controls float above the boss at the bottom of the screen, on every tab
@@ -4611,10 +4637,10 @@ function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArri
 const SHIP=[
  {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',2000],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',1000],['pot',500],['mistLotus',200]]},
  {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['glowStal',370],['echoQuartz',130],['crystal',2000],['mazeCore',120],['berry',400],['crystalBean',240]]},
- {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',2120],['craterIron',150],['rustBolt',110],['sandSlate',110],['bogResin',140],['carrot',400],['dustPot',300]]},
+ {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',760],['oldBoard',120],['iceShell',300],['marshFossil',200],['starHeart',200],['melon',240],['frostBerry',240]]},
  {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',230],['crystal',2000],['volcAsh',120],['dark',440],['wreckNozzle',160],['corn',400],['canyonPepper',240]]},
  {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',190],['brokenLens',150],['impactGlass',250],['abyssPrism',180],['pump',300],['frozenTomato',240]]},
- {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',760],['oldBoard',120],['iceShell',300],['marshFossil',200],['starHeart',200],['melon',240],['frostBerry',240]]},
+ {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',2120],['craterIron',150],['rustBolt',110],['sandSlate',110],['bogResin',140],['carrot',400],['dustPot',300]]},
 ];
 let SHIPDON=[],shipSel=null;
 /* repair totals live in one shared record (boss/ship: p = part → material → count, u = member → {n, nick}) kept with counters,
@@ -4645,15 +4671,15 @@ function shipFuelMark(){if(!SHIPT||!SHIPT.v||SHIPT.fuel||shipFuelMark.busy)retur
 const shipDone=pt=>shipPct(pt)>=1;
 /* 기억모듈: one of each exists in the whole game. Once the ship has 2 / 4 / 6 parts repaired, 6호 / 2호 / 1호 can turn up in 조사 (5% a search);
    the first crew member to find one claims it on the server, and after that it never drops again for anyone */
-const MEMS=[['mem6',2],['mem2',4],['mem1',6]],memRef=()=>db.doc('boss/memmods');let MEMC={},memBusy=false;
+const MEMS=[['mem5','engine'],['mem3','nav'],['mem1','hull']],MEM_ALL=['mem1','mem2','mem3','mem5','mem6'],memOpen=pid=>{const q=SHIP.find(x=>x.id===pid);return!!q&&shipDone(q)},memRef=()=>db.doc('boss/memmods');let MEMC={},memBusy=false;
 function memSub(){memRef().onSnapshot(sn=>{MEMC=sn.exists?sn.data():{};if(adminShown&&adminShown())adminRefresh()},()=>{})}
-function memTry(){if(mode!=='online'||memBusy)return;const done=SHIP.filter(shipDone).length,pool=MEMS.filter(([id,st])=>done>=st&&!MEMC[id]&&!(P.inv[id]>0));if(!pool.length||Math.random()>=.05)return;
+function memTry(){if(mode!=='online'||memBusy)return;const pool=MEMS.filter(([id,pid])=>memOpen(pid)&&!MEMC[id]&&!(P.inv[id]>0));if(!pool.length||Math.random()>=.05)return;
   const id=pool[0][0];memBusy=true;bossTx(memRef(),cur=>{cur=cur||{};if(cur[id])return null;cur[id]={uid,nick:P.nick,at:Date.now()};return cur}).then(nx=>{memBusy=false;if(!nx)return;
     add(id,1);log(`조사 중 이 세계에 단 하나뿐인 「${ITEMS[id].n}」를 찾았다!`,'rare');toast(`「${ITEMS[id].n}」 발견! 이 세계에 단 하나뿐인 귀중품입니다.`);sfxFanfare(true);
     sys(`[공지] ${P.nick} 님이 조사 중 「${ITEMS[id].n}」를 찾았습니다. 이 세계에 단 하나뿐인 기억모듈입니다.`);commit()}).catch(()=>{memBusy=false})}
-function memAdminHTML(){if(mode!=='online')return'';const done=SHIP.filter(shipDone).length;
-  return`<div class="info-sec" data-adm="boss"><span class="lbl">Memory · 기억모듈</span><span class="hint">우주선 수리 2단계를 마치면 6호, 4단계면 2호, 6단계면 1호가 조사에서 5% 확률로 나옵니다. 각각 게임 전체에 단 하나뿐입니다. (지금 수리 ${done}/6단계)</span>
-   <div class="memadm">${MEMS.map(([id,st])=>{const c=MEMC[id];return`<div>${iicon(id,2)}<b>${ITEMS[id].n}</b><span class="hint">${c?`${esc(c.nick||'선원')} · ${new Date(c.at||0).toLocaleDateString()}`:done>=st?'아직 아무도 찾지 못함':`수리 ${st}단계부터`}</span></div>`}).join('')}</div>
+function memAdminHTML(){if(mode!=='online')return'';const done=SHIP.filter(shipDone).length,pn=pid=>(SHIP.find(x=>x.id===pid)||{}).n||pid;
+  return`<div class="info-sec" data-adm="boss"><span class="lbl">Memory · 기억모듈</span><span class="hint">주 엔진을 고치면 5호, 항법 장치를 고치면 3호, 선체 외벽을 고치면 1호가 조사에서 5% 확률로 나옵니다. 각각 게임 전체에 단 하나뿐입니다. (지금 수리 ${done}/6단계)</span>
+   <div class="memadm">${MEMS.map(([id,pid])=>{const c=MEMC[id];return`<div>${iicon(id,2)}<b>${ITEMS[id].n}</b><span class="hint">${c?`${esc(c.nick||'선원')} · ${new Date(c.at||0).toLocaleDateString()}`:memOpen(pid)?'아직 아무도 찾지 못함':`${pn(pid)} 수리 후`}</span></div>`}).join('')}</div>
    <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="memreset" ${Object.keys(MEMC).length?'':'disabled'}>발견 기록 초기화 (시험용)</button><span class="hint">이미 가진 선원의 모듈은 사라지지 않습니다.</span></div></div>`}
 const shipOpen=pt=>SHIP.slice(0,SHIP.indexOf(pt)).every(shipDone);
 const shipAll=()=>SHIP.reduce((a,pt)=>a+shipPct(pt),0)/SHIP.length;
@@ -4665,6 +4691,9 @@ const rescuedRef=()=>db.doc('boss/rescued');let RESCUED={};
 const isStaff=()=>isAdmin||STAFF.includes(uid);
 const roomLife=()=>SHIP.find(x=>x.id==='life');
 const roomOpen=()=>mode==='online'&&shipDone(roomLife());
+// tabs that open as the ship comes back to life: 의뢰 with the 동력로, 탐사 with the 통신 장치 (staff can always look in)
+const TAB_GATE={req:'power',adv:'comm'};
+const tabGate=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online'||isStaff())return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
 // boss/staff.roomLink (admin switch): while linked, 마이룸 stays locked until the life-support section is repaired; unlinked, it is open to everyone
 let ROOM_LINK=true;
 const canRoom=()=>!ROOM_LINK||roomOpen()||isStaff();
@@ -5363,13 +5392,21 @@ function shipSceneDraw(cv,t){
   if(st.power){for(let x=B.FX-56;x<=B.FX+56;x++)px(x,B.FY+12+Math.round(Math.sin((x-B.FX)/14)*1.2),'#1a1c24');
     for(let i=0;i<9;i++){const x=B.FX-52+i*13,y=B.FY+13+Math.round(Math.sin((x-B.FX)/14)*1.2);if(((t/380+i)|0)%9===0)continue;const c=i%2?'#ffd65f':'#ffe9a8';g.fillStyle='rgba(255,214,95,.18)';g.fillRect(x-2,y-2,6,6);px(x,y,c);px(x+1,y,c);px(x,y+1,c);px(x+1,y+1,c)}}
   // 항법 장치: blinking wingtip lights, red to port, green to starboard
-  if(st.nav&&st.hull){B.run.forEach(([x,y],i)=>{if(((t/220)|0)%B.run.length===i)px(x,y,'#ffffff');else px(x,y,'#6fe8ff')});
+  if(st.nav){B.run.forEach(([x,y],i)=>{if(((t/220)|0)%B.run.length===i)px(x,y,'#ffffff');else px(x,y,'#6fe8ff')});
     const on=(t/600|0)%2===0;for(const [[x,y],c] of [[B.tipL,'#ff5f6a'],[B.tipR,'#7dff9b']]){g.fillStyle=on?(c==='#ff5f6a'?'rgba(255,95,106,.35)':'rgba(125,255,155,.35)'):'rgba(0,0,0,0)';g.fillRect(x-2,y-2,5,5);if(on){px(x,y,c);px(x+1,y,c);px(x,y+1,c);px(x+1,y+1,c)}}}
   // antenna beacon
-  if(st.comm){const [nx,ny]=B.nose,mx=nx+1,top=ny-9;for(let j=0;j<8;j++)px(mx,ny-1-j,'#9aa0b4');
-    for(let i=-3;i<=3;i++)px(mx+i,top+Math.round(Math.abs(i)*.6),i===0?'#c4c7d4':'#8a8ea6');px(mx,top-1,'#5d6274');
-    if((t/500|0)%2===0){px(mx,top-2,'#ff5f6a');px(mx+1,top-2,'#ff5f6a')}
-    const w=(t%1800)/1800;for(let a=-6;a<=6;a++){const r=4+w*14,x=mx+Math.round(Math.sin(a/6*1.1)*r),y=top-2-Math.round(Math.cos(a/6*1.1)*r*.6);if(y>0)px(x,y,`rgba(127,232,255,${(1-w)*.9})`)}}
+  if(st.comm){const [nx,ny]=B.nose,mx=nx+1,top=ny-14;
+    // lattice mast with cross-braces
+    for(let j=0;j<13;j++){px(mx,ny-1-j,'#9aa0b4');if(j%3===1){px(mx-1,ny-1-j,'#5d6274');px(mx+1,ny-1-j,'#5d6274')}}
+    // tilted dish (a pixel parabola facing up-left), its rim lit, a feed arm and horn in front
+    const dish=[[-5,-2],[-4,0],[-3,1],[-2,2],[-1,2],[0,2],[1,2],[2,1],[3,0],[4,-1]];
+    dish.forEach(([dx,dy],i)=>{px(mx+dx,top+dy,i<3||i>7?'#c4c7d4':'#8a8ea6');px(mx+dx,top+dy+1,'#3a3e4c')});
+    for(let k=-3;k<=3;k++)px(mx+k,top+1,'#5d6274');
+    px(mx-1,top-1,'#9aa0b4');px(mx-2,top-2,'#9aa0b4');px(mx-3,top-3,'#c4c7d4');px(mx-4,top-3,'#c4c7d4');
+    // beacon on the mast top: red/white blink
+    const bl=(t/500|0)%2===0;px(mx,top+3,bl?'#ff5f6a':'#5d1a20');if(bl){g.fillStyle='rgba(255,95,106,.3)';g.fillRect(mx-1,top+2,3,3)}
+    // signal rings rolling out from the horn
+    for(let k=0;k<2;k++){const w=((t+k*900)%1800)/1800;for(let a2=-7;a2<=7;a2++){const r=3+w*18,x=mx-3+Math.round(Math.sin(a2/7*1.2-.5)*r),y=top-4-Math.round(Math.cos(a2/7*1.2-.5)*r*.6);if(y>0)px(x,y,`rgba(127,232,255,${(1-w)*.9})`)}}}
   // powered consoles and panels hum with a soft glow
   if(B.glow.length){const a=.1+(Math.sin(t/650)+1)*.07;g.fillStyle=`rgba(120,240,255,${a})`;B.glow.forEach(([x,y],i)=>{if(i%3===0)g.fillRect(x-1,y-1,3,3)})}
   // the blue pool under the exhaust flickers with the flame
@@ -6493,7 +6530,7 @@ document.addEventListener('pointerdown',e=>{const m=document.getElementById('lgM
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('lgMenu')){e.stopPropagation();lgClose()}},true);
 addEventListener('resize',lgClose);
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}if(t.dataset.tab==='req')brokerSeen=false;podArm=null;meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')sellCart={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}{const gq=tabGate(t.dataset.tab);if(gq){toast(`우주선의 ${gq.n}${jo(gq.n,"을","를")} 고치면 열립니다.`);return}}if(t.dataset.tab==='req')brokerSeen=false;podArm=null;meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')sellCart={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset,e)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
@@ -6777,7 +6814,7 @@ function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).fi
     aff=`<div class="pside-big" style="color:${affColor(avg)}">${v.length?avg:'—'}<small>${v.length?affLabel(avg):''}</small></div><div class="bar"><i style="--c:${affColor(avg)};width:${Math.min(100,Math.abs(avg))}%"></i></div><span class="hint">나를 아는 선원 ${v.length}명의 평균 · 선원에게는 그 선원의 호감도가 보입니다</span>`}
   else{const af=affOf(P,id);aff=`<div class="pside-big" style="color:${affColor(af)}">${af}<small>${affLabel(af)}</small></div><div class="bar"><i style="--c:${affColor(af)};width:${Math.min(100,Math.abs(af))}%"></i></div><span class="hint">내가 ${esc(p.nick||'선원')} 님을 생각하는 마음</span>`}
   const C=(cls,ic,t,b)=>`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${b}</section>`;
-  return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-suwi','◐','수위 여부',suwiHTML(p,mine))}${MEMS.some(([id])=>(p.inv||{})[id]>0)?C('ps-mem','◆','귀중품',`<div class="jpicked">${MEMS.filter(([id])=>(p.inv||{})[id]>0).map(([id])=>`<span class="ichip memchip" style="color:${ITEMS[id].t}">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</div>`):''}${C('ps-aff','♡','호감도',aff)}</div>`}
+  return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-suwi','◐','수위 여부',suwiHTML(p,mine))}${MEM_ALL.some(id=>(p.inv||{})[id]>0)?C('ps-mem','◆','귀중품',`<div class="jpicked">${MEM_ALL.filter(id=>(p.inv||{})[id]>0).map(id=>`<span class="ichip memchip" style="color:${ITEMS[id].t}">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</div>`):''}${C('ps-aff','♡','호감도',aff)}</div>`}
 // free-text profile notes under the ID card (written on my own 내 프로필 tab, shown to everyone)
 const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐',2000],['feat','특징','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 늘 공구를 들고 다님',2000],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120,noteMax=k=>(PNOTE.find(x=>x[0]===k)||[])[5]||PNOTE_MAX;let noteEdit=null;
 /* affection notes: five short notes (200자) that open one by one as that member's 호감도 toward the viewer reaches 20·40·60·80·100 */
@@ -6984,6 +7021,7 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
   if(J&&!J.job){toast('직업을 골라 주십시오.');jGo(3);return}
   if(P.joined&&P.nick!=='새 선원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isAdmin)P.owner=1;
+  {const q=SHIP.find(x=>x.id==='comm');if(q&&mode==='online'&&shipDone(q))P.orbis=1}
   $('#joinModal').hidden=true;log(`선원 「${v}」${jo(v,'이','가')} 승선했다.`,'rare');sys(`새 선원 ${v} 님이 베이스캠프에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
 
 /* ───────── bgm ───────── */
