@@ -2761,7 +2761,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
   // and its wipe would stop halfway, so this window only stops saving and reloads once the wipe has had time to finish
   if(isAdmin){seasonLock=true;clearTimeout(saveT);dirty=false;toast('다른 창에서 테스트 기록을 초기화하고 있습니다. 이 창은 잠시 뒤 새로고침됩니다.');setTimeout(()=>location.reload(),45000);return}
   // a brand-new character made before the season number reached me: just take the number
-  if(first&&!seasonFromDoc){P.season=n;save();return}
+  if(first&&!seasonFromDoc){P.season=n;if(P.nick!=='새 선원')save();return}
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
   seasonQuit()},()=>{})}
 const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss'];
@@ -2856,7 +2856,8 @@ const TAB_ID=Math.random().toString(36).slice(2,10);let tabStale=false;
 function tabCheck(v){if(!v||tabStale||!v.tab||v.tab===TAB_ID)return;const sv=+v.sv||0,mine=+(P&&P.sv)||0;if(sv>mine||(sv===mine&&v.tab>TAB_ID))tabGoStale()}
 function tabGoStale(){tabStale=true;clearTimeout(saveT);dirty=false;let M=$('#staleBox');if(M)return;M=document.createElement('div');M.id='staleBox';M.className='modal';M.style.zIndex=90;
   M.innerHTML=`<div class="px infobox" role="alertdialog" aria-label="다른 창에서 접속함" style="max-width:380px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center"><span class="lbl">Session · 접속</span><h2 style="margin:0;font-size:20px">다른 창에서 접속했습니다</h2><p class="hint" style="margin:0">같은 캐릭터가 다른 창이나 기기에서 열렸습니다. 기록이 덮어써지지 않도록 이 창은 저장을 멈췄습니다. 이 창에서 하는 일은 저장되지 않습니다.</p><button class="btn" type="button" onclick="location.reload()">새로고침해서 이어하기</button></div>`;document.body.appendChild(M)}
-function save(){if(seasonLock||tabStale)return;
+function save(){if(seasonLock||tabStale)return;if(mode==='online'&&P&&P.nick==='새 선원')return;   // not registered yet: nothing to keep
+
   if(mode==='solo'){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}return}
   if(mode!=='online')return;dirty=true;clearTimeout(saveT);saveT=setTimeout(flush,SAVE_MS);
 }
@@ -3930,10 +3931,13 @@ const EA={
  async endstart(){if(!isAdmin||mode!=='online')return;const hp=Math.max(100,Math.min(1e9,+(($('#admEndHp')||{}).value)||200000));
   const e={on:true,done:false,gen:Date.now(),startAt:Date.now(),by:P.nick,max:hp,hp,dmg:{},hits:0};
   try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'siren');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
+ async rankreset(){if(!isAdmin||mode!=='online')return;try{await bossTx(shipTRef(),cur=>cur?Object.assign({},cur,{v:1,u:{}}):{v:1,p:{},u:{},at:Date.now()});toast('기여도 랭킹을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async memreset(){if(!isAdmin||mode!=='online')return;try{await memRef().delete();toast('기억모듈 발견 기록을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async endreset(){if(!isAdmin||mode!=='online')return;try{await endRef().delete();toast('최종 레이드를 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
 };
-function endAdminHTML(){if(mode!=='online')return'';return endAdminHTML0()+memAdminHTML()}
+function endAdminHTML(){if(mode!=='online')return'';return endAdminHTML0()+memAdminHTML()+rankAdminHTML()}
+function rankAdminHTML(){const n=Object.keys(shipTotals().u||{}).length;return`<div class="info-sec" data-adm="boss"><span class="lbl">Ranking · 랭킹 초기화</span><span class="hint">기여도 랭킹(우주선 수리에 넣은 재료 수)을 0부터 다시 셉니다. 수리 진행률은 그대로 둡니다. 레벨·생활레벨 랭킹은 선원의 실제 레벨이라 따로 지울 것이 없습니다. 랭킹에는 LV.${RANK_MIN_LV} 이상 선원만 오릅니다.</span>
+   <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="rankreset" ${n?'':'disabled'}>기여도 랭킹 초기화</button><span class="hint">지금 기여 기록 ${n}명</span></div></div>`}
 function endAdminHTML0(){const e=END;
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
    <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 엔딩 칭호 「가이아의 마지막 수호자」가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
@@ -6656,7 +6660,9 @@ function relMapHTML(cid,compact,tall){const C=whoP(cid);if(!cid||!C)return'';con
 `}
 /* rankings: level, life level (sum of the four) and ship-repair contribution */
 const RANKS=[['lv','레벨 랭킹','var(--rk-lv)'],['life','생활레벨 랭킹','var(--rk-life)'],['don','기여도 랭킹','var(--rk-don)']];
-function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick);let rows;
+// only crew at LV.10 and above take part in the rankings
+const RANK_MIN_LV=10;
+function rankRows(k){const all=orgAll().filter(([,p])=>p&&p.nick&&(+p.lvl||1)>=RANK_MIN_LV);let rows;
   if(k==='lv')rows=all.map(([id,p])=>[id,p,(p.lvl||1)*1e9+(p.xp||0),`LV.${p.lvl||1}`]);
   else if(k==='life')rows=all.map(([id,p])=>{const lx=lxOf(p),s=LIFE.reduce((a,[q])=>a+lifeLv(lx[q]),0),x=LIFE.reduce((a,[q])=>a+(lx[q]||0),0);return[id,p,s*1e9+x,`생활 LV.${s}`]});
   else if(k==='don'){const u=shipTotals().u,m={};for(const id in u)m[id]=+u[id].n||0;rows=all.filter(([id])=>m[id]>0).map(([id,p])=>[id,p,m[id],`재료 ${m[id].toLocaleString()}개`])}
@@ -6681,16 +6687,16 @@ function rankCard([k,n,c]){const rows=rankRows(k),top=rows[0],mi=rows.findIndex(
   const nm=(id,p)=>`<button class="namebtn" data-act="profopen" data-k="${esc(id)}">${esc(p.nick||'선원')}${id===uid?' (나)':''}</button>`;
   return`<div class="rkcard" style="--c:${c}"><i class="rkrv a"></i><i class="rkrv b"></i><div class="rkbn"><span class="rkic">${img(RK_IC[k],null,2,'',RK_IPO[k])}</span><b>${n}</b></div>${top?`<div class="rktop"><div class="rkport" style="background-image:url(${SPACE_PNG[k]})"><i class="rkspace"></i><i class="rkmeteor"></i><img class="pix keepc rkthrone" src="${THRONE_PNG[k]}" alt="" aria-hidden="true"><span class="rkchar">${meImg(4,top[1])}</span><i class="rksp s1"></i><i class="rksp s2"></i><i class="rksp s3"></i><i class="rksp s4"></i><i class="rksp s5"></i></div><div class="rkhead"><span class="rk1"><em>1ST</em>랭킹 1위</span>${nm(top[0],top[1])}<span class="rkv">${top[3]}</span></div></div>
    ${rows.length>1?`<ol class="rklist">${rows.slice(1,10).map(([id,p,,v],i)=>`<li class="${id===uid?'me':''}"><span class="no">${i<2?`<span class="rkmd">${img(RK_MEDAL,null,1.5,'',RK_MPO[i+2])}</span>`:''}${i+2}위</span><span class="rkface">${headImg(2,p)}</span>${nm(id,p)}<b>${v}</b></li>`).join('')}</ol>`:''}
-   ${mi>=10?`<div class="rkmine">내 순위 <b>${mi+1}위</b> · ${rows[mi][3]}</div>`:''}`:'<p class="hint">아직 순위에 오른 선원이 없습니다.</p>'}</div>`}
+   ${mi>=10?`<div class="rkmine">내 순위 <b>${mi+1}위</b> · ${rows[mi][3]}</div>`:''}`:`<p class="hint">아직 순위에 오른 선원이 없습니다. LV.${RANK_MIN_LV} 이상부터 오릅니다.</p>`}</div>`}
 
-function socRank(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">개척단 랭킹</b><span class="hint">이름을 누르면 프로필이 열립니다</span></div><div class="rkgrid">${RANKS.map(rankCard).join('')}</div>`}
+function socRank(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">개척단 랭킹</b><span class="hint">LV.${RANK_MIN_LV} 이상 선원만 오릅니다 · 이름을 누르면 프로필이 열립니다</span></div><div class="rkgrid">${RANKS.map(rankCard).join('')}</div>`}
 function socRel(){return`<div class="row" style="justify-content:space-between"><b class="dfloor">나를 중심으로 본 관계도</b><span class="hint">선원을 누르면 그 선원의 프로필이 열립니다</span></div>${relMapHTML(uid,false,true)}${relTiersHTML()}`}
 // one card per relationship tier, with how many crew I currently feel that way about
 function relTiersHTML(){const mine=orgAll().filter(([id])=>id!==uid).map(([id])=>affTier(affOf(P,id)));
   return`<div class="reltiers">${AFF_TIERS.map(([m,n,d],i)=>{const hi=i?AFF_TIERS[i-1][0]-1:100,c=mine.filter(t=>t===i).length;return`<div class="reltier ${c?'mine':''}" style="--c:var(--rel${AFF_TIERS.length-1-i})"><b>${n}</b><span class="rng">♥ ${m>0?`${m} ~ ${hi}`:`${hi} ~ ${m}`}</span><span class="hint">${d}</span>${c?`<span class="cnt">내가 이렇게 느끼는 선원 ${c}명</span>`:''}</div>`}).join('')}</div>`}
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:13px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:13px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
 const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
-function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m)}
+function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m).filter(([,p])=>p&&p.nick!=='새 선원')}
 const rolesNow=()=>mode==='online'?ROLES:(P.roles||{});
 function roleOf(id){const r=rolesNow();const k=POSTS3.find(([k])=>r[k]===id);return k?k[1]:null}
 function orgRole(id){if(isHead(id,whoP(id)))return'선장';return roleOf(id)||'선원'}
