@@ -6188,18 +6188,26 @@ const A={
  admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
  async seasonreset(){if(!isAdmin||mode!=='online'||seasonBusy)return;const t=($('#seasonTxt')||{}).value||'';if(t.trim()!=='초기화'){toast('확인 칸에 초기화 라고 적어 주십시오.');return}
   seasonBusy=true;renderAdminAll();const next=(SEASON||0)+1;
-  try{await bossTx(seasonRef(),()=>({n:next,at:Date.now(),by:uid}))}catch(e){seasonBusy=false;toast('초기화를 시작하지 못했습니다.');renderAdminAll();return}
-  toast('선원들의 화면을 정리하는 중입니다… (약 8초)');await seasonCleanMine();await new Promise(r=>setTimeout(r,8000));
+  // every step has a time limit, so one slow request can never leave the wipe stuck halfway; a progress box shows what is going on
+  const lim=(p,ms)=>Promise.race([p,new Promise(r=>setTimeout(()=>r('timeout'),ms))]);
+  let box=$('#wipeBox');if(!box){box=document.createElement('div');box.id='wipeBox';box.className='modal';box.style.zIndex=95;document.body.appendChild(box)}box.hidden=false;
+  const lines=[];const show=(m)=>{lines.push(m);box.innerHTML=`<div class="px infobox" role="alertdialog" aria-label="테스트 기록 초기화" style="max-width:420px;display:flex;flex-direction:column;gap:8px"><span class="lbl">Season · 테스트 기록 초기화</span><b>초기화하는 중입니다. 이 창을 닫지 마십시오.</b><div class="hint" style="max-height:260px;overflow:auto;font-size:12px;line-height:1.6">${lines.map(esc).join('<br>')}</div></div>`};
+  show('초기화를 알리는 중…');
+  try{await bossTx(seasonRef(),()=>({n:next,at:Date.now(),by:uid}))}catch(e){seasonBusy=false;box.hidden=true;toast('초기화를 시작하지 못했습니다.');renderAdminAll();return}
+  show('선원들의 화면을 정리하는 중… (약 8초)');await lim(seasonCleanMine(),8000);await new Promise(r=>setTimeout(r,8000));
   seasonLock=true;let n=0;
-  for(const col of SEASON_WIPE){try{const sn=await db.collection(col).get();const ids=sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid));
-    for(let i=0;i<ids.length;i+=40){await Promise.all(ids.slice(i,i+40).map(id=>db.doc(col+'/'+id).delete().then(()=>n++).catch(()=>{})))}}catch(e){}}
-  // a second pass catches anything a crew member's open window wrote back while the wipe ran (the lounge, ship totals…)
-  await new Promise(r=>setTimeout(r,3000));const left=[];
-  for(const col of SEASON_WIPE){try{const sn=await db.collection(col).get();const ids=sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid));
-    await Promise.all(ids.map(id=>db.doc(col+'/'+id).delete().then(()=>n++).catch(()=>left.push(col+'/'+id))))}catch(e){left.push(col+' (읽기 실패)')}}
-  try{await db.doc('members/'+uid).delete()}catch(e){}
-  if(left.length){console.warn('초기화 후 남은 기록',left);toast(`초기화를 마쳤지만 ${left.length}건은 지우지 못했습니다: ${left.slice(0,4).join(', ')}${left.length>4?' …':''}`);setTimeout(()=>location.reload(),8000);return}
-  toast(`초기화를 마쳤습니다. 기록 ${n}건을 지웠습니다. 새로 시작합니다.`);setTimeout(()=>location.reload(),2500)},
+  const wipe=async col=>{let sn;try{sn=await lim(db.collection(col).get(),15000)}catch(e){return -1}if(!sn||sn==='timeout')return -1;
+    const ids=sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid));
+    for(let i=0;i<ids.length;i+=40)await lim(Promise.all(ids.slice(i,i+40).map(id=>db.doc(col+'/'+id).delete().then(()=>n++).catch(()=>{}))),20000);return ids.length};
+  for(const col of SEASON_WIPE){const k=await wipe(col);show(`${col}: ${k<0?'읽지 못함':k+'건 삭제'}`)}
+  // a second pass catches anything an open window wrote back while the wipe ran (the lounge, ship totals, the farm…)
+  show('다시 한 번 확인하는 중…');await new Promise(r=>setTimeout(r,3000));const left=[];
+  for(const col of SEASON_WIPE){const k=await wipe(col);if(k!==0)left.push(`${col} ${k<0?'(읽기 실패)':k+'건'}`)}
+  const left2=[];for(const col of SEASON_WIPE){try{const sn=await lim(db.collection(col).get(),15000);const ids=sn&&sn!=='timeout'?sn.docs.map(d=>d.id).filter(id=>!(col==='boss'&&id==='season')&&!(col==='members'&&id===uid)):['?'];if(ids.length)left2.push(col+'/'+ids.slice(0,3).join(','))}catch(e){left2.push(col+' (읽기 실패)')}}
+  // last: my own crew record, so I sign up again with a 군번 like everyone else
+  try{await lim(db.doc('members/'+uid).delete(),10000)}catch(e){}
+  if(left2.length){show(`⚠ 지우지 못한 기록: ${left2.join(' · ')}`);show('잠시 뒤 새로고침합니다. 다시 초기화를 눌러 주십시오.');console.warn('초기화 후 남은 기록',left2);setTimeout(()=>location.reload(),12000);return}
+  show(`완료! 기록 ${n}건을 지웠습니다. 운영자도 운영자 군번을 발급받아 다시 합류합니다.`);setTimeout(()=>location.reload(),3500)},
  admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 선원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
  admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
  admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
