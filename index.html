@@ -3000,7 +3000,7 @@ function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const a
   const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender()}
 function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
-  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}" class="${tabGate(t.id)?'tablock':''}" ${tabGate(t.id)?`title="${tabGate(t.id).n} 수리 후 열림"`:''}>${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${tabGate(t.id)?'<span class="tlk">🔒</span>':''}${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN&&!tabGate('adv')?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
+  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}" class="${tabGate(t.id)?'tablock':''}" ${tabGateRaw(t.id)?`title="${tabGateRaw(t.id).n} 수리 후 열림${tabGate(t.id)?'':' · 운영진 미리보기'}"`:''}>${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${tabGateRaw(t.id)?'<span class="tlk">🔒</span>':''}${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN&&!tabGate('adv')?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
 }
 function head(id=tab){const t=TABS.find(x=>x.id===id);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${id==='social'?(socTab==='chat'?'로비':''):t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
@@ -3618,7 +3618,7 @@ function bossDismiss(){return bossTx(bossRef(),cur=>{if(!bossAlive(cur))return n
 function bossExpire(){const b=BOSS;if(!bossAlive(b)||Date.now()<(b.end||Infinity)||bossBusy)return;bossBusy=true;
   bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()<cur.end)return null;cur.failed=true;cur.failedAt=Date.now();return cur}).then(nx=>{if(nx)sys(`[공지] 침략자 ${b.name}이(가) 베이스캠프의 에너지를 빼앗고 사라졌습니다… 토벌 실패. 모든 선원의 체력과 에너지가 1이 되었습니다.`,false,'static')}).catch(()=>{}).finally(()=>{bossBusy=false})}
 function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b.prev&&b.prev.failed?b.prev:null;
-  if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;
+  if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;if(tabGate('adv'))return;   // 탐사 still locked for me: I could not have fought it
   P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
   endSub();memSub();
@@ -4761,7 +4761,8 @@ const roomLife=()=>SHIP.find(x=>x.id==='life');
 const roomOpen=()=>mode==='online'&&shipDone(roomLife());
 // tabs that open as the ship comes back to life: 의뢰 with the 동력로, 탐사 with the 통신 장치 (staff can always look in)
 const TAB_GATE={req:'power',adv:'comm'};
-const tabGate=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online'||isStaff())return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
+const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
+const tabGate=id=>isStaff()?null:tabGateRaw(id);
 // boss/staff.roomLink (admin switch): while linked, 마이룸 stays locked until the life-support section is repaired; unlinked, it is open to everyone
 let ROOM_LINK=true;
 const canRoom=()=>!ROOM_LINK||roomOpen()||isStaff();
