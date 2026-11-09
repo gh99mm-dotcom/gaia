@@ -2785,7 +2785,8 @@ const TITLES=[
  ['gold','황금손','생활 레벨 네 가지 모두 30 · 착용하면 모든 확률 +1%',()=>goldHand()],
 ];
 const st=k=>(P.st&&P.st[k])||0;
-let ttlOpen=false,renaming=false,isAdmin=false,adminTo='';
+// isOwnerAcct: the 운영자 account itself. isAdmin: anyone with admin powers — the 운영자 and the 관리자 it appoints
+let ttlOpen=false,renaming=false,isAdmin=false,isOwnerAcct=false,adminTo='';
 // managers: crew the admin lets into 마이룸 before the life-support section is repaired
 /* ───────── season reset (end of the test period) ─────────
    boss/season {n}: the admin raises n. Every open game notices, stops saving, deletes the records only its owner may delete
@@ -2934,14 +2935,14 @@ async function connect(){
   try{[db,user,room]=await Promise.all([C.use('db'),C.use('user'),C.use('room')])}catch(e){}
   if(!db||!user){goSolo('공용 서버에 연결할 수 없어 혼자 모드로 시작합니다.','공용 서버에 연결하지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주십시오.');return}
   C.use('assets').then(a=>{ASSETS=a||null;if(socOpen)renderPanel()}).catch(()=>{});
-  uid=await user.id();try{isAdmin=await user.isOwner()}catch(e){isAdmin=false}$('#adminBtn').hidden=!isAdmin;
+  uid=await user.id();try{isOwnerAcct=await user.isOwner()}catch(e){isOwnerAcct=false}isAdmin=isOwnerAcct;$('#adminBtn').hidden=!isAdmin;
   tabSub(()=>isStaff(),()=>db.collection('feedback').onSnapshot(fbSnap,()=>{}));
-  if(isAdmin&&window.__fbInvite){db.collection('invites').orderBy('at','desc').onSnapshot(sn=>{INV=sn.docs.map(d=>Object.assign({id:d.id},d.data()));adminRefresh()},()=>{});db.collection('members').onSnapshot(sn=>{MEMB=sn.docs.map(d=>Object.assign({},d.data(),{uid:d.id}));adminRefresh()},()=>{});db.doc('boss/invmemo').onSnapshot(sn=>{INVMEMO=sn.exists?Object.assign({},sn.data()):{};adminRefresh()},()=>{})}
+  window.__invSub=()=>{if(window.__invOn||!window.__fbInvite)return;window.__invOn=1;db.collection('invites').orderBy('at','desc').onSnapshot(sn=>{INV=sn.docs.map(d=>Object.assign({id:d.id},d.data()));adminRefresh()},()=>{});db.collection('members').onSnapshot(sn=>{MEMB=sn.docs.map(d=>Object.assign({},d.data(),{uid:d.id}));adminRefresh()},()=>{});db.doc('boss/invmemo').onSnapshot(sn=>{INVMEMO=sn.exists?Object.assign({},sn.data()):{};adminRefresh()},()=>{})};if(isAdmin)window.__invSub();
   const canW=await user.can('data.write');
   if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
   mode='online';myRef=db.doc('players/'+uid);
   try{const s=await myRef.get();if(s.exists&&!s.data().deleted&&s.data().nick&&(s.data().job||(+s.data().lvl||1)>1)){seasonFromDoc=true;P=Object.assign(newPlayer('선원'),s.data());P.fv=s.data().fv||0;P.exp=P.exp?Object.assign({},P.exp):null;P.st=Object.assign({},P.st);P.lx=Object.assign({},P.lx);P.inv=Object.assign({},P.inv);P.field=(P.field||[]).map(x=>x?Object.assign({},x):null);P.dex=Object.assign({},P.dex)}else showJoin()}catch(e){goSolo('불러오기에 실패해 혼자 모드로 시작합니다.');return}
-  if(isAdmin&&!P.owner){P.owner=1;save()}else if(!isAdmin&&P.owner){delete P.owner;save()}
+  if(isOwnerAcct&&!P.owner){P.owner=1;save()}else if(!isOwnerAcct&&P.owner){delete P.owner;save()}
   // claim the character for this window at once, so any older window still open stops saving
   if(seasonFromDoc&&!P._fresh&&P.nick!=='새 선원'){P.tab=TAB_ID;P.sv=(+P.sv||0)+1;myRef.update({tab:TAB_ID,sv:P.sv}).catch(()=>{})}
   renderNet();renderAll();seasonWatch();seenSync();loadMySn();setTimeout(openingOnce,400);
@@ -3658,7 +3659,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -6566,7 +6567,7 @@ const A={
  admpreopen(){if(!isAdmin||mode!=='online')return;const next=!PREOPEN;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{preopen:next})).then(()=>{toast(next?'오픈 준비 잠금을 켰습니다. 선원들은 PAD만 쓸 수 있습니다.':'잠금을 풀었습니다. 게임이 열렸습니다!');if(!next)sys('[공지] 가이아 개척단이 정식으로 출항했습니다! 이제 모든 화면을 이용할 수 있습니다.',true,'beacon')}).catch(()=>toast('바꾸지 못했습니다.'))},
  preopenpad(){socTab='pad';socDrawer(true)},
  admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 선원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
- admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
+ admstaff(d){if(!isOwnerAcct||mode!=='online'){toast('관리자 임명은 운영자만 할 수 있습니다.');return}const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
  admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
  admgive(){if(!isAdmin)return;const id=admPick,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
@@ -7333,7 +7334,7 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
   if(J&&(J.step||1)<4){if(J.step===3&&!J.job){toast('직업을 골라 주십시오.');return}jGo((J.step||1)+1);return}
   if(J&&!J.job){toast('직업을 골라 주십시오.');jGo(3);return}
   if(P.joined&&P.nick!=='새 선원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
-  if(mode==='online'&&isAdmin)P.owner=1;
+  if(mode==='online'&&isOwnerAcct)P.owner=1;
   {const q=SHIP.find(x=>x.id==='comm');if(q&&mode==='online'&&shipDone(q))P.orbis=2}
   $('#joinModal').hidden=true;log(`선원 「${v}」${jo(v,'이','가')} 승선했다.`,'rare');sys(`새 선원 ${v} 님이 베이스캠프에 도착했습니다. 환영해 주십시오!`);save();renderAll();setPresence();setTimeout(openingOnce,300)});
 
