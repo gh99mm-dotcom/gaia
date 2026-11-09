@@ -7065,7 +7065,7 @@ const isHead=(id,p)=>id===uid?(mode==='online'&&isOwnerAcct):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m).filter(([,p])=>p&&p.nick!=='새 선원')}
 const rolesNow=()=>mode==='online'?ROLES:(P.roles||{});
 function roleOf(id){const r=rolesNow();const k=POSTS3.find(([k])=>r[k]===id);return k?k[1]:null}
-function orgRole(id){if(isHead(id,whoP(id)))return'선장';return roleOf(id)||'선원'}
+function orgRole(id){return roleOf(id)||'선원'}   // the 운영자 is ranked like anyone else: by the post they hold, or 선원
 function orgNode(id,p,big){return`<button class="orgm ${id===uid?'me':''}" data-act="profopen" data-k="${esc(id)}" aria-pressed="${profId===id}" title="${esc(p.nick||'선원')} 프로필 보기"><span class="orgface">${headImg(2,p)}</span><span class="orgnm">${esc(p.nick||'선원')}</span></button>`}
 // the org chart page opened from the crew panel's 조직도 button (profiles still open in the phone)
 const orgPage=()=>{const keep=profId;profId=null;const h=socCrew();profId=keep;return`<div class="stage-head mehead"><button class="qchip" data-act="orgclose">← 돌아가기</button><h2>개척단 조직도</h2><span class="loc">이름을 누르면 프로필이 열립니다</span></div>${h}`};
