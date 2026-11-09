@@ -516,7 +516,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .titles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
 .ttl{display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--deep);border:2px solid var(--ink);padding:5px 8px;cursor:pointer}
 /* title looks: each worn title paints its name; the effect line under each title lists its bonus */
-.ttlfx{font-size:11px;color:var(--cy);opacity:.9}
+.ttlfx{font-size:11px;color:var(--cy);opacity:.9}.ttlnow{font-size:12px;color:var(--cy);margin-top:-3px}
 .tfx{display:inline;white-space:inherit}
 .tf-soil{color:#d0a878}.tf-leaf{color:#9ad88a;text-shadow:0 0 5px #4a9a4a88}.tf-water{color:#86d4f4;text-shadow:0 0 5px #2a8ac088}.tf-dust{color:#c4bba8}.tf-road{color:#dcc48e}
 .tf-coin{color:#ffd65f;text-shadow:0 0 5px #c0901a99}.tf-orbit{color:#a4d4ff;text-shadow:0 0 6px #4a8ad099}.tf-heart{color:#ff9ac4;text-shadow:0 0 6px #d0508a88}.tf-warm{color:#ffb478;text-shadow:0 0 5px #c0602a88}
@@ -2826,7 +2826,7 @@ const TITLES=[
  ['cook100','자취생','요리 100번 만들기',()=>st('cook')>=100],
  ['cook500','주부9단','요리 500번 만들기',()=>st('cook')>=500],
  ['cook1000','GOD MOTHER','요리 1000번 만들기',()=>st('cook')>=1000],
- ['gold','황금손','생활 레벨 네 가지 모두 30',()=>goldHand()],
+ ['gold','황금손','생활 레벨 네 가지 모두 '+LIFE_MAX,()=>goldHand()],
 ];
 const st=k=>(P.st&&P.st[k])||0;
 // isOwnerAcct: the 운영자 account itself. isAdmin: anyone with admin powers — the 운영자 and the 관리자 it appoints
@@ -2921,7 +2921,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
   // my profile as a page: who I am up top, then what I can do (left) and what I carry and have done (right)
   $('#infoBox').innerHTML=`<div class="mehero">
     <div class="meport">${withPet(meImg(6),P,6)}</div>
-    <div class="meid"><span class="lv">${ttlHTML(P.title||'rookie',titleName())}</span>
+    <div class="meid"><span class="lv">${ttlHTML(P.title||'rookie',titleName())}</span><span class="ttlnow">칭호 효과 · ${ttlFxTxt(P.title||'rookie')}</span>
      <h2>${esc(P.nick)}</h2>
      ${mySnHTML()}<span class="hint">LV.${P.lvl} · 직업 ${P.job?esc(JOBS[P.job].n):'없음'}</span>
      ${meter('경험치',P.lvl>=MAX_LV?'MAX':`${(P.xp||0).toLocaleString()} / ${xpN.toLocaleString()}`,xpP,'var(--violet)')}
