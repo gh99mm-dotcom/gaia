@@ -1307,6 +1307,10 @@ body:has(#endHud){padding-bottom:200px}
 .endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:3px 8px;background:var(--deep)}.endrank li.me{color:var(--cyan)}.endrank em{font-style:normal;color:var(--mute)}
 @media (max-width:600px){.endbtns{width:100%}.endbtns .btn{flex:1}}
 .tablock{opacity:.5;filter:grayscale(.7)}
+.strow{display:flex;align-items:stretch;border:1px solid var(--line);margin-top:6px}.strow-t{flex:1;text-align:left;background:transparent;border:0;color:inherit;font:inherit;padding:7px 10px;cursor:pointer}.strow-t:hover{background:rgba(127,208,208,.06)}
+.strow-play{background:transparent;border:0;border-left:1px solid var(--line);color:var(--pink);font:inherit;font-weight:700;padding:7px 14px;cursor:pointer}.strow-play:hover{background:rgba(255,138,184,.1)}
+.sttext{border:1px solid var(--line);border-top:0;padding:12px 14px;max-height:340px;overflow:auto;font-size:13px;line-height:1.75;background:var(--deep)}
+.sttext p{margin:0 0 4px;word-break:keep-all}.sttext .gap{height:10px}.sttext .big{font-weight:700;font-style:italic;font-size:15px}.sttext .ttl{text-align:center;font-weight:700;font-size:16px;letter-spacing:.1em;margin:8px 0}.sttext .say b{color:var(--cyan);font-weight:400;margin-right:4px}
 .preopen{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:40px 20px}.preopen h2{margin:0;font-size:20px}
 /* the lock sits in the top-right corner like the count badges; if a tab shows both (staff preview), the badge steps left */
 .nav button .tlk{position:absolute;top:-7px;right:-6px;font-size:12px;line-height:1;padding:1px 2px;background:var(--panel);border:2px solid var(--ink)}
@@ -2885,7 +2889,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></section></div>
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',{h:`${wNmH()} +${P.wlv}`}],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
-    <section class="mecard"><span class="lbl">Story · 이야기</span>${STORY_LIST.some(([k])=>storyOpen(k))?'':'<span class="hint">아직 공개된 이야기가 없습니다.</span>'}${storyOpen('opening')?'<button class="btn sm ghost" data-act="opreplay">▶ 오프닝 다시 보기</button> ':''}</section>
+    <section class="mecard"><span class="lbl">Story · 이야기</span>${STORY_LIST.some(([k])=>storyOpen(k))?STORY_LIST.filter(([k])=>storyOpen(k)).map(([k,n])=>`<div class="strow${storyTxt===k?' on':''}"><button type="button" class="strow-t" data-act="storytxt" data-k="${k}" aria-expanded="${storyTxt===k}">${storyTxt===k?'▼':'▶'} ${esc(n)}</button><button type="button" class="strow-play" data-act="${k==='opening'?'opreplay':'storyplay'}" data-k="${k}">재생 ▶</button></div>${storyTxt===k?`<div class="sttext">${storyScript(k)}</div>`:''}`).join(''):'<span class="hint">아직 공개된 이야기가 없습니다.</span>'}</section>
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · ${jobLocked()?'한 번 정한 직업은 바꿀 수 없습니다':'아직 직업이 없습니다 · 한 번 정하면 바꿀 수 없습니다'}</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}" ${jobLocked()&&!on?'disabled':''}><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
@@ -4792,6 +4796,12 @@ const TAB_GATE={req:'power',adv:'comm'};
 /* 오픈 준비 (pre-open lock): set by the admin. Until it is lifted every game tab and page is closed to crew; only PAD in 교류 works.
    운영자·관리자 can still look around (the lock badge stays on so they can see what crew see) */
 /* 이야기 공개: each story stays hidden from crew until the admin releases it (staff always see them) */
+// the story section of 내 정보: tap a story's name to read it as text, or 재생 ▶ to watch it
+var storyTxt='';
+function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||''}">${esc(t)}</p>`);
+  if(k==='opening'){OP_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')});add('[조우]','ttl')}
+  const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
+  return out.join('')}
 var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호']];
 const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k];
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
@@ -6484,6 +6494,7 @@ const A={
  suwi(d){if(d.k!=='o'&&d.k!=='x'||P.suwi===d.k)return;P.suwi=d.k;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
+ storytxt(d){if(preLock()||!storyOpen(d.k)){toast('아직 공개되지 않은 이야기입니다.');return}storyTxt=storyTxt===d.k?'':d.k;renderPanel()},
  opreplay(){if(preLock()||!storyOpen('opening')){toast('아직 공개되지 않은 이야기입니다.');return}storyCrawl(()=>playStory('opening'))},
  storyplay(d){if(preLock()||!storyOpen(d.k)){toast('아직 공개되지 않은 이야기입니다.');return}playStory(d.k)},
  admstory(d){if(!isAdmin||mode!=='online'||!STORY_LIST.some(x=>x[0]===d.k))return;const on=!STORY_ON[d.k],nm=STORY_LIST.find(x=>x[0]===d.k)[1];bossTx(staffRef(),cur=>{const c=Object.assign({ids:[]},cur);c.stories=Object.assign({},c.stories,{[d.k]:on});return c}).then(()=>{toast(on?`「${nm}」을(를) 공개했습니다.`:`「${nm}」을(를) 다시 숨겼습니다.`);if(on)sys(`[공지] 새 이야기 「${nm}」이(가) 공개되었습니다. 내 정보 › 이야기에서 볼 수 있습니다.`,true)}).catch(()=>toast('바꾸지 못했습니다.'))},
