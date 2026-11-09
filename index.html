@@ -7061,7 +7061,7 @@ function socRel(){return`<div class="row" style="justify-content:space-between">
 function relTiersHTML(){const mine=orgAll().filter(([id])=>id!==uid).map(([id])=>affTier(affOf(P,id)));
   return`<div class="reltiers">${AFF_TIERS.map(([m,n,d],i)=>{const hi=i?AFF_TIERS[i-1][0]-1:100,c=mine.filter(t=>t===i).length;return`<div class="reltier ${c?'mine':''}" style="--c:var(--rel${AFF_TIERS.length-1-i})"><b>${n}</b><span class="rng">♥ ${m>0?`${m} ~ ${hi}`:`${hi} ~ ${m}`}</span><span class="hint">${d}</span>${c?`<span class="cnt">내가 이렇게 느끼는 선원 ${c}명</span>`:''}</div>`}).join('')}</div>`}
 function tasteHTML(p){const L=(p.likes||[]).filter(id=>ITEMS[id]),H=(p.hates||[]).filter(id=>ITEMS[id]);if(!L.length&&!H.length)return'';const ch=(ids,k)=>ids.map(id=>`<span class="ichip" style="color:${k}">${iicon(id,1)}${esc(ITEMS[id].n)}</span>`).join('');return`<div class="info-sec"><span class="lbl">Taste · 취향</span>${L.length?`<div class="jpicked"><b style="color:var(--pink);font-size:13px">♥ 좋아함</b>${ch(L,'var(--pink)')}</div>`:''}${H.length?`<div class="jpicked"><b style="color:var(--red);font-size:13px">✕ 싫어함</b>${ch(H,'var(--red)')}</div>`:''}</div>`}
-const isHead=(id,p)=>id===uid?(mode==='online'&&isAdmin):!!(p&&p.owner);
+const isHead=(id,p)=>id===uid?(mode==='online'&&isOwnerAcct):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m).filter(([,p])=>p&&p.nick!=='새 선원')}
 const rolesNow=()=>mode==='online'?ROLES:(P.roles||{});
 function roleOf(id){const r=rolesNow();const k=POSTS3.find(([k])=>r[k]===id);return k?k[1]:null}
@@ -7070,17 +7070,17 @@ function orgNode(id,p,big){return`<button class="orgm ${id===uid?'me':''}" data-
 // the org chart page opened from the crew panel's 조직도 button (profiles still open in the phone)
 const orgPage=()=>{const keep=profId;profId=null;const h=socCrew();profId=keep;return`<div class="stage-head mehead"><button class="qchip" data-act="orgclose">← 돌아가기</button><h2>개척단 조직도</h2><span class="loc">이름을 누르면 프로필이 열립니다</span></div>${h}`};
 function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row"><button class="btn sm ghost" data-act="profclose">← 돌아가기</button><span class="hint">선원 프로필</span></div>`+profActsHTML(profId)+ph;profId=null}
-  const all=orgAll(),r=rolesNow(),heads=all.filter(([id,p])=>isHead(id,p)),valid=new Map(all.filter(([id,p])=>!isHead(id,p)));
+  // the 운영자 is shown in the chart like any crew member, under their job
+  const all=orgAll(),r=rolesNow(),valid=new Map(all);
   const officers=POSTS3.map(([k,n])=>[k,n,valid.has(r[k])?r[k]:null]),taken=new Set(officers.map(o=>o[2]).filter(Boolean));
-  const crew=all.filter(([id,p])=>!isHead(id,p)&&!taken.has(id)).sort((a,b)=>(b[1].lvl||1)-(a[1].lvl||1));
+  const crew=all.filter(([id,p])=>!taken.has(id)).sort((a,b)=>(b[1].lvl||1)-(a[1].lvl||1));
   const POST_JOB={purser:'medic',engineer:'mech',navigator:'nav'},jk=p=>OLDJOB[p.job]||p.job||'',byJob=k=>crew.filter(([,p])=>jk(p)===k),loose=crew.filter(([,p])=>!JOBS[jk(p)]);
   const cand=[...valid.entries()].sort((a,b)=>String(a[1].nick||'').localeCompare(String(b[1].nick||'')));
   const sel=(k,cur)=>isAdmin?`<select class="sel orgsel" data-role="${k}" aria-label="${esc(POSTS3.find(x=>x[0]===k)[1])} 임명"><option value="">— 공석 —</option>${cand.map(([id,p])=>`<option value="${esc(id)}" ${cur===id?'selected':''}>${esc(p.nick||'선원')}</option>`).join('')}</select>`:'';
-  return`<p class="lead">가이아 승무원 조직도입니다. 의무장 · 기관장 · 항해장은 선장이 임명합니다. 얼굴을 누르면 프로필을 볼 수 있습니다.</p>
-  <div class="org"><div class="orgroot"><span class="lbl">Captain · 선장</span><div class="orgrow">${heads.length?heads.map(([id,p])=>orgNode(id,p)).join(''):'<span class="orgempty">공석</span>'}</div></div>
-  <div class="orgstem"></div><div class="orgdepts">${officers.map(([k,n,id])=>{const jb=POST_JOB[k],mem=byJob(jb);return`<div class="orgcol"><div class="orgdept officer"><div class="orgdh">${n}</div><div class="orgrow">${id?orgNode(id,valid.get(id)):'<span class="orgempty">공석</span>'}</div>${sel(k,id)}</div><div class="orgstem"></div><div class="orgdept jobbox jb-${jb}"><div class="orgdh">${JOBS[jb].n} <span class="hint">${mem.length}</span></div><div class="orgrow">${mem.length?mem.map(([id,p])=>orgNode(id,p)).join(''):'<span class="hint">아직 없습니다.</span>'}</div></div></div>`}).join('')}</div>
+  return`<p class="lead">가이아 승무원 조직도입니다. 의무장 · 기관장 · 항해장은 운영진이 임명합니다. 얼굴을 누르면 프로필을 볼 수 있습니다.</p>
+  <div class="org"><div class="orgdepts">${officers.map(([k,n,id])=>{const jb=POST_JOB[k],mem=byJob(jb);return`<div class="orgcol"><div class="orgdept officer"><div class="orgdh">${n}</div><div class="orgrow">${id?orgNode(id,valid.get(id)):'<span class="orgempty">공석</span>'}</div>${sel(k,id)}</div><div class="orgstem"></div><div class="orgdept jobbox jb-${jb}"><div class="orgdh">${JOBS[jb].n} <span class="hint">${mem.length}</span></div><div class="orgrow">${mem.length?mem.map(([id,p])=>orgNode(id,p)).join(''):'<span class="hint">아직 없습니다.</span>'}</div></div></div>`}).join('')}</div>
   ${loose.length?`<div class="orgstem"></div><div class="orgdept crewbox"><div class="orgdh">직업 미정 <span class="hint">${loose.length}</span></div><div class="orgrow">${loose.map(([id,p])=>orgNode(id,p)).join('')}</div></div>`:''}</div>
-  ${isAdmin?'<p class="hint">선장(운영자)에게만 임명 메뉴가 보입니다. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 됩니다.</p>':''}${all.length<2?'<p class="hint">아직 다른 선원이 없습니다. 게임 링크를 친구에게 공유해 보십시오.</p>':''}`}
+  ${isAdmin?'<p class="hint">운영자·관리자에게만 임명 메뉴가 보입니다. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 됩니다.</p>':''}${all.length<2?'<p class="hint">아직 다른 선원이 없습니다. 게임 링크를 친구에게 공유해 보십시오.</p>':''}`}
 async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const r=Object.assign({},rolesNow());for(const [kk] of POSTS3)if(id&&r[kk]===id)r[kk]='';r[k]=id||'';
   if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`)}else{P.roles=r;save();renderPanel()}
   toast(id?`${whoP(id).nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠습니다.`)}
