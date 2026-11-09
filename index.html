@@ -1381,9 +1381,9 @@ body:has(#endHud){padding-bottom:200px}
 #opCrawl.titled .ostitle{opacity:1}
 #opCrawl .ost{font-size:clamp(52px,9vw,96px);letter-spacing:.12em;color:#f2f7ff;text-shadow:0 0 18px rgba(126,166,240,.6),4px 4px 0 #0a1530}
 #opCrawl .osc{display:inline-block;width:clamp(10px,1.6vw,18px);height:clamp(50px,8.6vw,92px);background:#f4f4f4;margin-left:.1em;animation:wafblink .9s steps(1) infinite}
-#opCrawl .osskip{position:absolute;z-index:2;right:16px;bottom:16px;font-family:inherit;background:transparent;border:1px solid #444;color:#999;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer}
+#opCrawl .osskip{position:absolute;top:12px;right:14px;z-index:3;font:inherit;font-family:"Galmuri11",var(--f-pix);font-size:12px;color:#aab8e8;background:rgba(11,16,48,.85);border:2px solid #2a3a80;padding:3px 9px;cursor:pointer}
 #opCrawl.shake .oslines{animation:osShake .45s steps(6) 2}
-#opCrawl.out{animation:osOut .7s steps(5) forwards}
+#opCrawl.out{background:#000;pointer-events:none}#opCrawl.out>*{animation:osOut .7s steps(5) forwards}
 @keyframes osShake{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(3px,4px)}}
 @keyframes osOut{to{opacity:0}}
 
@@ -6342,9 +6342,9 @@ const OPB=['#03060f','#0a1530','#16295a','#25458c','#3e6cc4','#7ea6f0','#cfe0ff'
 function opBlueBot(){try{const T=IC.robot,c=document.createElement('canvas');c.width=T[0].length;c.height=T.length;const x=c.getContext('2d');T.forEach((row,y)=>[...row].forEach((ch,xx)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(xx,y,1,1)}}));
   const d=x.getImageData(0,0,c.width,c.height),a=d.data,pal=OPB.map(h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)));for(let i=0;i<a.length;i+=4){if(!a[i+3])continue;const L=(a[i]*.3+a[i+1]*.59+a[i+2]*.11)/255,k=Math.min(7,Math.round(Math.pow(L,.8)*7.4));[a[i],a[i+1],a[i+2]]=pal[k]}x.putImageData(d,0,0);return c}catch(e){return null}}
 function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M.setAttribute('role','dialog');M.setAttribute('aria-label','조우');
-  M.innerHTML='<canvas class="osbg"></canvas><div class="osroll"><div class="oslines"></div></div><div class="ostitle"><span class="ost"></span><i class="osc"></i></div><button type="button" class="osok" hidden>확인 ▶</button><button type="button" class="osskip">건너뛰기 ›</button>';document.body.appendChild(M);
+  M.innerHTML='<canvas class="osbg"></canvas><div class="osroll"><div class="oslines"></div></div><div class="ostitle"><span class="ost"></span><i class="osc"></i></div><button type="button" class="osok" hidden>확인 ▶</button><button type="button" class="osskip">건너뛰기 ▶▶</button>';document.body.appendChild(M);
   const L=M.querySelector('.oslines'),roll=M.querySelector('.osroll'),T=M.querySelector('.ost'),ok=M.querySelector('.osok');let dead=false;
-  const end=()=>{if(dead)return;dead=true;M.classList.add('out');setTimeout(()=>{M.remove();done&&done()},700)};M.querySelector('.osskip').onclick=end;ok.onclick=end;
+  const end=()=>{if(dead)return;dead=true;M.classList.add('out');setTimeout(()=>{if(done){done();setTimeout(()=>M.remove(),900)}else M.remove()},1100)};M.querySelector('.osskip').onclick=end;ok.onclick=end;
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
   // ── the backdrop, hand-built pixel art in one blue palette (12 steps, ordered dithering): a soft nebula, stars thickening toward the
   //    ground, a banded ringed planet with a lit rim, three layers of cratered hills, detailed scrap (girders, hull plates, pipes, a broken
