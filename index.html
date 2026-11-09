@@ -3225,7 +3225,7 @@ function suitPop(lv){const u=SUITS[lv];if(!u)return;const d=document.createEleme
 /* 우주복 works like the main weapon: one suit, upgraded +0 → +20 at the workbench. Each level has its own name; defence and the
    energy bonus grow with it (+5 ≈ the old 보강, +10 ≈ 차폐, +15 ≈ 성운 강화복). P.suit holds the level. */
 const SUIT_NAMES=['기본 우주복','덧댄 우주복','보온 우주복','정비 우주복','개척 우주복','보강 우주복','강화 보강복','탐사 우주복','기밀 우주복','심우주 우주복','차폐 우주복','방사선 차폐복','중력 차폐복','결정 차폐복','심연 차폐복','성운 강화복','성운 수호복','항성 강화복','은하 수호복','초신성 갑주','별의 갑주'];
-const sDef=n=>Math.round(n*1.2+n*n*.05),sEnK=n=>Math.min(.4,n*.02);
+const sDef=n=>wAtk(n),sEnK=n=>Math.min(.4,n*.02);
 const SUITS=SUIT_NAMES.map((n,lv)=>({n,def:sDef(lv),en:sEnK(lv),t:['#7e8193','#8a8da0','#7c97a8','#bfae80'][Math.min(3,Math.floor(lv/5))],d:lv?`방어력 +${sDef(lv)} · 최대 에너지 +${Math.round(sEnK(lv)*100)}%`:'처음 받은 낡은 우주복.'}));
 const SUIT_MAXLV=SUITS.length-1,suitTier=lv=>Math.min(3,Math.floor((lv|0)/5));
 function suitUpCost(n){const c=[['ore',2+n],['moss',2+n]];if(n>=5)c.push(['crystal',Math.ceil((n-3)/2)]);if(n>=10)c.push(['dark',Math.ceil((n-8)/2)]);return c}
