@@ -2683,7 +2683,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
   const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
   box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
   const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
-  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+seasonAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
   if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
   const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
@@ -2695,7 +2695,7 @@ document.addEventListener('focusout',e=>{if(!admPend)return;const box=$('#adminB
 // the admin page is split into tabs: tools, member management, deleted members; sections say which tab they belong to
 let admTab='tools';
 function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.querySelector('.info-head'),nc=Object.keys(PLAYERS).filter(id=>id!==uid).length,nd=Object.keys(DELP).length;
-  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['story',`이야기 공개 <em>${STORY_LIST.filter(([k])=>STORY_ON[k]).length}/${STORY_LIST.length}</em>`],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`]].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
+  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['story',`이야기 공개 <em>${STORY_LIST.filter(([k])=>STORY_ON[k]).length}/${STORY_LIST.length}</em>`],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`],['reset','초기화']].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
   box.querySelectorAll('.info-sec').forEach(el=>{el.hidden=(el.dataset.adm||'tools')!==admTab});
   if(![...box.querySelectorAll('.info-sec')].some(el=>(el.dataset.adm||'tools')===admTab))box.insertAdjacentHTML('beforeend',`<div class="info-sec" data-adm="${admTab}"><span class="hint">${admTab==='del'?'삭제된 선원이 없습니다.':'이 기능은 공용 서버에 연결했을 때만 쓸 수 있습니다.'}</span></div>`)}
 /* ───────── activity log ───────── */
@@ -2818,7 +2818,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
 const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss'];
 function storyAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec" data-adm="story"><span class="lbl">Story · 이야기 공개</span><span class="hint">이야기는 운영자가 공개하기 전까지 선원에게 보이지 않습니다. 오프닝을 공개하면 접속 중인 선원에게 바로 한 번 재생되고, 나머지는 다음 접속 때 봅니다. 운영자·관리자는 언제나 볼 수 있습니다.</span><div class="storyadm">${STORY_LIST.map(([k,n])=>`<div class="row" style="gap:8px;align-items:center"><b style="color:${STORY_ON[k]?'var(--green)':'var(--mute)'}">${STORY_ON[k]?'🔓 공개':'🔒 비공개'}</b><span>${esc(n)}</span><button class="btn sm ${STORY_ON[k]?'ghost':''}" data-act="admstory" data-k="${k}">${STORY_ON[k]?'다시 숨기기':'공개하기'}</button></div>`).join('')}</div></div>`}
 function preopenAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Pre-open · 오픈 준비 잠금</span><span class="hint">켜 두면 선원들은 모든 게임 화면에 들어갈 수 없고 교류 › PAD만 쓸 수 있습니다. 운영자·관리자는 그대로 둘러볼 수 있습니다.</span><div class="row" style="gap:8px;align-items:center"><b style="color:${PREOPEN?'var(--red)':'var(--green)'}">${PREOPEN?'🔒 잠금 중 (오픈 준비)':'🔓 열림 (정상 운영)'}</b><button class="btn sm ${PREOPEN?'':'ghost'}" data-act="admpreopen">${PREOPEN?'잠금 풀기 (오픈!)':'오픈 준비 잠금 켜기'}</button></div></div>`}
-function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox"><span class="lbl">Season · 테스트 기록 초기화</span>
+function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox" data-adm="reset"><span class="lbl">Season · 테스트 기록 초기화</span>
   <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 선원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
   <span class="hint">로그인 아이디와 비밀번호는 남아서, 선원들은 같은 아이디로 로그인한 뒤 <b>새 초대코드</b>를 적어 다시 합류합니다. 아이디까지 지우려면 Firebase 콘솔의 Authentication에서 사용자를 삭제하십시오.</span>
   <div class="row" style="gap:6px;flex-wrap:wrap"><input id="seasonTxt" class="sel" maxlength="10" placeholder="초기화 라고 입력" style="width:150px" aria-label="확인 문구"><button class="btn sm seasongo" data-act="seasonreset" ${seasonBusy?'disabled':''}>${seasonBusy?'초기화하는 중…':'모든 기록 초기화'}</button></div>
@@ -2849,7 +2849,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}${preopenAdminHTML()}${seasonAdminHTML()}`:''}`}
+   ${admStaffHTML(others)}${preopenAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -2885,7 +2885,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></section></div>
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',{h:`${wNmH()} +${P.wlv}`}],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
-    <section class="mecard"><span class="lbl">Story · 이야기</span>${STORY_LIST.some(([k])=>storyOpen(k))?'':'<span class="hint">아직 공개된 이야기가 없습니다.</span>'}${storyOpen('opening')?'<button class="btn sm ghost" data-act="opreplay">▶ 오프닝 다시 보기</button> ':''}${storyOpen('intro')?'<button class="btn sm ghost" data-act="storyplay" data-k="intro">▶ 인트로 · 녹슨 7호</button>':''}</section>
+    <section class="mecard"><span class="lbl">Story · 이야기</span>${STORY_LIST.some(([k])=>storyOpen(k))?'':'<span class="hint">아직 공개된 이야기가 없습니다.</span>'}${storyOpen('opening')?'<button class="btn sm ghost" data-act="opreplay">▶ 오프닝 다시 보기</button> ':''}</section>
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · ${jobLocked()?'한 번 정한 직업은 바꿀 수 없습니다':'아직 직업이 없습니다 · 한 번 정하면 바꿀 수 없습니다'}</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}" ${jobLocked()&&!on?'disabled':''}><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
@@ -4792,7 +4792,7 @@ const TAB_GATE={req:'power',adv:'comm'};
 /* 오픈 준비 (pre-open lock): set by the admin. Until it is lifted every game tab and page is closed to crew; only PAD in 교류 works.
    운영자·관리자 can still look around (the lock badge stays on so they can see what crew see) */
 /* 이야기 공개: each story stays hidden from crew until the admin releases it (staff always see them) */
-var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['intro','인트로 · 녹슨 7호']];
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호']];
 const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k];
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
 function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 개척단이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
@@ -6011,10 +6011,7 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'o_robot',lines:[{t:'고르지 않은 땅을 건너는 바퀴 소리 같은 것이 들린 후 나타난 것은, 어떻게 봐도 낡아보이는 로봇 하나.'},{v:'완전히 초박살났군.',who:'???'}]},
   {art:'o_pan',lines:[{v:'이곳은 생명체가 활동하기에 그닥 적합하지 않아. 헬멧을 벗지 않는 게 좋을걸.',who:'???'},{v:'이런 걸 어떻게 알고 있냐고? 글쎄…… 그건 나도 모르겠어.',who:'???',art:'o_side'},{v:'하지만 난 이곳에서 아주 오래 살아왔어. 기억을 여섯 번 잃을 동안 말이야.',who:'???',art:'o_side'},{t:'그렇게 말하는 로봇의 몸뚱이에는 빗금이 일곱 개 그어져 있다.',art:'o_tally'}]},
   {art:'o_face',lines:[{v:'나는 녹슨 로봇 7호, 고물상 주인이지.',who:'녹슨 7호'},{v:'필요한 게 있거든 찾아와. 손님이라면 언제든 환영이니까.',who:'녹슨 7호'}]},
-  {art:'monitor',lines:[{t:'화면에 파손된 우주선의 내부 구조도가 표시된다. 복구가 필요한 장치들이 붉은색으로 점멸하고 있다.'},{t:'……생명 유지 장치를 먼저 손보는 게 좋겠다.',btn:'확인한다.'}]}]},
- intro:{n:'인트로 · 녹슨 7호',scenes:[
-  {art:'sky',lines:[{v:'이봐, 도움이 필요해?',who:'???'},{t:'먹먹한 귓가에 누군가의 목소리가 들립니다. 우리는 반사적으로 그곳을 바라보게 됩니다.'},{t:'뻥 뚫린 선체 외벽 너머로 검은 하늘이 보입니다.'}]},
-  {art:'robot',lines:[{t:'고르지 않은 땅을 건너는 바퀴 소리 같은 것이 들린 후 나타난 것은, 어떻게 봐도 낡아보이는 로봇 하나.'},{v:'완전히 초박살났군….',who:'???'}]}]}};
+  {art:'monitor',lines:[{t:'화면에 파손된 우주선의 내부 구조도가 표시된다. 복구가 필요한 장치들이 붉은색으로 점멸하고 있다.'},{t:'……생명 유지 장치를 먼저 손보는 게 좋겠다.',btn:'확인한다.'}]}]}};
 // 녹슨 7호's voice, read out like Animal Crossing's babble but through a cracked speaker: every Hangul syllable becomes a
 // tiny sped-up "syllable" — a buzzy carrier shaped by the vowel's two formants, with a tick or hiss for the consonant
 const VOW=[[800,1300],[520,1850],[800,1300],[520,1850],[620,1050],[480,1900],[620,1050],[480,1900],[460,820],[800,1300],[520,1850],[480,1900],[460,820],[360,760],[620,1050],[480,1900],[300,2250],[360,760],[420,1450],[300,2250],[300,2250]];
@@ -6342,7 +6339,7 @@ const A={
   if(mode!=='online'){MAILA.push(Object.assign({id,grant:1},g));mailRefresh();return}
   try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 선원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true,adm:true});$('#admNotice').value='';toast(`모든 선원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
- admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','crew','del'].includes(d.k)?d.k:'tools';renderAdminAll()},
+ admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
  async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'선원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
