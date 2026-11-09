@@ -2816,6 +2816,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
   seasonQuit()},()=>{})}
 const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss'];
+function storyAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Story · 이야기 공개</span><span class="hint">이야기는 운영자가 공개하기 전까지 선원에게 보이지 않습니다. 오프닝을 공개하면 접속 중인 선원에게 바로 한 번 재생되고, 나머지는 다음 접속 때 봅니다. 운영자·관리자는 언제나 볼 수 있습니다.</span><div class="storyadm">${STORY_LIST.map(([k,n])=>`<div class="row" style="gap:8px;align-items:center"><b style="color:${STORY_ON[k]?'var(--green)':'var(--mute)'}">${STORY_ON[k]?'🔓 공개':'🔒 비공개'}</b><span>${esc(n)}</span><button class="btn sm ${STORY_ON[k]?'ghost':''}" data-act="admstory" data-k="${k}">${STORY_ON[k]?'다시 숨기기':'공개하기'}</button></div>`).join('')}</div></div>`}
 function preopenAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Pre-open · 오픈 준비 잠금</span><span class="hint">켜 두면 선원들은 모든 게임 화면에 들어갈 수 없고 교류 › PAD만 쓸 수 있습니다. 운영자·관리자는 그대로 둘러볼 수 있습니다.</span><div class="row" style="gap:8px;align-items:center"><b style="color:${PREOPEN?'var(--red)':'var(--green)'}">${PREOPEN?'🔒 잠금 중 (오픈 준비)':'🔓 열림 (정상 운영)'}</b><button class="btn sm ${PREOPEN?'':'ghost'}" data-act="admpreopen">${PREOPEN?'잠금 풀기 (오픈!)':'오픈 준비 잠금 켜기'}</button></div></div>`}
 function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox"><span class="lbl">Season · 테스트 기록 초기화</span>
   <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 선원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
@@ -2848,7 +2849,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}${preopenAdminHTML()}${seasonAdminHTML()}`:''}`}
+   ${admStaffHTML(others)}${preopenAdminHTML()}${storyAdminHTML()}${seasonAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -2884,7 +2885,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Life skills · 생활 레벨</span><div class="lifes">${lifeRows}</div></section></div>
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',{h:`${wNmH()} +${P.wlv}`}],['우주복',SUITS[P.suit||0].n],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
-    <section class="mecard"><span class="lbl">Story · 이야기</span><button class="btn sm ghost" data-act="opreplay">▶ 오프닝 다시 보기</button> <button class="btn sm ghost" data-act="storyplay" data-k="intro">▶ 인트로 · 녹슨 7호</button></section>
+    <section class="mecard"><span class="lbl">Story · 이야기</span>${STORY_LIST.some(([k])=>storyOpen(k))?'':'<span class="hint">아직 공개된 이야기가 없습니다.</span>'}${storyOpen('opening')?'<button class="btn sm ghost" data-act="opreplay">▶ 오프닝 다시 보기</button> ':''}${storyOpen('intro')?'<button class="btn sm ghost" data-act="storyplay" data-k="intro">▶ 인트로 · 녹슨 7호</button>':''}</section>
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · ${jobLocked()?'한 번 정한 직업은 바꿀 수 없습니다':'아직 직업이 없습니다 · 한 번 정하면 바꿀 수 없습니다'}</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}" ${jobLocked()&&!on?'disabled':''}><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
@@ -3653,7 +3654,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -4790,6 +4791,9 @@ const roomOpen=()=>mode==='online'&&shipDone(roomLife());
 const TAB_GATE={req:'power',adv:'comm'};
 /* 오픈 준비 (pre-open lock): set by the admin. Until it is lifted every game tab and page is closed to crew; only PAD in 교류 works.
    운영자·관리자 can still look around (the lock badge stays on so they can see what crew see) */
+/* 이야기 공개: each story stays hidden from crew until the admin releases it (staff always see them) */
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['intro','인트로 · 녹슨 7호']];
+const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k];
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
 function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 개척단이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
 const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
@@ -6275,7 +6279,7 @@ function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M
     roll.style.transition='transform 2.6s ease-in, opacity 2.6s';roll.style.transform=`translateY(${-L.scrollHeight-120}px)`;roll.style.opacity='0';await wait(2600);
     M.classList.add('titled');for(const ch of '[조우]'){if(dead)return;T.textContent+=ch;try{sfxBeep()}catch(e){}await wait(320)}
     await wait(600);ok.hidden=false})()}
-function openingOnce(){if(!P||(P.opSeen||0)>=4||!$('#joinModal').hidden||preLock())return;   // held back during 오픈 준비; it plays once the game opens
+function openingOnce(){if(!P||(P.opSeen||0)>=4||!$('#joinModal').hidden||preLock()||!storyOpen('opening'))return;   // held back during 오픈 준비; it plays once the game opens
 storyCrawl(()=>playStory('opening',()=>{P.opSeen=4;save()}))}
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat();endRender()}
 
@@ -6483,8 +6487,9 @@ const A={
  suwi(d){if(d.k!=='o'&&d.k!=='x'||P.suwi===d.k)return;P.suwi=d.k;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
- opreplay(){if(preLock()){toast('오프닝은 정식 오픈 후에 볼 수 있습니다.');return}storyCrawl(()=>playStory('opening'))},
- storyplay(d){if(preLock()){toast('이야기는 정식 오픈 후에 볼 수 있습니다.');return}playStory(d.k)},
+ opreplay(){if(preLock()||!storyOpen('opening')){toast('아직 공개되지 않은 이야기입니다.');return}storyCrawl(()=>playStory('opening'))},
+ storyplay(d){if(preLock()||!storyOpen(d.k)){toast('아직 공개되지 않은 이야기입니다.');return}playStory(d.k)},
+ admstory(d){if(!isAdmin||mode!=='online'||!STORY_LIST.some(x=>x[0]===d.k))return;const on=!STORY_ON[d.k],nm=STORY_LIST.find(x=>x[0]===d.k)[1];bossTx(staffRef(),cur=>{const c=Object.assign({ids:[]},cur);c.stories=Object.assign({},c.stories,{[d.k]:on});return c}).then(()=>{toast(on?`「${nm}」을(를) 공개했습니다.`:`「${nm}」을(를) 다시 숨겼습니다.`);if(on)sys(`[공지] 새 이야기 「${nm}」이(가) 공개되었습니다. 내 정보 › 이야기에서 볼 수 있습니다.`,true)}).catch(()=>toast('바꾸지 못했습니다.'))},
  padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
  metab(d){meTab=d.k==='look'||d.k==='prof'?d.k:'me';renderPanel()},
