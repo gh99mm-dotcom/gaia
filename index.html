@@ -6287,7 +6287,7 @@ function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M
     roll.style.transition='transform 2.6s ease-in, opacity 2.6s';roll.style.transform=`translateY(${-L.scrollHeight-120}px)`;roll.style.opacity='0';await wait(2600);
     M.classList.add('titled');for(const ch of '[조우]'){if(dead)return;T.textContent+=ch;try{sfxBeep()}catch(e){}await wait(320)}
     await wait(600);ok.hidden=false})()}
-function openingOnce(){if(!P||(P.opSeen||0)>=4||!$('#joinModal').hidden||preLock()||!storyOpen('opening'))return;   // held back during 오픈 준비; it plays once the game opens
+function openingOnce(){if(!P||(P.opSeen||0)>=4||!$('#joinModal').hidden||preLock()||(mode==='online'&&!STORY_ON.opening))return;   // nobody (운영진 included) gets it on entry until it is released   // held back during 오픈 준비; it plays once the game opens
 storyCrawl(()=>playStory('opening',()=>{P.opSeen=4;save()}))}
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat();endRender()}
 
