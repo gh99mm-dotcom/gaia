@@ -515,6 +515,35 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .life{display:flex;gap:8px;align-items:center;background:var(--deep);border:2px solid var(--ink);padding:5px 8px}
 .titles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
 .ttl{display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--deep);border:2px solid var(--ink);padding:5px 8px;cursor:pointer}
+/* title looks: each worn title paints its name; the effect line under each title lists its bonus */
+.ttlfx{font-size:11px;color:var(--cy);opacity:.9}
+.tfx{display:inline;white-space:inherit}
+.tf-soil{color:#d0a878}.tf-leaf{color:#9ad88a;text-shadow:0 0 5px #4a9a4a88}.tf-water{color:#86d4f4;text-shadow:0 0 5px #2a8ac088}.tf-dust{color:#c4bba8}.tf-road{color:#dcc48e}
+.tf-coin{color:#ffd65f;text-shadow:0 0 5px #c0901a99}.tf-orbit{color:#a4d4ff;text-shadow:0 0 6px #4a8ad099}.tf-heart{color:#ff9ac4;text-shadow:0 0 6px #d0508a88}.tf-warm{color:#ffb478;text-shadow:0 0 5px #c0602a88}
+.tf-blood{color:#ff6e5e;text-shadow:0 0 6px #c0201a,0 0 2px #000}.tf-deep{color:#5ea0ff;text-shadow:0 0 8px #1a50c0,0 0 2px #000}.tf-shadow{color:#a0a0bc;text-shadow:-1px 1px 0 #000,0 0 8px #000}
+.tf-calm{color:#b0e8f4;animation:tfBreath 3.2s ease-in-out infinite}.tf-whisper{color:#ddd4ff;animation:tfBreath 2.6s ease-in-out infinite}
+.tf-abyss{color:#b88cff;animation:tfAbyss 2.4s ease-in-out infinite}
+.tf-oops{display:inline-block;color:#ffcc90;animation:tfOops 1.8s ease-in-out infinite}
+.tf-glitch{color:#7ff0ff;animation:tfGlitch 2.2s steps(1) infinite}
+.tf-steel,.tf-gold,.tf-flame,.tf-nebula,.tf-cosmic,.tf-prism,.tf-bloom,.tf-star{-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;background-size:250% 100%}
+.tf-steel{background-image:linear-gradient(100deg,#8a94a8 20%,#f0f4ff 45%,#8a94a8 70%);animation:tfSlide 4s linear infinite}
+.tf-gold{background-image:linear-gradient(100deg,#c08a20 15%,#ffe9a0 40%,#fff8d8 48%,#ffd65f 56%,#c08a20 85%);animation:tfSlide 2.6s linear infinite;filter:drop-shadow(0 0 3px #ffb02a88)}
+.tf-flame{background-image:linear-gradient(0deg,#ff4a2a,#ffa040 50%,#fff0a0);background-size:100% 220%;animation:tfFlame 1.1s ease-in-out infinite alternate;filter:drop-shadow(0 0 4px #ff602a99)}
+.tf-nebula{background-image:linear-gradient(100deg,#8a7cff,#ff8ad8,#7fd8ff,#8a7cff);animation:tfSlide 5s linear infinite;filter:drop-shadow(0 0 4px #a07cff88)}
+.tf-bloom{background-image:linear-gradient(100deg,#8ad88a,#ffd0e8,#b0f0a0,#8ad88a);animation:tfSlide 4.5s linear infinite}
+.tf-prism{background-image:linear-gradient(90deg,#ff8a8a,#ffd65f,#8affa6,#8fd0ff,#c48aff);background-size:100% 100%}
+.tf-star{background-image:linear-gradient(100deg,#fff3b0 20%,#ffffff 40%,#bfe4ff 55%,#fff3b0 80%);animation:tfSlide 3s linear infinite,tfTwinkle 1.6s ease-in-out infinite}
+.tf-cosmic{background-image:linear-gradient(100deg,#ff7fb8,#ffd65f,#8dffa6,#8fd0ff,#c48aff,#ff7fb8);animation:tfSlide 3.5s linear infinite;filter:drop-shadow(0 0 5px #fff6)}
+@keyframes tfSlide{from{background-position:0 0}to{background-position:-250% 0}}
+@keyframes tfFlame{from{background-position:0 0}to{background-position:0 100%}}
+@keyframes tfBreath{0%,100%{opacity:1;text-shadow:0 0 2px #fff4}50%{opacity:.6;text-shadow:0 0 9px #9ad8ffaa}}
+@keyframes tfAbyss{0%,100%{text-shadow:0 0 3px #4a1a8a,0 0 1px #000}50%{text-shadow:0 0 10px #8a4aff,0 0 2px #000}}
+@keyframes tfOops{0%,100%{transform:rotate(0)}20%{transform:rotate(-3deg)}40%{transform:rotate(2deg)}60%{transform:rotate(0)}}
+@keyframes tfGlitch{0%,86%,100%{text-shadow:none;transform:none}88%{text-shadow:2px 0 #ff4ab8,-2px 0 #4affff}92%{text-shadow:-2px 0 #ff4ab8,2px 0 #4affff}95%{text-shadow:none}}
+@keyframes tfTwinkle{0%,100%{filter:drop-shadow(0 0 2px #fff8)}50%{filter:drop-shadow(0 0 7px #fff)}}
+.tf-glitch,.tf-oops{display:inline-block}
+:root[data-skin="light"] .tfx{filter:brightness(.6) saturate(1.4)}
+@media (prefers-reduced-motion:reduce){.tfx{animation:none!important}}
 .ttl b{font-size:13px}
 .ttl span{font-size:11px;color:var(--mute)}
 .ttl:hover:not(:disabled){background:var(--panel2)}
@@ -2357,7 +2386,7 @@ const WAFF_T=[['일반','#c9c3b9',50],['고급','#7ad07a',28],['희귀','#5fb8f0
 const WAFF=[['작은',0,{crit:3,dodge:2,atkP:-2}],['가벼운',0,{dodge:4,crit:1}],['초라한',0,{defP:2}],['무딘',0,{defP:4,crit:-2}],['녹슨',0,{defP:3}],['낡은',0,{atkP:3}],['단단한',0,{defP:5}],['날카로운',0,{crit:4}],['무거운',0,{atkP:6,dodge:-3}],['창백한',0,{critD:8,atkP:-1}],['중후한',1,{atkP:5,defP:5,dodge:-2}],['날렵한',1,{dodge:5,crit:3}],['매서운',1,{crit:5,critD:6}],['튼튼한',1,{defP:6,hpP:5}],['거친',1,{atkP:7,defP:-2}],['차가운',1,{critD:12}],['따뜻한',1,{hpP:8,defP:2}],['고요한',1,{dodge:6,defP:2}],['반짝이는',1,{crit:4,atkP:3}],['단련된',1,{atkP:5,crit:2}],['빛나는',2,{atkP:6,crit:4,critD:6}],['아름다운',2,{dodge:6,crit:5,hpP:4}],['거대한',2,{atkP:12,defP:4,dodge:-5}],['예리한',2,{crit:8,critD:10}],['견고한',2,{defP:12,hpP:6}],['불타는',2,{atkP:9,critD:8}],['얼어붙은',2,{defP:8,critD:10}],['번개 치는',2,{crit:7,dodge:5}],['그림자 진',2,{dodge:10,crit:4}],['성운의',2,{atkP:5,defP:5,crit:3,dodge:3}],['폭발하는',3,{atkP:12,critD:25,defP:-5}],['중력의',3,{atkP:10,defP:10}],['별빛 어린',3,{crit:10,critD:15}],['맹렬한',3,{atkP:15,crit:5,defP:-4}],['불굴의',3,{defP:15,hpP:12}],['유령 같은',3,{dodge:15,crit:5,hpP:-5}],['초신성의',4,{atkP:15,critD:30}],['은하를 품은',4,{atkP:10,defP:10,crit:8,dodge:5}],['특이점의',4,{crit:15,critD:25,dodge:-5}],['영원한',4,{defP:18,hpP:15,dodge:5}]];
 const WAFF_N={atkP:'공격력',defP:'방어력',crit:'치명타',critD:'치명타 피해',dodge:'회피',hpP:'최대 체력'},WAFF_CR=500,WAFF_MAT=[];
 const wAff=()=>P&&P.waff?WAFF.find(a=>a[0]===P.waff)||null:null;
-const WA=k=>{const a=wAff();return a&&a[2][k]||0};
+const WA=k=>{const a=wAff();return(a&&a[2][k]||0)+(k==='crit'?0:TF(k))};
 const waffFx=a=>Object.entries(a[2]).map(([k,v])=>`<span class="${v>0?'wafp':'wafn'}">${WAFF_N[k]} ${v>0?'+':''}${v}%</span>`).join('');
 const wNm=()=>(wAff()?P.waff+' ':'')+WEAPONS[P.wlv||0];
 const waffOf=p=>p&&p.waff?WAFF.find(a=>a[0]===p.waff)||null:null;
@@ -2555,7 +2584,7 @@ const PET_PRICE=5000,petById=id=>PETS.find(p=>p.id===id)||null,myPet=()=>P&&P.pe
 const petImg=(id,sc=2)=>PET_PNG[id]?`<img class="pix" src="${PET_PNG[id]}" width="${24*sc}" height="${24*sc}" alt="">`:'';
 const PET_FX={atk:'공격력',hp:'최대 체력',crit:'치명타',def:'방어력',en:'최대 에너지',gather:'채집 +1 확률'};
 const petChips=p=>`<span class="fxchips">${Object.entries(p.fx).map(([k,v])=>`<span class="fxc ${k==='gather'?'luck':k}">${PET_FX[k]} +${v}%</span>`).join('')}</span>`;
-const GF=k=>{let v=0;for(const id of accOf()){const f=accById(id);if(f&&f.fx[k])v+=f.fx[k]}const w=P.wpn&&wpnById(P.wpn);if(w&&w.fx[k])v+=w.fx[k];return v};
+const GF=k=>{let v=0;for(const id of accOf()){const f=accById(id);if(f&&f.fx[k])v+=f.fx[k]}const w=P.wpn&&wpnById(P.wpn);if(w&&w.fx[k])v+=w.fx[k];return v+TF(k)};
 const petX=k=>1+PF(k)/100;
 // 항해사 (tank): +20% max HP and +30% DEF, never less than the old flat +30 HP / +6 DEF
 const NAV_HP=.2,NAV_DEF=.3,navAdd=(base,pct,min)=>P.job==='nav'?Math.max(min,Math.round(base*pct)):0;
@@ -2594,7 +2623,7 @@ const RAIDS_PER=L=>{for(let i=1;i<RAIDS_AT.length;i++){const[a,x]=RAIDS_AT[i-1],
 // of need (scouting, invader chests) divide by it so they slow down too
 const XP_PACE=1.5,RAID_PACE=2.12,lvCost=L=>RAIDS_PER(L)*RAID_PACE*(raidXpAt(L)+SIDE_XP);
 const NEED=Array.from({length:61},(_,l)=>{if(!l)return 0;if(l<5)return xpBase(l);if(l>=10)return Math.round(lvCost(l)*XP_PACE/10)*10;return Math.round(xpBase(4)*Math.pow(lvCost(10)*XP_PACE/xpBase(4),(l-4)/6)/10)*10}),need=l=>NEED[Math.max(1,Math.min(60,l))];
-function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
+function gainXp(x){if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0;return}x=Math.round(x*(1+TF('xp')/100));P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
 function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.min(maxEn(),Math.max(0,P.en+(en||0)))}
 
 /* cooking logic */
@@ -2731,13 +2760,27 @@ const lxConv=x=>{x=x||0;const ol=Math.min(30,1+Math.floor(Math.sqrt(x/25))),lo=2
 const lxOf=p=>{const lx=(p&&p.lx)||{};if(p&&p.lxv===2)return lx;const o={};for(const k in lx)o[k]=lxConv(lx[k]);return o};
 // each life level adds 0.5% to that activity's bonus chance; wearing the 황금손 title (all four maxed) adds a further 1% to every one
 const goldHand=()=>LIFE4.every(([k])=>lifeLv((P.lx||{})[k])>=LIFE_MAX);
-const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(P.title==='gold'&&goldHand()?1:0);
+const lifePct=k=>lifeLv((P.lx||{})[k])*.5+(P.title==='gold'&&goldHand()?1:0)+TF(k);
 const lifeHit=k=>Math.random()*100<lifePct(k);
 const LIFE_FX={farm:'수확 +1 확률',gather:'로봇 채집 재료 추가 확률',fish:'레어 이상 어종 확률 +',scan:'조사 보상 2배 확률',cook:'[맛있는!] 요리 확률'};
 // chance a dish comes out [맛있는!]: 5% to start, +0.5% per cooking level (35% at Lv.60)
 const tastyPct=()=>TASTY_BASE+lifePct('cook');
 function stat(k,n=1){P.st=P.st||{};P.st[k]=(P.st[k]||0)+n}
 function lxp(k,n){P.lx=P.lx||{};n=Math.round(n*(LX_RATE[k]||1));const before=lifeLv(P.lx[k]);P.lx[k]=(P.lx[k]||0)+n;const after=lifeLv(P.lx[k]);if(after>before){const nm=LIFE.find(l=>l[0]===k)[1];log(`${nm} 생활 레벨 ${after} 달성!`,'rare')}}
+// each title: a look for its name (tf-*) and a small bonus while it is worn
+const TTL_FX={rookie:['plain',{hp:10}],farm1:['soil',{farm:.5}],farm2:['leaf',{farm:1,hp:15}],fish1:['water',{fish:.5}],fish2:['gold',{luck:1}],gather1:['dust',{gather:.5}],
+ scan1:['road',{scan:.5,en:3}],rich:['gold',{sell:6}],farm3:['leaf',{farm:1.5,en:3}],farm5:['bloom',{farm:2,hp:30}],gather2:['shadow',{gather:1.5,dodge:2}],gather3:['steel',{gather:2,crit:1}],
+ fish3:['water',{fish:1,luck:.5}],fish4:['calm',{fish:2,en:5}],fish5:['deep',{luck:1,fish:.5}],fish6:['nebula',{luck:1.5,fish:1}],fish7:['gold',{luck:2}],fish8:['star',{luck:2,fish:2,xp:3}],
+ scan2:['road',{scan:1.5,en:5}],scan3:['glitch',{scan:2,crit:1}],rich2:['coin',{sell:3}],wpn:['flame',{atk:15,critD:5}],ending:['cosmic',{atkP:5,defP:5,hpP:5}],suit:['nebula',{def:30,hpP:3}],
+ lv20:['orbit',{xp:3}],lv40:['orbit',{xp:5,hp:30}],lv60:['star',{atk:20,def:20,hp:60}],soc1:['heart',{hp:15,en:3}],soc2:['heart',{xp:2}],adv1:['blood',{atk:10,crit:1}],adv2:['abyss',{atkP:3,critD:8}],
+ dm1:['whisper',{dodge:2}],all5:['prism',{farm:1,gather:1,fish:1,scan:1}],farmmax:['bloom',{farm:3,hpP:3}],gathermax:['gold',{gather:3,atkP:2}],fishmax:['abyss',{fish:3,luck:2}],scanmax:['star',{scan:3,crit:2}],
+ rcp15:['warm',{cook:1}],rcp30:['warm',{cook:2,en:5}],rcp45:['flame',{cook:3,hpP:3}],cook10:['oops',{cook:.5}],cook100:['warm',{cook:1,sell:2}],cook500:['warm',{cook:2,hp:30}],cook1000:['cosmic',{cook:4,hpP:5,en:10}],
+ gold:['gold',{sell:5}]};
+const TF_N={atk:['공격',''],def:['방어',''],hp:['최대 체력',''],en:['최대 에너지',''],crit:['치명타','%'],critD:['치명타 피해','%'],dodge:['회피','%'],atkP:['공격력','%'],defP:['방어력','%'],hpP:['최대 체력','%'],
+ luck:['레어 어종','%'],xp:['경험치','%'],sell:['판매가','%'],farm:['농사 보너스','%p'],gather:['채집 보너스','%p'],fish:['낚시 보너스','%p'],scan:['조사 보너스','%p'],cook:['맛있는 요리','%p']};
+const ttlFx=id=>TTL_FX[id]||TTL_FX.rookie,TF=k=>(P&&ttlFx(P.title||'rookie')[1][k])||0;
+const ttlFxTxt=id=>Object.entries(ttlFx(id)[1]).map(([k,v])=>`${TF_N[k][0]} +${v}${TF_N[k][1]}`).join(' · ')+(id==='gold'?' · 모든 생활 확률 +1%':'');
+const ttlHTML=(id,name)=>`<span class="tfx tf-${ttlFx(id)[0]}">${esc(name)}</span>`;
 const TITLES=[
  ['rookie','새내기 개척자','처음부터 가진 칭호',()=>true],
  ['farm1','흙 묻은 손','작물 10번 수확',()=>(P.st?.harvest||0)>=10],
@@ -2746,7 +2789,7 @@ const TITLES=[
  ['fish2','전설을 낚은 자','레전더리 어종 낚기',()=>(P.st?.legend||0)>=1],
  ['gather1','먼지 속 수집가','채집 100회',()=>(P.st?.gather||0)>=100],
  ['scan1','길 위의 개척자','주변 지점 30곳 조사',()=>(P.st?.scan||0)>=30],
- ['rich','궤도의 부호','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
+ ['rich','가이아의 부호','크레딧 100,000 보유',()=>(P.cr||0)>=100000],
  ['farm3','별밭의 은둔자','작물 300번 수확',()=>st('harvest')>=300],
  ['farm5','대지의 손길','농사 생활 레벨 10',()=>lifeLv(P.lx?.farm)>=10],
  ['gather2','크레이터를 걷는 그림자','채집 500회',()=>st('gather')>=500],
@@ -2759,7 +2802,7 @@ const TITLES=[
  ['fish8','백열다섯 개의 별빛','어류 도감 115종 완성',()=>Object.keys(P.dex||{}).length>=115],
  ['scan2','지도 밖으로','주변 지점 100곳 조사',()=>st('scan')>=100],
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
- ['rich2','녹슨 7호의 단골','크레딧 50,000 보유',()=>(P.cr||0)>=50000],
+ ['rich2','녹슨 7호의 단골','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
  ['wpn','은하를 쥔 손','무기 +8 강화',()=>(P.wlv||0)>=8],
  ['ending','가이아의 마지막 수호자','최종 레이드에서 승리',()=>(P.st?.ending||0)>=1],
  ['suit','성운을 입은 자','우주복 +15 강화',()=>(P.suit||0)>=15],
@@ -2783,7 +2826,7 @@ const TITLES=[
  ['cook100','자취생','요리 100번 만들기',()=>st('cook')>=100],
  ['cook500','주부9단','요리 500번 만들기',()=>st('cook')>=500],
  ['cook1000','GOD MOTHER','요리 1000번 만들기',()=>st('cook')>=1000],
- ['gold','황금손','생활 레벨 네 가지 모두 30 · 착용하면 모든 확률 +1%',()=>goldHand()],
+ ['gold','황금손','생활 레벨 네 가지 모두 30',()=>goldHand()],
 ];
 const st=k=>(P.st&&P.st[k])||0;
 // isOwnerAcct: the 운영자 account itself. isAdmin: anyone with admin powers — the 운영자 and the 관리자 it appoints
@@ -2878,7 +2921,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
   // my profile as a page: who I am up top, then what I can do (left) and what I carry and have done (right)
   $('#infoBox').innerHTML=`<div class="mehero">
     <div class="meport">${withPet(meImg(6),P,6)}</div>
-    <div class="meid"><span class="lv">${esc(titleName())}</span>
+    <div class="meid"><span class="lv">${ttlHTML(P.title||'rookie',titleName())}</span>
      <h2>${esc(P.nick)}</h2>
      ${mySnHTML()}<span class="hint">LV.${P.lvl} · 직업 ${P.job?esc(JOBS[P.job].n):'없음'}</span>
      ${meter('경험치',P.lvl>=MAX_LV?'MAX':`${(P.xp||0).toLocaleString()} / ${xpN.toLocaleString()}`,xpP,'var(--violet)')}
@@ -2895,7 +2938,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · ${jobLocked()?'한 번 정한 직업은 바꿀 수 없습니다':'아직 직업이 없습니다 · 한 번 정하면 바꿀 수 없습니다'}</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}" ${jobLocked()&&!on?'disabled':''}><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
-   <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?t[1]:'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span></button>`}).join('')}</div>`:''}</section>`;
+   <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?ttlHTML(t[0],t[1]):'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span><span class="ttlfx">${ttlFxTxt(t[0])}</span></button>`}).join('')}</div>`:''}</section>`;
 }
 const LOG=[];
 function log(text,kind=''){LOG.unshift({t:Date.now(),text,kind});LOG.length=Math.min(LOG.length,40);renderLog()}
@@ -5568,7 +5611,7 @@ function shipGive(partId,only,qty){
 const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['drink',30],['drink2',70],['drink1',140],['bandage',20],['kit',50],['kitpro',100]];
 const SELLP={seed_pot:5,seed_berry:10,seed_pump:20,seed_carrot:13,seed_corn:16,seed_melon:30,pot:6,berry:10,pump:22,carrot:12,corn:16,melon:32,moss:3,ore:4,crystal:14,dark:40,relic:25,drink:15,kit:18};
 const FSELL={c:12,r:50,u:200,l:1000};  // fish base values; the shop pays 30% of these → 일반 4 · 레어 15 · 유니크 60 · 레전더리 300 CR
-const sellPrice=id=>ITEMS[id].dish?dishSell(id):ITEMS[id].type==='relic'?1:crs(ITEMS[id].fish?FSELL[ITEMS[id].fish]:(ITEMS[id].sv||SELLP[id]||1));
+const sellPrice=id=>{const b=sellPrice0(id);return ITEMS[id].type==='relic'?b:Math.round(b*(1+TF('sell')/100))},sellPrice0=id=>ITEMS[id].dish?dishSell(id):ITEMS[id].type==='relic'?1:crs(ITEMS[id].fish?FSELL[ITEMS[id].fish]:(ITEMS[id].sv||SELLP[id]||1));
 // dishes sell for 1.5x what their ingredients would fetch at the shop ('fish:r' counts as a rare fish)
 const DISH_X=1.5,dishSell=id=>{if(ITEMS[id]&&ITEMS[id].tasty)return Math.round(dishSell(ITEMS[id].tasty)*TASTY_X);const c=COOK.find(c=>c.id===id);if(!c)return 1;return Math.max(1,Math.round(DISH_X*c.need.reduce((a,[k,n])=>a+n*(k.startsWith('fish:')?crs(FSELL[k.slice(5)]):ITEMS[k]?sellPrice(k):1),0)))};
 const KEEPER=['어서 와. 오늘도 손님은 너 하나뿐이네.','오, 또 왔구나. 기다리고 있었다고는 안 할게.','어제는 별이 하나 꺼졌어. 너도 봤니?','내 부품도 하나씩 녹슬고 있어. 그래도 장사는 해야지.','크레딧은 충분해? 없으면 구경만 해도 돼.','저 낚싯대, 나도 한번 잡아보고 싶었어.','조용한 게 좋아. 그런데 너무 조용하면 조금 슬퍼.','오늘 입고된 물건? 어제랑 똑같아. 항상 똑같아.','먼지 털어 둔 거야. 거의.','이 궤도엔 신호가 잘 안 잡혀. 그래도 물건은 있어.','팔 거 있으면 줘. 뭐든 언젠가는 쓸모가 있으니까.','예전엔 여기도 붐볐지. 다들 어디로 갔을까.','물고기는 신선할 때 팔아. 냄새가 오래 남거든.','내 이름은 7호야. 1호부터 6호는 본 적 없어.','밤이 길어. 여기선 늘 밤이지만.','창밖 행성은 오늘도 그대로야. 나처럼.','가끔 내 회로에서 옛날 노래가 흘러나와. 가사는 기억 안 나.','손님이 오면 전원을 아껴 둔 보람이 있어.','고장 난 건 고치면 돼. 잊힌 건… 잘 모르겠어.','이 상자는 누가 맡기고 간 거야. 아직 안 찾아갔어.','네가 마지막으로 웃은 게 언제야? 난 웃는 법을 몰라서.','별빛은 아주 오래전에 출발한 거래. 우리가 받는 건 늘 늦은 인사야.','재고 조사를 했어. 세 번. 할 일이 없었거든.','오늘은 운석이 안 떨어졌으면 좋겠다.','기름칠을 좀 해야 하는데. 다음에, 다음에.','나도 언젠가 저 창밖으로 날아가 보고 싶어.','거래 기록을 보면 네 이름이 제일 많아. 고마워.','이 가게 문은 닫힌 적이 없어. 열 사람이 없었거든.','메탄 비가 그치면 조금 덜 외로워져.','네 우주복에 흠집이 늘었네. 조심해.','방금 한 말, 저장해 둘게. 오래 기억하려고.','누군가 여기 있다는 게 좋아. 그게 너라서 더 좋아.','전원이 깜빡여도 놀라지 마. 원래 그래.','지구는 어떤 곳이었을까. 사진으로만 봤어.','싸게 해 줄 수는 없어. 대신 오래 이야기해 줄게.','너무 무리하지 마. 쓰러지면 내가 구해 줄 수가 없어.','오늘 하늘 색은 회색 37번. 어제는 38번이었어.','가끔 빈 선반을 정리해. 정리할 게 없어도.','물건은 많은데, 이야기할 상대는 적어.','다녀와. 기다리는 건 내가 제일 잘하니까.','또 와 줄 거지? 대답 안 해도 알아.','나는 꿈을 꾸지 않아. 대신 대기 모드에서 너를 기다려.','신호가 하나 잡혔다 사라졌어. 누구였을까.','이 볼트, 내 몸에서 빠진 거야. 팔지는 않을 거야.','모든 게 천천히 식어 가. 이 가게도, 저 별도.','네가 산 물건이 네 방을 따뜻하게 해 주면 좋겠어.','한때는 이 궤도에 불빛이 가득했대. 지금은 우리 둘이야.','좋은 하루 보내. 하루라는 게 여기에도 있다면.','안녕, 또 보자. 아마 내일도 여기 있을 거야.'];
@@ -7152,7 +7195,7 @@ function idCardHTML(p,id,photo,lock){const logo=($('.lg2-em img')||{}).src||'',s
     <div class="idc-ph">${photo?pfpImg(p.pfp):`<span class="idc-av">${meImg(5,p)}</span>`}${lock?'<span class="pfplock">🔒 사진은 호감도 ±30부터</span>':''}</div>
     <dl class="idc-dl">${row('이름',esc(p.nick||'선원'),1)}${row('직군',j?esc(j.n):'없음')}${row('직급',esc(orgRole(id)))}${row('무기',`<span class="idc-wpn">${wNmH(p)} +${(p.wlv|0)}</span>`)}${row('레벨','LV.'+(p.lvl||1))}${row('생활레벨','LV.'+lifeSum(p))}</dl>
     <svg class="idc-seal" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="sealT" d="M14 50 a36 36 0 0 1 72 0"/><path id="sealB" d="M10 50 a40 40 0 0 0 80 0"/></defs><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="3"/><text font-size="11.5" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealT" startOffset="50%">GAIA PROJECT</textPath></text><text font-size="10" font-weight="900" letter-spacing="1.8" fill="currentColor" text-anchor="middle"><textPath href="#sealB" startOffset="50%">★ SECTOR K-7 ★</textPath></text><circle cx="50" cy="50" r="12" fill="currentColor"/><ellipse cx="50" cy="51" rx="21" ry="6" fill="none" stroke="currentColor" stroke-width="3" transform="rotate(-18 50 50)"/></svg></div>
-   <div class="idc-bot"><div class="idc-ttl"><span class="idc-wing">❖</span><span><b>${esc(ttlOf(p))}</b>${sn?`<small>${esc(sn)}</small>`:''}</span></div>
+   <div class="idc-bot"><div class="idc-ttl"><span class="idc-wing">❖</span><span><b>${ttlHTML(p.title||'rookie',ttlOf(p))}</b>${sn?`<small>${esc(sn)}</small>`:''}</span></div>
     <div class="idc-logo">${L}<span><b>GAIA PROJECT</b><small>— SECTOR K-7 —</small></span></div></div></div>`}
 // cards beside the ID card: likes, dislikes, why they joined, and affection (toward the viewer, or on my own page the crew's average toward me)
 let whyEdit=false;const WHY_MAX=80;
