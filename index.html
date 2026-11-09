@@ -3368,6 +3368,9 @@ function raidLogKind(r,l){if(l[0]==='⚠')return'warn';if(l[0]==='[')return'sk';
 // monsters single out the tank: a navigator (항해사) is twice as likely as anyone else to be the target
 const RAID_TANK_W=3;
 function raidAggro(r,tg){const w=tg.map(u=>rJob(r.m[u])==='nav'?RAID_TANK_W:1),sum=w.reduce((a,b)=>a+b,0);let x=Math.random()*sum;for(let i=0;i<tg.length;i++){x-=w[i];if(x<0)return tg[i]}return tg[tg.length-1]}
+/* damage a crew member takes: a quarter of DEF comes off flat, then the rest is cut by DEF/(DEF+1200) */
+const defCut=(raw,D)=>Math.max(1,Math.round((raw-D*.25)*1200/(1200+Math.max(0,D))));
+function raidHitP(atkv,defv,crit){let d=defCut(atkv*(.85+Math.random()*.3),defv);const c=Math.random()*100<crit;if(c)d=Math.round(d*1.5);return[d,c]}
 function raidHit(atkv,defv,crit,critD=0){const raw=atkv*(.85+Math.random()*.3)-defv*.5;let d=Math.max(1,Math.round(raw));const c=Math.random()*100<crit;if(c)d=Math.round(d*(1.5+critD/100));return[d,c]}
 // after any action: victory, wipe, or the next turn
 const raidPartyX=r=>1+.1*(Math.max(1,Math.min(4,raidIn(r).length))-1);
@@ -3409,7 +3412,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
     else{const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
       // area attacks are telegraphed: the turn before, a boss or elite announces the move (and still hits one target), so the party can brace
       const aoe=!!m.chg,mv=m.chg,tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,hits=tz?[tz]:aoe?tg:[raidAggro(r,tg)];m.chg=null;
-      hits.forEach(u=>{const me=r.m[u];let [d]=raidHit(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(d>0&&me.dodge&&Math.random()*100<me.dodge){d=0;tag=' (회피!)'}else if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?`의 ${mv}`:''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)});
+      hits.forEach(u=>{const me=r.m[u];let [d]=raidHitP(aoe?m.atk*.7:m.atk,me.def*(tz===u?2:1),m.kind==='boss'?8:3);let tag='';if(d>0&&me.dodge&&Math.random()*100<me.dodge){d=0;tag=' (회피!)'}else if(b.def[u]){if(Math.random()<.5){d=0;tag=' (방어 성공!)'}else{d=Math.round(d/2);tag=' (방어로 절반)'}}me.hp=Math.max(0,me.hp-d);raidLog(b,`${m.n}${aoe?`의 ${mv}`:''} → ${me.nick} ${d} 피해${tag}${tz===u?' (방패)':''}${me.hp<=0?' · 쓰러졌다!':''}`)});
       if(!aoe&&m.hp>0&&((m.kind==='boss'&&Math.random()<.3)||(m.kind==='mid'&&Math.random()<.15))){const mv2=raidAoeMove(m);m.chg=mv2;raidLog(b,`⚠ ${m.kind==='boss'?'보스':'정예'} ${m.n}${jo(m.n,'이','가')} ${mv2}${jo(mv2,'을','를')} 준비합니다! 다음 턴에 파티 전원을 공격합니다.`);b.skfx={n:mv2+' 준비',j:'warn',by:`${m.n} · 다음 턴 전체 공격`,id:((b.skfx&&b.skfx.id)||0)+1}}}
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false;setTimeout(raidQRun)})}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
@@ -3700,7 +3703,7 @@ function chestHTML(){const n=(P.chests||[]).length,c=(P.chests||[])[0];
 const bossReady=()=>Math.max(0,(P.bossAt||0)+BOSS_CD-Date.now());
 // the invader's counterblow: a same-level crew member goes down in about 3 of these
 // returns [damage taken, damage the guard formation (방어 진형) took off it]
-const bossBlow2=b=>{const raw=(20+b.lv*6.5)*bossKind(b).atk*(.85+Math.random()*.3),hit=Math.max(1,Math.round(raw-def()*(1+bossBonusK(b,'def'))*.4));return[hit,Math.max(0,Math.max(1,Math.round(raw-def()*.4))-hit)]};
+const bossBlow2=b=>{const raw=(20+b.lv*6.5)*bossKind(b).atk*(.85+Math.random()*.3),hit=defCut(raw,def()*(1+bossBonusK(b,'def')));return[hit,Math.max(0,defCut(raw,def())-hit)]};
 // half of what the guard formation saved goes to its casters' contribution, split by stack
 function bossDefCredit(b,saved){const fx=bossFx(b).filter(f=>f.k==='def'&&f.u),c=Math.round(saved*.5);if(!fx.length||c<=0||!bossAlive(b))return;const m={};
   fx.forEach((f,i)=>{const part=i===fx.length-1?c-Object.values(m).reduce((a,v)=>a+v,0):Math.floor(c/fx.length);if(part>0)m['dmg.'+f.u+'.d']=(m['dmg.'+f.u+'.d']||0)+part});
@@ -4063,7 +4066,7 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const k=END.gen+':'+Math.floo
   endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
   const dodge=Math.random()*100<Math.min(40,Math.max(0,AS('agi')*1.2+BUFF('dodge')+WA('dodge')));
   if(dodge){toast(`${END_NAME}의 시선을 피했다!`);log(`${END_NAME}의 시선을 피했다.`,'good');return}
-  const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=Math.max(1,Math.round(raw-def()*.4));heal(-hit,0);sfxStatic&&sfxStatic();
+  const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=defCut(raw,def());heal(-hit,0);sfxStatic&&sfxStatic();
   toast(`${END_NAME}의 시선! 선원 모두가 체력 -${hit}`);log(`${END_NAME}의 시선이 베이스캠프를 훑었다. 체력 -${hit}`,'bad');checkFaint();commit()},400);
 const EA={
  async endult(){if(!endOn()||endFirst()||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
