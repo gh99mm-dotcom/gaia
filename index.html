@@ -257,6 +257,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 /* console */
 .console{display:flex;flex-direction:column;gap:12px;min-width:0}
 .nav{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+
 @media (max-width:620px){.nav{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .nav button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px 7px;background:var(--panel);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),0 3px 0 var(--ink);cursor:pointer;position:relative;transition:transform .08s}
 .nav button:hover{background:var(--panel2)}
@@ -1717,6 +1718,23 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .sclog.holo .sce-evend{color:#cfd9b0}
 .sclog.holo .sce-warn.scnew,.sclog.holo .sce-beast.scnew{animation:holoalert .9s ease-out}
 @keyframes holoalert{0%,40%,80%{opacity:1}20%,60%{opacity:.25}100%{opacity:1}}
+
+/* phones: a compact header, the character card folded to its bars, and the activity tabs as a bar fixed to the bottom */
+.pmore{display:none}
+@media (max-width:620px){
+ header{min-height:0;padding:4px 0}.lg3{height:58px}
+ .pilot{padding:8px 10px;gap:6px}.pilot .stat{gap:2px}
+ .pmore{display:block;width:100%;font:inherit;font-size:12px;padding:5px 0;background:transparent;border:1px dashed var(--line);color:var(--muted,#9aa0b4);cursor:pointer}
+ #pilot.pcol .specs,#pilot.pcol .gearpick{display:none}
+ .nav{grid-template-columns:repeat(10,minmax(0,1fr))!important;position:fixed;left:0;right:0;bottom:0;z-index:58;gap:0;padding:3px 2px calc(3px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:2px solid var(--ink);box-shadow:0 -4px 12px #0006}
+ .nav button{padding:3px 0 2px;gap:1px;border:0;box-shadow:none;background:transparent;min-width:0}
+ .nav button[aria-pressed="true"]{background:var(--deep);box-shadow:inset 0 0 0 1px var(--line)}
+ .nav button>img,.nav button>canvas,.nav button>span>img{width:24px!important;height:24px!important}
+ .nav .nm{font-size:10px;white-space:nowrap}.nav .cost{display:none}
+ .nav button .badge,.nav .badge{top:-1px;right:1px;font-size:9px;padding:0 3px;border-width:1px}.nav button .tlk{top:-2px;right:0;font-size:9px;border-width:1px}
+ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+ .toast{bottom:calc(78px + env(safe-area-inset-bottom,0px))}.endhud{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -3369,16 +3387,18 @@ function gearPickHTML(){const own=P.own||[],opt=(v,n,on)=>`<option value="${esc(
    ${[0,1].map(k=>row('장신구'+(k+1),`<select class="sel" data-eq="acc${k}" aria-label="장신구${k+1}">${opt('','없음',!acc[k])}${ac.map(a=>opt(a.id,a.n,acc[k]===a.id)).join('')}</select>`)).join('')}</div>`}
 document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.eq)return;const k=t.dataset.eq,v=t.value;t.blur();
   if(k==='wpn'){if(v)A.wpnon({k:v});else A.wpnoff()}else if(k==='suit')A.eqsuit({k:v});else{const n=k==='acc1'?1:0;if(v)A.accon({id:v,k:n});else A.accoff({k:n})}});
+let pilotOpen=false;try{pilotOpen=localStorage.getItem('gaia-pilot-open')==='1'}catch(e){}
 function renderPilot(){if(pilotBusy())return;
   regen();queueMicrotask(renderCook);queueMicrotask(crWatch);
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
-  $('#pilot').innerHTML=`
+  $('#pilot').classList.toggle('pcol',!pilotOpen);$('#pilot').innerHTML=`
   <div class="pilot-top"><div class="avatar">${withPet(meImg(3),P,3)}</div>
    <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${ttlHTML(P.title||'rookie',titleName())}</div></div></div>
   <div class="stat" data-tip="내 체력입니다."><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat" data-tip="우주복의 에너지입니다."><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
   <div class="specs"><div class="spec"><span class="lbl">ATK 공격</span><b>${atk()}</b></div><div class="spec"><span class="lbl">DEF 방어</span><b>${def()}</b></div><div class="spec" style="grid-column:1/-1;display:flex;align-items:center;gap:6px">${img(IC.coin,null,2)}<b id="crBal">${Math.round(crShown??(P.cr||0)).toLocaleString()}</b><span class="lbl" style="margin-left:auto">CR 크레딧</span></div></div>
+  <button type="button" class="pmore" data-act="pmore" aria-expanded="${pilotOpen}">${pilotOpen?'장비·능력치 접기 ▴':'장비·능력치 보기 ▾'}</button>
   ${gearPickHTML()}${isFaint()?`<div class="faintbox">${img(IC.heart,null,2)}<div><b>기절 상태</b><span id="faintT">${fmtClock(P.faint-Date.now())} 뒤 깨어납니다</span><span class="hint">${mode==='online'?'다른 선원이 구조해 주면 바로 일어납니다.':'혼자 모드에서는 시간이 지나야 깨어납니다.'}</span></div></div>`:''}`;
 }
 function tickPilot(){regen();tickCook();const h=$('#hpB');if(!h)return;h.style.width=Math.max(0,P.hp/maxHp()*100)+'%';$('#hpT').textContent=`${P.hp}/${maxHp()}`;$('#enB').style.width=(P.en/maxEn()*100)+'%';$('#enT').textContent=`${P.en}/${maxEn()}`}
@@ -6851,6 +6871,7 @@ const A={
   try{for(let round=0;round<20;round++){const sn=await db.collection('posts').limit(300).get();if(sn.empty)break;const ids=sn.docs.map(d=>d.id);
     for(let i=0;i<ids.length;i+=40)await Promise.all(ids.slice(i,i+40).map(id=>db.doc('posts/'+id).delete().then(()=>n++).catch(()=>fail++)));if(fail)break}}catch(e){fail++}
   padRstBusy=false;renderAdminAll();toast(fail?`PAD 글 ${n}개를 지웠습니다. 일부는 지우지 못했습니다.`:`PAD를 초기화했습니다. (글 ${n}개 삭제)`);log(`[운영자] PAD 초기화 · 글 ${n}개 삭제`)},
+ pmore(){pilotOpen=!pilotOpen;try{localStorage.setItem('gaia-pilot-open',pilotOpen?'1':'0')}catch(e){}renderPilot()},
  admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
@@ -7356,7 +7377,7 @@ document.addEventListener('pointerdown',e=>{const m=document.getElementById('lgM
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('lgMenu')){e.stopPropagation();lgClose()}},true);
 addEventListener('resize',lgClose);
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}{const gq=tabGate(t.dataset.tab);if(gq){toast(gq.pre?'오픈 준비 중입니다. 지금은 교류 › PAD만 이용할 수 있습니다.':`우주선의 ${gq.n}${jo(gq.n,"을","를")} 고치면 열립니다.`);return}}if(t.dataset.tab==='req')brokerSeen=false;podArm=null;meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')sellCart={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){const fromNav=!!t.closest('#nav');if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}{const gq=tabGate(t.dataset.tab);if(gq){toast(gq.pre?'오픈 준비 중입니다. 지금은 교류 › PAD만 이용할 수 있습니다.':`우주선의 ${gq.n}${jo(gq.n,"을","를")} 고치면 열립니다.`);return}}if(t.dataset.tab==='req')brokerSeen=false;podArm=null;meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')sellCart={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();if(fromNav&&matchMedia('(max-width:620px)').matches){const st=$('#stage');scrollTo({top:Math.max(0,st.getBoundingClientRect().top+scrollY-6)})}else holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset,e)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
