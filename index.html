@@ -2683,7 +2683,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
   const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
   box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
   const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
-  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
   if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
   const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
@@ -2695,7 +2695,7 @@ document.addEventListener('focusout',e=>{if(!admPend)return;const box=$('#adminB
 // the admin page is split into tabs: tools, member management, deleted members; sections say which tab they belong to
 let admTab='tools';
 function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.querySelector('.info-head'),nc=Object.keys(PLAYERS).filter(id=>id!==uid).length,nd=Object.keys(DELP).length;
-  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`]].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
+  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['story',`이야기 공개 <em>${STORY_LIST.filter(([k])=>STORY_ON[k]).length}/${STORY_LIST.length}</em>`],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`]].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
   box.querySelectorAll('.info-sec').forEach(el=>{el.hidden=(el.dataset.adm||'tools')!==admTab});
   if(![...box.querySelectorAll('.info-sec')].some(el=>(el.dataset.adm||'tools')===admTab))box.insertAdjacentHTML('beforeend',`<div class="info-sec" data-adm="${admTab}"><span class="hint">${admTab==='del'?'삭제된 선원이 없습니다.':'이 기능은 공용 서버에 연결했을 때만 쓸 수 있습니다.'}</span></div>`)}
 /* ───────── activity log ───────── */
@@ -2816,7 +2816,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
   seasonQuit()},()=>{})}
 const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss'];
-function storyAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Story · 이야기 공개</span><span class="hint">이야기는 운영자가 공개하기 전까지 선원에게 보이지 않습니다. 오프닝을 공개하면 접속 중인 선원에게 바로 한 번 재생되고, 나머지는 다음 접속 때 봅니다. 운영자·관리자는 언제나 볼 수 있습니다.</span><div class="storyadm">${STORY_LIST.map(([k,n])=>`<div class="row" style="gap:8px;align-items:center"><b style="color:${STORY_ON[k]?'var(--green)':'var(--mute)'}">${STORY_ON[k]?'🔓 공개':'🔒 비공개'}</b><span>${esc(n)}</span><button class="btn sm ${STORY_ON[k]?'ghost':''}" data-act="admstory" data-k="${k}">${STORY_ON[k]?'다시 숨기기':'공개하기'}</button></div>`).join('')}</div></div>`}
+function storyAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec" data-adm="story"><span class="lbl">Story · 이야기 공개</span><span class="hint">이야기는 운영자가 공개하기 전까지 선원에게 보이지 않습니다. 오프닝을 공개하면 접속 중인 선원에게 바로 한 번 재생되고, 나머지는 다음 접속 때 봅니다. 운영자·관리자는 언제나 볼 수 있습니다.</span><div class="storyadm">${STORY_LIST.map(([k,n])=>`<div class="row" style="gap:8px;align-items:center"><b style="color:${STORY_ON[k]?'var(--green)':'var(--mute)'}">${STORY_ON[k]?'🔓 공개':'🔒 비공개'}</b><span>${esc(n)}</span><button class="btn sm ${STORY_ON[k]?'ghost':''}" data-act="admstory" data-k="${k}">${STORY_ON[k]?'다시 숨기기':'공개하기'}</button></div>`).join('')}</div></div>`}
 function preopenAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Pre-open · 오픈 준비 잠금</span><span class="hint">켜 두면 선원들은 모든 게임 화면에 들어갈 수 없고 교류 › PAD만 쓸 수 있습니다. 운영자·관리자는 그대로 둘러볼 수 있습니다.</span><div class="row" style="gap:8px;align-items:center"><b style="color:${PREOPEN?'var(--red)':'var(--green)'}">${PREOPEN?'🔒 잠금 중 (오픈 준비)':'🔓 열림 (정상 운영)'}</b><button class="btn sm ${PREOPEN?'':'ghost'}" data-act="admpreopen">${PREOPEN?'잠금 풀기 (오픈!)':'오픈 준비 잠금 켜기'}</button></div></div>`}
 function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox"><span class="lbl">Season · 테스트 기록 초기화</span>
   <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 선원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
@@ -2849,7 +2849,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}${preopenAdminHTML()}${storyAdminHTML()}${seasonAdminHTML()}`:''}`}
+   ${admStaffHTML(others)}${preopenAdminHTML()}${seasonAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -6342,7 +6342,7 @@ const A={
   if(mode!=='online'){MAILA.push(Object.assign({id,grant:1},g));mailRefresh();return}
   try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 선원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true,adm:true});$('#admNotice').value='';toast(`모든 선원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
- admtab(d){if(!isAdmin)return;admTab=['tools','give','boss','spres','inv','fb','crew','del'].includes(d.k)?d.k:'tools';renderAdminAll()},
+ admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','crew','del'].includes(d.k)?d.k:'tools';renderAdminAll()},
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
  async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'선원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
