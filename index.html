@@ -3136,7 +3136,6 @@ const TITLES=[
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
  ['rich2','녹슨 7호의 단골','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
  ['wpn','은하를 쥔 손','무기 +20 강화',()=>(P.wlv||0)>=20],
- ['ending','테라의 마지막 수호자','최종 레이드에서 승리',()=>(P.st?.ending||0)>=1],
  ['suit','성운을 입은 자','우주복 +20 강화',()=>(P.suit||0)>=20],
  ['lv20','스무 번째 궤도','레벨 20 달성',()=>P.lvl>=20],
  ['lv40','마흔 번째 궤도','레벨 40 달성',()=>P.lvl>=40],
@@ -3166,6 +3165,7 @@ const TITLES=[
  ['dex_r6','붉은 별을 꺼뜨린 자','몬스터 도감 · 붉은 별의 핵 완성',()=>dexDone('r6')],
  ['dex_all','가이아의 박물학자','몬스터 도감 42종 모두 완성',()=>RAID_ZONES.every(z=>dexDone(z.id))],
  ['gold','황금손','생활 레벨 네 가지 모두 '+LIFE_MAX,()=>goldHand()],
+ ['ending','테라의 마지막 수호자','',()=>(P.st?.ending||0)>=1],
 ];
 const st=k=>(P.st&&P.st[k])||0;
 const dexDone=id=>{const z=RAID_ZONES.find(x=>x.id===id),D=P.mdex||{};return!!z&&[...z.mons,z.mid,z.boss].every(n=>D[n]>0)};
@@ -3282,7 +3282,7 @@ function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').
     <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · ${jobLocked()?'한 번 정한 직업은 바꿀 수 없습니다':'아직 직업이 없습니다 · 한 번 정하면 바꿀 수 없습니다'}</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}" ${jobLocked()&&!on?'disabled':''}><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
-   <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?ttlHTML(t[0],t[1]):'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:'잠김 · '+t[2]}</span><span class="ttlfx">${ttlFxTxt(t[0])}</span></button>`}).join('')}</div>`:''}</section>`;
+   <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3]();return`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?ttlHTML(t[0],t[1]):'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:t[2]?'잠김 · '+t[2]:'잠김'}</span><span class="ttlfx">${ttlFxTxt(t[0])}</span></button>`}).join('')}</div>`:''}</section>`;
 }
 const LOG=[];
 function log(text,kind=''){LOG.unshift({t:Date.now(),text,kind});LOG.length=Math.min(LOG.length,40);renderLog()}
