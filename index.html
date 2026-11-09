@@ -6999,7 +6999,7 @@ function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${hea
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
 /* ───────── affinity: how each player feels about the others ───────── */
 // every affinity change is two-way: both sides apply the same delta on their own record (greeting, gift, rescue)
-const AFF={rescue:2,like:3,hate:-3,gift:1},AFF_MIN=-100,AFF_MAX=100;
+const AFF={rescue:2,like:5,hate:-5,gift:3,hi:2},AFF_MIN=-100,AFF_MAX=100;
 const affOf=(p,id)=>((p&&p.aff)||{})[id]||0;
 // relationship tiers by 호감도, best first: [lowest value, name, what it means]
 const AFF_TIERS=[[90,'절친한 사이','무엇이든 믿고 맡길 수 있는 단짝'],[70,'친구','함께 있으면 즐거운 사이'],[40,'호감','마음이 가고 더 친해지고 싶은 사이'],[20,'안면이 있다','오가며 인사 정도는 나누는 사이'],[-19,'아무 감정도 없다','아직 서로 잘 모르는 사이'],[-39,'언짢다','왠지 마음에 걸리는 사이'],[-59,'불편','같이 있으면 어색한 사이'],[-89,'싫다','되도록 마주치고 싶지 않은 사이'],[-100,'혐오','이름만 들어도 질색하는 사이']];
@@ -7196,7 +7196,7 @@ const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top
 function afterSocialRender(){if(socOpen&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}if(socOpen&&socTab==='chat'){const l=$('#lgLog');if(l)l.scrollTop=l.scrollHeight}}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
-    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,1,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
+    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,AFF.hi,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit()}
 /* PAD alerts: replies to my posts, reposts of my posts and mentions of me, newest first; the bell shows what came in since I last opened it */
 function padNotis(){if(mode!=='online'||!P)return[];const me='@'+P.nick;return POSTS.filter(p=>p.uid!==uid&&(p.reUid===uid||(p.rt&&p.rto&&p.rto.uid===uid)||(!p.rt&&String(p.text||'').includes(me)))).sort((a,b)=>b.at-a.at).slice(0,30)}
@@ -7280,7 +7280,7 @@ const SA={
   try{await db.collection('dm').add({users:[uid,to],from:uid,to,nick:P.nick,text:v,at:Date.now()})}catch(e){dmDraft=v;if(i)i.value=v;socErr(e);return}stat('dm');save()},
  async hi(d){const t=PLAYERS[d.k];if(mode!=='online'||!t||(P.greet||{})[d.k]===dayKey())return;
   try{await db.collection('guest').add({to:d.k,from:uid,nick:P.nick,kind:'hi',text:'',at:Date.now()})}catch(e){socErr(e);return}
-  P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});stat('hi');sfxCoin();log(`${t.nick||'선원'} 님에게 인사를 건넸다.`,'good');addAff(d.k,1,'인사');commit()},
+  P.greet=Object.assign({},P.greet,{[d.k]:dayKey()});stat('hi');sfxCoin();log(`${t.nick||'선원'} 님에게 인사를 건넸다.`,'good');addAff(d.k,AFF.hi,'인사');commit()},
  bioedit(){editBio=true;bioDraft=P.bio||'';renderPanel();setTimeout(()=>{const i=$('#bioIn');if(i)i.focus()},30)},
  biosave(){P.bio=bioDraft.trim().slice(0,40);editBio=false;log(P.bio?'한마디를 바꿨다.':'한마디를 지웠다.');save();renderPanel()},
  biocancel(){editBio=false;renderPanel()},
