@@ -387,7 +387,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .dex-head{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;padding:9px;cursor:pointer;text-align:left}
 .dex-head b{font-family:var(--f-pix);font-weight:400;font-size:11px;color:var(--gold)}
 .dex-head .caret{margin-left:auto;color:var(--mute)}
-.dexbox .dtabs,.dexbox .dex{margin:0 9px}.dexbox .dex{margin-bottom:9px}
+.dexbox .dtabs{margin:0 9px;flex-wrap:wrap}.dexsp{display:flex;flex-direction:column;gap:8px;margin:0 9px 9px}.dexsp .dex{max-height:none;overflow:visible}.dexrl{display:block;font-family:"Galmuri11",var(--f-pix);font-size:12px;margin:2px 0 4px}.dexrl em{font-style:normal;opacity:.7;margin-left:4px}.dexrl.t-c{color:var(--mute,#9aa)}.dexrl.t-r{color:var(--cyan,#5fd8ff)}.dexrl.t-u{color:#c88aff}.dexrl.t-l{color:var(--gold)}.dex .dx-r{border-color:#2a6a80}.dex .dx-u{border-color:#6a3a90}.dex .dx-l{border-color:#a07c30;box-shadow:0 0 8px #ffd65f33}
 .dtabs{display:flex;gap:4px;flex-wrap:wrap}
 .dtabs button{background:var(--panel2);border:2px solid var(--ink);padding:4px 9px;font-size:12.5px;cursor:pointer}
 .dtabs button em{font-style:normal;font-family:var(--f-pix);font-size:10px;color:var(--gold)}
@@ -2237,27 +2237,80 @@ const RAID_MATS=[['r1','plainSpore','평원 정화 포자','leaf','#b9c48a',30,'
   ['r5','abyssPrism','심연 프리즘','gem','#d6d8e0',70,'별빛을 정확히 꺾는 얼음 프리즘','얼어붙은 심연'],['r6','starHeart','붉은 별 심장석','gem','#ff5f6a',90,'멀리까지 울리는 뜨거운 핵 파편','붉은 별의 핵']];
 RAID_MATS.forEach(([z,id,n,ic,t,sv,d,zn])=>ITEMS[id]={n,ic,t,type:'mat',sv,d:`${d}. 원정 「${zn}」에서만 나옵니다.`});
 const FT={c:{n:'일반',hp:[6,14],en:[2,5],xp:4},r:{n:'레어',hp:[18,28],en:[6,10],xp:10},u:{n:'유니크',hp:[35,55],en:[12,20],xp:20},l:{n:'레전더리',hp:[100,140],en:[35,45],xp:45}};
-const FTINT=['#8aa9bd','#a99a74','#93707f','#7f9c85','#9a8fc0','#b0906f','#c4c7d4','#6c8fa8','#a8626b','#bfae80','#7a6fa0','#5f8f8a'];
-const FSHAPE={피라미:'fishs',송사리:'fishs',멸치:'fishs',붕어:'puff',망둥이:'puff',송어:'fishs',장어:'eel',농어:'fishs',가오리:'ray',쏘가리:'puff',아귀:'angl',상어:'fishs',철갑상어:'eel',해룡:'eel'};
+const FTINT=['#8aa9bd'];
 const FISHES={c:[],r:[],u:[],l:[]};
-// sz: [smallest, largest] body length in cm for that kind of fish
-const FSIZE={피라미:[8,15],송사리:[3,6],붕어:[15,45],망둥이:[8,25],멸치:[5,15],송어:[30,80],장어:[40,150],농어:[30,100],가오리:[40,200],쏘가리:[20,60],아귀:[30,120],상어:[100,400],철갑상어:[100,350],해룡:[200,800]};
-function mkFish(tr,name,shape,tint,sz){const t=FT[tr],i=FISHES[tr].length,f=((i*37)%11)/10,id='f'+tr+i;
-  ITEMS[id]={n:name,ic:shape,t:tint,type:'food',hp:Math.round(t.hp[0]+(t.hp[1]-t.hp[0])*f),en:Math.round(t.en[0]+(t.en[1]-t.en[0])*f),tier:t.n,fish:tr,sz:sz||[10,30]};FISHES[tr].push(id)}
-[['c',['먼지','메탄','얼음','자갈','안개','잿빛','갯','점박이','줄무늬','꼬마','은빛','녹슨'],['피라미','송사리','붕어','망둥이','멸치']],
- ['r',['혜성','펄서','성운','오로라빛','궤도','유성'],['송어','장어','농어','가오리','쏘가리']],
- ['u',['블랙홀','초신성','퀘이사','중성자','암흑성운'],['아귀','상어','철갑상어','해룡']]
-].forEach(([tr,pre,base])=>pre.forEach((a,pi)=>base.forEach((b,bi)=>mkFish(tr,a+' '+b,FSHAPE[b],FTINT[(pi*5+bi*7)%FTINT.length],FSIZE[b]))));
-[['오로라 고래상어','fishs','#7f9c85',[800,1800]],['시간을 삼킨 실러캔스','puff','#bfae80',[150,250]],['은하수 용왕','eel','#9a8fc0',[1000,3000]],['마지막 별의 인어','ray','#c4c7d4',[150,220]],['사건의 지평선 리바이어던','angl','#a8626b',[2000,6000]]].forEach(([n,sh,t,sz])=>mkFish('l',n,sh,t,sz));
-/* 낚시터: five fishing spots, each with its own 12 일반 · 6 레어 · 4 유니크 · 1 레전더리 (all 115 fish shared out once) */
-const FSPOTS=(()=>{const c=(p,b)=>'fc'+(p*5+b),r=(p,b)=>'fr'+(p*5+b),u=(p,b)=>'fu'+(p*4+b),R5=[0,1,2,3,4],R6=[0,1,2,3,4,5],R4=[0,1,2,3];
-  const cP=(ps,ex)=>[...ps.flatMap(p=>R5.map(b=>c(p,b))),...ex.map(([p,b])=>c(p,b))];
-  return[
-  {id:'s1',n:'메탄 호수',liq:'메탄',d:'베이스캠프 옆의 잔잔한 메탄 호수. 고리 행성이 수면에 비친다.',c:cP([1,6],[[9,0],[9,1]]),r:R6.map(p=>r(p,0)),u:R4.map(b=>u(2,b)),l:['fl2']},
-  {id:'s2',n:'서리 빙하호',liq:'차가운 메탄',d:'빙하 사이에 갇힌 얼음 호수. 밤이면 오로라가 춤춘다.',c:cP([2,10],[[9,2],[9,3]]),r:R6.map(p=>r(p,2)),u:R4.map(b=>u(3,b)),l:['fl0']},
-  {id:'s3',n:'안개 늪지',liq:'늪물',d:'메탄 안개가 낮게 깔린 늪. 마른 나무와 갈대 사이로 반딧불이 떠다닌다.',c:cP([4,7],[[9,4],[8,0]]),r:R6.map(p=>r(p,1)),u:R4.map(b=>u(4,b)),l:['fl3']},
-  {id:'s4',n:'잿빛 화산 온천',liq:'끓는 온천',d:'화산 기슭의 뜨거운 온천. 잿빛 연기와 불씨가 피어오른다.',c:cP([5,3],[[8,1],[8,2]]),r:R6.map(p=>r(p,4)),u:R4.map(b=>u(1,b)),l:['fl4']},
-  {id:'s5',n:'녹슨 난파선 만',liq:'녹물 바다',d:'추락한 우주선이 반쯤 잠긴 만. 녹슨 선체 아래에 오래된 것들이 산다.',c:cP([11,0],[[8,3],[8,4]]),r:R6.map(p=>r(p,3)),u:R4.map(b=>u(0,b)),l:['fl1']}]})();
+function mkFish(tr,d){const t=FT[tr],i=FISHES[tr].length,f=((i*37)%11)/10,id='f'+tr+i,[n,sh,pat,sz,...pal]=d;
+  ITEMS[id]={n,ic:'fishs',t:pal[1],type:'food',hp:Math.round(t.hp[0]+(t.hp[1]-t.hp[0])*f),en:Math.round(t.en[0]+(t.en[1]-t.en[0])*f),tier:t.n,fish:tr,sz,fsh:sh,fpat:pat,fpal:pal};FISHES[tr].push(id);return id}
+/* 어종 115: five fishing spots × (12 일반 · 6 레어 · 4 유니크 · 1 레전더리), every one its own species.
+   [name, shape, pattern, [min,max] cm, back, flank, belly, fin, accent] */
+const FISH_DB=[
+ {id:'s1',n:'메탄 호수',liq:'메탄',d:'베이스캠프 옆의 잔잔한 메탄 호수. 고리 행성이 수면에 비친다.',
+  c:[['메탄 피라미','minnow','stripe',[8,15],'#4e4472','#9a90c4','#ece8f6','#c08ae0','#ff9ad0'],['보라 송사리','medaka','none',[3,6],'#5a4a7e','#a898d0','#f0ecfa','#b8a8e0','#ffffff'],
+   ['거품 붕어','carp','scales',[15,40],'#4a4e6e','#8c90b4','#e6e6f0','#7a7ea4','#c0c4e0'],['고리 각시붕어','bitter','band',[5,9],'#5a5070','#b4a8c8','#f4f0f8','#e07aa0','#ff5a8a'],
+   ['호수 모래무지','gudgeon','speck',[10,25],'#5e5a50','#aca490','#f0eadc','#9a9078','#3e3a30'],['별빛 빙어','smelt','band',[8,15],'#5a6a8a','#b8c8e8','#f6f9ff','#d0dcf4','#ffffff'],
+   ['메탄 민물새우','shrimp','none',[3,8],'#6a4e8a','#b89ae0','#f4ecff','#d0b0f0','#ff9ad0'],['은하 엔젤피시','angel','bars',[10,20],'#3e4a6e','#b8c4ec','#f6f8ff','#c8d4f8','#2a3458'],
+   ['잔물결 갈겨니','minnow','bars',[10,20],'#3e5a5e','#88b0b0','#eaf6f4','#e08a6a','#2a3e40'],['보라 가재','crayfish','none',[8,15],'#4a2a5e','#9a5ab4','#ead4f4','#7a3a98','#ff8ac0'],
+   ['자줏빛 동사리','goby','blot',[8,18],'#4a3a52','#8e7898','#e6dcea','#7a6488','#2e2236'],['호수 말조개','clam','none',[8,20],'#3a3448','#7a6e90','#d8d0e4','#5a5070','#c0b0e0']],
+  r:[['고리 무지개송어','trout','trout',[30,80],'#3a5a4e','#9ab8a4','#f2f6ee','#88a890','#ff7aa0'],['위성 쏘가리','mandarin','leopard',[20,60],'#5e5236','#c0a870','#f6eed6','#a88e5a','#3e3220'],
+   ['메탄 메기','catfish','speck',[30,120],'#3a3442','#6e6680','#c8c0d4','#5a5470','#1e1a26'],['토성 잉어','koi','koi',[40,100],'#d0d0d8','#f4f4f8','#ffffff','#f0f0f4','#e8502a'],
+   ['달무리 가물치','snakehead','blot',[40,90],'#2e3626','#6a7458','#d6dcc6','#525c42','#1a2014'],['고리 자라','turtle','none',[20,40],'#3a4a2e','#7a9060','#e0e8c8','#6a8050','#2a3420']],
+  u:[['고리행성 철갑상어','sturgeon','plates',[100,350],'#3a3e4e','#7c8298','#d8dce6','#5e6478','#e6eaf4'],['메탄 쏠배감펭','lionfish','bars',[20,38],'#7a2a3a','#e86a7a','#fff0ec','#f8c0c0','#4a0a1a'],
+   ['쌍성 아로와나','arowana','scales',[60,120],'#5a4a2a','#c8b070','#fff6d8','#d8a040','#ff6a3a'],['수면의 비단잉어','koi','koi2',[50,110],'#e8e8ee','#ffffff','#ffffff','#f4f4f8','#ff5a2a']],
+  l:[['고리를 두른 용왕','dragon','stars',[1000,3000],'#2e145e','#8a5ad0','#f2e6ff','#ffd060','#ffffff']]},
+ {id:'s2',n:'서리 빙하호',liq:'차가운 메탄',d:'빙하 사이에 갇힌 얼음 호수. 밤이면 오로라가 춤춘다.',
+  c:[['얼음 빙어','smelt','band',[8,15],'#5a7a9a','#c4dcf0','#f8fcff','#d8ecfa','#ffffff'],['서리 열빙어','smelt','speck',[12,20],'#4e6a7e','#a8c4d4','#f2f8fc','#b8d0de','#2e4454'],
+   ['눈송이 송사리','medaka','spots',[3,6],'#6a8aa8','#d0e4f4','#ffffff','#e4f0fa','#ffffff'],['빙하 둑중개','sculpin','blot',[8,18],'#4a5a6a','#8a9cac','#dce6ee','#7a8ea0','#2a3644'],
+   ['결정 곤들매기','trout','spots',[20,40],'#34505e','#7aa0ae','#eef6f8','#e08a6a','#f4fcff'],['얼음 새우','shrimp','none',[3,8],'#6a8aa8','#c8e0f4','#ffffff','#e0f0fc','#ffffff'],
+   ['냉기 대구','cod','speck',[30,80],'#5a5a4a','#a8a890','#f2f0e4','#8e8e74','#3a3a2a'],['성에 가자미','flat','speck',[15,35],'#5e6a70','#a4b0b4','#e8eef0','#8e9a9e','#3a4448'],
+   ['빙판 날치','flying','none',[15,30],'#3e5e8e','#8ab0e0','#f4f8ff','#b8d4f4','#ffffff'],['눈꽃 청어','herring','scales',[15,30],'#3e5470','#a0b4cc','#f4f8fc','#b4c4d6','#ffffff'],
+   ['얼음 성게','urchin','none',[5,10],'#2a3a5e','#5a7ab0','#c8d8f0','#3a5a90','#a8d0ff'],['서리 해파리','jelly','none',[10,40],'#6a8ab8','#c4dcf8','#ffffff','#e4f0ff','#9ad0ff']],
+  r:[['극광 연어','salmon','grad',[50,90],'#2e5a5a','#7ac8b0','#f0fff8','#5ab0a0','#b0ff8a'],['빙하 곤들매기','trout','spots',[40,80],'#2a4a5a','#6a98a8','#f0f6f8','#e8704a','#ffe8d0'],
+   ['얼음 넙치','flat','spots',[40,120],'#4a5a6a','#8ea4b4','#e4ecf2','#7890a2','#e4f0fa'],['수정 해마','seahorse','band',[10,25],'#5a7a9a','#b8d8f0','#f8fcff','#d8ecfa','#ffffff'],
+   ['빙하 대게','crab','none',[20,60],'#8a3a2a','#e07a5a','#fbe0d0','#c05a3a','#ffd0b0'],['오로라 숭어','mullet','grad',[30,60],'#3e5a6e','#8ac0c0','#f0fcfa','#a090e0','#c0ff9a']],
+  u:[['투명 얼음고기','icefish','glass',[30,60],'#8aa8c0','#d8ecf8','#ffffff','#e4f4ff','#a8d8ff'],['서리 그린란드상어','shark','speck',[200,500],'#3a4048','#6e7680','#c4c8ce','#565e68','#22282e'],
+   ['빙결 개복치','sunfish','speck',[100,300],'#6a7a88','#b8c4ce','#eef2f6','#a0b0bc','#ffffff'],['심해 대왕오징어','squid','none',[300,1200],'#6a2a3a','#c06070','#f8dce0','#a04050','#fff0f0']],
+  l:[['오로라 고래상어','whaleshark','whale',[800,1800],'#173452','#3a7aa8','#eaf6ff','#2e5a80','#c8ffe8']]},
+ {id:'s3',n:'안개 늪지',liq:'늪물',d:'메탄 안개가 낮게 깔린 늪. 마른 나무와 갈대 사이로 반딧불이 떠다닌다.',
+  c:[['늪 미꾸라지','loach','speck',[8,20],'#5a5034','#a8986a','#eee4c8','#8e8058','#3a3220'],['안개 버들붕어','paradise','bars',[5,10],'#3e5a4e','#88b49e','#eef8f2','#e07a5a','#5af0ff'],
+   ['진흙 망둥어','mudskipper','speck',[8,18],'#5a5446','#a49c84','#ece6d6','#8e8670','#7ad0ff'],['이끼 피라미','minnow','speck',[8,15],'#3e5a34','#8ab474','#eef8e6','#a0c880','#2a3e20'],
+   ['수초 구피','guppy','spots',[2,6],'#5a6a5a','#b8c8b4','#f4f8f2','#ff8a4a','#5ad0ff'],['반딧불 테트라','tetra','stripe',[2,5],'#3a4a5e','#9ab0c8','#f2f6fc','#c8e0f4','#e8ff6a'],
+   ['늪 블루길','bluegill','ear',[10,25],'#3a5048','#7a9a88','#f0e0b4','#6a8a78','#1a2a30'],['늪 민물조개','clam','none',[8,20],'#3a4030','#6e7a5a','#d8dcc8','#566048','#b4c098'],
+   ['썩은잎 메기','catfish','blot',[15,40],'#3e3424','#7a6a4e','#d8ccb4','#5e5038','#2a2016'],['연꽃 금붕어','goldfish','none',[8,20],'#c04a1a','#ff8a3a','#ffe8c8','#ffb070','#ffffff'],
+   ['늪 우렁이','snail','none',[3,7],'#4a4430','#9a8e62','#e8e0c4','#7a7050','#d0c090'],['진흙 가재','crayfish','none',[8,15],'#5a3a24','#a86a3a','#f0d8c0','#8a4a24','#ffb070']],
+  r:[['늪 가물치','snakehead','blot',[40,90],'#2a3424','#5e6e4a','#d0d8be','#4a5838','#161e10'],['안개 가아','gar','spots',[50,150],'#3e4a3a','#8a9a7c','#e8eedc','#6a7a5c','#2a3220'],
+   ['이끼 폐어','lungfish','spots',[50,120],'#4a4a32','#8e8e62','#e0dcbe','#6e6e4a','#2a2a18'],['독안개 복어','puffer','spots',[10,30],'#5a6a3a','#b4c47a','#f6f8e4','#a0b06a','#2a3418'],
+   ['반딧불 베타','betta','grad',[5,8],'#2a2a6e','#5a5ad0','#e6e6ff','#a05ae0','#ff6aa0'],['수렁 피라냐','piranha','speck',[20,35],'#4a5058','#9aa0a8','#e8502a','#7e848c','#ff6a3a']],
+  u:[['전기 뱀장어','eeleel','eelspot',[150,250],'#2a2e2a','#5a605a','#e8a03a','#4a504a','#fff36a'],['거대 피라루쿠','arapaima','redtail',[200,400],'#3a4a3e','#7a8a76','#e4dccc','#c83a2a','#ff5a3a'],
+   ['안개 늪거북','turtle','spots',[30,70],'#3a4a3a','#6e8a64','#dde8d0','#5a7454','#e0c060'],['독침 가아','gar','leopard',[80,200],'#2e3a2a','#6e8060','#e0e8d4','#4e5e44','#1e281a']],
+  l:[['마지막 별의 인어','veil','grad',[150,220],'#1e5a7a','#7ad0e8','#f8ffff','#ff9ad0','#fff3a0']]},
+ {id:'s4',n:'잿빛 화산 온천',liq:'끓는 온천',d:'화산 기슭의 뜨거운 온천. 잿빛 연기와 불씨가 피어오른다.',
+  c:[['잿빛 송사리','medaka','speck',[3,6],'#4a4a50','#8e8e96','#e2e2e6','#a4a4ac','#2e2e34'],['온천 틸라피아','tilapia','bars',[15,35],'#4a4440','#8e8478','#e6ded2','#c04a3a','#2e2824'],
+   ['유황 붕어','carp','scales',[15,40],'#6a6020','#c8b84a','#f8f2cc','#b4a43a','#ffe66a'],['화산재 망둥이','goby','speck',[6,15],'#3a3a3e','#7a7a80','#d8d8dc','#626268','#ff7a3a'],
+   ['용암 구피','guppy','grad',[2,6],'#6a3a2a','#d08060','#fbe8dc','#ff5a2a','#ffd060'],['열수 플래티','platy','none',[3,7],'#a8401a','#ff7a3a','#ffe4c8','#ffb050','#2a1810'],
+   ['불씨 테트라','tetra','stripe',[2,5],'#4a3a3a','#a08a84','#f4ece8','#ff5a3a','#ff6a2a'],['유황 해삼','cucumber','none',[15,35],'#6a5420','#c8a84a','#f8ecc0','#a88a30','#fff08a'],
+   ['숯빛 메기','catfish','none',[20,60],'#1e1c1e','#4a464a','#a8a4a8','#363236','#ff6a2a'],['용암 게','crab','none',[8,20],'#6a1a14','#d84a2a','#ffd8c8','#a83020','#ffd060'],
+   ['온천 새우','shrimp','none',[3,8],'#a83a1a','#ff8a5a','#ffe8d8','#ffb090','#fff0c0'],['유황 피라미','minnow','stripe',[8,15],'#6a6430','#c8c070','#f8f4d8','#ffb040','#ff6a2a']],
+  r:[['용암 쏘가리','mandarin','leopard',[20,60],'#6a2a14','#d8703a','#fde6cc','#c05028','#2e0e06'],['화염 난주','goldfish','grad',[10,25],'#b02a14','#ff6a2a','#fff0c8','#ffb040','#ffd060'],
+   ['마그마 복어','puffer','spots',[15,40],'#6a2a1a','#e0784a','#ffe8d0','#c86030','#ffd060'],['흑요석 농어','bass','scales',[30,100],'#16141c','#3e3a4a','#a8a4b4','#2e2a38','#b48aff'],
+   ['불꽃 베타','betta','grad',[5,8],'#7a1a14','#e8402a','#ffe2d6','#ff8a3a','#ffd060'],['불꽃 해파리','jelly','none',[10,40],'#a83a2a','#ff9a6a','#fff0e0','#ffc08a','#ffe06a']],
+  u:[['화산 쏠배감펭','lionfish','bars',[25,40],'#3a1a14','#c8502a','#fff0e0','#ffb07a','#1e0a06'],['초신성 아귀','angler','wart',[40,120],'#5a1e14','#b04a2a','#e8b49a','#8a3a22','#fff36a'],
+   ['용암 곰치','moray','leopard',[100,250],'#3a2410','#a86a2a','#f0d8a8','#7a4a1a','#ffd060'],['마그마 문어','octopus','none',[30,120],'#7a1e14','#e05a3a','#ffd8c8','#c04030','#ffd060']],
+  l:[['사건의 지평선 리바이어던','leviathan','abyss',[2000,6000],'#0c0614','#2a1a3a','#6a4a7a','#ff4a3a','#ffd060']]},
+ {id:'s5',n:'녹슨 난파선 만',liq:'녹물 바다',d:'추락한 우주선이 반쯤 잠긴 만. 녹슨 선체 아래에 오래된 것들이 산다.',
+  c:[['녹슨 정어리','sardine','spots',[10,25],'#2e4a6a','#8aa4c0','#f4f8fc','#a8b8cc','#1e2e44'],['고철 고등어','mackerel','tiger',[25,50],'#1e4a5a','#5a8ea0','#f0f6f8','#7aa4b0','#0e2a34'],
+   ['선체 볼락','rockfish','blot',[15,35],'#4a3a3a','#9a7e78','#eadcd6','#7e6460','#2e2222'],['리벳 가리비','scallop','none',[8,15],'#8a5a2a','#e0a860','#fff0d4','#c08840','#ffe0a8'],
+   ['녹슨 홍합','mussel','none',[5,12],'#16141e','#3a3648','#8a86a0','#2a2636','#a8a0c8'],['닻 흰동가리','clown','clown',[6,11],'#b84a14','#ff8a2a','#ffe0c0','#ff9a40','#ffffff'],
+   ['나사 전갱이','jack','band',[20,45],'#3a5a6a','#9ab4c0','#f4f8fa','#e0c04a','#ffe66a'],['부표 해삼','cucumber','none',[15,35],'#3a2a20','#7a5e48','#d8c8b8','#5a4434','#c0a080'],
+   ['갑판 불가사리','starfish','none',[10,30],'#8a2a1a','#e0603a','#ffd8c0','#c04a2a','#ffc070'],['갑판 가자미','flat','blot',[15,40],'#4a3e30','#8e7a62','#e0d4c4','#6e5e4a','#2e2418'],
+   ['녹물 우럭','rockfish','speck',[20,45],'#3a2e2a','#7a645c','#d8c8c0','#5e4a44','#c05a2a'],['철판 쥐노래미','greenling','blot',[20,45],'#5a4a26','#a8925a','#efe2c0','#8a7440','#3a2e14']],
+  r:[['녹슨 참치','tuna','finlet',[80,200],'#1a2a4a','#5a74a0','#e8eef6','#4a5a80','#ffd040'],['난파선 광어','flat','spots',[40,100],'#4a4232','#8e8064','#e4dac8','#6e624a','#2e2618'],
+   ['해적 돛새치','sailfish','spots',[150,300],'#1a3a6a','#4a7ab0','#e8f2fc','#3a6ab0','#8ad8ff'],['엔진 바닷가재','lobster','none',[30,80],'#6a1a14','#d0402a','#ffd4c4','#a02818','#ffd0b0'],
+   ['레이더 가오리','ray','spots',[60,200],'#3a3e4a','#7a8094','#d4d8e2','#5a6070','#a8f0ff'],['선장 문어','octopus','none',[40,150],'#6a2a3a','#c86a7a','#ffe0e4','#a04a5a','#ffd0d8']],
+  u:[['강철 청새치','marlin','bars',[200,400],'#1a2a4a','#4a6a9a','#e8f0f8','#2a4a80','#8ad0ff'],['심연 아귀','angler','wart',[30,100],'#2a2a2e','#5a5a62','#b4b0b8','#424248','#a8f0ff'],
+   ['기계 상어','shark','plates',[200,500],'#3a4048','#7a8490','#d8dce2','#5a626c','#ff4a3a'],['녹슨 귀상어','hammer','none',[200,450],'#4a4a42','#8e8c80','#e4e2da','#6e6c62','#c0602a']],
+  l:[['시간을 삼킨 실러캔스','coel','coel',[150,250],'#18223e','#4a5a8a','#c8d0e6','#6a7ab0','#eaf2ff']]}];
+FISH_DB.forEach(S=>['c','r','u','l'].forEach(t=>{S[t]=S[t].map(d=>mkFish(t,d))}));
+const FSPOTS=FISH_DB;
 const fspot=()=>FSPOTS.find(x=>x.id===(P&&P.fspot))||FSPOTS[0];
 const fspotOf=id=>FSPOTS.find(x=>['c','r','u','l'].some(t=>x[t].includes(id)));
 // one catch's length: most fish come out small-to-average, a better rod and a perfect cast tilt it larger; top 10% of the range is a 대어
@@ -2311,9 +2364,238 @@ function genFish(seed,fam,tier){let r=7;for(const c of seed)r=(r*31+c.charCodeAt
     if(tier==='l'){for(let k=0;k<10;k++){const x=Math.floor(rnd()*W),y=Math.floor(rnd()*H);if(o2[y][x]==='.')o2[y][x]=rnd()<.5?'q':'u'}}
     return o2.map(r2=>r2.join(''))}
   return out.map(r2=>r2.join(''))}
-{const FAM={피라미:'torpedo',송사리:'torpedo',멸치:'torpedo',붕어:'deep',망둥이:'round',송어:'torpedo',장어:'eel',농어:'torpedo',가오리:'ray',쏘가리:'deep',아귀:'angler',상어:'shark',철갑상어:'sword',해룡:'dragon'};
- const LFAM=['shark','lobed','dragon','ray','angler'];const ACC=['#c9b27a','#7fd0d0','#c48aa4','#9a8fc0','#a8626b','#8ba790','#d6d8e0','#b0906f'];
- for(const tr of ['c','r','u','l'])FISHES[tr].forEach((id,i)=>{const it=ITEMS[id],base=it.n.split(' ').pop();const fam=tr==='l'?LFAM[i]:(FAM[base]||'torpedo');const key='fx_'+id;TPL[key]=genFish(id+it.n,fam,tr);it.big=key;it.po={x:tr==='l'?['#e2d39a','#bfae80','#7fd0d0','#e2e3ea','#a8c98a'][i]:ACC[(i*3+tr.charCodeAt(0))%ACC.length],m:mix(it.t,'#c4c7d4',.15),z:tr==='l'?['rgba(226,211,154,.45)','rgba(191,174,128,.45)','rgba(127,208,208,.45)','rgba(226,227,234,.45)','rgba(168,201,138,.45)'][i]:'rgba(0,0,0,0)'}})}
+/* ───────── fish art v3, drawn from scratch: each shape has its own silhouette, fins, eye, gill and mouth in side view;
+   the fish is turned to swim up-right, shaded dark back → lit flank → pale belly with dithered seams, outlined in its
+   own darkest shade and painted with its own five colours and pattern ───────── */
+function f3pal([bk,fl,be,fi,ac]){const dk=(c,k)=>mix(c,'#05030a',k),lt=(c,k)=>mix(c,'#ffffff',k);
+  return{o:dk(bk,.55),D:mix(bk,fl,.08),d:mix(bk,fl,.32),m:mix(bk,fl,.62),n:fl,l:lt(fl,.3),L:lt(fl,.62),w:be,W:mix(be,fl,.38),f:fi,F:dk(fi,.32),x:ac,X:dk(ac,.3),t:lt(fi,.2),T:ac,e:'#120c18',g:'#ffffff',q:'#fff3a8',u:'#bfe8ff'}}
+// a side-view fish from a handful of measures: length L, depth D (+top/bottom), deepest point pk, nose bluntness, tail stalk
+function f3body(L,D,o={}){const pk=o.pk||.55,a=Math.log(.5)/Math.log(pk),top=o.top||1,bot=o.bot||1,st=o.st||.28,nose=o.nose||.18,x0=-.9*L,pts=[],pb=[];
+  for(let i=0;i<=16;i++){const t=i/16,bump=Math.pow(Math.sin(Math.PI*Math.pow(t,a)),o.full||.75),h=Math.max(st*(1-t)*1.6,bump,i===16?nose:0),x=x0+t*1.9*L;pts.push([x,-D*top*Math.max(h,i===16?nose:st*(1-t))]);pb.push([x,D*bot*Math.max(h,i===16?nose:st*(1-t))])}
+  return[...pts,...pb.reverse()]}
+function f3tail(type,x0,s,T,TH){switch(type){
+  case 'fork':return[[x0+.6,-s],[x0-T,-TH],[x0-T*.5,0],[x0-T,TH],[x0+.6,s]];
+  case 'deep':return[[x0+.6,-s],[x0-T,-TH*1.1],[x0-T*.35,0],[x0-T,TH*1.1],[x0+.6,s]];
+  case 'fan':return[[x0+.6,-s],[x0-T*.75,-TH],[x0-T,-TH*.45],[x0-T,TH*.45],[x0-T*.75,TH],[x0+.6,s]];
+  case 'round':return[[x0+.6,-s],[x0-T*.6,-TH*.85],[x0-T,-TH*.3],[x0-T,TH*.3],[x0-T*.6,TH*.85],[x0+.6,s]];
+  case 'square':return[[x0+.6,-s],[x0-T,-TH],[x0-T*.9,0],[x0-T,TH],[x0+.6,s]];
+  case 'lunate':return[[x0+.6,-s*.5],[x0-T*.5,-TH*1.3],[x0-T*.15,-TH*.2],[x0-T*.05,0],[x0-T*.15,TH*.2],[x0-T*.5,TH*1.3],[x0+.6,s*.5]];
+  case 'hetero':return[[x0+.6,-s],[x0-T*1.3,-TH*1.5],[x0-T*.6,-.3],[x0-T*.75,TH*.75],[x0+.6,s]];
+  case 'double':return[[x0+.6,-s],[x0-T*.8,-TH*1.2],[x0-T*1.2,-TH*.6],[x0-T*.7,0],[x0-T*1.2,TH*.6],[x0-T*.8,TH*1.2],[x0+.6,s]];
+  case 'veil':return[[x0+.6,-s],[x0-T*.6,-TH*1.4],[x0-T*1.4,-TH*1.6],[x0-T*1.7,-TH*.6],[x0-T*1.4,0],[x0-T*1.7,TH*.6],[x0-T*1.4,TH*1.6],[x0-T*.6,TH*1.4],[x0+.6,s]];
+  case 'trident':return[[x0+.6,-s],[x0-T*.7,-TH*1.1],[x0-T*.8,-TH*.4],[x0-T*1.25,-TH*.2],[x0-T*1.25,TH*.2],[x0-T*.8,TH*.4],[x0-T*.7,TH*1.1],[x0+.6,s]];
+  default:return null}}
+// fins along the back (d) or belly (a): from x a→b, height h; kinds: tri, long, spiny, sail, round
+function f3fin(body,side,a,b,h,kind='tri'){const edge=x=>{let e=null;for(let y=-14;y<=14;y+=.25)if(f3in(body,x,y)){if(side<0)return y;e=y}return e};
+  const pts=[],n=kind==='spiny'?Math.max(4,Math.round((b-a)/1.1)):6;
+  for(let i=0;i<=n;i++){const x=b-(b-a)*i/n,t=i/n;let hh=kind==='tri'?h*Math.max(0,1-Math.abs(t-.35)/.65)*(t<.35?t/.35:1):kind==='long'?h*(.55+.45*Math.sin(Math.PI*t)):kind==='sail'?h*Math.sin(Math.PI*Math.min(1,t*1.15)):kind==='round'?h*Math.sqrt(Math.max(0,Math.sin(Math.PI*t))):h*(i%2?.45:1)*(1-.25*t);
+    const ey=edge(x);if(ey===null)continue;pts.push([x,ey+side*(hh+.3)])}
+  const base=[];for(let i=n;i>=0;i--){const x=b-(b-a)*i/n,ey=edge(x);if(ey!==null)base.push([x,ey-side*.6])}
+  return pts.length>1?[...pts,...base]:null}
+function f3in(P,x,y){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if(((yi>y)!==(yj>y))&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c}return c}
+function f3eel(L,th0,th1,amp,ph=.4,headR=0){const pts=[],bot=[],n=28;for(let i=0;i<=n;i++){const t=i/n,x=-L+t*2*L,y=Math.sin(t*5.2+ph)*amp*(1-t*.7),th=th0+(th1-th0)*Math.pow(t,.8)+(headR&&t>.85?headR*(t-.85)/.15:0);pts.push([x,y-th]);bot.push([x,y+th])}
+  pts.push([L+.6,pts[n][1]+th1*.7]);bot.push([L+.6,bot[n][1]-th1*.5]);return[...pts,...bot.reverse()]}
+// shape library: returns {body, fins:[[poly,'f'|'x'|...]], pect, eye:[x,y,big], gill, mouth, rot, extra(fn)}
+function f3shape(k){const S={rot:.52,fins:[]},fin=(p,c='f')=>{if(p)S.fins.push([p,c])};let b,L=10,D=3.2;
+  const std=(o={})=>{L=o.L||10;D=o.D||3.2;b=f3body(L,D,o);S.body=b;const x0=-.9*L,s=D*(o.st||.28)*1.25;fin(f3tail(o.tail||'fork',x0,s,o.T||3.6,o.TH||D*1.15));
+    S.eye=[L*.72,-D*(o.eyeY||.3),o.big];S.gill=L*(o.gill||.5);S.mouth=[L*.98,D*(o.mouthY||.12)];S.pect=[[L*.48,D*.25],[L*.22,D*.95],[L*.36,D*.2]]};
+  const dors=(a,b2,h,kd)=>fin(f3fin(S.body,-1,a*L,b2*L,h,kd)),anal=(a,b2,h,kd)=>fin(f3fin(S.body,1,a*L,b2*L,h,kd));
+  switch(k){
+   case 'minnow':std({L:10,D:2.9,pk:.55});dors(-.3,.1,3);anal(-.62,-.22,2.4);fin(f3fin(S.body,1,.05*L,.2*L,1.6));break;
+   case 'medaka':std({L:8,D:2.5,pk:.5,top:.85,tail:'fan',T:3.2,big:1});dors(-.7,-.45,2);anal(-.7,.1,2,'long');break;
+   case 'carp':std({L:10,D:4.6,pk:.6,tail:'fork',T:3.8});dors(-.5,.25,2.6,'long');anal(-.6,-.35,2.4);fin(f3fin(S.body,1,0,.2*L,1.8));S.barb=1;break;
+   case 'koi':std({L:11,D:4,pk:.58,tail:'fork',T:4});dors(-.55,.25,2.4,'long');anal(-.62,-.38,2.2);S.barb=1;break;
+   case 'bitter':std({L:7.5,D:3.6,pk:.55,tail:'fork',T:3});dors(-.4,.1,2.2,'long');anal(-.5,0,2,'long');break;
+   case 'gudgeon':std({L:10,D:2.6,pk:.62,bot:.8,top:1.1,tail:'fork'});dors(-.15,.25,2.6);anal(-.6,-.4,1.6);S.barb=1;S.mouth=[L*.92,D*.5];break;
+   case 'smelt':std({L:10,D:2.2,pk:.5,tail:'fork',T:3.4});dors(-.15,.05,2.2);dors(-.62,-.52,1.2);anal(-.65,-.35,1.6);break;
+   case 'anchovy':std({L:10,D:2.2,pk:.5,tail:'deep',T:3.8,big:1,nose:.4});dors(-.1,.1,2.2);anal(-.55,-.35,1.4);S.mouth=[L*.92,D*.4];break;
+   case 'sardine':std({L:10,D:2.6,pk:.5,tail:'deep',T:3.8});dors(-.15,.1,2.2);anal(-.6,-.4,1.3);break;
+   case 'herring':std({L:10,D:2.8,pk:.45,tail:'deep',T:3.8});dors(-.15,.15,2.4);anal(-.6,-.38,1.4);break;
+   case 'perch':std({L:9.5,D:3.6,pk:.5,tail:'square'});dors(-.05,.45,3,'spiny');dors(-.55,-.1,2.4);anal(-.6,-.3,2.2);S.mouth=[L*.98,D*.2];break;
+   case 'bass':std({L:10.5,D:3.8,pk:.5,tail:'square',T:3.8});dors(0,.45,3.2,'spiny');dors(-.55,-.05,2.6);anal(-.62,-.32,2.4);S.jaw=1;break;
+   case 'rockfish':std({L:9.5,D:4,pk:.55,tail:'square'});dors(-.1,.55,3.2,'spiny');dors(-.6,-.15,2.2);anal(-.62,-.32,2.2);S.jaw=1;S.eye[2]=1;break;
+   case 'greenling':std({L:10.5,D:3.2,pk:.5,tail:'square'});dors(-.7,.5,2.4,'long');anal(-.7,-.1,2,'long');break;
+   case 'mandarin':std({L:10,D:4.4,pk:.5,tail:'round',T:3.4});dors(-.1,.5,3.4,'spiny');dors(-.6,-.15,2.6,'round');anal(-.62,-.3,2.4,'round');S.jaw=1;break;
+   case 'tilapia':std({L:9.5,D:4.4,pk:.5,tail:'square'});dors(-.6,.45,2.8,'spiny');anal(-.62,-.15,2.6,'long');break;
+   case 'goby':std({L:10,D:2.6,pk:.64,full:.5,top:1.15,tail:'round',T:3,nose:.5});dors(.05,.3,2.4);dors(-.55,-.1,2.2,'long');anal(-.55,-.1,1.8,'long');S.eye=[L*.72,-D*.85];S.pect=[[L*.48,D*.1],[L*.2,D*1.2],[L*.3,D*.1]];break;
+   case 'mudskipper':std({L:10,D:2.7,pk:.64,full:.5,top:1.2,tail:'round',T:3,nose:.55});dors(-.2,.25,3.4,'sail');anal(-.55,-.1,1.6,'long');S.eye=[L*.7,-D*1.15,1];S.pect=[[L*.5,D*.3],[L*.28,D*1.8],[L*.36,D*.3]];break;
+   case 'sculpin':std({L:9,D:3,pk:.66,full:.5,top:1.2,tail:'round',T:3,nose:.6,big:1});dors(.0,.3,2.2,'spiny');dors(-.6,-.05,2.2,'long');anal(-.6,-.1,1.8,'long');S.pect=[[L*.5,0],[L*.05,D*2],[L*.3,D*.4]];S.mouth=[L*.95,D*.3];break;
+   case 'cod':std({L:10.5,D:3.4,pk:.6,tail:'square',T:3.2});dors(.12,.38,2.2,'round');dors(-.22,.08,2,'round');dors(-.62,-.28,1.8,'round');anal(-.25,.02,1.8,'round');anal(-.62,-.3,1.6,'round');S.chin=1;break;
+   case 'trout':std({L:10.5,D:3.3,pk:.5,tail:'square',T:3.6});dors(-.15,.12,3);dors(-.7,-.6,1.2,'round');anal(-.62,-.38,2);fin(f3fin(S.body,1,0,.15*L,1.6));break;
+   case 'salmon':std({L:11,D:3.4,pk:.48,tail:'square',T:3.8});dors(-.15,.12,3);dors(-.7,-.6,1.2,'round');anal(-.62,-.38,2);S.hook=1;break;
+   case 'mullet':std({L:10,D:3,pk:.45,tail:'fork',T:3.6,nose:.35});dors(.05,.25,2.2,'spiny');dors(-.48,-.3,1.8);anal(-.55,-.35,1.8);break;
+   case 'predator':std({L:11,D:3,pk:.45,tail:'deep',T:3.8});dors(-.2,.1,2.6);anal(-.62,-.25,2.4,'long');S.jaw=1;break;
+   case 'jack':std({L:10,D:3.4,pk:.45,tail:'deep',T:4.2});dors(-.5,.2,2.2,'long');anal(-.5,-.05,1.8,'long');S.scutes=1;break;
+   case 'mackerel':std({L:11,D:2.8,pk:.48,tail:'deep',T:3.8});dors(.0,.22,2.2);dors(-.45,-.25,1.6);anal(-.45,-.28,1.4);S.finlets=1;break;
+   case 'tuna':std({L:11,D:4,pk:.45,tail:'lunate',T:4,TH:5.6,st:.18});dors(.0,.25,2.6);dors(-.42,-.25,2.8);anal(-.42,-.25,2.6);S.finlets=1;break;
+   case 'wrasse':std({L:10,D:3,pk:.5,tail:'round',T:3,nose:.3});dors(-.6,.4,1.8,'long');anal(-.62,-.1,1.6,'long');break;
+   case 'filefish':std({L:9,D:4.6,pk:.5,tail:'fan',T:3,nose:.25});anal(-.62,-.05,2.2,'long');dors(-.6,-.05,2.2,'long');S.spine=1;break;
+   case 'halfbeak':std({L:11,D:2.3,pk:.5,tail:'deep',T:3.6});dors(-.65,-.4,1.8);anal(-.65,-.4,1.8);S.lowbill=1;break;
+   case 'flying':std({L:10,D:2.6,pk:.5,tail:'deep',T:4});dors(-.5,-.3,1.6);anal(-.55,-.35,1.4);S.pect=[[L*.45,-D*.3],[-L*.5,-D*2.6],[-L*.6,-D*1.4],[L*.2,D*.2]];S.wing=1;break;
+   case 'guppy':std({L:6.5,D:2.2,pk:.55,tail:'fan',T:5,TH:4.4,big:1});dors(-.45,-.1,2.4,'sail');S.tailx=1;break;
+   case 'tetra':std({L:6.5,D:2.4,pk:.5,tail:'fork',T:3,big:1});dors(-.2,.05,2.4);dors(-.62,-.55,.8,'round');anal(-.55,-.2,1.8,'long');break;
+   case 'platy':std({L:6.5,D:2.8,pk:.5,tail:'fan',T:3,big:1});dors(-.3,.1,2.4,'round');anal(-.45,-.2,1.6);break;
+   case 'paradise':std({L:7.5,D:2.8,pk:.5,tail:'fork',T:4.6,TH:4});dors(-.62,-.05,2.6,'long');anal(-.62,.05,2.8,'long');break;
+   case 'bluegill':std({L:8,D:4.6,pk:.5,tail:'fork',T:3,nose:.25});dors(-.55,.35,2.4,'spiny');anal(-.6,-.15,2.4,'round');S.ear=1;break;
+   case 'goldfish':std({L:7,D:4.4,pk:.5,tail:'double',T:4.4,TH:4.4,big:1,nose:.3});dors(-.4,.25,3,'round');anal(-.55,-.25,1.8,'round');break;
+   case 'betta':std({L:7,D:2.6,pk:.5,tail:'veil',T:4,TH:3.6});dors(-.6,-.1,3.6,'round');anal(-.6,.2,4.2,'long');S.veil=1;break;
+   case 'piranha':std({L:8.5,D:4.6,pk:.6,tail:'fork',T:3.2,nose:.4});dors(-.3,.1,2.6);dors(-.68,-.58,1,'round');anal(-.6,-.2,2.6,'long');S.teeth=1;S.mouth=[L*.95,D*.35];break;
+   case 'catfish':std({L:11,D:3,pk:.64,full:.55,top:.9,tail:'round',T:3,nose:.55});dors(.1,.28,2.2);anal(-.7,.05,1.6,'long');S.barbL=1;S.eye=[L*.78,-D*.45];S.rot=.42;break;
+   case 'snakehead':std({L:11.5,D:2.6,pk:.62,tail:'round',T:2.8,nose:.5});dors(-.75,.45,1.8,'long');anal(-.75,.05,1.6,'long');S.rot=.46;break;
+   case 'arowana':std({L:11.5,D:2.8,pk:.55,tail:'round',T:3,nose:.4});dors(-.82,-.4,2.6,'long');anal(-.82,-.2,2.6,'long');S.mouth=[L*.98,-D*.3];S.barb=2;S.rot=.4;break;
+   case 'arapaima':std({L:12,D:3,pk:.55,tail:'round',T:3,nose:.45});dors(-.78,-.45,2.4,'long');anal(-.78,-.4,2.4,'long');S.rot=.4;break;
+   case 'gar':std({L:12,D:2,pk:.45,tail:'round',T:2.6,nose:.3});dors(-.75,-.6,1.6,'round');anal(-.75,-.6,1.6,'round');S.beak=1;S.rot=.42;break;
+   case 'sturgeon':std({L:12,D:2.8,pk:.6,tail:'hetero',T:3.6,nose:.15});dors(-.7,-.55,1.8);anal(-.7,-.55,1.4);S.plates=1;S.barbS=1;S.rot=.42;break;
+   case 'icefish':std({L:11,D:2.6,pk:.55,tail:'round',T:2.8,nose:.15});dors(-.2,.15,2.4,'round');dors(-.7,-.25,1.6,'long');anal(-.7,-.25,1.6,'long');S.duck=1;S.rot=.42;break;
+   case 'shark':std({L:12,D:3.4,pk:.6,tail:'hetero',T:4,st:.22,nose:.3});dors(-.08,.18,4.2,'sail');dors(-.62,-.5,1.4);anal(-.6,-.5,1);S.pect=[[L*.4,D*.6],[L*.02,D*2.4],[L*.18,D*.7]];S.slits=1;S.rot=.42;break;
+   case 'hammer':std({L:12,D:3.2,pk:.6,tail:'hetero',T:4,st:.22,nose:.3});dors(-.08,.18,4.4,'sail');dors(-.62,-.5,1.2);S.pect=[[L*.4,D*.6],[L*.02,D*2.4],[L*.18,D*.7]];S.hammer=1;S.slits=1;S.rot=.42;break;
+   case 'whaleshark':std({L:13,D:3.8,pk:.62,tail:'hetero',T:4.6,st:.22,nose:.5,top:.9});dors(-.18,.05,3.6,'sail');dors(-.6,-.5,1.4);S.pect=[[L*.42,D*.6],[L*.05,D*2.4],[L*.2,D*.7]];S.slits=1;S.eye=[L*.86,-D*.05];S.mouth=null;S.wide=1;S.rot=.4;break;
+   case 'sailfish':std({L:12,D:2.8,pk:.5,tail:'lunate',T:4,TH:5,st:.18});dors(-.5,.5,6.6,'sail');anal(-.45,-.3,1.8);S.bill=4.5;S.rot=.4;break;
+   case 'marlin':std({L:12.5,D:3.6,pk:.5,tail:'lunate',T:4.2,TH:5.4,st:.18});dors(-.05,.45,4.6,'tri');anal(-.45,-.3,2);S.bill=5;S.rot=.4;break;
+   case 'mola':case 'sunfish':S.body=f3body(7,6,{pk:.45,st:.85,nose:.5,full:.5});S.fins.push([[[-5,-4],[-3.4,-11],[-1.4,-10.6],[0,-4.6]],'f'],[[[-5,4],[-3.4,11],[-1.4,10.6],[0,4.6]],'f'],[[[-6.4,-4.4],[-8.4,-2.6],[-8.6,0],[-8.4,2.6],[-6.4,4.4]],'F']);S.eye=[5,-1.8,1];S.gill=3.6;S.mouth=[6.8,.4];S.pect=[[3.6,0],[1.4,1.6],[2.6,0]];S.rot=.2;break;
+   case 'puffer':S.body=f3body(7,5.6,{pk:.55,st:.3,nose:.45,full:.45});fin(f3tail('fan',-6.3,1.6,3,3));fin(f3fin(S.body,-1,-4.6,-2,1.8,'round'));fin(f3fin(S.body,1,-4.6,-2.4,1.6,'round'));S.eye=[4.4,-2.4,1];S.gill=2.6;S.mouth=[6.6,.6];S.pect=[[2.6,0],[.6,1.8],[1.6,0]];S.spikes=1;S.rot=.2;break;
+   case 'angler':S.body=f3body(10,5.6,{pk:.72,st:.3,nose:.75,full:.5});fin(f3tail('fan',-9,1.6,3.6,3.6));fin(f3fin(S.body,-1,-6,-3.4,2,'round'));fin(f3fin(S.body,1,-6.4,-3.4,1.8,'round'));S.eye=[5.4,-3.4,1];S.gill=3;S.pect=[[2.4,2.6],[-1.4,6.2],[-1.6,3.2]];S.teeth=1;S.lure=1;S.rot=.36;break;
+   case 'leviathan':S.body=f3body(12,5.8,{pk:.7,st:.25,nose:.7,full:.55});fin(f3tail('trident',-10.8,1.8,4.6,5));fin(f3fin(S.body,-1,-9,6,3.6,'spiny'));fin(f3fin(S.body,1,-8,-3,2.2,'round'));S.eye=[7.2,-2.8,1];S.gill=4.2;S.pect=[[3,3],[-1.4,7.6],[-1.8,3.6]];S.teeth=1;S.glow=1;S.rot=.36;break;
+   case 'lionfish':std({L:9,D:3.6,pk:.5,tail:'fan',T:3});dors(-.6,.5,5.6,'spiny');anal(-.6,-.25,3.2,'spiny');S.pect=[[L*.4,D*.3],[-L*.5,D*2.6],[-L*.2,D*3.2],[L*.2,D*.6]];S.pectRays=1;break;
+   case 'flat':S.body=f3body(9,5.4,{pk:.5,st:.32,nose:.45,full:.6});fin(f3tail('fan',-8.1,1.8,3,3.2));fin(f3fin(S.body,-1,-7.4,6.4,1.5,'long'),'F');fin(f3fin(S.body,1,-7.4,4.6,1.5,'long'),'F');S.eye=[5.6,-2.2];S.eye2=[6.6,-.6];S.gill=4;S.mouth=[8,.6];S.flat=1;S.rot=.3;break;
+   case 'ray':S.body=[[8,0],[5,-2.6],[1,-5.4],[-2,-9.4],[-4.6,-4.4],[-6.4,0],[-4.6,4.4],[-2,9.4],[1,5.4],[5,2.6]];S.fins.push([[[-6,-.5],[-16,-.3],[-16,.3],[-6,.5]],'d']);S.ray=1;S.eye=[3,-1.8];S.eye2=[3,1.8];S.rot=.3;break;
+   case 'seahorse':{const P=[];for(let i=0;i<=20;i++){const t=i/20,y=-7+t*14,x=Math.sin(t*2.6)*2.6-1+(t>.75?(t-.75)*-10:0),w=1.4+Math.sin(Math.PI*Math.min(1,t*1.3))*1.6;P.push([x+w,y])}const Q=[];for(let i=20;i>=0;i--){const t=i/20,y=-7+t*14,x=Math.sin(t*2.6)*2.6-1+(t>.75?(t-.75)*-10:0),w=1.4+Math.sin(Math.PI*Math.min(1,t*1.3))*1.6;Q.push([x-w*.8,y])}
+     S.body=[[2.6,-9],[6.6,-8.4],[6.8,-7.6],[2.8,-6.8],...P.slice(2),...Q.slice(0,-2),[-.6,-9.4]];S.fins.push([[[-1.6,-2],[-4,-1],[-3.6,1.6],[-1.4,1.2]],'f']);S.eye=[1.6,-8.2];S.gill=null;S.mouth=null;S.rot=0;S.ridges=1;break}
+   case 'eel':S.body=f3eel(12,.6,1.8,1.6);fin(f3fin(S.body,-1,-11,3,1,'long'));fin(f3fin(S.body,1,-11,0,.9,'long'));S.eye=[10.6,-.9];S.gill=9.4;S.mouth=[12.4,.2];S.rot=.36;break;
+   case 'eeleel':S.body=f3eel(12.5,.9,2.4,1.4);fin(f3fin(S.body,1,-12,6,1.4,'long'));S.eye=[11,-1.2];S.gill=9.6;S.mouth=[13,.4];S.rot=.36;break;
+   case 'moray':S.body=f3eel(12,1.2,2.6,1.8,.4,.8);fin(f3fin(S.body,-1,-11.5,9,1.2,'long'));fin(f3fin(S.body,1,-11.5,4,1,'long'));S.eye=[10.6,-1.6,1];S.gill=null;S.teeth=2;S.rot=.36;break;
+   case 'loach':S.body=f3eel(10,.9,1.5,.8,.2);fin(f3tail('round',-10,1,2.4,2));fin(f3fin(S.body,-1,-3,0,1.4));S.eye=[8.6,-.6];S.gill=7.6;S.mouth=[10.4,.4];S.barbL=2;S.rot=.4;break;
+   case 'lungfish':S.body=f3eel(11.5,1,2.6,.9,.2);fin(f3fin(S.body,-1,-11,-2,1.2,'long'));fin(f3fin(S.body,1,-11,-5,1,'long'));S.eye=[9.6,-1];S.gill=8;S.mouth=[11.8,.6];S.filam=1;S.rot=.38;break;
+   case 'dragon':S.body=f3eel(13,.9,2.6,2.2,.4,.6);S.eye=[11.2,-1.4,1];S.gill=null;S.mouth=[13.4,.8];S.dragon=1;S.rot=.36;break;
+   case 'veil':std({L:7.5,D:3,pk:.5,tail:'veil',T:4.4,TH:4.2,big:1});dors(-.7,.2,5.2,'round');anal(-.7,.15,5.6,'long');S.veil=1;break;
+   case 'coel':std({L:11,D:4.6,pk:.5,tail:'trident',T:4,TH:5});S.fins.push([f3fin(S.body,-1,.0*11,.22*11,3,'round'),'f'],[f3fin(S.body,-1,-.55*11,-.32*11,3,'round'),'f'],[f3fin(S.body,1,-.55*11,-.32*11,3,'round'),'f'],[f3fin(S.body,1,.1*11,.28*11,2.6,'round'),'f']);S.pect=[[5,1.6],[1.4,6],[.4,4.4],[2.4,1.6]];S.eye[2]=1;break;
+   case 'clown':std({L:8,D:3.4,pk:.5,tail:'round',T:2.8,nose:.4,big:1});dors(-.6,.35,2.2,'round');anal(-.6,-.15,1.8,'round');S.pect=[[L*.45,D*.3],[L*.15,D*1.1],[L*.3,D*.2]];break;
+   case 'angel':S.body=f3body(6.5,5.6,{pk:.5,st:.3,nose:.3,full:.55});fin(f3tail('fan',-5.9,1.6,3,3));fin(f3fin(S.body,-1,-5,3.4,7,'sail'));fin(f3fin(S.body,1,-5,2.4,7,'sail'));S.eye=[4.6,-1.4,1];S.gill=3;S.mouth=[6.3,.3];S.pect=[[3,1],[1,2.6],[2,.6]];S.rot=.25;break;
+   case 'shrimp':case 'prawn':{const P=[],Q=[],n=22;for(let i=0;i<=n;i++){const t=i/n,a=Math.PI*1.15-t*Math.PI*1.05,cx=Math.cos(a),cy=-Math.sin(a),th=.7+2.1*Math.pow(t,.55),x=6.6*cx,y=2+6*cy;P.push([x+cx*th,y+cy*th]);Q.push([x-cx*th*.85,y-cy*th*.85])}
+     S.bodies=[[...P,...Q.reverse()]];const tl=[6.6*Math.cos(Math.PI*1.15),2-6*Math.sin(Math.PI*1.15)];S.fins.push([[[tl[0]+.6,tl[1]-.6],[tl[0]-2.6,tl[1]+.6],[tl[0]-1.6,tl[1]+2.6],[tl[0]+.8,tl[1]+.8]],'f']);
+     S.segs=[];for(let k=1;k<=6;k++){const t=.1+k*.1,a=Math.PI*1.15-t*Math.PI*1.05;S.segs.push([[6.6*Math.cos(a)*.7,2-6*Math.sin(a)*.7],[6.6*Math.cos(a)*1.4,2-6*Math.sin(a)*1.4]])}
+     S.lines=[[[6.4,-1.6],[13,-6.4],'F'],[[6.8,-1.2],[13.6,-3.4],'F'],[[7,.4],[10.4,1.4],'F']];for(let k=0;k<5;k++){const t=.35+k*.09,a=Math.PI*1.15-t*Math.PI*1.05,x=6.6*Math.cos(a),y=2-6*Math.sin(a);S.lines.push([[x*.75,y*.8+.6],[x*.5,y*.6+2],'F'])}
+     S.eye=[6.4,-2.2];S.shade='round';S.rot=.15;break}
+   case 'lobster':case 'crayfish':{const cl=k==='lobster'?1.2:1;S.bodies=[[[-2,-2.8],[2,-3.4],[5,-2.6],[7.4,0],[5,2.6],[2,3.4],[-2,2.8]],[[-2.4,-2.6],[-6,-2.2],[-9.6,-1.4],[-9.6,1.4],[-6,2.2],[-2.4,2.6]],
+       [[7.6,-3.6],[10.8,-5.6*cl],[12.6,-4.6],[11.6,-3.2],[13,-2.6],[10.8,-1.8]],[[7.6,3.6],[10.8,5.6*cl],[12.6,4.6],[11.6,3.2],[13,2.6],[10.8,1.8]]];
+     S.fins.push([[[-9.2,-1.2],[-12.6,-3.2],[-13.2,0],[-12.6,3.2],[-9.2,1.2]],'f']);S.segs=[[[-3.6,-2.8],[-3.6,2.8]],[[-5.4,-2.4],[-5.4,2.4]],[[-7.2,-2],[-7.2,2]],[[-8.8,-1.6],[-8.8,1.6]]];
+     S.lines=[[[5.4,-2.2],[8,-3.8],'d'],[[5.4,2.2],[8,3.8],'d'],[[7,-.6],[15.6,-6.4],'F'],[[7,.6],[15.6,6.4],'F'],[[7.2,0],[12.4,-1],'F']];for(const sd of[-1,1])for(let k=0;k<4;k++)S.lines.push([[3.4-k*1.4,sd*3],[2.4-k*1.4,sd*5.2],'F']);
+     S.eye=[6.2,-1.6];S.eye2=[6.2,1];S.shade='round';S.rot=.62;break}
+   case 'crab':S.bodies=[[[-6.6,1],[-5.6,-2.4],[-2.6,-4.2],[2.6,-4.2],[5.6,-2.4],[6.6,1],[4.6,3.8],[0,4.8],[-4.6,3.8]],[[4.6,-3.4],[7.6,-7.4],[9.8,-7.6],[9.2,-5.6],[10.4,-4.6],[7.6,-3.6]],[[-4.6,-3.4],[-7.6,-7.4],[-9.8,-7.6],[-9.2,-5.6],[-10.4,-4.6],[-7.6,-3.6]]];
+     S.lines=[];for(const sd of[-1,1])for(let k=0;k<4;k++){const y=-.6+k*1.5;S.lines.push([[sd*6,y],[sd*9,y+.4+k*.4],'F'],[[sd*9,y+.4+k*.4],[sd*10.4,y+2.8+k*.5],'F'])}
+     S.lines.push([[-1.4,-4],[-1.6,-5.6],'D'],[[1.4,-4],[1.6,-5.6],'D']);S.eye=[-2.2,-6.4];S.eye2=[1,-6.4];S.shade='round';S.rot=0;S.small=1;break;
+   case 'scallop':{const P=[[0,5.2],[-2.4,5],[-2.6,3.8]];for(let i=0;i<=16;i++){const a=Math.PI*(1.08-i*1.16/16);P.push([Math.cos(a)*7.2,3.6-Math.sin(a)*7.6])}P.push([2.6,3.8],[2.4,5]);S.bodies=[P];S.ribs=1;S.shade='round';S.rot=0;S.eye=null;break}
+   case 'clam':S.bodies=[[[-6.6,1.6],[-6,-1.6],[-3.6,-3.6],[0,-4.4],[3.6,-3.6],[6,-1.6],[6.6,1.6],[4,3.4],[0,3.8],[-4,3.4]]];S.rings=1;S.shade='round';S.rot=0;S.eye=null;break;
+   case 'mussel':S.bodies=[[[-7,1.4],[-5,-1.6],[-1,-3.2],[4,-3],[7.6,-.6],[7.2,1.4],[3,2.6],[-3,3]]];S.rings=1;S.shade='round';S.rot=-.4;S.eye=null;break;
+   case 'snail':{const P=[];for(let i=0;i<=24;i++){const a=i/24*Math.PI*2;P.push([Math.cos(a)*5.2,-1+Math.sin(a)*4.6])}S.bodies=[P,[[-6.4,3.6],[-4,2],[4,2.6],[7.4,3.4],[7,4.8],[-6,5]]];S.spiral=1;S.lines=[[[6.4,3],[8.2,.6],'F'],[[5.6,3],[6.8,.4],'F']];S.shade='round';S.rot=0;S.eye=null;break}
+   case 'cucumber':{const P=[],Q=[],n=20;for(let i=0;i<=n;i++){const t=i/n,x=-9+t*18,y=Math.sin(t*3)*1.2,th=2.4+Math.sin(t*Math.PI)*1+(i%3===0?.5:0);P.push([x,y-th]);Q.push([x,y+th*.9])}S.bodies=[[...P,...Q.reverse()]];S.lines=[[[9,-.6],[11,-2],'f'],[[9.2,.4],[11.4,0],'f'],[[9,1.2],[10.8,2.4],'f']];S.warts=1;S.shade='round';S.rot=.45;S.eye=null;break}
+   case 'octopus':{const tent=(sx,ex,ey,cu)=>{const P=[],Q=[];for(let i=0;i<=10;i++){const t=i/10,x=sx+(ex-sx)*t+Math.sin(t*3)*cu,y=.6+(ey-.6)*t,th=1.3*(1-t*.7);P.push([x-th,y]);Q.push([x+th,y])}return[...P,...Q.reverse()]};
+     S.bodies=[[[-4.4,-2.8],[-4,-6.6],[-1.6,-8.8],[1.6,-8.8],[4,-6.6],[4.4,-2.8],[3.2,.8],[-3.2,.8]],tent(-3,-8.6,5,1.6),tent(-1.4,-4.4,8,-1.2),tent(.4,.6,8.4,1.4),tent(1.8,5,8,-1.6),tent(3,8.4,5,1.2)];S.eye=[-2.4,-3];S.eye2=[1.4,-3];S.suckers=1;S.shade='round';S.rot=0;break}
+   case 'squid':S.bodies=[[[-2,-2.4],[3,-2.8],[8,-1.6],[11,0],[8,1.6],[3,2.8],[-2,2.4]],[[-2.2,-1.8],[-4.4,-2],[-4.4,2],[-2.2,1.8]]];S.fins.push([[[7,-1.6],[9.6,-4.4],[11.2,0],[9.6,4.4],[7,1.6]],'f']);
+     S.lines=[];for(let k=0;k<6;k++){const y0=-1.5+k*.6;S.lines.push([[-4.4,y0],[-9-k%2*1.6,y0*2.2+Math.sin(k)*1.2],'f'])}S.lines.push([[-4.4,-.4],[-12.4,-3],'F'],[[-4.4,.4],[-12.4,2.4],'F']);S.eye=[-3.4,-1.2,1];S.shade='round';S.rot=.62;break;
+   case 'jelly':{const P=[];for(let i=0;i<=18;i++){const a=Math.PI+i/18*Math.PI;P.push([Math.cos(a)*6,-1+Math.sin(a)*5.4])}for(let i=0;i<=8;i++)P.push([6-i*1.5,-1+(i%2?1.1:0)]);S.bodies=[P];S.lines=[];for(let k=0;k<5;k++){const x=-4.6+k*2.3;for(let j=0;j<4;j++)S.lines.push([[x+Math.sin(j+k)*.9,j*2.4],[x+Math.sin(j+k+1)*.9,(j+1)*2.4],k%2?'t':'T'])}
+     S.lines.push([[-.6,0],[-1.4,6.4],'f'],[[.6,0],[1.2,6.8],'f']);S.shade='round';S.jelly=1;S.rot=0;S.eye=null;break}
+   case 'starfish':{const P=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?3:7.6;P.push([Math.cos(a)*r,Math.sin(a)*r+.6])}S.bodies=[P];S.warts=1;S.shade='round';S.rot=.15;S.eye=null;break}
+   case 'urchin':{const P=[];for(let i=0;i<=20;i++){const a=i/20*Math.PI*2;P.push([Math.cos(a)*4.4,Math.sin(a)*4.2])}S.bodies=[P];S.lines=[];for(let k=0;k<16;k++){const a=k/16*Math.PI*2+.1;S.lines.push([[Math.cos(a)*4,Math.sin(a)*3.8],[Math.cos(a)*7.6,Math.sin(a)*7.2],k%2?'T':'t'])}S.warts=1;S.shade='round';S.rot=0;S.eye=null;break}
+   case 'turtle':S.bodies=[[[-5.6,0],[-4.6,-3.6],[-1,-5],[3,-4.6],[5.6,-2.4],[6.2,0],[5.6,2.4],[3,4.6],[-1,5],[-4.6,3.6]],[[5.8,-1.4],[8.6,-1.6],[9.6,0],[8.6,1.6],[5.8,1.4]]];
+     S.fins.push([[[3,-4],[6.8,-7.6],[7.4,-6.4],[4.8,-3]],'f'],[[[3,4],[6.8,7.6],[7.4,6.4],[4.8,3]],'f'],[[[-3.6,-3.6],[-6.6,-5.6],[-5.4,-3]],'f'],[[[-3.6,3.6],[-6.6,5.6],[-5.4,3]],'f'],[[[-5.6,-.6],[-7.4,0],[-5.6,.6]],'f']);S.plates2=1;S.eye=[8.4,-.8];S.shade='round';S.rot=.5;break;
+   default:std({})}
+  S.fins=S.fins.filter(([p])=>p&&p.length>2);return S}
+function genFish3(it,tier,seedS){let r=7;for(const c of seedS)r=(r*31+c.charCodeAt(0))>>>0;const rnd=()=>((r=(Math.imul(r,1103515245)+12345)>>>0)/4294967296);
+  const sp=f3shape(it.fsh),pat=it.fpat,sz={c:1,r:1.08,u:1.18,l:1.32}[tier],A=sp.rot,ca=Math.cos(A),sn=Math.sin(A),parts=sp.bodies||[sp.body],body=parts[0];
+  const pts=[...parts.flat(),...sp.fins.flatMap(([p])=>p),...(sp.pect||[]),...(sp.lines||[]).flatMap(([a,b])=>[a,b])];if(sp.bill)pts.push([12*1+sp.bill,0]);
+  const T=([x,y])=>[x*sz*ca+y*sz*sn,-x*sz*sn+y*sz*ca];let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;pts.forEach(p=>{const [X,Y]=T(p);x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y)});
+  if(sp.lure||sp.dragon)y0-=4;if(sp.dragon||sp.barbL)x1+=2;if(sp.beak||sp.lowbill)x1+=3;if(sp.hammer)y0-=1.5;
+  const W=Math.ceil(x1-x0)+3,H=Math.ceil(y1-y0)+3,N=Math.max(W,H),ox=x0-1.5-(N-W)/2,oy=y0-1.5-(N-H)/2;
+  const g=Array.from({length:N},()=>Array(N).fill('.')),loc=(x,y)=>{const X=x+.5+ox,Y=y+.5+oy;return[(X*ca-Y*sn)/sz,(X*sn+Y*ca)/sz]},scr=([lx,ly])=>{const [X,Y]=T([lx,ly]);return[Math.floor(X-ox),Math.floor(Y-oy)]};
+  const set=(x,y,c)=>{if(x>=0&&x<N&&y>=0&&y<N)g[y][x]=c},get=(x,y)=>(g[y]||[])[x];
+  const EX={},ext=(lx,pi=0)=>{const k=pi+':'+Math.round(lx*4);if(EX[k])return EX[k];let t=null,b=null;for(let yy=-14;yy<=14;yy+=.25)if(f3in(parts[pi],lx,yy)){if(t===null)t=yy;b=yy}return EX[k]=[t,b]};
+  const PB=parts.map(p=>{const xs=p.map(q=>q[0]);return[Math.min(...xs),Math.max(...xs)]}),rbands=[[.2,'L'],[.36,'l'],[.54,'n'],[.72,'m'],[.87,'d'],[9,'D']];
+  const bands=[[.15,'D'],[.34,'d'],[.48,'m'],[.58,'n'],[.65,'l'],[.84,'w'],[9,'W']];
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const [lx,ly]=loc(x,y);let c=null;
+    const pi=parts.findIndex(p=>f3in(p,lx,ly));if(pi>=0){const [t,b]=ext(lx,pi);let rv=t===null?.5:(ly-t)/Math.max(.5,b-t);const dz=(x+y)%2;
+      if(sp.shade==='round'){const hx=(lx-PB[pi][0])/Math.max(1,PB[pi][1]-PB[pi][0]),v=rv*.62+(1-hx)*.38;let i=rbands.findIndex(([q])=>v<q);if(v>rbands[i][0]-.04&&i<rbands.length-1&&dz)i++;c=rbands[i][1];
+        if(sp.ribs&&Math.abs(((Math.atan2(ly-5,lx)+7)*3.2)%1-.5)<.14&&ly<4)c=v<.5?'m':'d';
+        if(sp.rings&&Math.abs((Math.hypot(lx-(sp.rot?-6:0),ly-(sp.rot?1:4))/1.7)%1-.5)<.12)c='d';
+        if(sp.spiral&&pi===0){const r=Math.hypot(lx,ly+1),a=Math.atan2(ly+1,lx)+Math.PI;if(Math.abs(((r-a*.7)/1.9)%1-.5)<.14)c='D'}
+        if(sp.warts&&(x*7+y*5)%6===0)c=v<.5?'L':'x';if(sp.suckers&&pi>0&&rv>.55&&(x+y)%3===0)c='w';
+        if(sp.plates2&&pi===0){if(Math.abs(((lx+20)/3.4)%1-.5)<.1||Math.abs(((ly+20)/3.4)%1-.5)<.1)c='d';if(rv<.08||rv>.92)c='D'}
+        if(sp.jelly&&dz&&v>.45)c='n';if(sp.jelly&&ly>-1.4)c=dz?'x':'f';
+        if(it.fpat==='spots'&&v<.7&&(x*7+y*5)%9===0)c='x';if(it.fpat==='bars'&&pi===0&&Math.abs(((lx+30)/2.6)%1-.5)<.14)c='x';}
+      else{let i=bands.findIndex(([v])=>rv<v);if(rv>bands[i][0]-.045&&i<bands.length-1&&dz)i++;c=bands[i][1];}
+      if(sp.ray){const sh=lx*.06-ly*.1+.1;c=sh>.5?'L':sh>.25?'l':sh>0?'n':sh>-.3?'m':'d'}
+      if(sp.flat)c=rv<.12?'d':(dz&&rv<.2)?'d':((x*3+y*7)%9===0?'m':'n');
+      const head=lx>(sp.gill==null?99:sp.gill);
+      if(sp.shade!=='round')switch(pat){case 'spots':if(rv<.6&&!head&&(x*7+y*5)%9===0)c='x';break;
+       case 'bars':if(rv<.72&&!head&&Math.abs(((lx+30)/3)%1-.5)<.16)c=rv<.38?'X':'x';break;
+       case 'tiger':if(rv<.45&&!head&&Math.abs(((lx+ly*.8+30)/2.2)%1-.5)<.2)c='x';break;
+       case 'stripe':if(rv>.42&&rv<.56&&!head)c=dz?'x':'X';break;
+       case 'band':if(rv>.46&&rv<.58)c=dz?'L':'x';break;
+       case 'speck':if(rv<.6&&(x*11+y*3)%7===0)c=rv<.34?'D':'d';break;
+       case 'leopard':if(rv<.72&&((x*3+y*5)%5===0||(x*5+y*3)%7===0))c=rv<.4?'X':'x';break;
+       case 'blot':if(rv<.66&&Math.sin(lx*1.3+1)+Math.cos(ly*1.6)>1.05)c='X';break;
+       case 'scales':if(rv<.68&&rv>.12&&(x+2*y)%4===0)c=rv<.4?'D':'m';break;
+       case 'trout':if(rv<.55&&(x*5+y*9)%7===0)c='D';if(rv>.48&&rv<.62&&!head)c='x';break;
+       case 'grad':if(rv<.62&&lx<0)c=rv<.34?'X':'x';else if(rv<.62&&lx<3&&dz)c='x';break;
+       case 'stars':if(rv<.7&&(x*13+y*7)%11===0)c=(x+y)%3?'x':'q';break;
+       case 'whale':if(rv<.62&&((x%3===0&&y%3===0)||Math.abs(((lx+30)/3)%1-.5)<.06))c='x';break;
+       case 'coel':if(rv<.72&&Math.sin(lx*1.1+ly*.6)*Math.cos(ly*1.3)>.5)c='x';break;
+       case 'abyss':if(rv<.7&&(x*5+y*7)%13===0)c='x';if(rv>.48&&rv<.54&&!head&&dz)c='x';break;
+       case 'koi':if(rv<.62&&Math.sin(lx*.9+2)*Math.cos(ly*.8)>.35)c='x';break;
+       case 'clown':if(Math.abs(lx-5)<.9||Math.abs(lx-.5)<1.1||Math.abs(lx+5)<.8)c=(Math.abs(lx-5)<.5||Math.abs(lx-.5)<.7||Math.abs(lx+5)<.4)?'g':'o';break;
+       case 'koi2':if(rv<.62&&Math.sin(lx*.7)*Math.cos(ly*.9+1)>.3)c='x';if(rv<.5&&Math.sin(lx*1.3+4)>.85)c='D';break;
+       case 'ear':if(Math.abs(lx-(sp.gill||5)+.4)<.9&&Math.abs(rv-.36)<.12)c='X';if(rv<.6&&!head&&Math.abs(((lx+30)/2.6)%1-.5)<.14)c='d';break;
+       case 'redtail':if(lx<-4&&rv<.75)c=rv<.4?'X':'x';if(rv<.5&&(x*7+y*3)%8===0)c='D';break;
+       case 'eelspot':if(rv>.62)c='x';break;
+       case 'glass':if(rv>.25&&rv<.7&&(x+y)%3)c='L';break;
+       case 'plates':break;case 'finlet':if(rv>.4&&rv<.5&&!head)c='l';break;case 'wart':if(rv<.85&&(x*7+y*11)%6===0)c=rv<.4?'l':'n';break}
+      if(sp.gill!=null&&!sp.ray&&!sp.flat&&Math.abs(lx-sp.gill-ly*ly*.04)<.34&&rv>.14&&rv<.84)c='D';
+      if(sp.plates||pat==='plates'){if(Math.abs(rv-.12)<.08&&Math.round(lx)%2===0&&lx<(sp.gill||9))c='L';if(Math.abs(rv-.5)<.06&&Math.round(lx)%2===0&&lx<(sp.gill||9)-1)c='l'}
+      if(sp.scutes&&lx<-2&&lx>-8&&Math.abs(rv-.5)<.07)c=dz?'L':'D';
+      if(sp.ridges&&Math.round(ly)%2===0&&rv<.85)c=rv<.3?'D':'m'}
+    else{for(const [F,fc] of sp.fins)if(f3in(F,lx,ly)){c=fc==='f'?((Math.round(lx*1.1)+Math.round(ly*1.1))%2?'f':'F'):fc;if(sp.veil&&fc==='f')c=Math.sin(lx*1.1+ly*.9)>.2?'f':(Math.sin(lx*.5)>0?'x':'F');if(sp.tailx&&lx<-5&&fc==='f')c=(x+y)%3?'f':'x';break}}
+    if(c)g[y][x]=c}
+  // pectoral fin over the flank
+  if(sp.pect)for(let y=0;y<N;y++)for(let x=0;x<N;x++){const [lx,ly]=loc(x,y);if(f3in(sp.pect,lx,ly))g[y][x]=sp.wing?((x+y)%2?'L':'f'):sp.pectRays?((Math.round(lx*1.4)%2)?'f':'x'):((Math.round(lx*1.2)%2)?'f':'F')}
+  const line=(a,b,c,step=.15,only=false)=>{for(let t=0;t<=1;t+=step){const [x,y]=scr([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);if(!only||get(x,y)!=='.')set(x,y,c)}};
+  {const ln=(a,b,c,only)=>{const L2=Math.hypot(b[0]-a[0],b[1]-a[1])*sz;for(let t=0;t<=1;t+=1/Math.max(2,L2*1.6)){const [x,y]=scr([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);if(!only||get(x,y)!=='.')set(x,y,c)}};
+   (sp.segs||[]).forEach(([a,b])=>ln(a,b,'d',1));(sp.lines||[]).forEach(([a,b,c])=>ln(a,b,c,0))}
+  if(sp.bill)line([10.5*1.15,.1],[12.5+sp.bill,.1],'F',.08);
+  if(sp.beak)line([12,-.2],[16.5,-.1],'d',.06),line([12,.3],[16.2,.3],'D',.06);
+  if(sp.lowbill)line([11,.6],[15.5,.6],'F',.08);
+  if(sp.hammer){for(let t=-1;t<=1;t+=.08){const [x,y]=scr([10.6,t*4.6]);set(x,y,'m');const [x2,y2]=scr([11.4,t*4.4]);set(x2,y2,'d')}const [ex,ey]=scr([11,-4.6]);set(ex,ey,'e')}
+  if(sp.jaw)line([sp.mouth?sp.mouth[0]:10,sp.mouth?sp.mouth[1]+.3:.6],[(sp.gill||6)+.8,1.4],'D',.12,true);
+  if(sp.chin){const [x,y]=scr([9.4,3.4]);set(x,y,'F');set(x,y+1,'F')}
+  if(sp.barb){const mo=sp.mouth||[10,.4];for(let k=1;k<=2;k++){const [x,y]=scr([mo[0]-.6,mo[1]+k*.9]);if(get(x,y)==='.')set(x,y,'F')}}
+  if(sp.barbS)for(const bx of[10.6,11.4])for(let k=0;k<3;k++){const [x,y]=scr([bx,2+k*.9]);if(get(x,y)==='.')set(x,y,'F')}
+  if(sp.barbL){const mo=sp.mouth||[11,.4];for(let k=0;k<8;k++){const t=k/7;const [x,y]=scr([mo[0]+t*2.2,mo[1]+t*4.2]);set(x,y,'F');const [x2,y2]=scr([mo[0]+t*3.4,mo[1]-.6+t*1.4]);if(get(x2,y2)==='.')set(x2,y2,'F')}}
+  if(sp.hook){const [x,y]=scr([10.4,1]);set(x,y,'D')}
+  if(sp.spine){for(let k=0;k<4;k++){const [x,y]=scr([4-k*.3,-4.4-k*.9]);set(x,y,'F')}}
+  if(sp.finlets)for(let k=0;k<5;k++){for(const sd of[-1,1]){const lx=-3.4-k*1,[t,b]=ext(lx);if(t===null)continue;const [x,y]=scr([lx,(sd<0?t:b)+sd*.9]);if(get(x,y)==='.')set(x,y,'x')}}
+  if(sp.filam)for(const [ax,sd] of[[6,1],[2,1]])for(let k=0;k<6;k++){const [x,y]=scr([ax-k*.7,sd*(2.2+k*.5)]);if(get(x,y)==='.')set(x,y,'F')}
+  if(sp.duck){const mo=[11.6,0];line([10.2,-.6],[12.8,-.3],'m',.1);line([10.2,.6],[12.8,.4],'n',.1)}
+  if(sp.wide){line([12.4,1],[10.4,1.6],'D',.12,true)}
+  if(sp.spikes)for(let k=0;k<16;k++){const an=k/16*Math.PI*2+.2,R=6.4;const [x,y]=scr([Math.cos(an)*R*1.1-.4,Math.sin(an)*R]);if(get(x,y)==='.')set(x,y,'F')}
+  if(sp.teeth){const m0=sp.teeth===2?[12.6,.6]:[it.fsh==='leviathan'?11.6:9.4,2],m1=[m0[0]-(sp.teeth===2?3:5),m0[1]+.6];line(m0,m1,'e',.06,true);for(let t=0;t<=1;t+=.12){const [x,y]=scr([m0[0]+(m1[0]-m0[0])*t,m0[1]-.8+(m1[1]-m0[1])*t]);if(Math.round(t*8)%2&&get(x,y)!=='.')set(x,y,'g')}}
+  else if(sp.mouth){const [x,y]=scr(sp.mouth);if(get(x,y)&&get(x,y)!=='.')set(x,y,'o')}
+  if(sp.lure){for(let k=0;k<=9;k++){const t=k/9,[x,y]=scr([5.4+t*3.6,-5.4-Math.sin(t*2.6)*3.8]);set(x,y,'F')}const [bx,by]=scr([9.2,-8.6]);set(bx,by,'q');set(bx+1,by,'q');set(bx,by-1,'q');set(bx+1,by-1,'u')}
+  if(sp.slits)for(const sx of[6.4,7.1,7.8]){for(let k=-1;k<=1;k++){const [x,y]=scr([sx-k*.2,k*.9+.4]);if(get(x,y)&&get(x,y)!=='.')set(x,y,'D')}}
+  if(sp.ear){const [x,y]=scr([sp.gill+.4,-.8]);set(x,y,'X');set(x+1,y,'X')}
+  if(sp.dragon){for(let k=0;k<7;k++){const [x,y]=scr([11.6-k*.5,-2.4-k*.75]);set(x,y,'x');if(k===3){const [a,b2]=scr([10.4,-5.4]);set(a,b2,'x');set(a-1,b2,'x')}}
+    for(let k=0;k<10;k++){const t=k/9,[x,y]=scr([13.6+t*3.2,.9+Math.sin(t*4)*1.3]);set(x,y,'L')}
+    for(let k=0;k<17;k++){const lx=10.4-k*1.35,[t]=ext(lx);if(t===null)continue;for(let j=1;j<=(k%2?2:1);j++){const [x,y]=scr([lx,t-j*.8]);set(x,y,j===2?'F':'f')}}
+    for(let k=0;k<12;k++){const lx=9-k*1.6,[,b]=ext(lx);if(b===null)continue;const [x,y]=scr([lx,b-.3]);set(x,y,'w')}
+    for(const lx of[5,-5]){const [,b]=ext(lx);for(let j=1;j<=2;j++){const [x,y]=scr([lx-j*.5,b+j*.9]);set(x,y,'F')}}}
+  // eye(s) with a glint
+  // eyes are a single dark dot
+  const eye=(e)=>{const [ex,ey]=scr(e);set(ex,ey,sp.glow?'x':'e')};
+  if(sp.eye)eye(sp.eye,sp.eye[2]||(N>=28&&!sp.shade));if(sp.eye2)eye(sp.eye2,0);
+  // outline in the fish's darkest shade; fin pixels on the edge go a shade darker
+  const out=g.map(r2=>r2.slice());for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(g[y][x]!=='.')continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{const c=(g[y+dy]||[])[x+dx];return c&&c!=='.'&&c!=='q'&&c!=='u'&&c!=='t'&&c!=='T'}))out[y][x]='o'}
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(out[y][x]==='f'&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>((out[y+dy]||[])[x+dx])==='o'))out[y][x]='F';
+  if(tier==='u'||tier==='l'){const n=tier==='l'?9:3;let k=0,tries=0;while(k<n&&tries<400){tries++;const x=Math.floor(rnd()*N),y=Math.floor(rnd()*N);if(out[y][x]!=='.')continue;if([[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].some(([dx,dy])=>((out[y+dy]||[])[x+dx]||'.')!=='.'))continue;out[y][x]=tier==='l'&&k%2?'u':'q';k++}}
+  return out.map(r2=>r2.join(''))}
+for(const tr of ['c','r','u','l'])FISHES[tr].forEach(id=>{const it=ITEMS[id],key='fx_'+id;TPL[key]=genFish3(it,tr,id+it.n);it.big=key;it.f2=f3pal(it.fpal)});
 
 /* ───────── cooking ───────── */
 {const G=a=>a.map(r=>r.padEnd(16,'.').slice(0,16));Object.assign(TPL,{
@@ -2514,7 +2796,7 @@ Object.assign(DISH_PNG,{"d_pizza": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg
 {const G={"1": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksssnsskyLGk.", ".klkssnnsskgYGk.", ".kyksssnsskygGk.", ".klksssnsskggGk.", ".kyksssnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "2": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksnnssskyLGk.", ".klksssnsskgYGk.", ".kykssnssskygGk.", ".klksnsssskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "6": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kykssnnsskyLGk.", ".klksnsssskgYGk.", ".kyksnnnsskygGk.", ".klksnsnsskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "3": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksnnnsskyLGk.", ".klksssnsskgYGk.", ".kykssnnsskygGk.", ".klksssnsskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."], "5": ["................", "..kkkkkkkkkkkk..", ".kllllllllllllk.", ".klkkkkkkkkgLwk.", ".klkCCCCCCkggGk.", ".kyksnnnsskyLGk.", ".klksnsssskgYGk.", ".kyksnnnsskygGk.", ".klksssnsskggGk.", ".kyksnnnsskyYGk.", ".klkkkkkkkkggGk.", ".klYgYgYgYgYgGk.", ".klGGGGGGGGGGGk.", ".kYkYkYkYkYkYkk.", "..ykykykykykyk..", "..Y.Y.Y.Y.Y.Y..."]},PO={k:'#07080e',l:'#3f8a66',g:'#24604a',G:'#183e30',c:'#22242e',C:'#444a5c',s:'#d8d4c8',n:'#1a1a22',y:'#e0b860',Y:'#9a7430',w:'#ffffff'};
  [['mem1','1','#7fe0e0'],['mem2','2','#c8a0ff'],['mem3','3','#7dff9b'],['mem5','5','#ff8a6a'],['mem6','6','#ffd060']].forEach(([id,n,L])=>{ITEM_PNG[id]=spr(G[n],null,Object.assign({},PO,{L})).src})}
 
-const iicon=(id,sc=3)=>{const it=ITEMS[id];if(it.dish&&DISH_PNG[it.tasty||id])return`<img class="pix${it.tasty?' tasty':''}" src="${DISH_PNG[it.tasty||id]}" width="${16*sc}" height="${16*sc}" alt="">`;if(ITEM_PNG[id])return`<img class="pix" src="${ITEM_PNG[id]}" width="${16*sc}" height="${16*sc}" alt="">`;if(it.big){const sp=spr(TPL[it.big],it.t,it.po),boost={c:1,r:1.08,u:1.16,l:1.26}[it.fish]||1,w=Math.round(sc*12*boost),h=Math.round(w*sp.h/sp.w);return`<img class="pix ${it.fish==='l'?'legend':''}" src="${sp.src}" width="${w}" height="${h}" alt="">`}if(it.dish){const v=mix(it.t,'#5d6274',.18);return img(TPL[it.ic],null,sc,'',{a:v,b:mix(v,'#07080e',.45),h:mix(v,'#f4f2ee',.4)})}return img(TPL[it.ic],it.t,sc)};
+const iicon=(id,sc=3)=>{const it=ITEMS[id];if(it.dish&&DISH_PNG[it.tasty||id])return`<img class="pix${it.tasty?' tasty':''}" src="${DISH_PNG[it.tasty||id]}" width="${16*sc}" height="${16*sc}" alt="">`;if(ITEM_PNG[id])return`<img class="pix" src="${ITEM_PNG[id]}" width="${16*sc}" height="${16*sc}" alt="">`;if(it.big){const sp=it.f2?spr(TPL[it.big],null,it.f2):spr(TPL[it.big],it.t,it.po),boost={c:1,r:1.08,u:1.16,l:1.26}[it.fish]||1,w=it.f2?(sc>=2?sp.w*Math.round(sc/2):Math.round(sp.w*sc*.62)):Math.round(sc*12*boost),h=Math.round(w*sp.h/sp.w);return`<img class="pix ${it.fish==='l'?'legend':''}" src="${sp.src}" width="${w}" height="${h}" alt="">`}if(it.dish){const v=mix(it.t,'#5d6274',.18);return img(TPL[it.ic],null,sc,'',{a:v,b:mix(v,'#07080e',.45),h:mix(v,'#f4f2ee',.4)})}return img(TPL[it.ic],it.t,sc)};
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400)}
 
 /* ───────── player ───────── */
@@ -4644,12 +4926,13 @@ function drawLake(){const cv=$('#lakeCv');if(!cv)return;const w=Math.max(80,Math
     for(let j=0;j<4;j++)for(let i=-Math.round(bw*.1);i<bw;i+=2)if(Math.sin(i*.4+ph*1.5+j)>.5)R(bx+i,by-Math.round(i*tilt*.55)+1+j*2,2,1,K.d1);
     for(let k=0;k<4;k++){const fx=Math.round(w*(.6+k*.09)+Math.sin(ph*.4+k)*2),fy=hz+5+((k*6)%Math.max(4,h-hz-9));R(fx,fy,3,2,K.rust);R(fx,fy,3,1,mix(K.rust,'#ffffff',.25))}}
   L.motes.forEach(m=>{const yy=Math.round(m.y-((ph*m.s*6)%(h-hz-4)));const yv=yy<hz+3?yy+(h-hz-4):yy;R(Math.round(m.x+Math.sin(ph+m.x)*2),yv,1,1,K.mote)})}
-let dexOpen=false,dexTab='c';
+let dexOpen=false,dexTab='';
 function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],got=all.filter(id=>P.dex[id]).length;
-  const tabs=[['c','일반'],['r','레어'],['u','유니크'],['l','레전더리']];
+  const sp=FSPOTS.find(x=>x.id===dexTab)||fspot(),cnt=x=>['c','r','u','l'].reduce((a,t)=>a+x[t].filter(id=>P.dex[id]).length,0);
+  const cell=(id,t)=>`<div class="dx-${t}" title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span>${P.dex[id]&&(P.fsz||{})[id]?`<span class="hint dexlen">최대 ${fmtLen(P.fsz[id])}</span>`:''}</div>`;
   return`<div class="card dexbox"><button class="dex-head" data-act="dextoggle" aria-expanded="${dexOpen}"><span class="lbl">Fish log · 어류 도감</span><b>${got}/${all.length}</b><span class="caret">${dexOpen?'▾':'▸'}</span></button>
-  ${dexOpen?`<div class="dtabs" role="tablist">${tabs.map(([k,n])=>`<button role="tab" aria-selected="${dexTab===k}" data-act="dextab" data-k="${k}">${n} <em>${FISHES[k].filter(id=>P.dex[id]).length}/${FISHES[k].length}</em></button>`).join('')}</div>
-  <div class="dex">${FISHES[dexTab].map(id=>`<div title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span>${P.dex[id]&&(P.fsz||{})[id]?`<span class="hint dexlen">최대 ${fmtLen(P.fsz[id])}</span>`:''}</div>`).join('')}</div>`:''}</div>`}
+  ${dexOpen?`<div class="dtabs" role="tablist">${FSPOTS.map(x=>`<button role="tab" aria-selected="${sp.id===x.id}" data-act="dextab" data-k="${x.id}">${x.n} <em>${cnt(x)}/23</em></button>`).join('')}</div>
+  <div class="dexsp">${[['c','일반'],['r','레어'],['u','유니크'],['l','레전더리']].map(([t,n])=>`<div class="dexrow"><span class="dexrl t-${t}">${n} <em>${sp[t].filter(id=>P.dex[id]).length}/${sp[t].length}</em></span><div class="dex">${sp[t].map(id=>cell(id,t)).join('')}</div></div>`).join('')}</div>`:''}</div>`}
 // 탐사's old signal receiver: catches a stray signal every 30 minutes (up to 5) while no invader is loose; investigating works like 조사
 const ASIG_MS=30*60e3,ASIG_MAX=5;let lastAsig=null;
 // a random regional seed (chance ps, 1–2 of them) and/or regional crop (chance pc) from any of the six 채집 sites
