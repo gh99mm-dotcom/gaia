@@ -2688,7 +2688,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
   const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
   box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
   const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
-  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+seasonAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+seasonAdminHTML()+affAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
   if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
   const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
@@ -3655,7 +3655,7 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
   if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;if(tabGate('adv'))return;   // 탐사 still locked for me: I could not have fought it
   P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 function bossSubscribe(){
-  endSub();memSub();
+  endSub();memSub();affSub();
   bossRef().onSnapshot(sn=>{BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint()},()=>{});
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
@@ -6569,6 +6569,9 @@ const A={
   show(`완료! 기록 ${n}건을 지웠습니다. 운영자도 운영자 군번을 발급받아 다시 합류합니다.`);setTimeout(()=>location.reload(),3500)},
  admpreopen(){if(!isAdmin||mode!=='online')return;const next=!PREOPEN;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{preopen:next})).then(()=>{toast(next?'오픈 준비 잠금을 켰습니다. 선원들은 PAD만 쓸 수 있습니다.':'잠금을 풀었습니다. 게임이 열렸습니다!');if(!next)sys('[공지] 가이아 개척단이 정식으로 출항했습니다! 이제 모든 화면을 이용할 수 있습니다.',true,'beacon')}).catch(()=>toast('바꾸지 못했습니다.'))},
  preopenpad(){socTab='pad';socDrawer(true)},
+ admaff(d){if(!isAdmin||mode!=='online')return;const a=admAffA,b=admAffB;if(!a||!b||a===b){toast('두 선원을 골라 주십시오.');return}
+  const v=Math.max(AFF_MIN,Math.min(AFF_MAX,Math.round(d.k==='set'?(+(($('.admaffv')||{}).value)||0):admAffCur()+(+d.k))));const key='q'+Date.now()+Math.random().toString(36).slice(2,6);
+  bossTx(affQRef(),cur=>Object.assign({},cur,{[key]:{a,b,v,at:Date.now(),by:P.nick}})).then(()=>{const na=(a===uid?P:PLAYERS[a]||{}).nick||'선원',nb=(b===uid?P:PLAYERS[b]||{}).nick||'선원';toast(`${na} → ${nb} 호감도를 ${v}(으)로 바꿨습니다.`);renderAdminAll()}).catch(()=>toast('바꾸지 못했습니다.'))},
  admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 선원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
  admstaff(d){if(!isOwnerAcct||mode!=='online'){toast('관리자 임명은 운영자만 할 수 있습니다.');return}const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
  admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
@@ -7003,6 +7006,21 @@ const AFF_TIERS=[[90,'절친한 사이','무엇이든 믿고 맡길 수 있는 �
 const affTier=v=>{const i=AFF_TIERS.findIndex(([m])=>v>=m);return i<0?AFF_TIERS.length-1:i};
 const affLabel=v=>AFF_TIERS[affTier(v)][1];
 const affColor=v=>`var(--rel${AFF_TIERS.length-1-affTier(v)})`;
+/* 운영진의 호감도 조정: affection lives on the record of whoever feels it, and only that member's own window may save it,
+   so 운영진 drop the new value into a shared queue (boss/affq) and the member's window applies it (now, or on their next visit) */
+const affQRef=()=>db.doc('boss/affq');let AFFQ={};
+function affSub(){affQRef().onSnapshot(sn=>{AFFQ=sn.exists?Object.assign({},sn.data()):{};const mine=Object.entries(AFFQ).filter(([k,e])=>e&&e.a===uid&&e.b);if(!mine.length)return;
+  mine.forEach(([k,e])=>{const v=Math.max(AFF_MIN,Math.min(AFF_MAX,Math.round(+e.v||0)));P.aff=Object.assign({},P.aff,{[e.b]:v})});save();renderPanel();
+  const keys=mine.map(([k])=>k);bossTx(affQRef(),cur=>{if(!cur)return null;keys.forEach(k=>delete cur[k]);return cur}).catch(()=>{})},()=>{})}
+let admAffA='',admAffB='';
+const admAffCur=()=>{const a=admAffA,b=admAffB;if(!a||!b)return 0;const q=Object.values(AFFQ).filter(e=>e&&e.a===a&&e.b===b).sort((x,y)=>x.at-y.at).pop();if(q)return +q.v||0;return affOf(a===uid?P:PLAYERS[a],b)};
+function affAdminHTML(){if(mode!=='online')return'';const L=orgAll().sort((x,y)=>String(x[1].nick||'').localeCompare(String(y[1].nick||''))),opt=(sel)=>L.map(([id,p])=>`<option value="${esc(id)}" ${sel===id?'selected':''}>${esc(p.nick||'선원')}${id===uid?' (나)':''}</option>`).join('');
+  const ok=admAffA&&admAffB&&admAffA!==admAffB,cur=ok?admAffCur():0,pend=ok&&Object.values(AFFQ).some(e=>e&&e.a===admAffA&&e.b===admAffB);
+  return`<div class="info-sec" data-adm="crew"><span class="lbl">Affection · 호감도 조정</span><span class="hint">앞 선원이 뒤 선원을 생각하는 마음(호감도)을 바꿉니다. -100 ~ 100. 그 선원이 접속해 있으면 바로, 아니면 다음 접속 때 반영됩니다.</span>
+   <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><select id="admAffA" class="sel" aria-label="호감을 느끼는 선원"><option value="">— 누가 —</option>${opt(admAffA)}</select><span>→</span><select id="admAffB" class="sel" aria-label="대상 선원"><option value="">— 누구를 —</option>${opt(admAffB)}</select>
+    ${ok?`<b style="min-width:84px;color:${affColor(cur)}">지금 ${cur}${pend?' <small class="hint">(반영 대기)</small>':''}</b>`:''}</div>
+   ${ok?`<div class="row" style="gap:5px;flex-wrap:wrap;align-items:center">${[-10,-5,-1,1,5,10].map(n=>`<button class="btn sm ${n<0?'ghost':''}" data-act="admaff" data-k="${n}">${n>0?'+':''}${n}</button>`).join('')}<input class="sel admaffv" type="number" min="-100" max="100" value="${cur}" style="width:80px" aria-label="정확한 값"><button class="btn sm" data-act="admaff" data-k="set">이 값으로</button></div>`:'<span class="hint">두 선원을 골라 주십시오.</span>'}</div>`}
+document.addEventListener('change',e=>{const t=e.target;if(t.id==='admAffA'||t.id==='admAffB'){if(t.id==='admAffA')admAffA=t.value;else admAffB=t.value;renderAdminAll()}});
 function addAff(id,delta,why){if(!id||id===uid||!delta)return;const before=affOf(P,id),v=Math.max(AFF_MIN,Math.min(AFF_MAX,before+delta));P.aff=Object.assign({},P.aff,{[id]:v});
   const nick=(PLAYERS[id]&&PLAYERS[id].nick)||'선원';log(`${nick} 님에 대한 호감도 ${delta>0?'+':''}${delta} (${why}) → ${v}${affLabel(v)!==affLabel(before)?` · 「${affLabel(v)}」`:''}`,delta>0?'good':'bad')}
 // gifts per person per day: GIFT_DAY sends, each carrying at most one dish (old saves stored just the day: that counts as one send)
