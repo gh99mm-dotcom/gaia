@@ -2378,7 +2378,7 @@ const wpnImg=(n,px=32)=>{n=Math.max(0,Math.min(WPN_PNG.length-1,n|0));const fx=w
 /* pixel effects: one canvas pixel = one sprite pixel, so the aura, rays and stars share the weapon's own grid */
 const WFX_M={},WFX_RB=['#ffd65f','#ff7fb8','#8fd0ff','#8dffa6'],WFX_B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
 const WFX_G=(()=>{const a=new Float32Array(16384),r=new Float32Array(16384);for(let i=0;i<16384;i++){const x=(i&127)-63.5,y=(i>>7)-63.5;a[i]=Math.atan2(y,x);r[i]=Math.hypot(x,y)}return{a,r}})();
-function wfxMask(n,k){const key=(k||'')+n;if(WFX_M[key])return WFX_M[key];const o=WFX_M[key]={};const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,64,64).data;
+function wfxMask(n,k){const key=(k||'')+n;if(WFX_M[key])return WFX_M[key];const o=WFX_M[key]={};const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data;
   const dist=new Uint8Array(4096).fill(255);let cur=[];for(let i=0;i<4096;i++)if(d[i*4+3]>200){dist[i]=0;cur.push(i)}
   for(let r=1;r<=6;r++){const nx=[];for(const i of cur){const x0=i%64,y0=i/64|0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]){if(r>3&&dx&&dy)continue;const X=x0+dx,Y=y0+dy;if(X<0||Y<0||X>63||Y>63)continue;const j=Y*64+X;if(dist[j]===255){dist[j]=r;nx.push(j)}}}cur=nx}
   o.dist=dist};im.src=k==='s'?SUIT_PNG[n]:WPN_PNG[n];return o}
