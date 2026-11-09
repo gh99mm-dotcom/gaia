@@ -531,33 +531,37 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .ttl{display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--deep);border:2px solid var(--ink);padding:5px 8px;cursor:pointer}
 /* title looks: each worn title paints its name; the effect line under each title lists its bonus */
 .ttlfx{font-size:11px;color:var(--cy);opacity:.9}.ttlnow{font-size:12px;color:var(--cy);margin-top:-3px}
-.tfx{display:inline;white-space:inherit}
-.tf-soil{color:#d0a878}.tf-leaf{color:#9ad88a;text-shadow:0 0 5px #4a9a4a88}.tf-water{color:#86d4f4;text-shadow:0 0 5px #2a8ac088}.tf-dust{color:#c4bba8}.tf-road{color:#dcc48e}
-.tf-coin{color:#ffd65f;text-shadow:0 0 5px #c0901a99}.tf-orbit{color:#a4d4ff;text-shadow:0 0 6px #4a8ad099}.tf-heart{color:#ff9ac4;text-shadow:0 0 6px #d0508a88}.tf-warm{color:#ffb478;text-shadow:0 0 5px #c0602a88}
-.tf-blood{color:#ff6e5e;text-shadow:0 0 6px #c0201a,0 0 2px #000}.tf-deep{color:#5ea0ff;text-shadow:0 0 8px #1a50c0,0 0 2px #000}.tf-shadow{color:#a0a0bc;text-shadow:-1px 1px 0 #000,0 0 8px #000}
-.tf-calm{color:#b0e8f4;animation:tfBreath 3.2s ease-in-out infinite}.tf-whisper{color:#ddd4ff;animation:tfBreath 2.6s ease-in-out infinite}
-.tf-abyss{color:#b88cff;animation:tfAbyss 2.4s ease-in-out infinite}
-.tf-oops{display:inline-block;color:#ffcc90;animation:tfOops 1.8s ease-in-out infinite}
-.tf-glitch{color:#7ff0ff;animation:tfGlitch 2.2s steps(1) infinite}
-.tf-steel,.tf-gold,.tf-flame,.tf-nebula,.tf-cosmic,.tf-prism,.tf-bloom,.tf-star{-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;background-size:250% 100%}
-.tf-steel{background-image:linear-gradient(100deg,#8a94a8 20%,#f0f4ff 45%,#8a94a8 70%);animation:tfSlide 4s linear infinite}
-.tf-gold{background-image:linear-gradient(100deg,#c08a20 15%,#ffe9a0 40%,#fff8d8 48%,#ffd65f 56%,#c08a20 85%);animation:tfSlide 2.6s linear infinite;filter:drop-shadow(0 0 3px #ffb02a88)}
-.tf-flame{background-image:linear-gradient(0deg,#ff4a2a,#ffa040 50%,#fff0a0);background-size:100% 220%;animation:tfFlame 1.1s ease-in-out infinite alternate;filter:drop-shadow(0 0 4px #ff602a99)}
-.tf-nebula{background-image:linear-gradient(100deg,#8a7cff,#ff8ad8,#7fd8ff,#8a7cff);animation:tfSlide 5s linear infinite;filter:drop-shadow(0 0 4px #a07cff88)}
-.tf-bloom{background-image:linear-gradient(100deg,#8ad88a,#ffd0e8,#b0f0a0,#8ad88a);animation:tfSlide 4.5s linear infinite}
-.tf-prism{background-image:linear-gradient(90deg,#ff8a8a,#ffd65f,#8affa6,#8fd0ff,#c48aff);background-size:100% 100%}
-.tf-star{background-image:linear-gradient(100deg,#fff3b0 20%,#ffffff 40%,#bfe4ff 55%,#fff3b0 80%);animation:tfSlide 3s linear infinite,tfTwinkle 1.6s ease-in-out infinite}
-.tf-cosmic{background-image:linear-gradient(100deg,#ff7fb8,#ffd65f,#8dffa6,#8fd0ff,#c48aff,#ff7fb8);animation:tfSlide 3.5s linear infinite;filter:drop-shadow(0 0 5px #fff6)}
-@keyframes tfSlide{from{background-position:0 0}to{background-position:-250% 0}}
-@keyframes tfFlame{from{background-position:0 0}to{background-position:0 100%}}
-@keyframes tfBreath{0%,100%{opacity:1;text-shadow:0 0 2px #fff4}50%{opacity:.6;text-shadow:0 0 9px #9ad8ffaa}}
-@keyframes tfAbyss{0%,100%{text-shadow:0 0 3px #4a1a8a,0 0 1px #000}50%{text-shadow:0 0 10px #8a4aff,0 0 2px #000}}
-@keyframes tfOops{0%,100%{transform:rotate(0)}20%{transform:rotate(-3deg)}40%{transform:rotate(2deg)}60%{transform:rotate(0)}}
-@keyframes tfGlitch{0%,86%,100%{text-shadow:none;transform:none}88%{text-shadow:2px 0 #ff4ab8,-2px 0 #4affff}92%{text-shadow:-2px 0 #ff4ab8,2px 0 #4affff}95%{text-shadow:none}}
-@keyframes tfTwinkle{0%,100%{filter:drop-shadow(0 0 2px #fff8)}50%{filter:drop-shadow(0 0 7px #fff)}}
-.tf-glitch,.tf-oops{display:inline-block}
-:root[data-skin="light"] .tfx{filter:brightness(.6) saturate(1.4)}
-@media (prefers-reduced-motion:reduce){.tfx{animation:none!important}}
+.tfx{--tc:#cfd4e0;--to:#0b0d16;display:inline;white-space:inherit;font-family:"Galmuri11",var(--f-pix);font-weight:400;-webkit-font-smoothing:none;font-smooth:never;letter-spacing:.02em;color:var(--tc);text-shadow:1px 0 0 var(--to),-1px 0 0 var(--to),0 1px 0 var(--to),0 -1px 0 var(--to),1px 1px 0 var(--to),1px 2px 0 #0007}
+/* a tiny pixel gem before each title, in the title's colour */
+.tfx::before{content:"";display:inline-block;width:2px;height:2px;margin:0 6px 2px 3px;vertical-align:middle;background:var(--tc);box-shadow:0 -2px 0 var(--tc),0 2px 0 var(--tc),-2px 0 0 var(--tc),2px 0 0 var(--tc),0 0 0 1px var(--to),0 -2px 0 1px var(--to),0 2px 0 1px var(--to),-2px 0 0 1px var(--to),2px 0 0 1px var(--to)}
+.tf-plain{--tc:#d4d8e4}.tf-soil{--tc:#d8aa74}.tf-leaf{--tc:#8fe07a;--to:#10260e}.tf-water{--tc:#7ad8ff;--to:#0a2234}.tf-dust{--tc:#cbc2ac}.tf-road{--tc:#e6c886;--to:#2a1e0c}
+.tf-coin{--tc:#ffd65f;--to:#3a2604}.tf-orbit{--tc:#9ccfff;--to:#0c1a34}.tf-heart{--tc:#ff9ac8;--to:#3a0c22}.tf-warm{--tc:#ffb070;--to:#3a1806}.tf-blood{--tc:#ff5e4e;--to:#2a0404}
+.tf-deep{--tc:#5aa0ff;--to:#04102e}.tf-shadow{--tc:#a6a6c4;--to:#000}.tf-calm{--tc:#b4ecf8;--to:#0c2a34;animation:tfBlink 2.4s steps(1) infinite}.tf-whisper{--tc:#ddd2ff;--to:#1a1234;animation:tfBlink 2s steps(1) infinite}
+.tf-abyss{--tc:#b88cff;--to:#14062e;animation:tfAbyss 1.6s steps(2) infinite}.tf-oops{--tc:#ffcc8c;--to:#3a1e06;display:inline-block;animation:tfOops 1.6s steps(1) infinite}
+.tf-glitch{--tc:#7ff0ff;--to:#062a30;display:inline-block;animation:tfGlitch 2.4s steps(1) infinite}
+/* metal and magic titles: hard 3-band shading clipped to the letters, plus a stepped glint sweeping across */
+.tf-steel,.tf-gold,.tf-flame,.tf-nebula,.tf-cosmic,.tf-prism,.tf-bloom,.tf-star{color:transparent;-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;text-shadow:none;filter:drop-shadow(1px 0 0 var(--to)) drop-shadow(-1px 0 0 var(--to)) drop-shadow(0 1px 0 var(--to)) drop-shadow(0 -1px 0 var(--to)) drop-shadow(1px 1px 0 #0008);background-repeat:no-repeat,repeat-x;background-size:300% 100%,100% 100%;animation:tfGlint 2.8s steps(14) infinite}
+.tf-steel{--tc:#dfe6f4;--to:#141824;background-image:linear-gradient(100deg,transparent 0 44%,#fff 44% 50%,transparent 50%),linear-gradient(180deg,#f4f8ff 0 38%,#aab4c8 38% 68%,#6c7690 68%)}
+.tf-gold{--tc:#ffd65f;--to:#3a2404;background-image:linear-gradient(100deg,transparent 0 44%,#fffbe6 44% 50%,transparent 50%),linear-gradient(180deg,#fff0a8 0 36%,#ffc83a 36% 66%,#c47e14 66%)}
+.tf-flame{--tc:#ffa040;--to:#2e0802;background-image:linear-gradient(100deg,transparent 0 44%,#fff6c0 44% 50%,transparent 50%),linear-gradient(180deg,#ffe680 0 34%,#ff9a2e 34% 66%,#e8401e 66%);animation:tfGlint 2.8s steps(14) infinite,tfFlick .5s steps(2) infinite}
+.tf-nebula{--tc:#b49cff;--to:#140a30;background-image:linear-gradient(100deg,transparent 0 44%,#fff 44% 50%,transparent 50%),linear-gradient(180deg,#ffb8ec 0 36%,#a88cff 36% 66%,#5a6ae0 66%)}
+.tf-bloom{--tc:#a8f0a0;--to:#10260e;background-image:linear-gradient(100deg,transparent 0 44%,#fff 44% 50%,transparent 50%),linear-gradient(180deg,#ffd4ec 0 36%,#a8f0a0 36% 66%,#4ab05a 66%)}
+.tf-prism{--tc:#ffd65f;--to:#14102a;background-image:linear-gradient(100deg,transparent 0 44%,#fff 44% 50%,transparent 50%),linear-gradient(90deg,#ff7a7a 0 20%,#ffd65f 20% 40%,#7aff9a 40% 60%,#7ad0ff 60% 80%,#c48aff 80%)}
+.tf-star{--tc:#fff3b0;--to:#1a1a34;background-image:linear-gradient(100deg,transparent 0 44%,#fff 44% 50%,transparent 50%),linear-gradient(180deg,#fffbe0 0 36%,#ffe070 36% 66%,#7ab8ff 66%);animation:tfGlint 2.2s steps(11) infinite}
+.tf-cosmic{--tc:#ff9ad8;--to:#120a26;background-image:linear-gradient(100deg,transparent 0 44%,#fff 44% 50%,transparent 50%),linear-gradient(90deg,#ff7fb8 0 16%,#ffd65f 16% 33%,#8dffa6 33% 50%,#8fd0ff 50% 66%,#c48aff 66% 83%,#ff7fb8 83%);background-size:300% 100%,100% 100%;animation:tfCosmic 3.2s steps(16) infinite}
+.tf-cosmic::before,.tf-star::before,.tf-gold::before{animation:tfGem 1.2s steps(1) infinite}
+@keyframes tfGlint{0%{background-position:150% 0,0 0}100%{background-position:-150% 0,0 0}}
+@keyframes tfCosmic{0%{background-position:150% 0,0 0}100%{background-position:-150% 0,-100% 0}}
+@keyframes tfFlick{50%{transform:translateY(-1px)}}
+@keyframes tfBlink{0%,100%{opacity:1}50%{opacity:.62}}
+@keyframes tfAbyss{0%{text-shadow:1px 0 0 var(--to),-1px 0 0 var(--to),0 1px 0 var(--to),0 -1px 0 var(--to),1px 2px 0 #0007}100%{text-shadow:1px 0 0 #6a2aff,-1px 0 0 #6a2aff,0 1px 0 #6a2aff,0 -1px 0 #6a2aff,1px 2px 0 #0007}}
+@keyframes tfOops{0%,100%{transform:none}25%{transform:translate(-1px,0)}50%{transform:translate(1px,-1px)}75%{transform:none}}
+@keyframes tfGlitch{0%,84%,100%{transform:none;text-shadow:1px 0 0 var(--to),-1px 0 0 var(--to),0 1px 0 var(--to),0 -1px 0 var(--to)}86%{transform:translateX(2px);text-shadow:-2px 0 0 #ff3aa8,2px 0 0 #3affff}90%{transform:translateX(-2px);text-shadow:2px 0 0 #ff3aa8,-2px 0 0 #3affff}94%{transform:none}}
+@keyframes tfGem{50%{background:#fff;box-shadow:0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff,0 -4px 0 var(--tc),0 4px 0 var(--tc),-4px 0 0 var(--tc),4px 0 0 var(--tc)}}
+:root[data-skin="light"] .tfx{filter:none}
+.pncol .lv .tfx::before{margin:0 5px 2px 2px}
+:root[data-skin="light"] .tf-steel,:root[data-skin="light"] .tf-gold,:root[data-skin="light"] .tf-flame,:root[data-skin="light"] .tf-nebula,:root[data-skin="light"] .tf-cosmic,:root[data-skin="light"] .tf-prism,:root[data-skin="light"] .tf-bloom,:root[data-skin="light"] .tf-star{filter:drop-shadow(1px 0 0 var(--to)) drop-shadow(-1px 0 0 var(--to)) drop-shadow(0 1px 0 var(--to)) drop-shadow(0 -1px 0 var(--to))}
+@media (prefers-reduced-motion:reduce){.tfx,.tfx::before{animation:none!important}}
 .ttl b{font-size:13px}
 .ttl span{font-size:11px;color:var(--mute)}
 .ttl:hover:not(:disabled){background:var(--panel2)}
@@ -3074,7 +3078,7 @@ function renderPilot(){if(pilotBusy())return;
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').innerHTML=`
   <div class="pilot-top"><div class="avatar">${withPet(meImg(3),P,3)}</div>
-   <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${esc(titleName())}</div></div></div>
+   <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${ttlHTML(P.title||'rookie',titleName())}</div></div></div>
   <div class="stat" data-tip="내 체력입니다."><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat" data-tip="우주복의 에너지입니다."><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
@@ -7149,7 +7153,7 @@ function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
   return`<p class="lead">선원과 1:1로 귓속말을 나눕니다. 공용 채널에는 보이지 않고, 게임 화면에서는 두 사람에게만 보입니다.</p><div class="dmwrap"><div class="dmlist" id="dmList">${dmListHTML()}</div>
   <div class="dmchat">${p?`<div class="row" style="justify-content:space-between">${socWho(dmPeer,p.nick,3)}<span class="hint">${isOn(dmPeer)?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div><div class="dmlog" id="dmLog">${dmLogHTML()}</div><div class="sendrow"><input id="dmIn" maxlength="200" autocomplete="off" placeholder="${esc(p.nick||'선원')} 님에게 귓속말 (Enter)" aria-label="귓속말" value="${esc(dmDraft)}"><button class="btn sm" data-act="dmsend">보내기</button></div>`:'<p class="empty">왼쪽에서 귓속말을 나눌 선원을 고르십시오.</p>'}</div></div>`}
 /* ---- crew ---- */
-function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${esc(titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
+function bioCard(){return`<div class="card ccard mine"><div class="cc-top">${headImg(3,P)}<div class="sinfo"><b>${esc(P.nick)} <span class="lv">LV.${P.lvl}</span> <span class="hint">(나)</span></b><span class="hint">${ttlHTML(P.title||'rookie',titleName())}${P.job?' · '+JOBS[P.job].n:''}</span></div></div>
   ${editBio?`<div class="sendrow"><input id="bioIn" maxlength="40" autocomplete="off" placeholder="한마디 (최대 40자)" aria-label="한마디" value="${esc(bioDraft)}"><button class="btn sm" data-act="biosave">저장</button><button class="qchip" data-act="biocancel">취소</button></div>`:`<p class="bio">${P.bio?'“'+esc(P.bio)+'”':'<span class="hint">한마디를 적으면 다른 선원에게 보입니다.</span>'}</p><div class="row"><button class="qchip" data-act="bioedit">한마디 ${P.bio?'고치기':'쓰기'}</button></div>`}</div>`}
 const POSTS3=[['purser','의무장'],['engineer','기관장'],['navigator','항해장']];let ROLES={};
 /* ───────── affinity: how each player feels about the others ───────── */
