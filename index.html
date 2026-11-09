@@ -3653,7 +3653,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();if(socOpen)renderSoc()}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -6275,7 +6275,8 @@ function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M
     roll.style.transition='transform 2.6s ease-in, opacity 2.6s';roll.style.transform=`translateY(${-L.scrollHeight-120}px)`;roll.style.opacity='0';await wait(2600);
     M.classList.add('titled');for(const ch of '[조우]'){if(dead)return;T.textContent+=ch;try{sfxBeep()}catch(e){}await wait(320)}
     await wait(600);ok.hidden=false})()}
-function openingOnce(){if(!P||(P.opSeen||0)>=4||!$('#joinModal').hidden)return;storyCrawl(()=>playStory('opening',()=>{P.opSeen=4;save()}))}
+function openingOnce(){if(!P||(P.opSeen||0)>=4||!$('#joinModal').hidden||preLock())return;   // held back during 오픈 준비; it plays once the game opens
+storyCrawl(()=>playStory('opening',()=>{P.opSeen=4;save()}))}
 function renderAll(){migrate();renderPilot();renderNav();renderPanel();renderLog();renderCrew();renderChat();endRender()}
 
 /* ───────── crew & chat ───────── */
@@ -6482,8 +6483,8 @@ const A={
  suwi(d){if(d.k!=='o'&&d.k!=='x'||P.suwi===d.k)return;P.suwi=d.k;save();renderInfo()},
  whyedit(){whyEdit=!whyEdit;renderInfo();if(whyEdit)setTimeout(()=>{const i=$('#whyIn');if(i)i.focus()},0)},
  whysave(){const i=$('#whyIn');if(!i)return;P.why=i.value.trim().slice(0,WHY_MAX);whyEdit=false;save();renderInfo()},
- opreplay(){storyCrawl(()=>playStory('opening'))},
- storyplay(d){playStory(d.k)},
+ opreplay(){if(preLock()){toast('오프닝은 정식 오픈 후에 볼 수 있습니다.');return}storyCrawl(()=>playStory('opening'))},
+ storyplay(d){if(preLock()){toast('이야기는 정식 오픈 후에 볼 수 있습니다.');return}playStory(d.k)},
  padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
  metab(d){meTab=d.k==='look'||d.k==='prof'?d.k:'me';renderPanel()},
