@@ -3114,11 +3114,11 @@ const ttlFx=id=>TTL_FX[id]||TTL_FX.rookie,TF=k=>(P&&ttlFx(P.title||'rookie')[1][
 const ttlFxTxt=id=>Object.entries(ttlFx(id)[1]).map(([k,v])=>`${TF_N[k][0]} +${v}${TF_N[k][1]}`).join(' · ')+(id==='gold'?' · 모든 생활 확률 +1%':'');
 const ttlHTML=(id,name)=>`<span class="tfx tf-${ttlFx(id)[0]}">${esc(name)}</span>`;
 const TITLES=[
- ['rookie','새내기 개척자','처음부터 가진 칭호',()=>true],
+ ['rookie','새내기 선원','처음부터 가진 칭호',()=>true],
  ['farm1','흙 묻은 손','작물 10번 수확',()=>(P.st?.harvest||0)>=10],
  ['farm2','돔의 농부','작물 100번 수확',()=>(P.st?.harvest||0)>=100],
  ['fish1','메탄 강태공','물고기 50마리 낚기',()=>(P.st?.fish||0)>=50],
- ['fish2','전설을 낚은 자','레전더리 어종 낚기',()=>(P.st?.legend||0)>=1],
+ ['fish2','전설을 낚은 자','레전더리 1종류 낚기',()=>FISHES.l.filter(id=>(P.dex||{})[id]).length>=1],
  ['gather1','먼지 속 수집가','채집 100회',()=>(P.st?.gather||0)>=100],
  ['scan1','길 위의 개척자','주변 지점 30곳 조사',()=>(P.st?.scan||0)>=30],
  ['rich','가이아의 부호','크레딧 100,000 보유',()=>(P.cr||0)>=100000],
@@ -3130,14 +3130,14 @@ const TITLES=[
  ['fish4','고요한 수면의 현자','낚시 생활 레벨 10',()=>lifeLv(P.lx?.fish)>=10],
  ['fish5','심해를 꿰뚫는 낚싯줄','심해 탄소 낚싯대 보유',()=>(P.rod||0)>=1],
  ['fish6','중력파를 던지는 자','중력파 낚싯대 보유',()=>(P.rod||0)>=2],
- ['fish7','세 번 전설을 본 자','레전더리 어종 3마리 낚기',()=>st('legend')>=3],
- ['fish8','백열다섯 개의 별빛','어류 도감 115종 완성',()=>Object.keys(P.dex||{}).length>=115],
+ ['fish7','전설의 레전드','레전더리 5종류 모두 낚기',()=>FISHES.l.filter(id=>(P.dex||{})[id]).length>=5],
+ ['fish8','낚시의 어버이','어류 도감 115종 완성',()=>Object.keys(P.dex||{}).length>=115],
  ['scan2','지도 밖으로','주변 지점 100곳 조사',()=>st('scan')>=100],
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
  ['rich2','녹슨 7호의 단골','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
- ['wpn','은하를 쥔 손','무기 +8 강화',()=>(P.wlv||0)>=8],
- ['ending','가이아의 마지막 수호자','최종 레이드에서 승리',()=>(P.st?.ending||0)>=1],
- ['suit','성운을 입은 자','우주복 +15 강화',()=>(P.suit||0)>=15],
+ ['wpn','은하를 쥔 손','무기 +20 강화',()=>(P.wlv||0)>=20],
+ ['ending','테라의 마지막 수호자','최종 레이드에서 승리',()=>(P.st?.ending||0)>=1],
+ ['suit','성운을 입은 자','우주복 +20 강화',()=>(P.suit||0)>=20],
  ['lv20','스무 번째 궤도','레벨 20 달성',()=>P.lvl>=20],
  ['lv40','마흔 번째 궤도','레벨 40 달성',()=>P.lvl>=40],
  ['lv60','예순 번째 궤도','최고 레벨 60 달성',()=>P.lvl>=60],
@@ -4480,12 +4480,12 @@ async function endFlush(){if(endBusy||endPend<=0)return;const d=endPend;endPend=
 function endFinish(){if(!END||END.done||endFirst())return;const g=END.gen;bossTx(endRef(),cur=>{if(!cur||cur.done||cur.gen!==g||(+cur.hp||0)>0)return null;cur.done=true;cur.doneAt=Date.now();cur.on=false;return cur})
   .then(nx=>{if(nx)sys(`[공지] 최종 레이드 승리! ${END_NAME}이(가) 쓰러졌습니다. 선원 모두의 힘으로 가이아를 지켜냈습니다.`,true,'beacon')}).catch(()=>{})}
 function endReward(){const e=END;if(!e||!e.done||P.endGen===e.gen)return;const me=(e.dmg||{})[uid];P.endGen=e.gen;
-  if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「가이아의 마지막 수호자」를 얻었다.','rare');sfxFanfare(true)}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
+  if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「테라의 마지막 수호자」를 얻었다.','rare');sfxFanfare(true)}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
 function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)),me=(e.dmg||{})[uid];
   let M=$('#endWin');if(!M){M=document.createElement('div');M.id='endWin';M.className='modal';document.body.appendChild(M)}M.hidden=false;
   M.innerHTML=`<div class="px infobox endwin" role="dialog" aria-label="최종 레이드 승리"><span class="lbl">Final Raid · 가이아 수호전</span><h2>가이아를 지켜냈습니다</h2>
    <p class="hint">${top.length}명의 선원이 함께 싸워 ${esc(END_NAME)}을(를) 쓰러뜨렸습니다.</p>
-   ${me&&me.d>0?`<div class="endttl"><span class="lbl">엔딩 칭호</span><b>가이아의 마지막 수호자</b><span class="hint">내 정보 › 칭호에서 달 수 있습니다.</span></div>`:'<p class="hint">이번 전투에서 피해를 주지 못해 칭호를 받지 못했습니다.</p>'}
+   ${me&&me.d>0?`<div class="endttl"><span class="lbl">엔딩 칭호</span><b>테라의 마지막 수호자</b><span class="hint">내 정보 › 칭호에서 달 수 있습니다.</span></div>`:'<p class="hint">이번 전투에서 피해를 주지 못해 칭호를 받지 못했습니다.</p>'}
    <ol class="endrank">${top.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><b>${esc(v.n||'선원')}</b><span>${Math.round(v.d||0).toLocaleString()}</span></li>`).join('')}</ol>
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
 function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">${endFirst()?'First Contact · 오르비스 첫 등장':'Final Raid · 최종 레이드'}</span><b>${esc(END_NAME)} <small>Lv.${END_LV}</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
@@ -4534,7 +4534,7 @@ function rankAdminHTML(){const n=Object.keys(shipTotals().u||{}).length;return`<
    <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="rankreset" ${n?'':'disabled'}>기여도 랭킹 초기화</button><span class="hint">지금 기여 기록 ${n}명</span></div></div>`}
 function endAdminHTML0(){const e=END;
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
-   <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 엔딩 칭호 「가이아의 마지막 수호자」가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
+   <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 엔딩 칭호 「테라의 마지막 수호자」가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.mode==='first'?(e.on&&sNow()<(+e.until||0)?'첫 등장 전투 진행 중':'첫 등장 끝남 (오르비스 퇴장) · 최종 레이드를 시작할 수 있습니다'):e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="hint">Lv.${END_LV} · 체력 ${endHpMax().toLocaleString()} · 시선 피해 약 ${Math.round((20+END_LV*6.5)*endAtkK()).toLocaleString()} (침략자 Lv.${END_LV}의 1.5배)</span>
     <button class="btn sm" data-act="endstart" ${e&&e.on&&!e.done?'disabled':''}>최종 레이드 시작</button><button class="btn sm ghost" data-act="endreset" ${e?'':'disabled'}>초기화</button></div></div>`}
