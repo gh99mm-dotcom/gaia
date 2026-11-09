@@ -4646,7 +4646,7 @@ const fkHTML=()=>mode==='online'?`<div class="fkgrid">${fkCard(false)}${fkCard(t
 const CAST_EN=3,castEn=()=>{regen();return P.en===CAST_EN?CAST_EN-1:CAST_EN};
 function fspotHTML(busy){const cur=fspot(),D=P.dex||{},cnt=x=>['c','r','u','l'].reduce((a,t)=>a+x[t].filter(id=>D[id]).length,0);
   return`<div class="fspots"><div class="dtabs fsptabs" role="tablist" aria-label="낚시터">${FSPOTS.map(x=>`<button role="tab" aria-selected="${x.id===cur.id}" data-act="fspot" data-k="${x.id}" ${busy&&x.id!==cur.id?'disabled':''}>${x.n} <small>${cnt(x)}/23</small></button>`).join('')}</div>
-   <div class="fspinfo"><span class="hint">${esc(cur.d)}</span><span class="fspcnt">${[['c','일반'],['r','레어'],['u','유니크'],['l','레전더리']].map(([t,n])=>`<span class="fsc t-${t}">${n} ${cur[t].filter(id=>D[id]).length}/${cur[t].length}</span>`).join('')}</span></div></div>`}
+   <div class="fspinfo"><span class="hint">${esc(cur.d)}</span></div></div>`}
 function renderFish(){
   const ph=fish.ph,aim=ph==='aim',inWater=ph==='wait'||ph==='bite';
   const txt={idle:'레버를 돌려 낚싯줄을 던져 보십시오',aim:'레버가 돌아갑니다. 초록 칸에서 던지십시오!',wait:`찌가 ${fspot().liq} 위에 떠 있다…`,bite:'입질! 지금 당기십시오!',early:'너무 일찍 당겼다…',miss:'놓쳤다. 다시 던져 보십시오'}[ph]||'';
