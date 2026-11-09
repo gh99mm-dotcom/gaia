@@ -2138,7 +2138,7 @@ const ITEMS={
  moss:{n:'성운 이끼',ic:'goo',t:'#7dff9b',type:'food',hp:8,en:2},
  ore:{n:'운석 파편',ic:'rock',t:'#a9a4c8',type:'mat',d:'무기 강화의 기본 재료.'},
  crystal:{n:'은하 결정',ic:'gem',t:'#5fd8ff',type:'mat',d:'에너지를 품은 결정. 무기 강화에 씁니다.'},
- upcat:{n:'공명 촉매',ic:'gem',t:'#ffd65f',type:'mat',sv:500,d:'무기를 강화할 때 하나 쓰면 성공 확률이 10%p 오릅니다. 조사의 마지막 지점을 조사하면 반드시 하나 나오고, 다른 지점에서도 가끔 나옵니다.'},
+ upcat:{n:'공명 촉매',ic:'gem',t:'#ffd65f',type:'mat',sv:500,d:'무기나 우주복을 강화할 때 하나 쓰면 성공 확률이 10%p 오릅니다. 조사의 마지막 지점을 조사하면 반드시 하나 나오고, 다른 지점에서도 가끔 나옵니다.'},
  dark:{n:'암흑물질 조각',ic:'gem',t:'#7a4ff0',type:'mat',d:'무게가 느껴지지 않는 검은 조각. 상급 강화 재료.'},
  drink:{n:'성운 에너지 음료 3급',ic:'bottle',t:'#8aa9bd',type:'food',hp:0,en:20},
  drink2:{n:'성운 에너지 음료 2급',ic:'bottle',t:'#8a5ae8',type:'food',hp:0,en:50},
@@ -5816,7 +5816,7 @@ document.addEventListener('contextmenu',e=>{const s=e.target.closest('.slot[data
 const BAGCAT=[['farm','작물·씨앗'],['dish','요리'],['ship','재료'],['fish','물고기'],['etc','그 외']];
 // what a material goes into: ship repair and/or gear (gear, accessories, weapons, suits and weapon upgrades)
 let GEAR_MATS=null;const gearMats=()=>GEAR_MATS||(GEAR_MATS=new Set([...Object.values(CRAFT).flatMap(g=>g.list),...ACC,...WPNS,...SUITS].flatMap(f=>(f.mat||[]).map(([id])=>id)).concat(['ore','crystal','dark'])));
-const matUse=id=>[id==='upcat'&&'무기 강화 (성공 확률 +10%p)',shipMatIds().includes(id)&&(isCropId(id)?'우주선 수리 (생체 연료)':'우주선 수리'),gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
+const matUse=id=>[id==='upcat'&&'무기·우주복 강화 (성공 확률 +10%p)',shipMatIds().includes(id)&&(isCropId(id)?'우주선 수리 (생체 연료)':'우주선 수리'),gearMats().has(id)&&'장비 제작'].filter(Boolean).join(' · ');
 function bagCat(id){const it=ITEMS[id];if(!it)return'etc';if(isDish(id))return'dish';if(it.fish)return'fish';if(it.type==='seed'||isCropId(id))return'farm';if(it.type!=='relic'&&matUse(id))return'ship';return'etc'}
 let bagF=null;
 // 제작대 › 무기 강화
@@ -5833,7 +5833,7 @@ document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList
 function suitUpCardHTML(){const n=P.suit||0,cost=suitUpCost(n),mx=n>=SUIT_MAXLV;
   return`<div class="card upcard suitup" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 우주복 강화</span>
    <div class="upnow">${suitImg(n,4)}<div><b style="color:var(--cyan)">${esc(SUITS[n].n)} +${n}</b><div class="hint">방어 +${sDef(n)} · 에너지 +${Math.round(sEnK(n)*100)}%${mx?'':` · 다음 단계 방어 +${sDef(n+1)}`} · 최대 +${SUIT_MAXLV}</div>${mx?'':`<div class="upnext">${suitImg(n+1,2)}<span class="hint">다음 · ${esc(SUITS[n+1].n)} +${n+1}</span></div>`}</div></div>
-   ${mx?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${upPct(n)}%${upUseB()?` <small>(+${UP_BOOST}%p 촉매)</small>`:''}</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div>
+   ${mx?'<p class="hint">최고 단계에 도달했습니다.</p>':`<div class="upodds"><b>성공 확률 ${upPct(n)}%${upUseB()?` <small>(+${UP_BOOST}%p 촉매)</small>`:''}</b><span class="${n>=UP_DROP?'drop':''}">실패하면 ${n>=UP_DROP?`1단계 하락 (+${n-1})`:'단계 유지'}</span></div><div class="cost-list">${cost.map(([id,c])=>`<div class="${(P.inv[id]||0)>=c?'ok':'no'}">${iicon(id,2)}${ITEMS[id].n}<b>${P.inv[id]||0}/${c}</b></div>`).join('')}<div class="${(P.cr||0)>=UP_CR[n]?'ok':'no'}">${img(IC.coin,null,4)}크레딧<b>${(P.cr||0).toLocaleString()}/${UP_CR[n].toLocaleString()} CR</b></div></div><div class="upboost">${iicon('upcat',2)}<span class="hint">공명 촉매 ${P.inv.upcat||0}개 · 한 번에 1개 써서 성공 확률 +${UP_BOOST}%p</span><button class="btn sm ${upUseB()?'gold':'ghost'}" data-act="upboost" ${(P.inv.upcat||0)>0?'':'disabled'} aria-pressed="${upUseB()}">${upUseB()?'사용 ON':'사용 OFF'}</button></div>
    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="suitup" ${cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n]?'':'disabled'}>우주복 강화</button></div>`}</div>`}
 function upCardHTML(){const n=P.wlv,cost=upCost(n),can=n<WEAPONS.length-1&&cost.every(([id,c])=>(P.inv[id]||0)>=c)&&(P.cr||0)>=UP_CR[n];
   return`<div class="card upcard" style="display:flex;flex-direction:column;gap:10px"><span class="lbl">Workshop · 무기 강화</span>
