@@ -1307,6 +1307,7 @@ body:has(#endHud){padding-bottom:200px}
 .endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:3px 8px;background:var(--deep)}.endrank li.me{color:var(--cyan)}.endrank em{font-style:normal;color:var(--mute)}
 @media (max-width:600px){.endbtns{width:100%}.endbtns .btn{flex:1}}
 .tablock{opacity:.5;filter:grayscale(.7)}
+.preopen{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:40px 20px}.preopen h2{margin:0;font-size:20px}
 /* the lock sits in the top-right corner like the count badges; if a tab shows both (staff preview), the badge steps left */
 .nav button .tlk{position:absolute;top:-7px;right:-6px;font-size:12px;line-height:1;padding:1px 2px;background:var(--panel);border:2px solid var(--ink)}
 .nav button:has(.tlk) .badge{right:20px}
@@ -2815,6 +2816,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
   seasonQuit()},()=>{})}
 const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss'];
+function preopenAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Pre-open · 오픈 준비 잠금</span><span class="hint">켜 두면 선원들은 모든 게임 화면에 들어갈 수 없고 교류 › PAD만 쓸 수 있습니다. 운영자·관리자는 그대로 둘러볼 수 있습니다.</span><div class="row" style="gap:8px;align-items:center"><b style="color:${PREOPEN?'var(--red)':'var(--green)'}">${PREOPEN?'🔒 잠금 중 (오픈 준비)':'🔓 열림 (정상 운영)'}</b><button class="btn sm ${PREOPEN?'':'ghost'}" data-act="admpreopen">${PREOPEN?'잠금 풀기 (오픈!)':'오픈 준비 잠금 켜기'}</button></div></div>`}
 function seasonAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox"><span class="lbl">Season · 테스트 기록 초기화</span>
   <span class="hint">테스트가 끝났을 때 한 번 누르는 버튼입니다. <b style="color:var(--red)">되돌릴 수 없습니다.</b> 모든 선원의 캐릭터(레벨·가방·크레딧·장비·펫·마이룸·도감), 공용 농장·창고, 우주선 수리, 침략자·원정·낚시 대결, 채팅·PAD·방명록·귓속말·선물·사진, 가입 명단·초대장·관리자 명단·건의함이 모두 지워집니다.</span>
   <span class="hint">로그인 아이디와 비밀번호는 남아서, 선원들은 같은 아이디로 로그인한 뒤 <b>새 초대코드</b>를 적어 다시 합류합니다. 아이디까지 지우려면 Firebase 콘솔의 Authentication에서 사용자를 삭제하십시오.</span>
@@ -2846,7 +2848,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}${seasonAdminHTML()}`:''}`}
+   ${admStaffHTML(others)}${preopenAdminHTML()}${seasonAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','레어 어종 +0.3% · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -3025,7 +3027,7 @@ function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const a
   const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender()}
 function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
-  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}" class="${tabGate(t.id)?'tablock':''}" ${tabGateRaw(t.id)?`title="${tabGateRaw(t.id).n} 수리 후 열림${tabGate(t.id)?'':' · 운영진 미리보기'}"`:''}>${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${tabGateRaw(t.id)?'<span class="tlk">🔒</span>':''}${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN&&!tabGate('adv')?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
+  $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}" class="${tabGate(t.id)?'tablock':''}" ${tabGateRaw(t.id)?`title="${tabGateRaw(t.id).n} 수리 후 열림${tabGate(t.id)?'':' · 운영진 미리보기'}"`:''}>${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${tabGateRaw(t.id)||(mode==='online'&&PREOPEN&&t.id!=='social')?'<span class="tlk">🔒</span>':''}${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN&&!tabGate('adv')?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
 }
 function head(id=tab){const t=TABS.find(x=>x.id===id);return`<div class="stage-head"><h2>${t.n}</h2><span class="loc">${id==='social'?(socTab==='chat'?'로비':''):t.loc}</span></div>${isFaint()?`<div class="faintbar">기절해서 움직일 수 없습니다 · 남은 시간 <b id="faintT2">${fmtClock(P.faint-Date.now())}</b></div>`:''}`}
 function chipsOf(list,minus){return`<div class="chips">${list.map(([id,n])=>`<span class="ichip">${iicon(id,2)}${ITEMS[id].n} ×${n}</span>`).join('')}${minus||''}</div>`}
@@ -3651,7 +3653,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();if(socOpen)renderSoc()}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -4786,8 +4788,12 @@ const roomLife=()=>SHIP.find(x=>x.id==='life');
 const roomOpen=()=>mode==='online'&&shipDone(roomLife());
 // tabs that open as the ship comes back to life: 의뢰 with the 동력로, 탐사 with the 통신 장치 (staff can always look in)
 const TAB_GATE={req:'power',adv:'comm'};
+/* 오픈 준비 (pre-open lock): set by the admin. Until it is lifted every game tab and page is closed to crew; only PAD in 교류 works.
+   운영자·관리자 can still look around (the lock badge stays on so they can see what crew see) */
+var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
+function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 개척단이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
 const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
-const tabGate=id=>isStaff()?null:tabGateRaw(id);
+const tabGate=id=>isStaff()?null:(preLock()&&id!=='social'?{n:'오픈 준비',pre:1}:tabGateRaw(id));
 // boss/staff.roomLink (admin switch): while linked, 마이룸 stays locked until the life-support section is repaired; unlinked, it is open to everyone
 let ROOM_LINK=true;
 const canRoom=()=>!ROOM_LINK||roomOpen()||isStaff();
@@ -5857,6 +5863,7 @@ let barWas=false;
 function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView;syncBgm()}
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox')){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll()}else adminRefresh();return}
+  if(preLock()&&!profView){$('#stage').innerHTML=preopenHTML();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
   if(profView){const ph=profId&&profHTML();if(ph){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="profclose">← 돌아가기</button><h2>선원 프로필</h2>${profActsHTML(profId)||`<span class="loc">${esc((whoP(profId)||{}).nick||'')}</span>`}</div>${ph}`;return}profView=false;profId=null}
   if(orgView){$('#stage').innerHTML=orgPage();return}
@@ -6542,6 +6549,8 @@ const A={
   try{await lim(db.doc('members/'+uid).delete(),10000)}catch(e){}
   if(left2.length){show(`⚠ 지우지 못한 기록: ${left2.join(' · ')}`);show('잠시 뒤 새로고침합니다. 다시 초기화를 눌러 주십시오.');console.warn('초기화 후 남은 기록',left2);setTimeout(()=>location.reload(),12000);return}
   show(`완료! 기록 ${n}건을 지웠습니다. 운영자도 운영자 군번을 발급받아 다시 합류합니다.`);setTimeout(()=>location.reload(),3500)},
+ admpreopen(){if(!isAdmin||mode!=='online')return;const next=!PREOPEN;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{preopen:next})).then(()=>{toast(next?'오픈 준비 잠금을 켰습니다. 선원들은 PAD만 쓸 수 있습니다.':'잠금을 풀었습니다. 게임이 열렸습니다!');if(!next)sys('[공지] 가이아 개척단이 정식으로 출항했습니다! 이제 모든 화면을 이용할 수 있습니다.',true,'beacon')}).catch(()=>toast('바꾸지 못했습니다.'))},
+ preopenpad(){socTab='pad';socDrawer(true)},
  admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 선원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
  admstaff(d){if(!isAdmin||mode!=='online')return;const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
  admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
@@ -6819,7 +6828,7 @@ document.addEventListener('pointerdown',e=>{const m=document.getElementById('lgM
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('lgMenu')){e.stopPropagation();lgClose()}},true);
 addEventListener('resize',lgClose);
 document.addEventListener('click',e=>{if(e.target.id==='infoModal'||e.target.id==='giftModal'||e.target.id==='adminModal'){e.target.hidden=true;return}
-  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}{const gq=tabGate(t.dataset.tab);if(gq){toast(`우주선의 ${gq.n}${jo(gq.n,"을","를")} 고치면 열립니다.`);return}}if(t.dataset.tab==='req')brokerSeen=false;podArm=null;meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')sellCart={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
+  const t=e.target.closest('[data-tab]');if(t){if(raidLocked()&&t.dataset.tab!=='raid'){toast('원정 중에는 다른 곳으로 갈 수 없습니다. 원정을 마치거나 포기하십시오.');return}{const gq=tabGate(t.dataset.tab);if(gq){toast(gq.pre?'오픈 준비 중입니다. 지금은 교류 › PAD만 이용할 수 있습니다.':`우주선의 ${gq.n}${jo(gq.n,"을","를")} 고치면 열립니다.`);return}}if(t.dataset.tab==='req')brokerSeen=false;podArm=null;meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;const prev=tab;tab=t.dataset.tab;if(prev==='shop'&&tab!=='shop')sellCart={};if(tab==='shop'&&prev!=='shop'){let n;do{n=ri(0,KEEPER.length-1)}while(KEEPER.length>1&&n===keeperLine);keeperLine=n}const keepY=scrollY;renderNav();renderPanel();holdScroll(keepY);renderCrew();setPresence();return}
   const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){if(mode==='boot'){toast('통신 연결 중입니다. 잠시만 기다려 주십시오.');return}if(isFaint()&&!SAFE_ACT.has(a.dataset.act)){toast(`기절 상태입니다. ${fmtClock(P.faint-Date.now())} 뒤에 깨어납니다.`);return}A[a.dataset.act](a.dataset,e)}
 });
 /* ───────── social: PAD feed · whisper · crew directory · relations ───────── */
@@ -7143,7 +7152,8 @@ function renderSocial(){
   if(mode!=='online')return head('social')+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 선원과 함께 접속해 있을 때 열립니다. 지금은 한마디만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   if((socTab==='crew'&&!profId)||socTab==='dm'||socTab==='rank')socTab='pad';
   if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],['chat','대화'],['memo','만남'+socDot('memo')],['rel','관계도']].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  if(preLock())socTab='pad';
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],...(preLock()?[]:[['chat','대화'],['memo','만남'+socDot('memo')],['rel','관계도']])].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head('social')+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='chat'?loungeHTML():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div></div>`;
