@@ -7748,8 +7748,8 @@ function renderSocial(){
   if(mode!=='online')return head('social')+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 선원과 함께 접속해 있을 때 열립니다. 지금은 한마디만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   if((socTab==='crew'&&!profId)||socTab==='dm'||socTab==='rank')socTab='pad';
   if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
-  if(preLock())socTab='pad';
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],...(preLock()?[]:[['chat','대화'],['memo','만남'+socDot('memo')],['rel','관계도']])].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  if(preLock()&&socTab!=='rel')socTab='pad';
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],...(preLock()?[['rel','관계도']]:[['chat','대화'],['memo','만남'+socDot('memo')],['rel','관계도']])].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head('social')+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='chat'?loungeHTML():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div></div>`;
