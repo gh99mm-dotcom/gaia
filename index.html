@@ -2789,7 +2789,7 @@ const BOSS_IC=['................', '....kkkkkkkk....', '...kkuuuuuukk...', '..ku
 const WRENCH_IC=['................', '..........kk.kk.', '.........kuk.kuk', '.........kuk.kuk', '........kuuk.kuk', '........kuhkkuuk', '.......kuuuuuuk.', '......kuuuwwwk..', '.....kuuwkkkk...', '....kuuwk.......', '...kuuwk........', '..kuuwk.........', '.kuuwk..........', '.kuwk...........', '..kk............', '................'];
 const TABS=[
  {id:'social',n:'교류',ic:IC.chat,cost:'',loc:'중앙 광장 · 공용 게시판 · 24시간 개방'},
- {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 개척선 가이아 · 선체 손상 심각'},
+ {id:'ship',n:'우주선',ic:IC.ship,cost:'',loc:'불시착 지점 · 우주함선 가이아 · 선체 손상 심각'},
  {id:'bench',n:'제작대',ic:WRENCH_IC,cost:'',loc:'가이아 정비실 · 무기 강화 · 우주복 강화 · 보조무기 · 장신구'},
  {id:'farm',n:'농사',ic:IC.farm,cost:'',loc:'유리 돔 농장 · 21℃ · 습도 41% · 인공 중력 0.8G'},
  {id:'gather',n:'채집',ic:IC.gather,cost:'로봇',loc:'채집 로봇 파견 · 길게 보낼수록 많이 채집'},
@@ -5402,7 +5402,7 @@ const FURN={
  ]},
  bed:{n:'침대',list:[
   M('bedn','없음',0,null,'침대를 두지 않아요',{st:'none',f:'#2a2e3a',bl:'#4a4570'}),
-  M('bed0','간이 침상',1000,null,'개척선에 딸려 온 딱딱한 기본 침상',{st:'basic',f:'#2a2e3a',bl:'#4a4570',rest:.3}),
+  M('bed0','간이 침상',1000,null,'우주함선에 딸려 온 딱딱한 기본 침상',{st:'basic',f:'#2a2e3a',bl:'#4a4570',rest:.3}),
   M('bed1','수면 캡슐',1500,[['ore',10],['crystal',2]],'푸른 유리 덮개가 달린 1인용 캡슐',{st:'cap',f:'#22343f',bl:'#3a5866',tint:'138,169,189',rest:.5}),
   M('bed2','군용 접이식 침대',1000,[['ore',3]],'접으면 벽에 붙는 군용 침대',{st:'basic',f:'#3a3f4f',bl:'#4d5a45',rest:.32}),
   M('bed3','낡은 소파베드',1000,[['moss',3]],'스프링이 삐걱대는 오래된 소파베드',{st:'sofa',f:'#3a2a22',bl:'#6a4f42',rest:.35}),
@@ -5938,7 +5938,7 @@ function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='room'
   const mine=(rank[uid]||{}).n||0;
   const canAny=open&&pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0),prevN=(SHIP[SHIP.indexOf(pt)-1]||{}).n;
   return head()+shipSubTabs()+`<div class="shipscene"><canvas id="shipCv" width="${SW}" height="${SH}" aria-label="불시착한 가이아 풍경"></canvas></div><div class="shiptop card">
-   <div class="sinfo"><b>${all>=1?'가이아 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 개척선 가이아'}</b><span class="hint">${all>=1?'모든 선원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 선원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
+   <div class="sinfo"><b>${all>=1?'가이아 수리 완료! 다시 날아오를 준비가 되었습니다.':'반파된 우주함선 가이아'}</b><span class="hint">${all>=1?'모든 선원의 손으로 되살아난 배입니다.':'생명 유지 장치부터 차례로 고칩니다. 선원 모두가 2주쯤 힘을 모아야 다시 날 수 있는 큰 배입니다. 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</span>
    <div class="stat-row"><span>전체 수리율</span><b>${Math.floor(all*100)}% · ${done}/${SHIP.length} 구역</b></div><div class="bar"><i style="--c:var(--green);width:${all*100}%"></i></div></div></div>
   <div class="shipgrid">${SHIP.map((x,k)=>{const v=shipPct(x),op=shipOpen(x);return`<button class="shippart ${x.id===pt.id?'on':''} ${v>=1?'ok':''} ${op?'':'lock'}" data-act="shipsel" data-k="${x.id}"><b>${k+1}. ${x.n}</b><span>${v>=1?'수리 완료':op?Math.floor(v*100)+'%':'🔒 잠김'}</span><div class="bar"><i style="--c:${v>=1?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div></button>`}).join('')}</div>
   <div class="card shipdet"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px"><div><b>${pt.n}</b> <span class="hint">${shipDone(pt)?'수리 완료':Math.floor(shipPct(pt)*100)+'%'}</span>${open||isStaff()?`<p class="hint" style="margin:4px 0 0">${pt.d}</p>`:''}${open?'':`<p class="shiplock">🔒 ${esc(prevN)}을(를) 먼저 고쳐야 이 구역을 수리할 수 있습니다.</p>`}</div>
@@ -6096,7 +6096,7 @@ function shipGive(partId,only,qty){
   const ctb=list.reduce((a,[id,n])=>a+(isCropId(id)?0:n),0),tm=ctb?{['u.'+uid+'.n']:ctb}:{};list.forEach(([id,n])=>{tm['p.'+pt.id+'.'+id]=n});
   Promise.all([...list.map(([id,n])=>db.collection('shipdon').add({part:pt.id,id,n,uid,nick:P.nick,at})),docInc(shipTRef(),tm,{['u.'+uid+'.nick']:P.nick})]).then(()=>{
     sfxCoin();log(`가이아 ${pt.n}에 ${list.map(([id,n])=>ITEMS[id].n+' '+n).join(', ')}을(를) 넣었다. 경험치 +${cnt*2}.`,'good');
-    if(finish){sys(`${P.nick} 님의 손으로 가이아 ${pt.n} 수리가 끝났습니다!`);if(SHIP.every(x=>x===pt||shipDone(x)))sys('가이아의 모든 구역이 수리되었습니다. 개척선이 다시 날아오를 준비를 마쳤습니다!')}
+    if(finish){sys(`${P.nick} 님의 손으로 가이아 ${pt.n} 수리가 끝났습니다!`);if(SHIP.every(x=>x===pt||shipDone(x)))sys('가이아의 모든 구역이 수리되었습니다. 우주함선이 다시 날아오를 준비를 마쳤습니다!')}
     if(tab==='ship')renderPanel()
   }).catch(()=>{list.forEach(([id,n])=>add(id,n));P.cr-=cr;commit();toast('재료를 넣지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')})
 }
