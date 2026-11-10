@@ -1747,7 +1747,8 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .basicdl dt{font-family:"Galmuri11",var(--f-pix);font-size:12px;color:var(--pc,#8a9ab4)}.basicdl dd{margin:0;font-size:14px;word-break:break-all}
 .basicform{display:flex;flex-direction:column;gap:6px}.basicform label{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:6px;font-size:12px}.basicform input{width:100%;box-sizing:border-box}
 .duelalert{display:flex;align-items:center;gap:10px;margin:10px 0;padding:10px 12px;border:2px solid #e8b440;background:linear-gradient(90deg,#3a2a0e,#1c1608);color:#ffe9a8;box-shadow:0 0 0 1px #000,0 0 14px #ffc04a55;animation:duelPulse 1.2s steps(2) infinite}
-.duelalert.go{cursor:pointer;margin:8px 0 0}.duelalert .da-ic{font-size:22px;line-height:1;color:#ffd65f;text-shadow:1px 1px 0 #000}.duelalert b{display:block;font-family:"Galmuri11",var(--f-pix);font-size:15px;color:#fff3c0}.duelalert span{font-size:12px}.duelalert i{font-style:normal;color:#ffd65f;font-family:"Galmuri11",var(--f-pix)}
+#duelBar{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:57;width:min(380px,calc(100vw - 24px));pointer-events:none}#duelBar .duelalert{margin:0;pointer-events:auto;animation:duelIn .25s steps(3),duelPulse 1.2s steps(2) .25s infinite}#duelBar.out .duelalert{opacity:0;transition:opacity .35s}@keyframes duelIn{from{transform:translateY(12px);opacity:0}}.duelalert.go{cursor:pointer}
+@media (max-width:620px){#duelBar{bottom:calc(132px + env(safe-area-inset-bottom,0px))}}.duelalert .da-ic{font-size:22px;line-height:1;color:#ffd65f;text-shadow:1px 1px 0 #000}.duelalert b{display:block;font-family:"Galmuri11",var(--f-pix);font-size:15px;color:#fff3c0}.duelalert span{font-size:12px}.duelalert i{font-style:normal;color:#ffd65f;font-family:"Galmuri11",var(--f-pix)}
 .duelalert.soon{border-color:#7ad0ff;background:linear-gradient(90deg,#0e2a3a,#081620);color:#cfefff;box-shadow:0 0 0 1px #000,0 0 14px #7ad0ff55}.duelalert.soon b{color:#e8f8ff}.duelalert.soon i{color:#7ad0ff}
 @keyframes duelPulse{50%{box-shadow:0 0 0 1px #000,0 0 22px #ffc04a99}}
 :root[data-skin="light"] .duelalert{background:#fff4d0;color:#5a3a00}:root[data-skin="light"] .duelalert b{color:#3a2400}:root[data-skin="light"] .duelalert.soon{background:#e4f4ff;color:#14405a}
@@ -1796,7 +1797,6 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 
     <main class="console">
       <nav class="nav" id="nav" aria-label="활동"></nav>
-      <div id="duelBar"></div>
       <section class="px stage" id="stage" aria-live="polite"></section>
       <section class="px logbox" aria-label="활동 기록">
         <span class="lbl">Activity log · 활동 기록</span>
@@ -1809,6 +1809,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 
 <div class="socdock" id="socDock"><aside class="socterm padphone" aria-label="교류 휴대폰"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i><button type="button" class="stside" data-act="socside" aria-label="교류를 반대쪽으로 옮기기" title="반대쪽으로 옮기기">⇄</button><button type="button" class="stclose" data-act="socdock" aria-label="교류 닫기">✕</button></div><div class="stglass"><section class="px stage socstage" id="socStage" aria-live="polite"></section></div><div class="pp-bot"><button type="button" class="pp-home" data-act="socdock" aria-label="교류 닫기"></button></div></aside><button type="button" class="sochandle" data-act="socdock" aria-expanded="false" aria-label="교류 열기"><span class="shgrip"></span><span class="shico"></span><span class="shtxt">교류</span><em id="socBadge" hidden></em><span class="shgrip"></span></button></div>
 <div class="modal" id="suggModal" hidden><div class="px infobox" id="suggBox" role="dialog" aria-label="건의함"></div></div>
+<div id="duelBar" aria-live="polite"></div>
 <div class="modal" id="rbModal" hidden><div class="px infobox" id="rbBox" role="dialog" aria-label="관계함"></div></div>
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <main class="joinpage" id="joinModal" hidden>
@@ -3458,7 +3459,7 @@ function socBadge(){const b=$('#socBadge');if(!b)return;const n=socUnread();b.te
 function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const ae=document.activeElement;if(isField(ae)&&st.contains(ae)){socPend=true;return}socPend=false;
   const top=st.scrollTop,ps=st.querySelector('.pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';st.innerHTML=renderSocial();
   const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender()}
-function renderNav(){duelBar();
+function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
   $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}" class="${tabGate(t.id)?'tablock':''}" ${tabGateRaw(t.id)?`title="${tabGateRaw(t.id).n} 수리 후 열림${tabGate(t.id)?'':' · 운영진 미리보기'}"`:''}>${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${tabGateRaw(t.id)||(mode==='online'&&PREOPEN&&t.id!=='social')?'<span class="tlk">🔒</span>':''}${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN&&!tabGate('adv')?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
 }
@@ -4720,7 +4721,6 @@ function renderFish(){
   </div>
   <div class="row">${inWater||ph==='early'||ph==='miss'||ph==='idle'?bonusTxt:''}<button class="qchip" style="margin-left:auto" data-act="sound" aria-pressed="${soundOn}">소리 ${soundOn?'켜짐':'꺼짐'}</button></div>
   ${lastFish?`<div class="card result ${lastFish.cm&&mode==='online'?'fishres':''}"><div class="fishres-l">${iicon(lastFish.id,3)}<div><p>${lastFish.first?'<span class="spctag newfish">새로운!</span> ':''}<b>${ITEMS[lastFish.id].n}</b> · ${ITEMS[lastFish.id].tier?ITEMS[lastFish.id].tier+' 등급':'기본 낚싯대에 걸린 씨앗'}</p>${lastFish.cm?`<p class="fishlen ${lastFish.big?'big':''}">크기 <b>${fmtLen(lastFish.cm)}</b>${lastFish.big?' <span class="spctag">대어!</span>':''}${lastFish.rec?' <span class="spctag rec">내 최고 기록</span>':''} <span class="hint">(${fmtLen(ITEMS[lastFish.id].sz[0])} ~ ${fmtLen(ITEMS[lastFish.id].sz[1])})</span></p>`:''}<p class="hint">${lastFish.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${lastFish.ms}ms${lastFish.ms<450?' (빠른 반응)':''} · 경험치 +${lastFish.xp}${lastFish.big?' (대어 보너스 ×1.5)':''}</p></div></div>${lastFish.cm&&mode==='online'?`<div class="fishres-r"><textarea id="fishTxt" class="sel" maxlength="200" rows="3" placeholder="${esc(fishShareDef(lastFish))}" ${lastFish.shared?'disabled':''} aria-label="PAD에 함께 올릴 글">${esc(lastFish.note||'')}</textarea><div class="row" style="justify-content:space-between;gap:6px"><span class="hint">비워 두면 기본 문구로 올라갑니다</span><button class="btn sm ${lastFish.shared?'ghost':'alt'}" data-act="fishshare" ${lastFish.shared?'disabled':''}>${lastFish.shared?'PAD에 공유함':'PAD로 공유하기'}</button></div></div>`:''}</div>`:''}
-  ${duelAlertHTML()}
   ${dexHTML()}
   ${fkHTML()}`;
 }
@@ -7391,11 +7391,12 @@ let DUEL=null;const DUEL_MS=3*60e3,DPTS={c:1,r:3,u:8,l:25};
 // a newly opened duel rings a ding-dong for everyone (once per duel, only while it is still to come or running)
 let duelHeard=null,duelInit=false;
 function sfxDingDong(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'sine',1318.5,0,t,.55,.3);tone(a,'triangle',2637,0,t,.25,.05);tone(a,'sine',987.8,0,t+.32,.9,.32);tone(a,'triangle',1975.5,0,t+.32,.35,.05)}
-function duelAnnounce(){if(!duelInit){duelInit=true;duelHeard=DUEL?DUEL.id:'';duelBar();return}duelBar();if(!DUEL||Date.now()>=DUEL.end||duelHeard===DUEL.id)return;duelHeard=DUEL.id;sfxNotice(sfxDingDong);
-  if(tab!=='fish'){const h=PLAYERS[DUEL.host];toast(`${DUEL.host===uid?'내가':((h&&h.nick)||'선원')+' 님이'} 낚시 대결을 열었습니다! 낚시 탭으로 모이십시오.`)}}
-// on every other tab the same banner sits above the stage (tap it to go fishing); on the fishing tab it sits under the lake
-function duelBar(){const b=$('#duelBar');if(!b)return;const h=tab==='fish'?'':duelAlertHTML(true);if(b.innerHTML!==h)b.innerHTML=h}
-setInterval(()=>{if(DUEL)duelBar()},1000);
+function duelAnnounce(){if(!duelInit){duelInit=true;duelHeard=DUEL?DUEL.id:'';return}if(!DUEL||Date.now()>=DUEL.end||duelHeard===DUEL.id)return;duelHeard=DUEL.id;sfxNotice(sfxDingDong);duelPop();
+}
+// a floating card at the lower middle of the screen on every tab (tap it to go fishing)
+let duelPopT=0;function duelPop(){const b=$('#duelBar');if(!b||!DUEL)return;const h=DUEL.host===uid?'내가':`${esc((PLAYERS[DUEL.host]||{}).nick||'선원')} 님이`;
+  b.innerHTML=`<div class="duelalert on${tab!=='fish'?' go':''}" role="status" ${tab!=='fish'?'data-tab="fish" title="낚시 탭으로 가기"':''}><span class="da-ic">♪</span><div><b>낚시 대회 개최!</b><span>${h} 3분 낚시 대결을 열었습니다${tab!=='fish'?' · 눌러서 낚시하러 가기':''}</span></div></div>`;
+  b.classList.remove('out');clearTimeout(duelPopT);duelPopT=setTimeout(()=>{b.classList.add('out');setTimeout(()=>{if(b.classList.contains('out'))b.innerHTML=''},400)},3000)}
 // the banner under the lake while a duel is about to start or running
 function duelAlertHTML(go){if(mode!=='online'||!DUEL)return'';const now=Date.now();if(now>=DUEL.end)return'';const h=DUEL.host===uid?'내가':`${esc((PLAYERS[DUEL.host]||{}).nick||'선원')} 님이`;
   return`<div class="duelalert ${now<DUEL.start?'soon':'on'}${go?' go':''}" role="status" ${go?'data-tab="fish" title="낚시 탭으로 가기"':''}><span class="da-ic">♪</span><div><b>낚시 대회 개최!</b><span>${h} 연 3분 낚시 대결 · ${now<DUEL.start?`시작까지 <i id="duelA">${fmtClock(DUEL.start-now)}</i>`:`남은 시간 <i id="duelA">${fmtClock(DUEL.end-now)}</i> · 지금 낚으면 바로 참가합니다`}${go?' · 눌러서 낚시하러 가기':''}</span></div></div>`}
