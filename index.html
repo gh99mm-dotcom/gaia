@@ -5354,7 +5354,7 @@ function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||'
 var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호']];
 const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k];
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
-function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 프로젝트가 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
+function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 우주함선이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
 const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
 const tabGate=id=>isStaff()?null:(preLock()&&id!=='social'?{n:'오픈 준비',pre:1}:tabGateRaw(id));
 // boss/staff.roomLink (admin switch): while linked, 마이룸 stays locked until the life-support section is repaired; unlinked, it is open to everyone
@@ -7143,7 +7143,7 @@ const A={
   try{await lim(db.doc('members/'+uid).delete(),10000)}catch(e){}
   if(left2.length){show(`⚠ 지우지 못한 기록: ${left2.join(' · ')}`);show('잠시 뒤 새로고침합니다. 다시 초기화를 눌러 주십시오.');console.warn('초기화 후 남은 기록',left2);setTimeout(()=>location.reload(),12000);return}
   show(`완료! 기록 ${n}건을 지웠습니다. 운영자도 운영자 군번을 발급받아 다시 합류합니다.`);setTimeout(()=>location.reload(),3500)},
- admpreopen(){if(!isAdmin||mode!=='online')return;const next=!PREOPEN;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{preopen:next})).then(()=>{toast(next?'오픈 준비 잠금을 켰습니다. 선원들은 PAD만 쓸 수 있습니다.':'잠금을 풀었습니다. 게임이 열렸습니다!');if(!next)sys('[공지] 가이아 프로젝트가 정식으로 출항했습니다! 이제 모든 화면을 이용할 수 있습니다.',true,'beacon')}).catch(()=>toast('바꾸지 못했습니다.'))},
+ admpreopen(){if(!isAdmin||mode!=='online')return;const next=!PREOPEN;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{preopen:next})).then(()=>{toast(next?'오픈 준비 잠금을 켰습니다. 선원들은 PAD만 쓸 수 있습니다.':'잠금을 풀었습니다. 게임이 열렸습니다!');if(!next)sys('[공지] 가이아 우주함선이 정식으로 출항했습니다! 이제 모든 화면을 이용할 수 있습니다.',true,'beacon')}).catch(()=>toast('바꾸지 못했습니다.'))},
  preopenpad(){socTab='pad';socDrawer(true)},
  admaff(d){if(!isAdmin||mode!=='online')return;const a=admAffA,b=admAffB;if(!a||!b||a===b){toast('두 선원을 골라 주십시오.');return}
   const v=Math.max(AFF_MIN,Math.min(AFF_MAX,Math.round(d.k==='set'?(+(($('.admaffv')||{}).value)||0):admAffCur()+(+d.k))));const key='q'+Date.now()+Math.random().toString(36).slice(2,6);
