@@ -105,6 +105,14 @@ service cloud.firestore {
     }
 
     // 선물·농사 도움: 보낸 사람이 만들고, 받는 사람이 읽고 지움.
+    // 관계 메모: 두 선원(u)만 고치고, 둘 중 한 사람이 제안(pm)하면 다른 사람이 수락해 memo가 됩니다.
+    match /bonds/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.u is list && request.resource.data.u.size() == 2
+        && me() in request.resource.data.u && id == request.resource.data.u[0] + '_' + request.resource.data.u[1];
+      allow update: if member() && me() in resource.data.u && request.resource.data.u == resource.data.u;
+      allow delete: if member() && (me() in resource.data.u || staff());
+    }
     match /gifts/{id} {
       allow read, delete: if member() && (resource.data.to == me() || resource.data.from == me());
       allow create: if member() && (request.resource.data.from == me());
