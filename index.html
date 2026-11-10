@@ -3493,7 +3493,7 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
     if(kind==='ready'){px(15,gap+2,'#ffe27a');px(14,gap+2,'rgba(255,226,122,.6)');px(16,gap+2,'rgba(255,226,122,.6)');px(15,gap+1,'rgba(255,226,122,.6)');px(15,gap+3,'rgba(255,226,122,.6)')}
   }
   return MD[key]=c.toDataURL()}
-function migrate(){if(P&&P.sv2!==1){const old=Math.max(P.suitMax||0,P.suit||0);P.suit=[0,5,10,15][Math.min(3,old)]||0;P.suitMax=P.suit;P.sv2=1}if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.lxv!==2){P.lx=lxOf(P);P.lxv=2}
+function migrate(){if(P&&P.feat){P.note=[P.feat,P.note].filter(Boolean).join('\n');delete P.feat}if(P&&P.sv2!==1){const old=Math.max(P.suitMax||0,P.suit||0);P.suit=[0,5,10,15][Math.min(3,old)]||0;P.suitMax=P.suit;P.sv2=1}if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.lxv!==2){P.lx=lxOf(P);P.lxv=2}
   // recipes start hidden; players from before this keep the dishes they have in the bag as already known
   if(!Array.isArray(P.rcp))P.rcp=COOK.filter(c=>(P.inv||{})[c.id]>0||(P.inv||{})[TASTY+c.id]>0).map(c=>c.id);
   // 머리·팔·발 장비 were retired for the two 장신구 slots: give back what each crafted piece cost, once
@@ -7678,7 +7678,7 @@ function profSideHTML(p,id,open){const mine=id===uid,chips=(ids,c)=>(ids||[]).fi
   const C=(cls,ic,t,b)=>`<section class="pside ${cls}"><h4><span>${ic}</span>${t}</h4>${b}</section>`;
   return`<div class="pside-col">${C('ps-like','♥','좋아하는 음식',`<div class="jpicked">${mine||open?chips(p.likes,'var(--pink)'):lock}</div>`)}${C('ps-hate','✕','싫어하는 음식',`<div class="jpicked">${mine||open?chips(p.hates,'var(--red)'):lock}</div>`)}${C('ps-suwi','◐','수위 여부',suwiHTML(p,mine))}${MEM_ALL.some(id=>(p.inv||{})[id]>0)?C('ps-mem','◆','귀중품',`<div class="jpicked">${MEM_ALL.filter(id=>(p.inv||{})[id]>0).map(id=>`<span class="ichip memchip" style="color:${ITEMS[id].t}">${iicon(id,1)}${ITEMS[id].n}</span>`).join('')}</div>`):''}${C('ps-aff','♡','호감도',aff)}</div>`}
 // free-text profile notes under the ID card (written on my own 내 프로필 tab, shown to everyone)
-const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐',2000],['feat','특징','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 늘 공구를 들고 다님',2000],['note','특이사항','!','ps-note','예: 커피 대신 메탄차만 마심. 매운 음식 금지']],PNOTE_MAX=120,noteMax=k=>(PNOTE.find(x=>x[0]===k)||[])[5]||PNOTE_MAX;let noteEdit=null;
+const PNOTE=[['trait','성격','✦','ps-trait','예: 조용하지만 낚시 얘기만 나오면 말이 많아짐',2000],['note','기타','◆','ps-feat','예: 왼쪽 헬멧에 별 스티커 · 커피 대신 메탄차만 마심 · 자유롭게 적어 주세요',2000]],PNOTE_MAX=120,noteMax=k=>(PNOTE.find(x=>x[0]===k)||[])[5]||PNOTE_MAX;let noteEdit=null;
 /* affection notes: five short notes (200자) that open one by one as that member's 호감도 toward the viewer reaches 20·40·60·80·100 */
 const AFFN=[20,40,60,80,100],AFFN_MAX=200;let affEdit=null,affDraft='';
 function affNotesHTML(p,mine,af){const N=p.affNote||{};
