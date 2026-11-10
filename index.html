@@ -3284,7 +3284,8 @@ const adminSn=()=>{const c=String(uid||'').replace(/[^A-Za-z0-9]/g,'').toUpperCa
 function loadMySn(){if(mode!=='online'||!uid)return;db.doc('members/'+uid).get().then(s=>{const c=s&&s.exists?String((s.data()||{}).code||''):'';MY_SN=c.length===8?c.slice(0,4)+'-'+c.slice(4):c;SN_PUB=MY_SN||(isAdmin?adminSn():'');if(!MY_SN&&isAdmin)MY_SN=SN_PUB;if(SN_PUB&&P.nick&&P.sn!==SN_PUB)save();renderInfo()}).catch(()=>{MY_SN=''})}
 const snHTML=sn=>sn?`<span class="mysn">군번 <b>${esc(sn)}</b></span>`:'';
 const mySnHTML=()=>MY_SN?`<span class="mysn">군번 <b>${esc(MY_SN)}</b></span>`:isAdmin&&mode==='online'&&MY_SN===''?'<span class="mysn">군번 <b>함장</b></span>':'';
-function renderInfo(){if(!$('#infoBox'))return;if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}if(meTab==='prof'){$('#infoBox').innerHTML=myPubHTML();return}
+function renderInfo(){if(!$('#infoBox'))return;const kv=keepVals(),ae=document.activeElement,kf=ae&&KEEP_VAL.includes(ae.id)?ae.id:null,pos=kf?ae.selectionStart:null;try{renderInfo0()}finally{putVals(kv);if(kf){const i=document.getElementById(kf);if(i){i.focus({preventScroll:true});try{i.setSelectionRange(pos,pos)}catch(e){}}}}}
+function renderInfo0(){if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();return}if(meTab==='prof'){$('#infoBox').innerHTML=myPubHTML();return}
   const L=P.lx||{},lifeRows=LIFE.map(([k,n,ic])=>{const lv=lifeLv(L[k]),cur=L[k]||0,lo=lifeNext(lv-1),hi=lifeNext(lv),mx=lv>=LIFE_MAX;return`<div class="life">${img(ic,null,2)}<div class="stat" style="flex:1;min-width:0"><div class="stat-row"><span>${n}</span><b>${mx?'LV.MAX':'LV.'+lv}</b></div><div class="bar"><i style="--c:${mx?'var(--gold)':'var(--green)'};width:${mx?100:(cur-lo)/(hi-lo)*100}%"></i></div><span class="hint">${LIFE_FX[k]} ${(k==='cook'?tastyPct():lifePct(k)).toFixed(1)}%</span></div></div>`}).join('');
   const got=TITLES.filter(t=>t[3]());
   const xpN=need(P.lvl),xpP=P.lvl>=MAX_LV?100:Math.min(100,(P.xp||0)/xpN*100),gearN=accOf().map(id=>accById(id)?.n).filter(Boolean).join(', ')||'없음';
@@ -6409,11 +6410,13 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
 let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
-const KEEP_FOCUS=new Set(['affIn','profBioIn','noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg']);
+const KEEP_FOCUS=new Set(['affIn','profBioIn','noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg','bondIn','bi_bh','bi_bw','bi_ba']);
+// boxes whose half-written text is carried over when the page redraws around them
+const KEEP_VAL=['bondIn','bi_bh','bi_bw','bi_ba'],keepVals=()=>{const v={};KEEP_VAL.forEach(id=>{const e=document.getElementById(id);if(e)v[id]=e.value});return v},putVals=v=>{for(const id in v){const e=document.getElementById(id);if(e&&e.value!==v[id])e.value=v[id]}};
 function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrotask(renderSoc);tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
-  renderPanel0();
+  const kv=keepVals();renderPanel0();putVals(kv);
   Object.entries(logs).forEach(([id,v])=>{const l=document.getElementById(id);if(l)l.scrollTop=v.end?l.scrollHeight:v.t});
   {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}
   // the battle log holds only the last 7 lines, newest last: always show the newest (on phones they wrap past the box)
