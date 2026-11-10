@@ -6880,7 +6880,7 @@ const A={
   padRstBusy=false;renderAdminAll();toast(fail?`PAD 글 ${n}개를 지웠습니다. 일부는 지우지 못했습니다.`:`PAD를 초기화했습니다. (글 ${n}개 삭제)`);log(`[운영자] PAD 초기화 · 글 ${n}개 삭제`)},
  pmore(){pilotOpen=!pilotOpen;try{localStorage.setItem('gaia-pilot-open',pilotOpen?'1':'0')}catch(e){}renderPilot()},
  async bondprop(d){const o=d.k,i=$('#bondIn'),t=(i&&i.value||'').trim().slice(0,120);if(!o||o===uid||mode!=='online')return;if(!t){toast('관계 메모를 적어 주십시오.');return}const q=PLAYERS[o]||{};
-  try{const doc={u:[uid,o].sort(),n:{[uid]:P.nick,[o]:q.nick||'선원'},pm:t,pby:uid,at:Date.now()};await(BONDS[o]?bondRef(o).update(doc):bondRef(o).set(Object.assign({memo:''},doc)));toast('관계 메모를 제안했습니다. 상대가 수락하면 정해집니다.')}catch(e){toast('제안을 보내지 못했습니다.')}},
+  try{const doc={u:[uid,o].sort(),n:{[uid]:P.nick,[o]:q.nick||'선원'},pm:t,pby:uid,at:Date.now()};await(BONDS[o]?bondRef(o).update(doc):bondRef(o).set(Object.assign({memo:''},doc)));toast('관계 메모를 제안했습니다. 상대가 수락하면 정해집니다.')}catch(e){toast('제안을 보내지 못했습니다. ('+((e&&(e.code||e.message))||'오류')+')')}},
  async bondok(d){const o=d.k,v=BONDS[o];if(!v||!v.pm||v.pby===uid)return;try{await bondRef(o).update({memo:v.pm,pm:'',pby:'',at:Date.now()});toast('관계 메모를 수락했습니다.')}catch(e){toast('수락하지 못했습니다.')}},
  async bondno(d){const o=d.k;if(!BONDS[o])return;try{await bondRef(o).update({pm:'',pby:''})}catch(e){toast('처리하지 못했습니다.')}},
  async bondcut(d){const o=d.k;if(!BONDS[o])return;try{await bondRef(o).update({memo:'',pm:'',pby:''});toast('관계 메모를 지웠습니다.')}catch(e){toast('지우지 못했습니다.')}},
