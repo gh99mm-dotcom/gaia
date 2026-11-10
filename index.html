@@ -7710,7 +7710,7 @@ function idCardHTML(p,id,photo,lock){const logo=($('.lg2-em img')||{}).src||'',s
 let whyEdit=false;const WHY_MAX=80;
 // why they joined: a full-width card above 성격
 function whyHTML(p,mine){
-  const why=mine&&whyEdit?`<div class="sendrow"><input id="whyIn" class="sel" maxlength="${WHY_MAX}" autocomplete="off" placeholder="예: 잃어버린 고향 별을 다시 찾고 싶어서" aria-label="프로젝트에 들어오게 된 이유" value="${esc(P.why||'')}"><button class="btn sm" data-act="whysave">저장</button><button class="qchip" data-act="whyedit">취소</button></div>`
+  const why=mine&&whyEdit?`<div class="sendrow"><input id="whyIn" class="sel" maxlength="${WHY_MAX}" autocomplete="off" placeholder="예: 프로젝트를 성공시켜 승진하고 싶어서." aria-label="프로젝트에 들어오게 된 이유" value="${esc(P.why||'')}"><button class="btn sm" data-act="whysave">저장</button><button class="qchip" data-act="whyedit">취소</button></div>`
     :`<p class="pside-why">${p.why?esc(p.why):`<span class="hint">${mine?'아직 적지 않았습니다. 왜 이 개척단에 왔나요?':'아직 적지 않았습니다.'}</span>`}</p>${mine?`<button class="qchip" data-act="whyedit">${p.why?'고치기':'적기'}</button>`:''}`;
   return`<section class="pside ps-why"><h4><span>✎</span>프로젝트에 들어오게 된 이유</h4>${why}</section>`}
 // 수위 여부: O or X, picked on my own profile, shown to everyone
