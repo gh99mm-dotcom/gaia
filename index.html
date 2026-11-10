@@ -6443,7 +6443,7 @@ let barWas=false;
 function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView;syncBgm()}
   // my profile opens as a page in the stage, with a way back to the tab underneath
   if(adminView&&isAdmin){if(!$('#stage #adminBox')){$('#stage').innerHTML='<div class="mepage adminpage" id="adminBox" role="region" aria-label="운영자 도구"></div>';renderAdminAll()}else adminRefresh();return}
-  if(preLock()&&!profView&&!meView){$('#stage').innerHTML=preopenHTML();return}
+  if(preLock()&&!profView&&!meView&&!mailView){$('#stage').innerHTML=preopenHTML();return}
   if(mailView){$('#stage').innerHTML=mailHTML();return}
   if(profView){const ph=profId&&profHTML();if(ph){$('#stage').innerHTML=`<div class="stage-head mehead"><button class="qchip" data-act="profclose">← 돌아가기</button><h2>선원 프로필</h2>${profActsHTML(profId)||`<span class="loc">${esc((whoP(profId)||{}).nick||'')}</span>`}</div>${ph}`;return}profView=false;profId=null}
   if(orgView){$('#stage').innerHTML=orgPage();return}
