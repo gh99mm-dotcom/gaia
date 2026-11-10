@@ -66,7 +66,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .adminchip+.chip{margin-left:0}
 .renamef{display:flex;gap:6px;align-items:center;margin:2px 0}
 .renamef input{width:150px}
-.sugg{margin-left:auto;cursor:pointer;color:var(--cyan)}.sugg+.chip{margin-left:0}.sugg img{margin-right:-2px}
+.sugg{margin-left:auto;cursor:pointer;color:var(--cyan)}.sugg+.chip{margin-left:0}.relbtn{margin-left:0!important}.sugg img{margin-right:-2px}
 .bgm{margin-left:auto;cursor:pointer;color:var(--mute)}
 .sugg+.bgm{margin-left:0}
 .fbbadge{background:var(--red);color:var(--ink);padding:0 4px;margin-left:2px}
@@ -1771,6 +1771,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
       <div class="lg3" role="img" aria-label="GAIA PROJECT"></div>
     </div>
     <button class="chip sugg" id="suggBtn" type="button" data-act="suggopen">건의함</button>
+    <button class="chip sugg relbtn" id="rbBtn" type="button" data-act="rbopen">관계함</button>
     <button class="chip bgm" id="bgmBtn" type="button" aria-expanded="false" aria-controls="sndPop">♪ 소리</button>
     <button class="chip bgm" id="skinBtn" type="button" aria-pressed="true">✦ 우주모드 ON</button>
     <button class="chip adminchip" id="adminBtn" type="button" data-act="adminopen" hidden>운영자</button>
@@ -1801,6 +1802,7 @@ body:has(#authGate:not([hidden])) .wrap{display:none}
 
 <div class="socdock" id="socDock"><aside class="socterm padphone" aria-label="교류 휴대폰"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i><button type="button" class="stside" data-act="socside" aria-label="교류를 반대쪽으로 옮기기" title="반대쪽으로 옮기기">⇄</button><button type="button" class="stclose" data-act="socdock" aria-label="교류 닫기">✕</button></div><div class="stglass"><section class="px stage socstage" id="socStage" aria-live="polite"></section></div><div class="pp-bot"><button type="button" class="pp-home" data-act="socdock" aria-label="교류 닫기"></button></div></aside><button type="button" class="sochandle" data-act="socdock" aria-expanded="false" aria-label="교류 열기"><span class="shgrip"></span><span class="shico"></span><span class="shtxt">교류</span><em id="socBadge" hidden></em><span class="shgrip"></span></button></div>
 <div class="modal" id="suggModal" hidden><div class="px infobox" id="suggBox" role="dialog" aria-label="건의함"></div></div>
+<div class="modal" id="rbModal" hidden><div class="px infobox" id="rbBox" role="dialog" aria-label="관계함"></div></div>
 <div class="modal" id="giftModal" hidden><div class="px infobox" id="giftBox" role="dialog" aria-label="선물 보내기"></div></div>
 <main class="joinpage" id="joinModal" hidden>
   <div class="joinwrap">
@@ -3041,6 +3043,21 @@ function renderSugg(){const box=$('#suggBox');if(!box)return;const old=$('#suggI
 function suggInboxHTML(){const items=fbItems(),seen=suggSeenAt;return`<span class="lbl">Inbox · 받은 건의 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>seen&&it.doc!==uid?' · 새 건의':''}</span></div><p>${esc(it.text)}</p>${isAdmin?`<div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div>`:''}</div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없습니다.</span>'}`}
 let suggSeenAt=0;
 function fbAdminHTML(){const items=fbItems();return`<div class="info-sec" data-adm="fb"><span class="lbl">Suggestions · 건의함 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>fbSeen()?' · 새 건의':''}</span></div><p>${esc(it.text)}</p><div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="fbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div></div>`).join('')}</div>`:'<span class="hint">아직 받은 건의가 없습니다.</span>'}</div>`}
+/* ───────── 관계함: the same box as 건의함, for relationship matters; relbox/{uid} holds what that member sent ───────── */
+let RB=[],rbLoaded=false,myRb=[],rbSeenAt=0;
+const rbSeen=()=>{try{return +localStorage.getItem('sd_rbseen')||0}catch(e){return 0}};
+function rbItems(){return RB.flatMap(d=>(d.list||[]).map(it=>({doc:d.id,nick:it.nick||d.nick||'선원',text:String(it.text||''),at:+it.at||0}))).sort((a,b)=>b.at-a.at)}
+function updRbBadge(){const n=rbItems().filter(x=>x.at>rbSeen()&&x.doc!==uid).length,b=$('#rbBtn');if(b)b.innerHTML=img(ENV,null,1)+'관계함'+(n&&isStaff()?`<span class="fbbadge">${n}</span>`:'');if(typeof adminRefresh==='function')adminRefresh()}
+function rbMarkSeen(){const nw=rbItems().reduce((m,x)=>Math.max(m,x.at),0);if(nw){try{localStorage.setItem('sd_rbseen',String(nw))}catch(e){}}updRbBadge()}
+function rbSnap(sn){const old=new Set(rbItems().map(x=>x.doc+'|'+x.at));RB=sn.docs.map(d=>Object.assign({id:d.id},d.data()));const fresh=rbLoaded&&rbItems().some(x=>x.doc!==uid&&!old.has(x.doc+'|'+x.at));rbLoaded=true;updRbBadge();
+  if(fresh){toast('관계함에 새 글이 도착했습니다.');sfxNotice(()=>{try{notiSnd.volume=sfxVol/100;notiSnd.currentTime=0;notiSnd.play().catch(()=>{})}catch(e){}})}if(!$('#rbModal').hidden)renderRb()}
+async function loadMyRb(){if(mode==='online'&&db&&uid){try{const sn=await db.doc('relbox/'+uid).get();myRb=sn.exists?[...(sn.data().list||[])]:[]}catch(e){myRb=[]}}else myRb=[...(P.rbox||[])];renderRb()}
+function renderRb(){const box=$('#rbBox');if(!box)return;const old=$('#rbIn'),keep=old?old.value:'',foc=old&&document.activeElement===old;box.innerHTML=`<div class="info-head"><div style="flex:1;min-width:0"><span class="lv">RELATION · 관계함</span><h2>관계함</h2><span class="hint">선원 사이의 관계에 대해 운영진에게 하고 싶은 말을 적어 주십시오. 운영자와 관리자만 읽을 수 있습니다.</span></div><button class="btn sm ghost" data-act="rbclose">닫기</button></div>
+  <textarea id="rbIn" class="suggta" maxlength="1000" placeholder="예) OO 님과 함께 쓰고 싶은 관계 설정이 있습니다" aria-label="관계함 내용"></textarea>
+  <div class="row" style="justify-content:space-between"><span class="hint">최대 1000자</span><button class="btn sm" data-act="rbsend">보내기</button></div>
+  ${myRb.length?`<span class="lbl">Sent · 내가 보낸 글</span><div class="fblist">${myRb.slice().reverse().map(it=>`<div class="fbitem"><span class="hint">${fbTime(it.at)}</span><p>${esc(it.text)}</p></div>`).join('')}</div>`:''}${isStaff()?rbInboxHTML(rbSeenAt,isAdmin):''}`;const ta=$('#rbIn');if(ta&&keep)ta.value=keep;if(ta&&foc)ta.focus({preventScroll:true})}
+function rbInboxHTML(seen,del){const items=rbItems();return`<span class="lbl">Inbox · 받은 글 ${items.length}건</span>${items.length?`<div class="fblist">${items.map(it=>`<div class="fbitem"><div class="row"><b>${esc(it.nick)}</b><span class="hint">${fbTime(it.at)}${it.at>seen&&it.doc!==uid?' · 새 글':''}</span></div><p>${esc(it.text)}</p>${del?`<div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="rbdel" data-k="${esc(it.doc)}" data-at="${it.at}">삭제</button></div>`:''}</div>`).join('')}</div>`:'<span class="hint">아직 받은 글이 없습니다.</span>'}`}
+function rbAdminHTML(){return`<div class="info-sec" data-adm="rb"><span class="lbl">Relations · 관계함 ${rbItems().length}건</span>${rbInboxHTML(rbSeen(),true).replace(/^<span class="lbl">[^<]*<\/span>/,'')}</div>`}
 let INV=[],MEMB=[],INVMEMO={};const fmtCode=c=>{c=String(c);return /^GAIA\d{6}$/.test(c)?c.slice(0,4)+'-'+c.slice(4,6)+'-'+c.slice(6):c.slice(0,4)+'-'+c.slice(4)};
 // right half: every member who joined with a code, newest first — code, who it is now, when they joined
 function invUsedHTML(){const L=MEMB.filter(m=>m.code).sort((a,b)=>(+b.at||0)-(+a.at||0));return`<div class="invcol"><span class="lbl">Used · 사용된 초대코드 · ${L.length}명 가입</span>${L.length?`<div class="fblist">${L.map(m=>{const p=PLAYERS[m.uid]||DELP[m.uid];return`<div class="fbitem invused"><div class="row"><b class="invcode">${fmtCode(m.code)}</b><span class="hint">${fbTime(+m.at||0)}</span></div><div class="row" style="gap:6px;align-items:center">${p?headImg(2,p):''}<b style="color:${colorOf(m.uid)}">${esc(p&&p.nick||'캐릭터를 아직 만들지 않음')}</b>${m.id?`<span class="hint">아이디 ${esc(m.id)}</span>`:''}${p&&p.deleted?'<span class="hint">(삭제됨)</span>':''}</div>${INVMEMO[m.code]?`<span class="hint">발급 메모 · ${esc(INVMEMO[m.code])}</span>`:''}</div>`}).join('')}</div>`:'<span class="hint">아직 초대코드로 가입한 선원이 없습니다.</span>'}</div>`}
@@ -3060,7 +3077,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
   const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
   box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
   const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
-  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+padResetHTML()+seasonAdminHTML()+affAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+rbAdminHTML()+padResetHTML()+seasonAdminHTML()+affAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
   if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
   const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
@@ -3072,7 +3089,7 @@ document.addEventListener('focusout',e=>{if(!admPend)return;const box=$('#adminB
 // the admin page is split into tabs: tools, member management, deleted members; sections say which tab they belong to
 let admTab='tools';
 function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.querySelector('.info-head'),nc=Object.keys(PLAYERS).filter(id=>id!==uid).length,nd=Object.keys(DELP).length;
-  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['story',`이야기 공개 <em>${STORY_LIST.filter(([k])=>STORY_ON[k]).length}/${STORY_LIST.length}</em>`],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`],['reset','초기화']].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
+  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['story',`이야기 공개 <em>${STORY_LIST.filter(([k])=>STORY_ON[k]).length}/${STORY_LIST.length}</em>`],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['rb',`관계함 <em>${rbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`],['reset','초기화']].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
   box.querySelectorAll('.info-sec').forEach(el=>{el.hidden=(el.dataset.adm||'tools')!==admTab});
   if(![...box.querySelectorAll('.info-sec')].some(el=>(el.dataset.adm||'tools')===admTab))box.insertAdjacentHTML('beforeend',`<div class="info-sec" data-adm="${admTab}"><span class="hint">${admTab==='del'?'삭제된 선원이 없습니다.':'이 기능은 공용 서버에 연결했을 때만 쓸 수 있습니다.'}</span></div>`)}
 /* ───────── activity log ───────── */
@@ -3215,7 +3232,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
     setTimeout(()=>location.reload(),1200);return}
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
   seasonQuit()},()=>{})}
-const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss','bonds'];
+const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss','bonds','relbox'];
 function storyAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec" data-adm="story"><span class="lbl">Story · 이야기 공개</span><span class="hint">이야기는 운영자가 공개하기 전까지 선원에게 보이지 않습니다. 오프닝을 공개하면 접속 중인 선원에게 바로 한 번 재생되고, 나머지는 다음 접속 때 봅니다. 운영자·관리자는 언제나 볼 수 있습니다.</span><div class="storyadm">${STORY_LIST.map(([k,n])=>`<div class="row" style="gap:8px;align-items:center"><b style="color:${STORY_ON[k]?'var(--green)':'var(--mute)'}">${STORY_ON[k]?'🔓 공개':'🔒 비공개'}</b><span>${esc(n)}</span><button class="btn sm ${STORY_ON[k]?'ghost':''}" data-act="admstory" data-k="${k}">${STORY_ON[k]?'다시 숨기기':'공개하기'}</button></div>`).join('')}</div></div>`}
 function preopenAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Pre-open · 오픈 준비 잠금</span><span class="hint">켜 두면 선원들은 모든 게임 화면에 들어갈 수 없고 교류 › PAD만 쓸 수 있습니다. 운영자·관리자는 그대로 둘러볼 수 있습니다.</span><div class="row" style="gap:8px;align-items:center"><b style="color:${PREOPEN?'var(--red)':'var(--green)'}">${PREOPEN?'🔒 잠금 중 (오픈 준비)':'🔓 열림 (정상 운영)'}</b><button class="btn sm ${PREOPEN?'':'ghost'}" data-act="admpreopen">${PREOPEN?'잠금 풀기 (오픈!)':'오픈 준비 잠금 켜기'}</button></div></div>`}
 let padRstArm=false,padRstBusy=false;
@@ -3336,6 +3353,7 @@ async function connect(){
   C.use('assets').then(a=>{ASSETS=a||null;if(socOpen)renderPanel()}).catch(()=>{});
   uid=await user.id();try{isOwnerAcct=await user.isOwner()}catch(e){isOwnerAcct=false}isAdmin=isOwnerAcct;$('#adminBtn').hidden=!isAdmin;
   tabSub(()=>isStaff(),()=>db.collection('feedback').onSnapshot(fbSnap,()=>{}));
+  tabSub(()=>isStaff(),()=>db.collection('relbox').onSnapshot(rbSnap,()=>{}));
   window.__invSub=()=>{if(window.__invOn||!window.__fbInvite)return;window.__invOn=1;db.collection('invites').orderBy('at','desc').onSnapshot(sn=>{INV=sn.docs.map(d=>Object.assign({id:d.id},d.data()));adminRefresh()},()=>{});db.collection('members').onSnapshot(sn=>{MEMB=sn.docs.map(d=>Object.assign({},d.data(),{uid:d.id}));adminRefresh()},()=>{});db.doc('boss/invmemo').onSnapshot(sn=>{INVMEMO=sn.exists?Object.assign({},sn.data()):{};adminRefresh()},()=>{})};if(isAdmin)window.__invSub();
   const canW=await user.can('data.write');
   if(!uid||canW===false){goSolo('저장 권한이 없어 혼자 모드로 시작합니다.',!uid?'로그인되어 있지 않습니다.':'이 게임에 대한 권한이 보기 또는 댓글뿐이라 캐릭터를 저장할 수 없습니다.');return}
@@ -6890,12 +6908,19 @@ const A={
  async bondcut(d){const o=d.k;if(!BONDS[o])return;try{await bondRef(o).update({memo:'',pm:'',pby:''});toast('관계 메모를 지웠습니다.')}catch(e){toast('지우지 못했습니다.')}},
  basicedit(){basicEdit=true;renderInfo()},basicno(){basicEdit=false;renderInfo()},
  basicsave(){BASIC.forEach(([k])=>{const i=$('#bi_'+k);if(i)P[k]=i.value.trim().slice(0,12)});basicEdit=false;save();renderInfo()},
- admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
+ admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','rb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
  async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'선원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
  suggopen(){$('#suggModal').hidden=false;suggSeenAt=fbSeen();if(isStaff())fbMarkSeen();renderSugg();loadMySugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
  suggclose(){$('#suggModal').hidden=true},
+ rbopen(){$('#rbModal').hidden=false;rbSeenAt=rbSeen();if(isStaff())rbMarkSeen();renderRb();loadMyRb();setTimeout(()=>{const t=$('#rbIn');if(t)t.focus()},30)},
+ rbclose(){$('#rbModal').hidden=true},
+ async rbsend(){const t=$('#rbIn'),v=(t&&t.value||'').trim().slice(0,1000);if(!v){toast('내용을 적어 주십시오.');return}const it={text:v,at:Date.now(),nick:P.nick};
+  if(mode==='online'&&db&&uid){try{const ref=db.doc('relbox/'+uid),sn=await ref.get(),list=sn.exists?[...(sn.data().list||[])]:[];list.push(it);await ref.set({nick:P.nick,at:it.at,list:list.slice(-30)});myRb=list.slice(-30)}catch(e){toast('보내지 못했습니다. 잠시 뒤 다시 시도해 주십시오.');return}}
+  else{P.rbox=[...(P.rbox||[]),it].slice(-30);myRb=P.rbox;save();RB=[{id:'me',nick:P.nick,list:P.rbox}];updRbBadge()}
+  sfxCoin();toast('관계함에 보냈습니다.');{const t=$('#rbIn');if(t)t.value=''}renderRb()},
+ async rbdel(d){if(!isAdmin)return;const at=+d.at;if(mode==='online'&&db){try{const ref=db.doc('relbox/'+d.k),sn=await ref.get();if(sn.exists){const list=(sn.data().list||[]).filter(x=>+x.at!==at);await ref.set(Object.assign({},sn.data(),{list}))}}catch(e){toast('삭제하지 못했습니다.')}}else{P.rbox=(P.rbox||[]).filter(x=>+x.at!==at);RB=[{id:'me',nick:P.nick,list:P.rbox}];save();renderAdminAll();updRbBadge()}},
  orgopen(){if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}orgView=true;rankView=false;meView=false;mailView=false;secretView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  orgclose(){orgView=false;rankView=false;profView=false;renderPanel()},
  rankopen(){if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}rankView=true;orgView=false;meView=false;mailView=false;secretView=false;adminView=false;renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
@@ -7381,7 +7406,7 @@ document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.va
 let raidPd=null;addEventListener('pointerdown',e=>{const a=e.target.closest&&e.target.closest('[data-act]');raidPd=a&&/^raid(atk|def|sk|item|tgt|to|pick|bag)$/.test(a.dataset.act)?{el:a,act:a.dataset.act,k:a.dataset.k}:null},{capture:true,passive:true});
 addEventListener('pointerup',e=>{const d=raidPd;raidPd=null;if(!d||d.el.isConnected)return;setTimeout(()=>{const t=document.elementFromPoint(e.clientX,e.clientY),a=t&&t.closest('[data-act]');if(a&&a!==d.el&&a.dataset.act===d.act&&a.dataset.k===d.k&&!a.disabled)a.click()})},{capture:true,passive:true});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['lgmenu','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['lgmenu','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','rbopen','rbclose','rbsend','rbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 function lgClose(){const m=document.getElementById('lgMenu');if(m)m.remove()}
@@ -7973,7 +7998,7 @@ function bossBgmStart(){const a=ac();if(!a)return;if(BBGM){BBGM.g.gain.setTarget
     step++;next+=S}},120);
   BBGM={g,osc:[...osc,lfo],iv}}
 function bossBgmStop(){if(!BBGM)return;const m=BBGM,a=AC;BBGM=null;clearInterval(m.iv);try{m.g.gain.setTargetAtTime(.0001,a.currentTime,.25);setTimeout(()=>{m.osc.forEach(o=>{try{o.stop()}catch(e){}});m.g.disconnect()},1500)}catch(e){}}
-$('#suggBtn').innerHTML=img(ENV,null,1)+'건의함';
+$('#suggBtn').innerHTML=img(ENV,null,1)+'건의함';$('#rbBtn').innerHTML=img(ENV,null,1)+'관계함';
 /* sound panel: BGM and effects each get an on/off switch and a volume slider */
 const sndPop=document.createElement('div');sndPop.id='sndPop';sndPop.className='sndpop px';sndPop.hidden=true;sndPop.setAttribute('role','dialog');sndPop.setAttribute('aria-label','소리 설정');document.body.appendChild(sndPop);
 function sndHTML(){const row=(k,n,on,v)=>`<div class="sndrow"><b>${n}</b><input type="range" min="0" max="100" step="5" value="${v}" data-snd="${k}" aria-label="${n} 크기" ${on?'':'disabled'}><button type="button" class="qchip" data-sndt="${k}" aria-pressed="${on}">${on?'켜짐':'꺼짐'}</button></div>`;
