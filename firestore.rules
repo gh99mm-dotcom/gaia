@@ -44,6 +44,12 @@ service cloud.firestore {
     }
 
     // 건의함: 본인과 운영자·관리자가 읽고, 본인만 씀. 지우기는 운영자만.
+    // 관계함: 건의함과 같은 방식 (자기 문서에만 쓰고, 운영진이 읽고 지움)
+    match /relbox/{uid} {
+      allow read: if member() && (me() == uid || staff());
+      allow write: if member() && me() == uid;
+      allow delete, update: if staff();
+    }
     match /feedback/{uid} {
       allow read: if member() && (me() == uid || staff());
       allow write: if member() && me() == uid;
