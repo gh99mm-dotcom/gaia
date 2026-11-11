@@ -3469,7 +3469,12 @@ function socBadge(){const b=$('#socBadge');if(!b)return;const n=socUnread();b.te
 // redraw the terminal (not while someone is typing in it: that waits for the field to lose focus)
 function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const ae=document.activeElement;if(isField(ae)&&st.contains(ae)){socPend=true;return}socPend=false;
   const top=st.scrollTop,ps=st.querySelector('.pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';st.innerHTML=renderSocial();
-  const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender()}
+  const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender();padAnchorApply()}
+// opening a post (or a reply inside a thread) lands on that post, not the top of the thread; earlier posts load above it,
+// so it is held in place for a moment unless the reader scrolls first
+let padAnchor=null;
+function padAnchorApply(){if(!padAnchor||padAnchor.id!==padThread||Date.now()>padAnchor.until){padAnchor=null;return}const st=$('#socStage'),big=st&&st.querySelector('.tw.big');if(!big)return;let sc=big.parentElement;while(sc&&sc!==st.parentElement){const o=getComputedStyle(sc).overflowY;if((o==='auto'||o==='scroll')&&sc.scrollHeight>sc.clientHeight+2)break;sc=sc.parentElement}if(!sc||sc===st.parentElement)return;sc.scrollTop+=big.getBoundingClientRect().top-sc.getBoundingClientRect().top-6}
+['wheel','touchmove','keydown'].forEach(ev=>document.addEventListener(ev,e=>{if(padAnchor&&e.target&&e.target.closest&&e.target.closest('#socStage'))padAnchor=null},{passive:true,capture:true}));
 function renderNav(){
   migrate();const ready=FARM.pods.slice(0,FARM.fu).filter(pl=>pl&&pl.seed&&stage(pl)===3).length;const sgN=scoutSt().nw||scoutSt().pend?1:0;const asN=bossAlive(BOSS)?0:asigState().n;const gx=expInfo(),gp=gx?gx.pending:0;
   $('#nav').innerHTML=TABS.filter(t=>t.id!=='bag'&&t.id!=='social').map(t=>`<button type="button" data-tab="${t.id}" aria-pressed="${t.id===tab}" class="${tabGate(t.id)?'tablock':''}" ${tabGateRaw(t.id)?`title="${tabGateRaw(t.id).n} 수리 후 열림${tabGate(t.id)?'':' · 운영진 미리보기'}"`:''}>${t.id==='ship'?shipIcon(32,1):img(t.ic,null,2)}<span class="nm">${t.n}</span>${tabGateRaw(t.id)||(mode==='online'&&PREOPEN&&t.id!=='social')?'<span class="tlk">🔒</span>':''}${t.id==='farm'&&ready?`<span class="badge">${ready}</span>`:''}${t.id==='gather'&&gp?`<span class="badge">${gp}</span>`:''}${t.id==='adv'&&asN&&!tabGate('adv')?`<span class="badge">${asN}</span>`:''}${t.id==='scan'&&sgN?`<span class="badge">${sgN}</span>`:''}${t.id==='social'&&socUnread()?`<span class="badge">${Math.min(99,socUnread())}</span>`:''}</button>`).join('');socBadge();
@@ -7896,7 +7901,7 @@ const SA={
  memogo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;socTab='memo';socDrawer(true,1);
   const A=MEMOS.filter(m=>m&&m.text),i=A.findIndex(m=>m.id===d.k);if(i>=0)memoPage=Math.floor(i/MEMO_PG);memoOpen=d.k;memoReply=null;memoEdit=null;renderPanel();setTimeout(()=>{const a=[...document.querySelectorAll('[data-act="memocm"]')].find(b=>b.dataset.k===d.k);if(a)a.closest('.memo').scrollIntoView({block:'start',behavior:'smooth'})},60)},
  notigo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;socTab='pad';socDrawer(true,1);openThread(d.k);renderPanel();socTop()},
- padopen(d){if(!d.k)return;openThread(d.k);renderPanel();socTop()},
+ padopen(d){if(!d.k)return;padAnchor={id:d.k,until:Date.now()+2500};openThread(d.k);renderPanel();renderSoc();setTimeout(padAnchorApply,60);setTimeout(padAnchorApply,400)},
  padback(){openThread(null);renderPanel()},
  profopen(d){if(!d.k||(d.k!==uid&&!PLAYERS[d.k]))return;if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}if(d.k===uid){if(socOpen)socDrawer(false);meTab='prof';A.profile();return}meView=false;mailView=false;secretView=false;adminView=false;profId=d.k;profBio=false;profView=true;if(socOpen)socDrawer(false);renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  relopen(){socTab='rel';socDrawer(true,1);renderPanel()},
