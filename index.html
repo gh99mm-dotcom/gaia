@@ -1758,6 +1758,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .ntcbtn{color:var(--gold)!important}.ntclist{display:flex;flex-direction:column;gap:8px}.ntcitem{padding:12px 14px}.ntcitem.latest{border-color:var(--gold);box-shadow:inset 0 0 0 1px #ffd65f33}
 .ntch{gap:8px;align-items:center;margin-bottom:6px}.ntctag{font-family:"Galmuri11",var(--f-pix);font-size:12px;color:var(--gold)}.ntch time{font-size:12px;color:var(--mute,#8a90a4)}.ntch .qchip{margin-left:auto}
 .ntcnew{font-size:11px;padding:0 5px;background:var(--red);color:var(--ink)}.ntcitem p{margin:0;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-all}.ntcwrite{display:flex;flex-direction:column;gap:6px;padding:12px}.ntcwrite textarea{min-height:64px;height:64px}
+#ticker{cursor:pointer}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -6922,7 +6923,8 @@ function renderChat(fresh){
    ${tickOpen&&(L.length||pin)?`<div class="tk-list">${[...(pin&&!L.includes(pin)?[pin]:[]),...L].map(x=>`<div class="tk-m k-${x===pin?'n':tickKind(x.text)}"><time>${hhmm(x.at)}</time>${esc(x.text)}${tickDel(x)}</div>`).join('')}</div>`:''}`;
 }
 setInterval(()=>{if(tickCur&&Date.now()>=tickUntil&&!tickOpen)renderChat(tickQ.length>0)},1000);
-document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(inT){if(!e.target.closest('.tk-list,[data-act]')){tickOpen=!tickOpen;renderChat()}}else if(tickOpen){tickOpen=false;renderChat()}});
+// tapping the NOTICE bar opens the 공지 page
+document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(inT){if(!e.target.closest('[data-act]')){tickOpen=false;A.noticeopen()}}else if(tickOpen){tickOpen=false;renderChat()}});
 
 /* ───────── actions ───────── */
 const FAINT_MS=10*60e3;
