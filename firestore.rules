@@ -50,6 +50,12 @@ service cloud.firestore {
       allow write: if member() && me() == uid;
       allow delete, update: if staff();
     }
+    // 출석(보급): 하루 한 장, 문서 이름은 날짜_내uid
+    match /attend/{id} {
+      allow read: if member();
+      allow create, update: if member() && request.resource.data.uid == me() && id == request.resource.data.day + '_' + me();
+      allow delete: if member() && (resource.data.uid == me() || staff());
+    }
     match /feedback/{uid} {
       allow read: if member() && (me() == uid || staff());
       allow write: if member() && me() == uid;

@@ -1759,6 +1759,10 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .ntch{gap:8px;align-items:center;margin-bottom:6px}.ntctag{font-family:"Galmuri11",var(--f-pix);font-size:12px;color:var(--gold)}.ntch time{font-size:12px;color:var(--mute,#8a90a4)}.ntch .qchip{margin-left:auto}
 .ntcnew{font-size:11px;padding:0 5px;background:var(--red);color:var(--ink)}.ntcitem p{margin:0;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-all}.ntcwrite{display:flex;flex-direction:column;gap:6px;padding:12px}.ntcwrite textarea{min-height:64px;height:64px}
 #ticker{cursor:pointer}
+.attcard{display:flex;flex-direction:column;gap:8px;padding:12px 14px}.atthead{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}.attdate{display:block;font-family:"Galmuri11",var(--f-pix);font-size:18px;margin-top:2px}
+.attstat{display:flex;gap:12px;font-size:13px;color:var(--mute,#9aa)}.attstat b{color:var(--gold);font-size:16px}.attdone{padding:10px;border:1px dashed var(--green,#7affc0);color:var(--green,#7affc0);font-size:14px}
+.attlist{display:flex;flex-direction:column;gap:6px;padding:12px 14px;margin-top:10px}.attrow{display:grid;grid-template-columns:24px auto minmax(0,1fr);gap:8px;align-items:start;padding:8px 0;border-top:1px dashed var(--line)}.attrow.mine{background:color-mix(in srgb,var(--gold) 6%,transparent)}
+.attav{width:36px;height:36px;cursor:pointer}.attno{font-family:"Galmuri11",var(--f-pix);font-size:12px;color:var(--mute,#9aa);padding-top:4px;text-align:right}.attrow p{margin:2px 0 0;font-size:14px;word-break:break-all}.attdot{font-style:normal;color:var(--red);margin-left:2px}
 .authpage{position:fixed;inset:0;z-index:60;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:max(40px,9vh) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(ellipse at 70% 15%,rgba(95,90,128,.16),transparent 55%)}
 body:has(#authGate:not([hidden])) .wrap{display:none}
 .authwrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -3266,7 +3270,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
     setTimeout(()=>location.reload(),1200);return}
   // an older character (signed in mid-reset) or the admin resetting while I play: leave
   seasonQuit()},()=>{})}
-const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss','bonds','relbox'];
+const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss','bonds','relbox','attend'];
 function storyAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec" data-adm="story"><span class="lbl">Story · 이야기 공개</span><span class="hint">이야기는 운영자가 공개하기 전까지 선원에게 보이지 않습니다. 오프닝을 공개하면 접속 중인 선원에게 바로 한 번 재생되고, 나머지는 다음 접속 때 봅니다. 운영자·관리자는 언제나 볼 수 있습니다.</span><div class="storyadm">${STORY_LIST.map(([k,n])=>`<div class="row" style="gap:8px;align-items:center"><b style="color:${STORY_ON[k]?'var(--green)':'var(--mute)'}">${STORY_ON[k]?'🔓 공개':'🔒 비공개'}</b><span>${esc(n)}</span><button class="btn sm ${STORY_ON[k]?'ghost':''}" data-act="admstory" data-k="${k}">${STORY_ON[k]?'다시 숨기기':'공개하기'}</button></div>`).join('')}</div></div>`}
 function preopenAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Pre-open · 오픈 준비 잠금</span><span class="hint">켜 두면 선원들은 모든 게임 화면에 들어갈 수 없고 교류 › PAD만 쓸 수 있습니다. 운영자·관리자는 그대로 둘러볼 수 있습니다.</span><div class="row" style="gap:8px;align-items:center"><b style="color:${PREOPEN?'var(--red)':'var(--green)'}">${PREOPEN?'🔒 잠금 중 (오픈 준비)':'🔓 열림 (정상 운영)'}</b><button class="btn sm ${PREOPEN?'':'ghost'}" data-act="admpreopen">${PREOPEN?'잠금 풀기 (오픈!)':'오픈 준비 잠금 켜기'}</button></div></div>`}
 let padRstArm=false,padRstBusy=false;
@@ -5964,8 +5968,21 @@ function roomMigrate(){roomDropGone();
   const r=P.room;if(!r||!Array.isArray(r.put))return;const FP={bed:900,sofa:800,desk:600,aqua:1000,chair:200,plant:150,trunk:250,lamp:300,rocket:400,robo:350,poster:150,clock:250,shelf:300,starmap:400,neon:500,monitor:650},WP={w1:300,w2:400,w3:500,w4:400},FL={f1:300,f2:400,f3:500};
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
   P.room={};if(cr>0){P.cr=(P.cr||0)+cr;log(`마이룸이 새 모습으로 바뀌어, 전에 산 가구 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
-function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button></div>`}
-function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 선원에게는 아직 잠겨 있습니다.</div>')}
+function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button><button role="tab" aria-selected="${shipView==='supply'}" data-act="shipview" data-k="supply">보급${attDoneToday()?'':' <em class="attdot">!</em>'}</button></div>`}
+/* 보급 (우주선 › 보급): daily attendance by leaving a short note; attend/{day_uid} = {day, uid, nick, text, at}
+   the first note of the day (KST) hands out the day's supplies, with a bonus every 7 days in a row */
+const ATT_CR=100,ATT_WEEK=500;let ATT=[],attDay='',attUn=null;
+const attDayShift=(d,n)=>{const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)};
+const attDoneToday=()=>!!(P&&P.att&&P.att.last===duelDay());
+function attSub(){if(mode!=='online'||!db)return;if(attUn)try{attUn()}catch(e){}const day=attDay||duelDay();attUn=db.collection('attend').where('day','==',day).onSnapshot(sn=>{if(day!==attDay)return;ATT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>(+a.at||0)-(+b.at||0));if(tab==='ship'&&shipView==='supply')renderPanel()},()=>{})}
+function supplyHTML(){if(mode!=='online')return'<div class="note">보급은 온라인에 접속하면 받을 수 있습니다.</div>';if(!attDay){attDay=duelDay();attSub()}
+  const today=duelDay(),isToday=attDay===today,a=P.att||{},done=attDoneToday(),next=((a.streak||0)%7)+1;
+  return`<div class="card attcard"><div class="atthead"><div><span class="lbl">Supply · 오늘의 보급</span><b class="attdate">${today.replace(/-/g,'.')}</b></div><div class="attstat"><span>연속 <b>${a.last===today||a.last===attDayShift(today,-1)?(a.streak||0):0}</b>일</span><span>누적 <b>${a.total||0}</b>일</span></div></div>
+   <p class="hint">오늘의 한마디를 남기면 출석이 됩니다. 출석 보급품: <b>${ATT_CR} CR</b> + <b>${esc(ITEMS.drink.n)}</b> 1개${done?'':` · 7일 연속 출석하면 <b>${ATT_WEEK} CR</b>을 더 받습니다 (오늘 출석하면 ${next}일째)`}</p>
+   ${done?`<div class="attdone">✓ 오늘 출석했습니다. 내일 다시 보급을 받으러 오십시오.</div>`:`<textarea id="attIn" class="suggta" maxlength="100" rows="2" placeholder="오늘의 한마디 (최대 100자)"></textarea><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="attsend">출석하고 보급 받기</button></div>`}</div>
+  <div class="card attlist"><div class="row" style="justify-content:space-between;align-items:center"><button class="qchip" data-act="attday" data-k="-1">◀ 전날</button><b>${isToday?'오늘의 출석부':attDay.replace(/-/g,'.')+' 출석부'} · ${ATT.length}명</b><button class="qchip" data-act="attday" data-k="1" ${isToday?'disabled':''}>다음날 ▶</button></div>
+   ${ATT.length?ATT.map((x,i)=>`<div class="attrow${x.uid===uid?' mine':''}"><span class="attno">${i+1}</span><span class="twav attav" data-act="profopen" data-k="${esc(x.uid)}" role="button">${padAv(whoP(x.uid))}</span><div><div class="row" style="gap:6px"><button type="button" class="twname" data-act="profopen" data-k="${esc(x.uid)}" style="color:${colorOf(x.uid)}">${esc(x.nick||'선원')}</button><time class="hint">${hhmm(+x.at||0)}</time>${isAdmin?`<button class="qchip" data-act="attdel" data-k="${esc(x.id)}" style="margin-left:auto">삭제</button>`:''}</div><p>${esc(x.text||'')}</p></div></div>`).join(''):'<p class="empty">아직 출석한 선원이 없습니다.</p>'}</div>`}
+function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='supply')return head()+shipSubTabs()+supplyHTML();if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 선원에게는 아직 잠겨 있습니다.</div>')}
   if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 선원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
   const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP.find(x=>!shipDone(x))||SHIP[SHIP.length-1],open=shipOpen(pt),g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
   const rank=shipTotals().u;
@@ -6488,7 +6505,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
     other=document.documentElement.scrollHeight-sg.offsetHeight,req=Math.ceil(sy+innerHeight-other);sg.style.minHeight=req>nat?Math.min(sg.offsetHeight,req)+'px':''}
   {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;const np=document.querySelector('#stage .pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;if(Math.abs(window.scrollY-sy)>2&&!userScrolling())window.scrollTo(0,sy)}
   if(tab==='fish')drawLake();
-  if(tab==='ship'){if(shipView==='room'){drawRoomCv();roomLabels()}else startShipScene()}
+  if(tab==='ship'){if(shipView==='room'){drawRoomCv();roomLabels()}else if(shipView!=='supply')startShipScene()}
   if(!roomShown())leaveRoomSpace();
   if(tab==='gather')startGatherScene();
   if(tab==='bag')renderCook();else if(bagOpen)renderCook();
@@ -6963,6 +6980,12 @@ const A={
  tunpick(d){if(!TS)return;TS.likes=TS.likes.filter(x=>x!==d.k);TS.hates=TS.hates.filter(x=>x!==d.k);renderTaste()},
  tpick(d){if(!TS||!ITEMS[d.k])return;const id=d.k;if(TS.likes.includes(id))TS.likes=TS.likes.filter(x=>x!==id);else if(TS.hates.includes(id))TS.hates=TS.hates.filter(x=>x!==id);else{const L=TS.mode==='hate'?TS.hates:TS.likes;if(L.length>=J_MAX){toast(`${TS.mode==='hate'?'싫어하는':'좋아하는'} 요리는 ${J_MAX}개까지 고를 수 있습니다.`);return}L.push(id)}renderTaste()},
  tsave(){if(!TS||!(P.inv.tastereset>0)||TS.likes.length!==J_MAX||TS.hates.length!==J_MAX)return;take('tastereset',1);P.likes=[...TS.likes];P.hates=[...TS.hates];log('좋아하는 음식 재설정권을 써서 좋아하는·싫어하는 음식을 다시 골랐다.','good');$('#tasteModal').hidden=true;TS=null;commit();renderInfo();toast('좋아하는·싫어하는 음식을 바꿨습니다.')},
+ async attsend(){if(mode!=='online'||attDoneToday())return;const t=$('#attIn'),v=(t&&t.value||'').trim().slice(0,100);if(!v){toast('오늘의 한마디를 적어 주십시오.');return}const day=duelDay();
+  try{await db.doc('attend/'+day+'_'+uid).set({day,uid,nick:P.nick,text:v,at:Date.now()})}catch(e){toast('출석하지 못했습니다. ('+((e&&(e.code||e.message))||'오류')+')');return}
+  const a=P.att||{},streak=a.last===attDayShift(day,-1)?(a.streak||0)+1:1;P.att={last:day,streak,total:(a.total||0)+1};P.cr=(P.cr||0)+ATT_CR;add('drink',1);let msg=`출석 완료! 보급품 ${ATT_CR} CR + ${ITEMS.drink.n}`;
+  if(streak%7===0){P.cr+=ATT_WEEK;msg+=` · ${streak}일 연속 출석 보너스 ${ATT_WEEK} CR`}sfxCoin();log(msg,'good');toast(msg);attDay=day;commit()},
+ attday(d){const n=+d.k||0,today=duelDay();let nd=attDayShift(attDay||today,n);if(nd>today)nd=today;attDay=nd;ATT=[];attSub();renderPanel()},
+ attdel(d){if(!isAdmin||!d.k)return;db.doc('attend/'+d.k).delete().then(()=>toast('출석 메모를 지웠습니다.')).catch(()=>toast('지우지 못했습니다.'))},
  admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','rb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
@@ -7045,7 +7068,7 @@ const A={
  raidfleev(){raidFleeVote()},
  raidto(d){raidItemTo=d.k;renderPanel()},
  bosshit(){bossHit()},
- shipview(d){shipView=d.k==='room'?'room':'ship';if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
+ shipview(d){shipView=d.k==='room'?'room':d.k==='supply'?'supply':'ship';if(shipView==='supply'){attDay=duelDay();attSub()}if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
  rslot(d){roomSlot=d.k;renderPanel()},
  pv(d){if(preview[roomSlot]===d.k)delete preview[roomSlot];else preview[roomSlot]=d.k;renderPanel()},
  pvone(d){delete preview[d.k];renderPanel()},
