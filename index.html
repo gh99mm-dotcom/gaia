@@ -5978,7 +5978,7 @@ function roomMigrate(){roomDropGone();
 function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button><button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button><button role="tab" aria-selected="${shipView==='supply'}" data-act="shipview" data-k="supply">보급${attDoneToday()?'':' <em class="attdot">!</em>'}</button></div>`}
 /* 보급 (우주선 › 보급): daily attendance by leaving a short note; attend/{day_uid} = {day, uid, nick, text, at}
    the first note of the day (KST) hands out the day's supplies, with a bonus every 7 days in a row */
-const ATT_REW=[{cr:100,d:1},{cr:100,d:1},{cr:150,d:1},{cr:100,d:1},{cr:150,d:2},{cr:100,d:1},{cr:600,d:2}];let ATT=[],attDay='',attUn=null;
+const ATT_REW=[{cr:100,d:1},{cr:100,d:1},{cr:150,d:1},{cr:100,d:1},{cr:150,d:2},{cr:100,d:1},{cr:300,d:2}];let ATT=[],attDay='',attUn=null;
 const attDayShift=(d,n)=>{const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)};
 const attDoneToday=()=>!!(P&&P.att&&P.att.last===duelDay());
 function attSub(){if(mode!=='online'||!db)return;if(attUn)try{attUn()}catch(e){}const day=attDay||duelDay();attUn=db.collection('attend').where('day','==',day).onSnapshot(sn=>{if(day!==attDay)return;ATT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>(+a.at||0)-(+b.at||0));if(tab==='ship'&&shipView==='supply')renderPanel()},()=>{})}
