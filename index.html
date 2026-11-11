@@ -4718,7 +4718,7 @@ function fspotHTML(busy){const cur=fspot(),D=P.dex||{},cnt=x=>['c','r','u','l'].
 /* grade odds: luck, fishing level and gear add one bonus B, spread over 레어 · 유니크 · 레전더리 with diminishing returns,
    so a high B lifts every grade a little instead of pushing 일반 to zero (B=30 → 레어 +12 · 유니크 +3 · 레전더리 +0.3) */
 function fishOdds(rod,bo,fast){const B=Math.max(0,AS('luk')*.3+GF('luck')+lifePct('fish'));
-  return{B,wr:30+28*B/(B+40)+(bo?3:0),wu:rod>=1?8+8*B/(B+50)+(bo?2:0):0,wl:rod>=2?.5+B/(B+60)+(bo?.5:0)+(fast?.5:0):0}}
+  return{B,wr:30+28*B/(B+40)+(bo?3:0),wu:rod>=1?8+8*B/(B+50)+(bo?2:0):0,wl:rod>=2?Math.min(2.5,.5+B/(B+60)+(bo?.5:0)+(fast?.5:0)):0}}   // 레전더리 never above 2.5%
 function renderFish(){
   const ph=fish.ph,aim=ph==='aim',inWater=ph==='wait'||ph==='bite';
   const txt={idle:'레버를 돌려 낚싯줄을 던져 보십시오',aim:'레버가 돌아갑니다. 초록 칸에서 던지십시오!',wait:`찌가 ${fspot().liq} 위에 떠 있다…`,bite:'입질! 지금 당기십시오!',early:'너무 일찍 당겼다…',miss:'놓쳤다. 다시 던져 보십시오'}[ph]||'';
