@@ -6870,7 +6870,8 @@ function renderCrew(){
   ul.innerHTML=list.map(x=>{const down=x.faint&&x.id!==uid;return`<li class="${down?'downrow':''}"><span class="dot ${x.on?'on':''}"></span><button class="nm namebtn" style="color:${x.id===uid?'var(--me-name)':x.on?colorOf(x.id):'var(--off-name)'}" data-act="profopen" data-k="${esc(x.id)}" title="${esc(x.nick)} 프로필 보기">${esc(x.nick)}${x.id===uid?' (나)':''}</button>${down?'':`<span class="act">${x.faint?'<span class="fainttag">기절</span>':x.on?esc(x.act||'접속 중'):'오프라인'}</span>`}${down?(x.rcd>0?`<button class="btn sm ghost rescue" disabled title="구조를 받은 지 30분이 지나야 다시 구조할 수 있습니다">구조 <small>${Math.ceil(x.rcd/60e3)}분</small></button>`:`<button class="btn sm alt rescue" data-act="rescue" data-k="${x.id}">구조 <small>EN ${P.job==='medic'?0:3}</small></button>`):''}${x.id!==uid&&!down?`<button class="qchip giftbtn" data-act="gift" data-k="${x.id}" title="${preLock()?'오픈 준비 중':'선물 보내기'}" ${preLock()?'disabled':''}>선물</button>`:''}</li>`}).join('');
 }
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
-const TICK_RE=/^(새 선원|\[공지\]|선장이)/;
+// the NOTICE bar carries joins, notices, captain lines, +12-and-up upgrade records and slot jackpots
+const TICK_RE=/^(새 선원|\[공지\]|선장이)|님이 「[^」]+ \+\d+」을 완성했습니다|님이 슬롯머신 잭팟을 터뜨렸습니다/;
 let tickOpen=false;
 // notices older than 2 hours drop off the ticker; a minute timer keeps it fresh even with no new chat
 // pinned notices: the admin's, and the invader's win / loss announcements; they stay up until a newer pinned one replaces them
@@ -7280,14 +7281,14 @@ const A={
   if(t>=3)sfxFanfare(false);else sfxCoin();commit()},
  suitup(){const n=P.suit||0;if(n>=SUIT_MAXLV)return;const c=suitUpCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;if((P.cr||0)<UP_CR[n]){toast(`크레딧이 모자랍니다. (${UP_CR[n].toLocaleString()} CR 필요)`);return}c.forEach(([id,k])=>take(id,k));P.cr-=UP_CR[n];const pct=upPct(n),usedB=upUseB();if(usedB){take('upcat',1);if(!(P.inv.upcat>0))upBoost=false}
   if(Math.random()*100<pct){P.suit=n+1;P.suitMax=Math.max(P.suitMax||0,P.suit);log(`우주복 강화 성공! ${SUITS[P.suit].n} +${P.suit}${usedB?' (공명 촉매 사용)':''}`,'rare');toast(`강화 성공! ${SUITS[P.suit].n} +${P.suit}`);sfxFanfare(false);if(suitTier(P.suit)>suitTier(n))suitPop(P.suit);
-   if(P.suit>=10&&P.suit>(P.smax||0))sys(`${P.nick} 님이 「${SUITS[P.suit].n} +${P.suit}」을 완성했습니다.`);P.smax=Math.max(P.smax||0,P.suit)}
+   if(P.suit>=12&&P.suit>(P.smax||0))sys(`${P.nick} 님이 「${SUITS[P.suit].n} +${P.suit}」을 완성했습니다.`);P.smax=Math.max(P.smax||0,P.suit)}
   else if(n>=UP_DROP){P.suit=n-1;log(`우주복 강화 실패… 1단계 내려갔다. ${SUITS[P.suit].n} +${P.suit}${usedB?' (공명 촉매 사용)':''}`,'bad');toast(`강화 실패 · +${n} → +${P.suit}`);sfxStatic()}
   else{log(`우주복 강화 실패… 재료만 사라지고 +${n} 그대로다.${usedB?' (공명 촉매 사용)':''}`,'bad');toast(`강화 실패 · +${n} 유지`);sfxStatic()}
   P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn());commit()},
  upgrade(){const n=P.wlv;if(n>=WEAPONS.length-1)return;const c=upCost(n);if(!c.every(([id,k])=>(P.inv[id]||0)>=k))return;if((P.cr||0)<UP_CR[n]){toast(`크레딧이 모자랍니다. (${UP_CR[n].toLocaleString()} CR 필요)`);return}c.forEach(([id,k])=>take(id,k));P.cr-=UP_CR[n];const pct=upPct(n),usedB=upUseB();if(usedB){take('upcat',1);if(!(P.inv.upcat>0))upBoost=false}
   if(Math.random()*100<pct){P.wlv++;log(`무기 강화 성공! ${wNm()} +${P.wlv}${usedB?' (공명 촉매 사용)':''}`,'rare');toast(`강화 성공! ${wNm()} +${P.wlv}`);sfxFanfare(false);
-   // announce only a new personal best from +10, so falling back and climbing again does not flood the ticker
-   if(P.wlv>=10&&P.wlv>(P.wmax||0))sys(`${P.nick} 님이 「${wNm()} +${P.wlv}」을 완성했습니다.`);P.wmax=Math.max(P.wmax||0,P.wlv)}
+   // announce only a new personal best from +12, so falling back and climbing again does not flood the ticker
+   if(P.wlv>=12&&P.wlv>(P.wmax||0))sys(`${P.nick} 님이 「${wNm()} +${P.wlv}」을 완성했습니다.`);P.wmax=Math.max(P.wmax||0,P.wlv)}
   else if(n>=UP_DROP){P.wlv--;log(`무기 강화 실패… 무기가 1단계 내려갔다. ${wNm()} +${P.wlv}${usedB?' (공명 촉매 사용)':''}`,'bad');toast(`강화 실패 · +${n} → +${P.wlv}`);sfxStatic()}
   else{log(`무기 강화 실패… 재료만 사라지고 +${n} 그대로다.${usedB?' (공명 촉매 사용)':''}`,'bad');toast(`강화 실패 · +${n} 유지`);sfxStatic()}
   commit()},
