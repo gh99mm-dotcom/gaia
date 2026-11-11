@@ -863,7 +863,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .twact .twbtn{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid transparent;font-size:12.5px}
 .twact .twbtn i{font-style:normal;font-size:14px;line-height:1}
 .twact .twbtn:hover{border-color:var(--line);background:var(--panel2)}
-.twdel{margin-left:auto;font-size:12px!important;opacity:.7}.twdel:hover{opacity:1;color:var(--red)!important}.twdel.arm{opacity:1;color:var(--red)}
+.twdel{margin-left:auto;font-size:12px!important;opacity:.7}.twedit{margin-left:auto;font-size:12px!important;opacity:.7}.twedit+.twdel{margin-left:4px}.twedited{font-size:11px;margin-left:4px}.pedit{display:flex;flex-direction:column;gap:6px;margin:6px 0}.pedit textarea{min-height:70px}.twdel:hover{opacity:1;color:var(--red)!important}.twdel.arm{opacity:1;color:var(--red)}
 .twrt{padding-left:56px}
 .twrlbl{padding:4px 2px 0}
 .twanc{display:flex;flex-direction:column;gap:8px;position:relative}
@@ -7515,12 +7515,15 @@ const myRt=id=>POSTS.find(x=>x.rt===id&&x.uid===uid);
 const fishShareDef=f=>`${ITEMS[f.id].n} ${fmtLen(f.cm)}${f.big?' 대어':''}를 낚았어요!`;
 document.addEventListener('input',e=>{if(e.target.id==='fishTxt'&&lastFish)lastFish.note=e.target.value.slice(0,200)});
 function fishCardHTML(f){const it=ITEMS[f.id];if(!it)return'';return`<div class="fishcard t-${esc(f.tr||it.fish||'c')}">${iicon(f.id,3)}<div><p>${f.first?'<span class="spctag newfish">새로운!</span> ':''}<b>${esc(it.n)}</b> · ${esc(it.tier||'')} 등급</p><p class="fishlen ${f.big?'big':''}">크기 <b>${fmtLen(+f.cm||0)}</b>${f.big?' <span class="spctag">대어!</span>':''}${f.rec?' <span class="spctag rec">최고 기록</span>':''} <span class="hint">(${fmtLen(it.sz[0])} ~ ${fmtLen(it.sz[1])})</span></p><p class="hint">${f.bonus?'완벽한 캐스팅 · ':''}반응 속도 ${+f.ms||0}ms · 경험치 +${+f.xp||0}</p></div></div>`}
+// PAD: my own posts can be edited in place
+let pedit=null,peditDraft='';
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='peditIn')peditDraft=e.target.value});
 function twHTML(p,big){const isRt=!!p.rt,s=isRt?Object.assign({},p.rto||{},{id:p.rt}):p,orig=isRt?(POSTS.find(x=>x.id===p.rt)||(THRP&&THRP.id===p.rt?THRP:null)):p;
   const lk=orig?Object.values(orig.likes||{}).filter(Boolean).length:0,liked=!!(orig&&orig.likes&&orig.likes[uid]),rc=replies(s.id).length,rtc=POSTS.filter(x=>x.rt===s.id).length,rted=!!myRt(s.id),k=esc(s.id),canDel=!isRt&&(p.uid===uid||isAdmin);
   return`<article class="tw ${big?'big':''}" ${big?'':`data-act="padopen" data-k="${k}"`}>${isRt?`<div class="twrt">⇄ ${esc(p.nick||'선원')} 님이 재전송했습니다</div>`:''}<div class="twrow"><div class="twav">${padAv(whoP(s.uid))}</div><div class="twbody">
-   <div class="twh"><b style="color:${colorOf(s.uid)}">${esc(s.nick||'선원')}</b><span class="hint">@${esc(s.nick||'선원')} · ${shortAgo(s.at||Date.now())}</span>${canDel?`<button class="twbtn twdel ${pdelArm===p.id?'arm':''}" data-act="pdel" data-k="${esc(p.id)}">${pdelArm===p.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
+   <div class="twh"><b style="color:${colorOf(s.uid)}">${esc(s.nick||'선원')}</b><span class="hint">@${esc(s.nick||'선원')} · ${shortAgo(s.at||Date.now())}</span>${s.edited?'<span class="hint twedited">· 수정됨</span>':''}${!isRt&&p.uid===uid&&pedit!==p.id?`<button class="twbtn twedit" data-act="pedit" data-k="${esc(p.id)}">수정</button>`:''}${canDel?`<button class="twbtn twdel ${pdelArm===p.id?'arm':''}" data-act="pdel" data-k="${esc(p.id)}">${pdelArm===p.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
    ${s.re?`<div class="hint">↳ <button class="tag" data-act="padopen" data-k="${esc(s.re)}">@${esc(s.reNick||'선원')}</button> 님에게 답글</div>`:''}
-   ${s.text?`<p class="twtext">${richText(s.text)}</p>`:''}${s.fishc?fishCardHTML(s.fishc):''}${imgsHTML(s.img)}
+   ${!isRt&&pedit===p.id?`<div class="pedit" data-act="pedstop"><textarea id="peditIn" class="suggta socta" maxlength="${PAD_MAX}" aria-label="글 수정">${esc(peditDraft)}</textarea><div class="row" style="justify-content:flex-end;gap:6px"><span class="hint" style="margin-right:auto">최대 ${PAD_MAX}자</span><button class="qchip" data-act="peditno">취소</button><button class="btn sm" data-act="peditsave" data-k="${esc(p.id)}">저장</button></div></div>`:s.text?`<p class="twtext">${richText(s.text)}</p>`:''}${s.fishc?fishCardHTML(s.fishc):''}${imgsHTML(s.img)}
    <div class="twact"><button class="twbtn" data-act="padopen" data-k="${k}" aria-label="답글 ${rc}개"><i>↩</i>${rc}</button>${s.re?'':`<button class="twbtn rt ${rted?'on':''}" data-act="padrt" data-k="${k}" aria-pressed="${rted}" aria-label="재전송 ${rtc}"><i>⇄</i>${rtc}</button>`}<button class="twbtn like ${liked?'on':''}" data-act="plike" data-k="${k}" aria-pressed="${liked}" aria-label="좋아요 ${lk}"><i>♥</i>${lk}</button></div></div></div></article>`}
 function padCompose(){return`<div class="padc padnew"><div class="padavw"><div class="twav big">${padAv(P)}</div></div><div class="padcb"><b class="padwho">${esc(P.nick)}<span class="hint">@${esc(P.nick)}</span></b><textarea id="padIn" class="suggta socta" maxlength="${PAD_MAX}" placeholder="지금 베이스캠프에서 무슨 일이 있습니까? #해시태그 @이름 도 쓸 수 있습니다" aria-label="PAD 글 쓰기">${esc(padDraft)}</textarea>${imgPrev('pad')}<div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${imgPicker('pad')}<span class="hint">Ctrl+Enter로 게시${ASSETS?' · 이미지는 붙여넣기도 됩니다':''}</span></span><span class="row" style="gap:8px"><span class="twcnt" id="padCnt">${padDraft.length}/${PAD_MAX}</span><button class="btn sm" data-act="padpost" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'게시'}</button></span></div></div></div>`}
 function socPad(){
@@ -7911,6 +7914,11 @@ const SA={
   const o=POSTS.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null)||THR.find(x=>x.id===d.k);if(!o||o.rt||o.re)return;
   try{await db.collection('posts').add({uid,nick:P.nick,at:Date.now(),rt:o.id,rto:{uid:o.uid,nick:o.nick,text:o.text||'',img:o.img||null,fishc:o.fishc||null,at:o.at,re:o.re||null,reNick:o.reNick||null}})}catch(e){socErr(e);return}sfxCoin();toast('PAD에 재전송했습니다.')},
  async plike(d){if(mode!=='online')return;const p=POSTS.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null)||THR.find(x=>x.id===d.k);const on=!!(p&&p.likes&&p.likes[uid]);try{await db.doc('posts/'+d.k).update({likes:{[uid]:on?0:1}})}catch(e){socErr(e)}},
+ pedit(d){const p=POSTS.find(x=>x.id===d.k)||THR.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null);if(!p||p.uid!==uid||p.rt)return;pedit=p.id;peditDraft=p.text||'';renderSoc();setTimeout(()=>{const t=$('#peditIn');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}},0)},
+ pedstop(){},
+ peditno(){{const t=$('#peditIn');if(t)t.blur()}pedit=null;peditDraft='';renderSoc()},
+ async peditsave(d){const t=$('#peditIn'),v=((t&&t.value)||peditDraft).trim().slice(0,PAD_MAX),p=POSTS.find(x=>x.id===d.k)||THR.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null);if(!p||p.uid!==uid)return;if(!v&&!(p.img&&p.img.length)&&!p.fishc){toast('내용을 적어 주십시오.');return}
+  try{await db.doc('posts/'+d.k).update({text:v,edited:Date.now()});pedit=null;peditDraft='';if(t)t.blur();toast('글을 수정했습니다.');renderSoc()}catch(e){toast('수정하지 못했습니다.')}},
  async pdel(d){const p=POSTS.find(x=>x.id===d.k)||THR.find(x=>x.id===d.k)||(THRP&&THRP.id===d.k?THRP:null);if(!p||!(p.uid===uid||isAdmin))return;if(pdelArm!==d.k){pdelArm=d.k;renderPanel();return}pdelArm=null;try{await db.doc('posts/'+d.k).delete();toast('글을 지웠습니다.');if(ASSETS&&p.uid===uid)(p.img||[]).forEach(id=>ASSETS.delete(id).catch(()=>{}));if(padThread===d.k){openThread(null);renderPanel()}}catch(e){socErr(e)}},
  dmopen(d){if(!d.k||!PLAYERS[d.k])return;if(dmPeer!==d.k)dmDraft='';dmPeer=d.k;socTab='dm';socDrawer(true,1);renderPanel();setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
  async dmsend(){const to=dmPeer,v=dmDraft.trim().slice(0,200);if(!v||!to||!PLAYERS[to]||mode!=='online')return;const i=$('#dmIn');dmDraft='';if(i)i.value='';
@@ -7950,7 +7958,7 @@ Object.assign(A,SA,{
  async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
  async invcopy(d){const t=`[가이아 프로젝트 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}`;
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
-['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel'].forEach(k=>SAFE_ACT.add(k));
+['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','pedit','pedstop','peditno','peditsave','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel'].forEach(k=>SAFE_ACT.add(k));
 /* ───────── join page: character creation ───────── */
 const JST_META={str:['⚔','#e07a6e'],vit:['♥','#e58fb0'],agi:['➶','#7fd0d0'],end:['⛨','#e0b860'],luk:['✦','#a99ae0']};
 const J_START=2,J_FREE=15,J_MAX=2,J_STEPS=[['이름 · 내 모습','다른 선원에게 보일 이름과 모습을 정합니다.'],['좋아하는 것 · 싫어하는 것','좋아하는 요리와 싫어하는 요리를 2개씩 고릅니다. 건너뛰어도 됩니다.'],['직업','직업마다 잘하는 일이 다릅니다. 한 번 정하면 바꿀 수 없습니다.'],['스테이터스','능력치에 포인트를 나눠 줍니다. 남긴 포인트는 나중에 써도 됩니다.']];
