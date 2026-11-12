@@ -3457,8 +3457,8 @@ function gearPickHTML(){const own=P.own||[],opt=(v,n,on)=>`<option value="${esc(
   const wp=WPNS.filter(w=>own.includes(w.id)),ac=ACC.filter(a=>own.includes(a.id)),sm=suitMax();
   const row=(lbl,html)=>`<label class="gprow"><span>${lbl}</span>${html}</label>`;
   return`<div class="gearpick">${row('장착 무기',`<strong>${wNmH()} +${P.wlv||0}</strong>`)}
-   ${row('보조무기',`<select class="sel" data-eq="wpn" aria-label="보조무기">${opt('','없음',!P.wpn)}${wp.map(w=>opt(w.id,w.n,P.wpn===w.id)).join('')}</select>`)}
    ${row('우주복',`<strong>${esc(SUITS[P.suit||0].n)} +${P.suit||0}</strong>`)}
+   ${row('보조무기',`<select class="sel" data-eq="wpn" aria-label="보조무기">${opt('','없음',!P.wpn)}${wp.map(w=>opt(w.id,w.n,P.wpn===w.id)).join('')}</select>`)}
    ${[0,1].map(k=>row('장신구'+(k+1),`<select class="sel" data-eq="acc${k}" aria-label="장신구${k+1}">${opt('','없음',!acc[k])}${ac.map(a=>opt(a.id,a.n,acc[k]===a.id)).join('')}</select>`)).join('')}</div>`}
 document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.eq)return;const k=t.dataset.eq,v=t.value;t.blur();
   if(k==='wpn'){if(v)A.wpnon({k:v});else A.wpnoff()}else if(k==='suit')A.eqsuit({k:v});else{const n=k==='acc1'?1:0;if(v)A.accon({id:v,k:n});else A.accoff({k:n})}});
