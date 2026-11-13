@@ -3511,8 +3511,11 @@ const socTop=()=>{const t=$('#socStage');if(t)t.scrollTo({top:0,behavior:'smooth
 function socBadge(){const b=$('#socBadge');if(!b)return;const n=socUnread();b.textContent=n?String(Math.min(99,n)):'';b.hidden=!n||socOpen}
 // redraw the terminal (not while someone is typing in it: that waits for the field to lose focus)
 function renderSoc(){const st=$('#socStage');if(!st||!socOpen||!P)return;const ae=document.activeElement;if(isField(ae)&&st.contains(ae)){socPend=true;return}socPend=false;
-  const top=st.scrollTop,ps=st.querySelector('.pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';st.innerHTML=renderSocial();
-  const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender();padAnchorApply()}
+  const top=st.scrollTop,ps=st.querySelector('.pp-screen'),pst=ps?ps.scrollTop:0,pk=ps?ps.dataset.k:'';
+  // chat / whisper logs keep the reader's place: they follow new lines only if the reader was already at the bottom (or the log just opened)
+  const lg={};['lgLog','dmLog'].forEach(id=>{const l=document.getElementById(id);if(l)lg[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<40}});
+  st.innerHTML=renderSocial();
+  const np=st.querySelector('.pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;st.scrollTop=top;afterSocialRender(lg);padAnchorApply()}
 // opening a post (or a reply inside a thread) lands on that post, not the top of the thread; earlier posts load above it,
 // so it stays held in place (however long they take to load) until the reader scrolls or types
 let padAnchor=null;
@@ -6630,7 +6633,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrota
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794581993';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794583017';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8102,7 +8105,7 @@ function renderSocial(){
   return head('social')+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='chat'?loungeHTML():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 const padPhone=h=>`<div class="padwrap"><div class="padphone"><div class="pp-top"><i class="pp-cam"></i><i class="pp-spk"></i></div><div class="pp-screen" data-k="${esc(padView+'|'+padTag+'|'+(padThread||''))}">${h}</div><div class="pp-bot"><i class="pp-home"></i></div></div></div>`;
-function afterSocialRender(){if(socOpen&&socTab==='dm'){const b=$('#dmLog');if(b)b.scrollTop=b.scrollHeight}if(socOpen&&socTab==='chat'){const l=$('#lgLog');if(l)l.scrollTop=l.scrollHeight}}
+function afterSocialRender(lg){lg=lg||{};const put=id=>{const l=document.getElementById(id);if(!l)return;const v=lg[id];l.scrollTop=!v||v.end?l.scrollHeight:v.t};if(socOpen&&socTab==='dm')put('dmLog');if(socOpen&&socTab==='chat')put('lgLog')}
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
     if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,AFF.hi,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
