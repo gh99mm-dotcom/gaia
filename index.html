@@ -3376,6 +3376,12 @@ let saveT=null,saving=false,dirty=false;
 const TAB_ID=Math.random().toString(36).slice(2,10);let tabStale=false;
 /* read-markers live on the player doc, so every device agrees on what is already read: whenever my doc changes on the server
    (another device opened the bell, read PAD, notices, mail…), take the newer marker here too */
+// read-markers this device kept only for itself (from before they were synced): hand them to my doc once, so other devices learn them too
+let seenPushed=false;
+function seenPushLocal(){if(seenPushed||!P||mode!=='online'||P._fresh)return;seenPushed=true;let ch=false;const L=k=>{try{return +localStorage.getItem(k)||0}catch(e){return 0}};
+  [['fbSeen','sd_fbseen'],['rbSeen','sd_rbseen'],['socSeen','nebula-soc-seen'],['memoSeen','nebula-memo-seen']].forEach(([k,ls])=>{const v=L(ls);if(v>(+P[k]||0)){P[k]=v;ch=true}});
+  let dm={};try{dm=JSON.parse(localStorage.getItem('nebula-dm-read')||'{}')||{}}catch(e){}for(const k in dm)if((+dm[k]||0)>(+((P.dmRead||{})[k])||0)){P.dmRead=Object.assign({},P.dmRead,{[k]:+dm[k]});ch=true}
+  if(ch){save();queueMicrotask(()=>{try{bellRefresh();renderNav();updFbBadge();updRbBadge()}catch(e){}})}}
 function seenMerge(v){if(!v||!P)return;let ch=false;['notiSeen','socSeen','memoSeen','ntcSeen','fbSeen','rbSeen'].forEach(k=>{if((+v[k]||0)>(+P[k]||0)){P[k]=+v[k];ch=true}});
   const d=v.dmRead||{};for(const k in d)if((+d[k]||0)>(+((P.dmRead||{})[k])||0)){P.dmRead=Object.assign({},P.dmRead,{[k]:+d[k]});ch=true}
   if(!ch)return;queueMicrotask(()=>{try{bellRefresh();renderNav();updFbBadge();updRbBadge();ntcRefresh()}catch(e){}})}
@@ -3417,7 +3423,7 @@ async function connect(){
   renderNet();renderAll();seasonWatch();seenSync();loadMySn();setTimeout(openingOnce,400);
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
   let plT=null;const plDraw=()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()};
-  db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}if(!v||!v.nick)return;m[d.id]=v});if(m[uid]){seenMerge(m[uid]);tabCheck(m[uid])}PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
+  db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}if(!v||!v.nick)return;m[d.id]=v});if(m[uid]){seenPushLocal();seenMerge(m[uid]);tabCheck(m[uid])}PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
   db.collection('grants').onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
     if(!r.adm&&r.by&&r.by!==uid&&r.at!==P.rescueSeen&&(!P.faintAt||r.at>=P.faintAt)){P.rescueSeen=r.at;P.rescuedAt=r.at;addAff(r.by,AFF.rescue,'구조');P.rnoti=[{by:r.by,nick:r.nick||'선원',at:r.at},...(P.rnoti||[])].slice(0,20);if(isFaint())wake(r.nick||'누군가',r.med);else{log(`${r.nick||'누군가'} 님이 구조해 줬다.`,'good');commit()}bellRefresh()}
