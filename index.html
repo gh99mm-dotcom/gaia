@@ -4099,7 +4099,7 @@ function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();rai
   if(mode==='online')rcUnsub=rcRef(id).onSnapshot(sn=>{const prev=RCHAT.length;RCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='raid'){const l=$('#rcLog');if(l){l.innerHTML=rcLogHTML();if(RCHAT.length>prev)l.scrollTop=l.scrollHeight}}},()=>{});
   raidUnsub=raidRef(id).onSnapshot(s=>{if(raidWid!==id)return;if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
     if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
-    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(!isField(ae)||ae.id==='rcIn')renderPanel();raidAnimRun()}},()=>{})}
+    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(ae&&ae.id==='rcIn'){if(!raidSoftPaint(r)){}}else if(!isField(ae))renderPanel();raidAnimRun()}},()=>{})}
 // a lobby stays listed while anyone in it is still sending the 15-second heartbeat (however long they have been waiting); silent for 3 min → hidden
 let RAIDS_ALL=[];const lobbyAlive=v=>raidNow()-Math.max(+v.at||0,...Object.values(v.hb||{}).map(Number))<3*60e3;
 function raidRefilter(){const before=RAIDS.map(v=>v.id).join();RAIDS.length=0;RAIDS_ALL.forEach(v=>{if(lobbyAlive(v))RAIDS.push(v)});return before!==RAIDS.map(v=>v.id).join()}
@@ -4291,6 +4291,13 @@ function raidMapImg(zid,cur,done,n,narrow,bare){const key=[zid,cur,done?1:0,n,na
   return RMAP[key]={src:c.toDataURL(),pts,W,H}}
 function raidMapHTML(r,z){const n=RAID_STEPS,cur=Math.min(r.step,n),done=r.phase==='end',narrow=innerWidth<560,m=raidMapImg(z.id,cur,done,n,narrow),[mx,my]=m.pts[Math.max(0,cur-1)];
   return`<div class="raidmap"><img class="pix" src="${m.src}" alt="${esc(z.n)} 원정 지도">${done?'':`<span class="rmme" style="left:${(mx+.5)/m.W*100}%;top:${(my-6)/m.H*100}%">${headImg(2,P)}</span>`}<span class="rmlbl">${done?'원정 종료':`${cur}/${n} 지점${cur===n?' · 보스':''}`}</span></div>`}
+// while someone types in the party chat, redraw everything around it but leave the chat card (and its input) untouched:
+// replacing the input mid-word splits Korean syllables apart (ㅎㅏㄴ)
+function raidSoftPaint(r){const wrap=document.querySelector('.raidwrap');if(!wrap||!r)return false;const t=document.createElement('div');t.innerHTML=raidRunHTML(r);if(!t.querySelector('.raidwrap'))return false;
+  const swap=sel=>{const a=document.querySelector(sel),b=t.querySelector(sel);if(a&&b)a.replaceWith(b);return!!(a&&b)};
+  if(!swap('.raidmain'))return false;swap('.raidmap');swap('.raidtopbtn');{const z=document.querySelector('.raidzt'),y=t.querySelector('.raidzt');if(z&&y)z.replaceWith(y)}
+  const par=wrap.querySelector('.raidparty'),chat=par&&par.querySelector('.rchat');if(par){par.querySelectorAll(':scope > .raidmem').forEach(e=>e.remove());const nm=[...t.querySelectorAll('.raidparty > .raidmem')];nm.forEach(e=>chat?par.insertBefore(e,chat):par.appendChild(e))}
+  return true}
 function renderRaid(){if(mode!=='online')return head()+'<div class="note">원정은 온라인에서만 떠날 수 있습니다.</div>';return head()+(MYRAID?raidRunHTML(MYRAID):raidLobbyHTML())}
 /* ───────── 탐사: the invader from the abyss ─────────
    the admin summons one of 14 invaders at a chosen level (boss/cur); every member may strike once a minute and it strikes back.
@@ -6631,7 +6638,7 @@ document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=
 const KEEP_FOCUS=new Set(['affIn','admMail','attIn','profBioIn','noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg','bondIn','bi_bh','bi_bw','bi_ba']);
 // boxes whose half-written text is carried over when the page redraws around them
 const KEEP_VAL=['bondIn','admMail','attIn','bi_bh','bi_bw','bi_ba'],keepVals=()=>{const v={};KEEP_VAL.forEach(id=>{const e=document.getElementById(id);if(e)v[id]=e.value});return v},putVals=v=>{for(const id in v){const e=document.getElementById(id);if(e&&e.value!==v[id])e.value=v[id]}};
-function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrotask(renderSoc);tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
+function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID&&document.activeElement&&document.activeElement.id==='rcIn'&&raidSoftPaint(MYRAID))return;if(socOpen)queueMicrotask(renderSoc);tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
   const kv=keepVals();renderPanel0();putVals(kv);
@@ -6642,7 +6649,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrota
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794587578';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794587993';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
