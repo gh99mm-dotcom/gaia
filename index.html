@@ -3295,7 +3295,7 @@ function admStaffHTML(others){const list=STAFF.filter(id=>PLAYERS[id]),rest=othe
    ${list.length?`<div class="admfaint">${list.map(id=>{const p=PLAYERS[id];return`<div class="admfrow">${headImg(3,p)}<div class="admfn"><b>${esc(p.nick||'선원')}</b><span class="hint">Lv.${p.lvl||1} · 관리자</span></div><button class="btn sm ghost" data-act="admstaff" data-k="${esc(id)}">해제</button></div>`}).join('')}</div>`:'<span class="hint">아직 임명한 관리자가 없습니다.</span>'}
    ${rest.length?`<div class="row" style="gap:6px;flex-wrap:wrap"><select id="admStaffPick" class="sel" aria-label="관리자로 임명할 선원">${rest.map(([id,p])=>`<option value="${esc(id)}">${esc(p.nick||'선원')} · Lv.${p.lvl||1}</option>`).join('')}</select><button class="btn sm gold" data-act="admstaff">관리자 임명</button></div>`:''}</div>`}
 // every item laid out like the shared store, grouped by kind
-let admPick=null;
+let admMailBusy=false,admPick=null;
 function admGroups(){const all=ORDER.filter(id=>ITEMS[id]),ship=new Set(shipMatIds()),used=new Set(),take=f=>{const l=all.filter(id=>!used.has(id)&&f(id,ITEMS[id]));l.forEach(id=>used.add(id));return l};
   const g=[['씨앗',take((id,it)=>it.type==='seed')],['작물',take(id=>isCropId(id))],['요리',take(id=>isDish(id))],['물고기',take((id,it)=>!!it.fish)],['음식',take((id,it)=>it.type==='food')],['우주선 자재',take(id=>ship.has(id))],['고대 신호 기록',take((id,it)=>it.type==='relic')],['기타',take(()=>true)]];
   return g.filter(([,l])=>l.length).map(([n,l])=>`<div class="fsgrp"><span class="fsgl">${n}</span><div class="bag">${l.map(id=>`<button class="slot" data-act="admpick" data-id="${id}" aria-pressed="${id===admPick}" aria-label="${esc(ITEMS[id].n)}" title="${esc(ITEMS[id].n)}">${iicon(id,2)}<em>${P.inv[id]||0}</em></button>`).join('')}</div></div>`).join('')}
@@ -3309,6 +3309,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <button class="btn sm gold" data-act="adm" data-k="cr1">+1,000 CR</button><button class="btn sm gold" data-act="adm" data-k="cr10">+10,000 CR</button><button class="btn sm gold" data-act="adm" data-k="lvl">레벨 +1</button></div></div>
   <div class="info-sec" data-adm="give"><span class="lbl">Give · 아이템 지급</span><span class="hint">크레딧은 바로 아래 칸에서, 아이템은 지급할 아이템을 누르고 개수와 받을 사람을 정하십시오. 칸의 숫자는 내 가방에 있는 개수입니다. 다른 선원에게 주면 '운영자' 이름의 선물로 도착합니다.</span>
    ${admPick&&ITEMS[admPick]?`<div class="admpick"><div class="fspick">${iicon(admPick,2)}<div><b>${esc(ITEMS[admPick].n)}</b><span class="hint">내 가방 ${P.inv[admPick]||0}개</span></div></div><div class="row" style="gap:6px;flex-wrap:wrap"><input id="admQty" class="sel" type="number" min="1" max="999" value="10" style="width:70px" aria-label="개수"><select id="admTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'선원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgive">지급</button></div></div>`:''}
+   ${mode==='online'?`<div class="admpick admmail"><div class="fspick">${img(ENV,null,3)}<div><b>운영자 우편</b><span class="hint">아이템 없이 편지만 보냅니다. 받는 선원의 우편함에 '운영자' 이름으로 도착합니다.</span></div></div><textarea id="admMail" class="sel" maxlength="200" rows="3" placeholder="보낼 내용 (최대 200자)" style="width:100%;resize:vertical"></textarea><div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><select id="admMailTo" class="sel"><option value="*">모든 선원에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'선원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admmail">우편 보내기</button></div></div>`:''}
    <div class="admpick admcr"><div class="fspick">${img(IC.coin,null,3)}<div><b>크레딧</b><span class="hint">내 잔액 ${(P.cr||0).toLocaleString()} CR</span></div></div><div class="row" style="gap:6px;flex-wrap:wrap"><input id="admCr" class="sel" type="number" min="1" max="1000000" value="1000" style="width:100px" aria-label="지급할 크레딧"><span class="hint">CR</span><select id="admCrTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'선원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgivecr">크레딧 지급</button></div></div>
    ${admGroups()}</div>
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
@@ -6483,9 +6484,9 @@ function bagSize(w,h){w=Math.max(300,Math.min(innerWidth-8,w));h=Math.max(220,Ma
 let imeOn=false,imeWait=false;
 document.addEventListener('compositionstart',()=>{imeOn=true});
 document.addEventListener('compositionend',()=>{imeOn=false;if(imeWait){imeWait=false;setTimeout(renderPanel,0)}});
-const KEEP_FOCUS=new Set(['affIn','attIn','profBioIn','noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg','bondIn','bi_bh','bi_bw','bi_ba']);
+const KEEP_FOCUS=new Set(['affIn','admMail','attIn','profBioIn','noteIn','whyIn','rcIn','fishTxt','fsQty-store','fsQty-bag','mlMsg','trMsg','bondIn','bi_bh','bi_bw','bi_ba']);
 // boxes whose half-written text is carried over when the page redraws around them
-const KEEP_VAL=['bondIn','attIn','bi_bh','bi_bw','bi_ba'],keepVals=()=>{const v={};KEEP_VAL.forEach(id=>{const e=document.getElementById(id);if(e)v[id]=e.value});return v},putVals=v=>{for(const id in v){const e=document.getElementById(id);if(e&&e.value!==v[id])e.value=v[id]}};
+const KEEP_VAL=['bondIn','admMail','attIn','bi_bh','bi_bw','bi_ba'],keepVals=()=>{const v={};KEEP_VAL.forEach(id=>{const e=document.getElementById(id);if(e)v[id]=e.value});return v},putVals=v=>{for(const id in v){const e=document.getElementById(id);if(e&&e.value!==v[id])e.value=v[id]}};
 function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrotask(renderSoc);tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
@@ -7236,6 +7237,12 @@ const A={
  admgive(){if(!isAdmin)return;const id=admPick,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[{id,n}],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'선원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
+ async admmail(){if(!isAdmin||mode!=='online'||admMailBusy)return;const t=$('#admMail'),msg=(t&&t.value||'').trim().slice(0,200),to=($('#admMailTo')||{}).value||'*';
+  if(!msg){toast('보낼 내용을 적어 주십시오.');return}const ids=to==='*'?Object.keys(PLAYERS).filter(id=>id!==uid):[to];if(!ids.length){toast('받을 선원이 없습니다.');return}
+  if(to==='*'&&!confirm(`모든 선원 ${ids.length}명에게 우편을 보낼까요?`))return;if(to!=='*')adminTo=to;admMailBusy=true;const at=Date.now();let ok=0;
+  await Promise.all(ids.map(id=>db.collection('gifts').add({to:id,from:uid,nick:'운영자',kind:'letter',items:[],cr:0,msg,sys:1,at}).then(()=>ok++).catch(()=>{})));admMailBusy=false;
+  if(ok){const el=$('#admMail');if(el)el.value='';log(`[운영자] 우편 ${to==='*'?'전체 '+ok+'명':(PLAYERS[to]?.nick||'선원')+' 님'}에게 보냄`)}
+  toast(ok===ids.length?(to==='*'?`모든 선원 ${ok}명에게 우편을 보냈습니다.`:`${PLAYERS[to]?.nick||'선원'} 님에게 우편을 보냈습니다.`):`${ids.length}명 중 ${ok}명에게만 보냈습니다.`)},
  admgivecr(){if(!isAdmin)return;const n=Math.floor(+$('#admCr').value||0),to=$('#admCrTo').value;adminTo=to;if(n<1||n>1000000){toast('크레딧은 1~1,000,000 사이로 적어 주십시오.');return}
   if(!to){P.cr=(P.cr||0)+n;log(`[운영자] ${n.toLocaleString()} CR 지급`);commit();toast('지급했습니다.');return}
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[],cr:n,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'선원'} 님에게 ${n.toLocaleString()} CR을 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
