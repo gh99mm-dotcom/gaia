@@ -6371,7 +6371,7 @@ function slotOutcome(){let r=Math.random(),k='miss';for(const [n,p] of SLOT_ODDS
   for(;;){const f=[0,1,2].map(()=>SLOT_SYM[ri(0,3)]);if(slotKind(f)==='miss')return f}}
 const slotKind=f=>{const [a,b,c]=f;if(a===b&&b===c)return a;return f.filter(x=>x==='cherry').length===2?'cherry2':'miss'};
 const SLOT_CR={seven:1000,star:1000,bell:1000,cherry:200,cherry2:50,miss:0};
-const slotShipMat=()=>{const ids=[...new Set(SHIP.flatMap(pt=>pt.need.map(([id])=>id)))].filter(id=>ITEMS[id]&&ITEMS[id].type!=='relic');return ids[ri(0,ids.length-1)]};
+const slotShipMat=()=>{const rm=new Set(RAID_MATS.map(m=>m[1])),ids=[...new Set(SHIP.flatMap(pt=>pt.need.map(([id])=>id)))].filter(id=>ITEMS[id]&&ITEMS[id].type!=='relic'&&!rm.has(id));return ids[ri(0,ids.length-1)]};
 const slotSeed=()=>{const ids=Object.keys(ITEMS).filter(k=>ITEMS[k].type==='seed');return ids[ri(0,ids.length-1)]};
 const slotRoll=()=>{let t=Math.random()*10;for(let i=0;i<4;i++){if((t-=SLOT_W[i])<0)return SLOT_SYM[i]}return 'cherry'};
 let slotFace=['seven','cherry','seven'],slotBusy=false,slotMsg='',slotLast=null;const SLOTIMG={};
@@ -6627,7 +6627,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrota
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794580588';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794581106';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
