@@ -3827,7 +3827,7 @@ function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.ord
     if(a.k==='m'&&b.mons[a.id].hp>0){b.cur=a;b.turnEnd=raidNow()+RAID_MON_TURN;return}
     if(a.k==='p'&&raidUp(r).includes(a.id)){b.cur=a;delete b.def[a.id];if(b.taunt&&b.taunt.u===a.id)b.taunt=null;const c=(b.cd||{})[a.id];if(c){c.s0=Math.max(0,(c.s0||0)-1);c.s1=Math.max(0,(c.s1||0)-1)}b.turnEnd=raidNow()+RAID_TURN;return}}}
 // job skills: each is ready at the start of a battle, then waits 3 (first) or 4 (second) of its user's own turns
-const RSK={medic:[{n:'응급 처치',d:'동료 한 명의 체력을 전부 회복 (쓰러진 동료도 일으킴)',cd:3},{n:'전체 치료',d:'살아 있는 파티 전원 최대 체력의 50% 회복',cd:4}],
+const RSK={medic:[{n:'응급 처치',d:'동료 한 명의 체력을 최대 체력의 70% 회복 (쓰러진 동료도 일으킴)',cd:3},{n:'전체 치료',d:'살아 있는 파티 전원 최대 체력의 40% 회복',cd:4}],
   mech:[{n:'연속 타격',d:'고른 적을 두 번 공격',cd:3},{n:'과부하 방전',d:'모든 적을 공격 (공격력 80%)',cd:4}],
   nav:[{n:'약점 분석',d:'고른 적을 공격하고 모든 적의 방어력을 이 전투 동안 15% 깎음 (겹쳐서 최대 75%)',cd:3},{n:'방패 전개',d:'다음 내 턴까지 광역 공격까지 모든 공격을 혼자 대신 맞고, 그동안 방어력 +100%',cd:3}]};
 const rJob=m=>m?(OLDJOB[m.job]||m.job||''):'';
@@ -3869,8 +3869,8 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
       if(kind==='sk'){const j=rJob(me),i=arg&&arg.s|0,sk=(RSK[j]||[])[i];if(!sk||rskLeft(b,a.id,i)>0)return null;b.cd=b.cd||{};b.cd[a.id]=Object.assign({s0:0,s1:0},b.cd[a.id]);b.cd[a.id]['s'+i]=sk.cd;b.skfx={n:sk.n,j,by:me.nick,id:((b.skfx&&b.skfx.id)||0)+1};
         const live=b.mons.map((m,k)=>m.hp>0?k:-1).filter(k=>k>=0),tm=b.mons[live.includes(arg.tgt)?arg.tgt:live[0]];
         const strike=(m,mul)=>{const [d,c]=raidHit(me.atk*mul,m.def,me.crit||0,me.critD||0);m.hp=Math.max(0,m.hp-d);return`${m.n} ${d}${c?'(치명타)':''}${m.hp<=0?' · 쓰러뜨렸다!':''}`};
-        if(j==='medic'&&i===0){const u=arg.to&&r.m[arg.to]&&!(r.left||{})[arg.to]?arg.to:a.id,to=r.m[u],h=to.maxHp-to.hp;to.hp=to.maxHp;raidLog(b,`[${sk.n}] ${me.nick} → ${u===a.id?'자신':to.nick} 체력 전부 회복 (+${h})`)}
-        else if(j==='medic'){raidUp(r).forEach(u=>{const m=r.m[u];m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.5))});raidLog(b,`[${sk.n}] ${me.nick} 님이 파티 전원의 체력을 50% 회복시켰다.`)}
+        if(j==='medic'&&i===0){const u=arg.to&&r.m[arg.to]&&!(r.left||{})[arg.to]?arg.to:a.id,to=r.m[u],o=Math.max(0,to.hp);to.hp=Math.min(to.maxHp,o+Math.round(to.maxHp*.7));const h=to.hp-o;raidLog(b,`[${sk.n}] ${me.nick} → ${u===a.id?'자신':to.nick} 체력 70% 회복 (+${h})`)}
+        else if(j==='medic'){raidUp(r).forEach(u=>{const m=r.m[u];m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.4))});raidLog(b,`[${sk.n}] ${me.nick} 님이 파티 전원의 체력을 40% 회복시켰다.`)}
         else if(j==='mech'&&i===0){const t1=strike(tm,1),t2=tm.hp>0?strike(tm,1):'(이미 쓰러짐)';raidLog(b,`[${sk.n}] ${me.nick} → ${t1} / ${t2}`)}
         else if(j==='mech'){raidLog(b,`[${sk.n}] ${me.nick} → ${live.map(k=>strike(b.mons[k],.8)).join(', ')}`)}
         else if(j==='nav'&&i===0){const t=strike(tm,1);let cap=false;b.mons.forEach(m=>{if(m.hp<=0)return;if(m.def0==null)m.def0=m.def;m.wk=Math.min(5,(m.wk||0)+1);if(m.wk>=5)cap=true;m.def=Math.round(m.def0*(1-.15*m.wk)*10)/10});raidLog(b,`[${sk.n}] ${me.nick} → ${t} · 모든 적의 방어력 15% 감소${cap?' (최대 75%)':''}`)}
