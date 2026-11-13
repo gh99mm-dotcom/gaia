@@ -3639,7 +3639,7 @@ function storeAdd(id,n){FSTORE[id]=Math.max(0,(FSTORE[id]||0)+n);if(!FSTORE[id])
 tabSub(()=>tab==='farm',()=>db.collection('farmlog').orderBy('at','desc').limit(30).onSnapshot(sn=>{FLOG=sn.docs.map(d=>d.data());if(tab==='farm')renderPanel()},()=>{}));
 function farmLoad(){if(farmOn)return;
   if(mode==='online'){farmOn=true;
-    db.doc('farm/pods').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FARM=farmShape(d.xu,d.ore,Array.from({length:FIELD_N},(_,i)=>d['p'+i]||null),d);renderNav();if(tab==='farm')renderPanel()},()=>{});
+    db.doc('farm/pods').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FARM=farmShape(d.xu,d.ore,Array.from({length:FIELD_N},(_,i)=>{const pl=d['p'+i]||null;return pl&&pl.seed&&!(ITEMS[pl.seed]&&ITEMS[ITEMS[pl.seed].crop])?Object.assign({},pl,{seed:null}):pl}),d);renderNav();if(tab==='farm')renderPanel()},()=>{});
     db.doc('farm/store').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FSTORE={};for(const k in d)if(ITEMS[k]&&+d[k]>0)FSTORE[k]=+d[k];if(tab==='farm')renderPanel()},()=>{})}
   else if(!FARM.local){const s=P.sfarm||{};FARM=farmShape(s.xu,s.ore,(s.pods||[]).slice(),s);FSTORE=Object.assign({},s.store);FLOG=(s.log||[]).slice();FARM.local=1}}
 function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge='';
@@ -6637,7 +6637,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrota
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794585611';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794586252';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -6668,7 +6668,7 @@ function renderPanel0(){bagWinRender();if(secretView!==barWas){barWas=secretView
   // or fling is moving it, since a stale position from mid-scroll would yank it upward
   const sg=$('#stage'),same=stageTab===tab;stageTab=tab;
   if(same){sg.style.minHeight=sg.offsetHeight+'px'}else sg.style.minHeight='';
-  sg.innerHTML=f();
+  sg.innerHTML=(()=>{try{return f()}catch(e){console.error(e);return head()+`<div class="card" style="border-color:var(--red)"><b>이 화면을 그리지 못했습니다.</b><p class="hint">새로고침해도 계속되면 이 문구를 캡처해 운영자에게 보내 주세요.</p><p class="hint" style="font-family:monospace;word-break:break-all">${esc(String(e&&e.message||e).slice(0,160))}</p></div>`}})();
   if(same){const r0=sg.getBoundingClientRect(),last=sg.lastElementChild,nat=last?Math.ceil(last.getBoundingClientRect().bottom-r0.top+(parseFloat(getComputedStyle(sg).paddingBottom)||0)):0,
     other=document.documentElement.scrollHeight-sg.offsetHeight,req=Math.ceil(sy+innerHeight-other);sg.style.minHeight=req>nat?Math.min(sg.offsetHeight,req)+'px':''}
   {const nl=document.querySelector('#stage .slist');if(nl)nl.scrollTop=st;const np=document.querySelector('#stage .pp-screen');if(np&&np.dataset.k===pk)np.scrollTop=pst;if(Math.abs(window.scrollY-sy)>2&&!userScrolling())window.scrollTo(0,sy)}
