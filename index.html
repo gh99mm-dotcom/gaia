@@ -4105,10 +4105,10 @@ setInterval(()=>{if(mode==='online'&&raidRefilter()&&tab==='raid')renderPanel()}
 let RAIDS_RUN=[];
 const runAlive=v=>v.phase!=='end'&&raidIn(v).length>0&&lobbyAlive(v);
 function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).sort((a,b)=>(b.at||0)-(a.at||0));
-  return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),cur=Math.min(x.step||1,RAID_STEPS),mp=raidMapImg(zz.id,cur,false,RAID_STEPS,true),boss=cur===RAID_STEPS;
-    return`<div class="pcard run"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">${cur}/${RAID_STEPS} 지점${boss?' · 보스':''}</span></div>
+  return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),mp=raidMapImg(zz.id,1,false,RAID_STEPS,true,true);
+    return`<div class="pcard run"><div class="pcban"><img class="pix" src="${mp.src}" alt=""></div>
      <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
-      <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small>${raidBar(Math.max(0,m.hp||0),m.maxHp||1,'var(--green)')}</span>`}).join('')}</div>
+      <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
 function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));raidRefilter();if(tab==='raid')renderPanel()},()=>{}));
   tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','run').onSnapshot(sn=>{RAIDS_RUN=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{}));
@@ -4256,7 +4256,7 @@ const RAID_TERRAIN={r1:{g:['#3c3550','#4c4462'],p:['#7a6c5c','#a08c74'],d:['#6e6
   r3:{g:['#18301f','#22442c'],p:['#5e5034','#7e6c48'],d:['#5ab878','#9df0b0'],k:'reed'},r4:{g:['#2e251c','#433526'],p:['#6e5e48','#94806a'],d:['#7a6a5a','#a8988a'],k:'wreck'},
   r5:{g:['#222c38','#334356'],p:['#7a90a8','#a8bcd0'],d:['#b8d4ec','#ecf6ff'],k:'ice'},r6:{g:['#2a1012','#42181a'],p:['#5e3226','#84483a'],d:['#e85a2a','#ffb05a'],k:'lava'}};
 const RMAP={};
-function raidMapImg(zid,cur,done,n,narrow){const key=[zid,cur,done?1:0,n,narrow?1:0].join('|');if(RMAP[key])return RMAP[key];
+function raidMapImg(zid,cur,done,n,narrow,bare){const key=[zid,cur,done?1:0,n,narrow?1:0,bare?1:0].join('|');if(RMAP[key])return RMAP[key];
   const T=RAID_TERRAIN[zid]||RAID_TERRAIN.r1,W=narrow?132:284,H=narrow?60:48,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
   const px=(x,y,col)=>{if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=col;g.fillRect(x|0,y|0,1,1)};let sd=zid.charCodeAt(1)*7919;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=(Math.sin(x*.21+y*.13)+Math.sin(x*.07-y*.29)+2)/4;px(x,y,t*16>BAYER[y&3][x&3]?T.g[1]:T.g[0])}
@@ -4270,6 +4270,8 @@ function raidMapImg(zid,cur,done,n,narrow){const key=[zid,cur,done?1:0,n,narrow?
     else if(T.k==='wreck'){px(x,y,d0);px(x+1,y,d0);px(x+2,y,d1);px(x+1,y-1,d0);px(x+1,y+1,'#1e1812')}
     else if(T.k==='ice'){px(x,y,d1);px(x-1,y,d0);px(x+1,y,d0);px(x,y-1,d0);px(x,y+1,d0)}
     else{px(x,y,d0);px(x+1,y,d1);px(x-1,y,'#7a2a1a');if(rnd()<.4)px(x,y-1,d1)}}
+  // bare: just the zone's ground (cards that only say where a party went)
+  if(bare)return RMAP[key]={src:c.toDataURL(),pts,W,H};
   // trail: lit gold up to the party, plain dirt beyond
   const reach=done?n-1:cur-1;
   for(let i=1;i<n;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],len=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),lit=i<=reach;
@@ -6637,7 +6639,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrota
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794586683';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794587037';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
