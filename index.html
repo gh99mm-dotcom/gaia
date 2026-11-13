@@ -3604,9 +3604,12 @@ function migrate(){if(P&&P.feat){P.note=[P.feat,P.note].filter(Boolean).join('\n
   if(!Array.isArray(P.field))P.field=[];
   // the farm is shared now: hand back whatever was growing in the old personal pods
   if(P.fv!==4){P.field.forEach(pl=>{if(!pl||!ITEMS[pl.seed])return;if(stage(pl)===3)add(ITEMS[pl.seed].crop,2);else add(pl.seed,1)});(P.pods||[]).forEach(p=>{if(p&&ITEMS[p.seed])add(p.seed,1)});delete P.pods;P.field=[];P.fv=4}}
-function effG(pl){const it=ITEMS[pl.seed];let g=pl.got||0;if(pl.wet)g+=Math.min(Date.now()-pl.wet,it.grow/3);return Math.min(it.grow,g)}
-function stage(pl){if(!pl||!pl.seed)return -1;const e=effG(pl),g=ITEMS[pl.seed].grow;return e>=g?3:Math.floor(e/g*3)}
-function isWet(pl){if(!pl||!pl.wet)return false;return Date.now()-pl.wet<(pl.seed?ITEMS[pl.seed].grow/3:90e3)}
+// farm times are written by whoever waters, so they're read against the server-synced clock (a phone whose clock runs ahead used to
+// make growth go negative for everyone else, and the farm screen broke until it caught up)
+const fNow=()=>Date.now()+(+window.__clockOff||0);
+function effG(pl){const it=ITEMS[pl.seed];if(!it||!(it.grow>0))return 0;let g=+pl.got||0;if(pl.wet)g+=Math.max(0,Math.min(fNow()-(+pl.wet||0),it.grow/3));return Math.max(0,Math.min(it.grow,g))}
+function stage(pl){if(!pl||!pl.seed||!ITEMS[pl.seed])return -1;const e=effG(pl),g=ITEMS[pl.seed].grow;if(!(g>0))return 0;return e>=g?3:Math.max(0,Math.min(2,Math.floor(e/g*3)||0))}
+function isWet(pl){if(!pl||!pl.wet)return false;return fNow()-(+pl.wet||0)<(pl.seed&&ITEMS[pl.seed]?ITEMS[pl.seed].grow/3:90e3)}
 let farmSig='';
 let selPod=0,podArm=null,podArmAt=0;  // podArm: the crop I clicked once; clicking it again (within 6 s) waters or harvests it
 const podArmed=i=>podArm===i&&Date.now()-podArmAt<6000;
@@ -3648,7 +3651,7 @@ function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge
   else if(!pl.seed){const wet=isWet(pl);cls=wet?'wet':'dirt';title=`포드 ${i+1} · ${wet?'젖은 흙':'마른 흙'}`;
     body=seeds.length?`<div class="seeds">${seeds.map(([id,n,src])=>`<button class="seedbtn" data-act="plant" data-i="${i}" data-id="${id}" data-k="${src}">${iicon(id,2)}${ITEMS[id].n}<em>${src==='store'?'창고 ':''}×${n}</em></button>`).join('')}</div>`:`<span class="sub">씨앗이 없습니다. 채집·조사에서 얻거나 공용 창고에 넣어 주십시오.</span>`}
   else{const s=stage(pl),it=ITEMS[pl.seed],crop=ITEMS[it.crop],wet=isWet(pl),pc=Math.min(100,effG(pl)/it.grow*100),who=pl.byN?`<span class="sub">심은 선원 · ${esc(pl.byN)}</span>`:'';cls=wet?'wet':'dirt';
-    pic=img([PL.seed0,PL.sprout,PL.young,PL[ITEMS[it.crop].pl||it.crop]][s],s===0?it.t:crop.t,2,'plant');
+    pic=img([PL.seed0,PL.sprout,PL.young,PL[ITEMS[it.crop].pl||it.crop]][s]||PL.seed0,s===0?it.t:crop.t,2,'plant');
     if(s===3){cls='ready';title=`포드 ${i+1} · ${crop.n} 수확 가능`;badge=`<span class="tb">${img(IC.star,null,1)}</span>`;body=`${who}<span class="sub" style="color:var(--gold)">${podArmed(i)?'작물을 한 번 더 누르면 수확합니다.':'다 자랐습니다. 작물을 두 번 누르면 수확합니다.'}</span>`}
     else{if(!wet)badge=`<span class="tb">${img(DROP,null,2)}</span>`;title=`포드 ${i+1} · ${crop.n} · ${['씨앗','새싹','성장'][s]} 단계`;
       body=`${who}<div class="bar"><i data-prog="${i}" style="--c:var(--green);width:${pc}%"></i></div><span class="sub">${wet?'촉촉합니다. 자라는 중':'목마릅니다. 물을 줘야 자랍니다'}${pl.fert?' · 비료':''}</span>${wet?'':`<span class="sub" style="color:var(--cyan)">${podArmed(i)?'작물을 한 번 더 누르면 물을 줍니다.':'작물을 두 번 누르면 물을 줍니다.'} (EN 1)</span>`}${pl.fert?'':`<span class="sub">작물을 오른쪽 버튼으로 누르면(휴대폰은 길게 누르면) 비료를 뿌립니다. (이끼 2 · 보유 ${P.inv.moss||0})</span>`}`}}
@@ -6639,7 +6642,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrota
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794587037';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794587578';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7204,7 +7207,7 @@ const A={
   // a damp crop needs nothing more
   if(pl.seed&&isWet(pl)){toast('더 이상 물을 줄 필요는 없을 것 같다.');return}
   if(FARM.water<=0){toast('공용 물탱크가 비었습니다. 물 채우기를 눌러 주십시오.');return}if(!spendKeep(1))return;let why='';
-  podAct(i,cur=>{why='';if(!cur||!cur.til){why='gone';return null}if(cur.seed&&isWet(cur)){why='wet';return null}const q=Object.assign({},cur);if(q.seed)q.got=effG(q);q.wet=Date.now();return q},
+  podAct(i,cur=>{why='';if(!cur||!cur.til){why='gone';return null}if(cur.seed&&isWet(cur)){why='wet';return null}const q=Object.assign({},cur);if(q.seed)q.got=effG(q);q.wet=fNow();return q},
    q=>{sfxWater();FARM.water--;if(mode==='online'){if(FARM.wset)farmInc('farm/pods','water',-1).catch(()=>{});else farmMerge('farm/pods',{water:FARM.water}).catch(()=>{})}else farmSave();// the farm is shared: watering any growing crop pays the same, your own or someone else's
     if(q.seed){gainXp(3);lxp('farm',FARM_LX);if(q.by&&q.by!==uid)stat('helpfarm')}},
    ()=>{heal(0,1);toast(why==='wet'?'방금 다른 선원이 물을 줬다. 더 이상 물을 줄 필요는 없을 것 같다.':'포드 상태가 바뀌어 물을 주지 못했습니다.')})},
