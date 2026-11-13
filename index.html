@@ -3800,7 +3800,7 @@ const raidRef=id=>db.doc('parties/'+id);
 const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,job:P.job||'',atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:critPct(),critD:BUFF('critD')+WA('critD'),dodge:Math.max(0,BUFF('dodge')+WA('dodge'))});
 const raidZone=r=>RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];
 const raidFits=z=>P.lvl>=z.min;
-const raidNow=()=>Date.now();
+const raidNow=()=>sNow();
 function raidTx(id,fn){const r=raidRef(id);if(r.tx)return r.tx(fn);return r.get().then(s=>{const nx=fn(s.exists?JSON.parse(JSON.stringify(s.data())):null);return nx?r.set(nx).then(()=>nx):null})}
 function raidLog(b,t){b.log=[...(b.log||[]),t].slice(-7)}
 // the name of a monster's area attack, fixed per monster so it always winds up the same way
@@ -3944,7 +3944,7 @@ function sfxSkill(j){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curr
 // shown in the middle of the battle stage; the stage is redrawn right after, so it is placed once the new one is up
 let RAID_POP=null;
 function skillPop(f){RAID_POP=f;if(tab!=='raid')RAID_POP=null}
-function skillPopShow(f){const st=$('.rbstage'),d=document.createElement('div');d.className='skpop sk-'+(f.j||'')+(st?' instage':'');d.innerHTML=`<b>${esc(f.n)}!</b><span>${esc(f.by||'')}</span>`;(st||document.body).appendChild(d);setTimeout(()=>d.remove(),1500)}
+function skillPopShow(f){const st=$('.rbstage');if(!st)return;const d=document.createElement('div');d.className='skpop sk-'+(f.j||'')+' instage';d.innerHTML=`<b>${esc(f.n)}!</b><span>${esc(f.by||'')}</span>`;st.appendChild(d);setTimeout(()=>d.remove(),1500)}
 // moving on to the next stop: four footsteps on gravel — a soft low thump and a short gritty crunch, left and right alternating
 function sfxSteps(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;for(let i=0;i<4;i++){const at=t+i*.27,lo=i%2?1:.86;tone(a,'sine',95*lo,55*lo,at,.07,.05);noiseBurst(a,at,.08,'lowpass',1400*lo,380,.07,3);noiseBurst(a,at+.012,.05,'bandpass',2600*lo,1800,.018,2)}}
 // a battle won: a quick bright 8-bit jingle; the boss going down gets a longer fanfare. Starts just after the last hit's own sound
