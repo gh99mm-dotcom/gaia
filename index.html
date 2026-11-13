@@ -3038,7 +3038,7 @@ function tickCook(){const ck=P.cook;if(P.buff&&Date.now()>=P.buff.until){P.buff=
 /* ───────── admin: crew management ───────── */
 let admDel=null;
 function agoText(t){if(!t)return'기록 없음';const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금 전';if(m<60)return m+'분 전';const h=Math.floor(m/60);if(h<24)return h+'시간 전';const d=Math.floor(h/24);return d+'일 '+(h%24)+'시간 전'}
-function charDeleted(){clearTimeout(saveT);dirty=false;const nick=P.nick;P=newPlayer(nick||'선원');P._fresh=1;toast('운영자가 내 캐릭터를 삭제했습니다. 새로 시작합니다.');log('운영자에 의해 캐릭터가 삭제되어 처음부터 다시 시작한다.','bad');renderAll();showJoin()}
+function charDeleted(){clearTimeout(saveT);saveT=null;dirty=false;const nick=P.nick;P=newPlayer(nick||'선원');P._fresh=1;toast('운영자가 내 캐릭터를 삭제했습니다. 새로 시작합니다.');log('운영자에 의해 캐릭터가 삭제되어 처음부터 다시 시작한다.','bad');renderAll();showJoin()}
 function crewAdminHTML(){if(mode!=='online')return`<div class="info-sec" data-adm="crew"><span class="lbl">Crew · 선원 관리</span><span class="hint">공유된 페이지에서 열면 다른 선원의 접속 기록과 삭제 기능이 여기에 보입니다.</span></div>`;
   const on=new Set(PEERS.map(p=>p.presence&&p.presence.uid).filter(Boolean));
   const rows=Object.entries(PLAYERS).filter(([id])=>id!==uid).map(([id,p])=>({id,p,on:on.has(id),seen:p.seen||0})).sort((a,b)=>(b.on-a.on)||(b.seen-a.seen));
@@ -3258,7 +3258,7 @@ async function seasonCleanMine(){const gone=async(col,q)=>{try{const sn=await q.
     (async()=>{try{const sn=await db.collection('posts').where('uid','==',uid).get();const ids=[].concat(...sn.docs.map(d=>d.data().img||[]));if(ASSETS)await Promise.all(ids.map(id=>ASSETS.delete(id).catch(()=>{})))}catch(e){}})()])}
 let seasonSeen=false,seasonFromDoc=false;
 // stop for good: no more saving, clear what only I can clear, then sign out so I can't slip back in before the wipe is done
-async function seasonQuit(){seasonLock=true;clearTimeout(saveT);dirty=false;toast('테스트 기록이 초기화됩니다. 잠시 뒤 다시 로그인해 주십시오.');await Promise.race([seasonCleanMine(),new Promise(r=>setTimeout(r,8000))]);
+async function seasonQuit(){seasonLock=true;clearTimeout(saveT);saveT=null;dirty=false;toast('테스트 기록이 초기화됩니다. 잠시 뒤 다시 로그인해 주십시오.');await Promise.race([seasonCleanMine(),new Promise(r=>setTimeout(r,8000))]);
   // my old character goes too, or signing back in would bring it back and send me round this loop again
   try{await Promise.race([myRef.delete(),new Promise(r=>setTimeout(r,5000))])}catch(e){}setTimeout(()=>{if(window.__fbLogout)window.__fbLogout();else location.reload()},1200)}
 function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn=>{const n=sn.exists?(+sn.data().n||0):0,first=!seasonSeen;seasonSeen=true;SEASON=n;window.__season=n;
@@ -3269,7 +3269,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
   // another window of the admin's own account: signing out here would sign out the resetting window too (they share one login)
   // and its wipe would stop halfway, so this window only stops saving and reloads once the wipe has had time to finish
   if(isAdmin&&!seasonFromDoc){P.season=n;return}
-  if(isAdmin){seasonLock=true;clearTimeout(saveT);dirty=false;const at=sn.exists?(+sn.data().at||0):0;
+  if(isAdmin){seasonLock=true;clearTimeout(saveT);saveT=null;dirty=false;const at=sn.exists?(+sn.data().at||0):0;
     // a reset still running in another window: wait for it, then reload once
     if(Date.now()-at<120e3){toast('다른 창에서 테스트 기록을 초기화하고 있습니다. 이 창은 잠시 뒤 새로고침됩니다.');setTimeout(()=>location.reload(),Math.max(5e3,at+120e3-Date.now()));return}
     // the reset is long over but my old character survived it: clear it and my crew record, so I join again with a 군번 like everyone else
@@ -3368,7 +3368,7 @@ let mode='boot',db=null,room=null,uid=null,myRef=null;
 let PLAYERS={},DELP={},CHAT=[],PEERS=[],chimeSeen=null;
 // a save rewrites the whole character and is sent to every other player, so quick actions in a row are batched into one write;
 // leaving or hiding the page writes straight away so nothing is lost
-const SAVE_MS=1200;
+const SAVE_MS=5000;   // at most one save per 5 s: each save is sent to every crew member online, so fewer saves keep big evenings light
 let saveT=null,saving=false,dirty=false;
 /* one character, one live window: every save carries this window's id and a rising counter. When another window (or device) saves
    the same character with a newer counter, this window stops saving for good and asks to be reloaded, so an old window left open
@@ -3380,14 +3380,14 @@ function seenMerge(v){if(!v||!P)return;let ch=false;['notiSeen','socSeen','memoS
   const d=v.dmRead||{};for(const k in d)if((+d[k]||0)>(+((P.dmRead||{})[k])||0)){P.dmRead=Object.assign({},P.dmRead,{[k]:+d[k]});ch=true}
   if(!ch)return;queueMicrotask(()=>{try{bellRefresh();renderNav();updFbBadge();updRbBadge();ntcRefresh()}catch(e){}})}
 function tabCheck(v){if(!v||tabStale||!v.tab||v.tab===TAB_ID)return;const sv=+v.sv||0,mine=+(P&&P.sv)||0;if(sv>mine||(sv===mine&&v.tab>TAB_ID))tabGoStale()}
-function tabGoStale(){tabStale=true;clearTimeout(saveT);dirty=false;let M=$('#staleBox');if(M)return;M=document.createElement('div');M.id='staleBox';M.className='modal';M.style.zIndex=90;
+function tabGoStale(){tabStale=true;clearTimeout(saveT);saveT=null;dirty=false;let M=$('#staleBox');if(M)return;M=document.createElement('div');M.id='staleBox';M.className='modal';M.style.zIndex=90;
   M.innerHTML=`<div class="px infobox" role="alertdialog" aria-label="다른 창에서 접속함" style="max-width:380px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center"><span class="lbl">Session · 접속</span><h2 style="margin:0;font-size:20px">다른 창에서 접속했습니다</h2><p class="hint" style="margin:0">같은 캐릭터가 다른 창이나 기기에서 열렸습니다. 기록이 덮어써지지 않도록 이 창은 저장을 멈췄습니다. 이 창에서 하는 일은 저장되지 않습니다.</p><button class="btn" type="button" onclick="location.reload()">새로고침해서 이어하기</button></div>`;document.body.appendChild(M)}
 function save(){if(seasonLock||tabStale)return;if(mode==='online'&&P&&P.nick==='새 선원')return;   // not registered yet: nothing to keep
 
   if(mode==='solo'){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}return}
-  if(mode!=='online')return;dirty=true;clearTimeout(saveT);saveT=setTimeout(flush,SAVE_MS);
+  if(mode!=='online')return;dirty=true;if(!saveT)saveT=setTimeout(()=>{saveT=null;flush()},(()=>{try{return duelOn()&&P.duel?1200:SAVE_MS}catch(e){return SAVE_MS}})());
 }
-const flushNow=()=>{if(mode==='online'&&dirty&&!seasonLock&&!tabStale){clearTimeout(saveT);return flush()}};
+const flushNow=()=>{if(mode==='online'&&dirty&&!seasonLock&&!tabStale){clearTimeout(saveT);saveT=null;return flush()}};
 window.__flushSave=async()=>{await flushNow()};
 addEventListener('pagehide',flushNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushNow()});
 async function flush(){if(saving)return;saving=true;try{while(dirty&&!tabStale){dirty=false;P.seen=Date.now();P.tab=TAB_ID;P.sv=(+P.sv||0)+1;if(SN_PUB&&P.sn!==SN_PUB)P.sn=SN_PUB;if(P.scout&&P.scout.last)scLastSafe(P.scout.last);await myRef.set(JSON.parse(JSON.stringify(P)))}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
@@ -7885,8 +7885,8 @@ function profActsHTML(id){const p=whoP(id);if(!p||id===uid||!PLAYERS[id])return'
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
   const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',jobOf(p)?jobOf(p).n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
-  if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up at 10
-    const af=affOf(p,uid),open=af>=10,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
+  if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up once my own 호감도 toward them (the number shown) reaches 10
+    const af=affOf(p,uid),open=affOf(P,id)>=10,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 10 이상이면 보입니다</span>';
     return`<div class="card profcard" id="profCard">${p.bio?bioQ(p):''}<div class="profwrap">${idCardHTML(p,id,!!p.pfp&&Math.abs(af)>=30,!!p.pfp&&Math.abs(af)<30)}${profSideHTML(p,id,open)}</div>${PROF_AFF}${profNotesHTML(p,false)}${affNotesHTML(p,false,af)}</div>`}
   return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'||preLock()?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}" ${preLock()?'disabled':''}>우편</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}" ${preLock()?'disabled':''}>선물</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'선원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
