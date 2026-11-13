@@ -4024,7 +4024,11 @@ function raidFork(k){const r0=MYRAID;if(!r0||r0.phase!=='fork')return;const st=r
 function raidNext(){const r0=MYRAID;if(!r0||(r0.phase!=='event'&&r0.phase!=='won'))return;const st=r0.step;raidTx(r0.id,r=>{if(!r||r.step!==st||(r.phase!=='event'&&r.phase!=='won'))return null;r.seq++;r.step++;return raidStep(r)}).catch(()=>{})}
 /* ---- the driver plays monsters and timeouts; everyone keeps a heartbeat ---- */
 let raidHbAt=0;
-function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();raidQRun();
+// waiting in the lobby: my entry on the party record follows my character (healing, gear, level) until the party sets out
+let raidLobbyAt=0;const RAID_SYNC=['hp','maxHp','atk','def','agi','crit','critD','dodge','lvl','job','nick'];
+function raidLobbySync(r){if(!r||r.state!=='lobby'||!r.ids.includes(uid)||raidBusy||Date.now()-raidLobbyAt<1500)return;const me=raidMe(),cur=(r.m||{})[uid]||{};if(!RAID_SYNC.some(k=>cur[k]!==me[k]))return;raidLobbyAt=Date.now();
+  raidTx(r.id,x=>{if(!x||x.state!=='lobby'||!x.ids.includes(uid))return null;x.m[uid]=Object.assign({},x.m[uid],raidMe());return x}).catch(()=>{})}
+function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();raidQRun();raidLobbySync(r);
   if(now-raidHbAt>15e3&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:{[uid]:now}}).catch(()=>{})}
   if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
@@ -6633,7 +6637,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(socOpen)queueMicrota
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794583017';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794584096';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
