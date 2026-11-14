@@ -3962,7 +3962,8 @@ const RAID_EVENTS=[
 // a full clear in your own zone is worth about half a level, so expeditions lead the XP race without breaking the 60-level curve
 // bosses pay out far more the higher they are: ×(1+(L/15)^1.5) on top of the base share
 // fighting far weaker monsters teaches little: up to 3 levels above them is full XP, then 9% less per level, never below 10% (13+ levels above)
-const raidLvX=(pl,ml)=>{const d=(pl||1)-(ml||1);return d<=3?1:Math.max(.1,1-(d-3)*.09)};
+const RAID_LVX={4:.81,5:.65,6:.43,7:.25,8:.13};// levels above the monsters → share of XP; 9+ gets 5%
+const raidLvX=(pl,ml)=>{const d=(pl||1)-(ml||1);return d<=3?1:RAID_LVX[d]||.05};
 // monster XP was cut by 30% (.06 → .042)
 const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.042*({elite:1.5,mid:3,boss:6}[kind]||1)*(kind==='boss'?1+Math.pow(L/15,1.5):1));
 /* monsters are tuned for a full party of 4 same-level crew (typical ATK/DEF/HP of a balanced build):
@@ -6759,7 +6760,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794635081';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794636015';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
