@@ -6219,17 +6219,17 @@ function pvBar(){const ks=Object.entries(preview);if(!ks.length)return'';const p
   return`<div class="pvbar"><div class="pvchips">${ks.map(([slot,id])=>{const f=furnById(id);return`<span class="ichip">${FURN[slot].n} · ${esc(f.n)}${ownsF(id)?' (보유)':''}<button class="pvx" data-act="pvone" data-k="${slot}" aria-label="${esc(f.n)} 미리보기 빼기">×</button></span>`}).join('')}</div>
    <div class="row" style="gap:8px">${pd.lock?'<span class="hint" style="color:var(--red)">조사에서만 얻는 가구가 포함되어 있어요</span>':''}${pd.buy.length?`<span class="price">${img(IC.coin,null,2)}${pd.cost.toLocaleString()}</span>${pd.mats.length?matHTML(pd.mats):''}`:'<span class="hint">모두 보유한 가구예요.</span>'}<span style="margin-left:auto"></span><button class="btn sm ghost" data-act="pvoff">되돌리기</button><button class="btn sm gold" data-act="pvall" ${pd.ok?'':'disabled'}>${pd.buy.length?`전체 구매·배치 (${pd.buy.length}개 구매)`:'전체 배치'}</button></div></div>`}
 // other crew's rooms as small faces next to the room picture; online first
-/* 선원의 방: the crew's quarters as numbered cabins (1호~30호, more if the crew grows), handed out by who came aboard first.
+/* 선원의 방: the crew's quarters as numbered cabins (1호~30호, more if the crew grows), in 가나다 order of their names.
    Every door is shut; pointing at one slides it open on its owner's face. Click a cabin to look around that room (your own takes you home). */
 const CABINS=30;
-function cabinList(others){const all=[[uid,P],...others].filter(([id,p])=>id&&p);all.sort((x,y)=>((+x[1].joined||9e15)-(+y[1].joined||9e15))||(x[0]<y[0]?-1:1));return all}
+function cabinList(others){const all=[[uid,P],...others].filter(([id,p])=>id&&p);all.sort((x,y)=>String(x[1].nick||'').localeCompare(String(y[1].nick||''),'ko')||(x[0]<y[0]?-1:1));return all}
 function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean)),vp=visit&&(others.find(([id])=>id===visit)||[])[1];
   if(mode!=='online')return`<div class="vside"><span class="lbl">선원의 방</span><span class="hint">온라인에서 볼 수 있습니다.</span></div>`;
   const L=cabinList(others),n=Math.max(CABINS,L.length);
   const cells=Array.from({length:n},(_,i)=>{const e=L[i],no=`${i+1}호`;if(!e)return`<div class="cab empty" title="${no} · 빈 선실"><span class="cabno">${no}</span><span class="cabin"></span><span class="cabdoor"><i></i><i></i></span></div>`;
     const [id,p]=e,me=id===uid,cur=me?!visit:visit===id,nm=me?'내 방':(p.nick||'선원');
     return`<button class="cab${cur?' on':''}${me?' me':''}" data-act="${me?'visithome':'visit'}" data-k="${me?'':id}" title="${no} · ${esc(nm)}" aria-label="${no} ${esc(nm)}${me?'':' 님의 방 구경하기'}"><span class="cabno">${no}</span><span class="cabin">${headImg(2,p)}<em>${esc(nm)}</em></span><span class="cabdoor"><i></i><i></i></span>${on.has(id)&&!me?'<i class="von"></i>':''}</button>`}).join('');
-  return`<div class="vside"><span class="lbl">${vp?`<b>${esc(vp.nick||'선원')}</b>의 방`:'선원 거주 구역'}</span><div class="cabs">${cells}</div></div>`}
+  return`<div class="vside"><span class="lbl">${vp?`<b>${esc(vp.nick||'선원')}</b>의 방`:'선실'}</span><div class="cabs">${cells}</div></div>`}
 function renderRoom(){
   enterRoomSpace(visit||uid);
   const vis=visit&&PLAYERS[visit];
@@ -6816,7 +6816,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794649177';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794649334';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
