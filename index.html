@@ -1114,7 +1114,7 @@ b.suwib{cursor:default;flex:0 0 120px}
 /* the picture fills the top of the screen and melts into the night; its edges go soft, as if just coming to */
 .stv-art{position:absolute;left:0;right:0;top:0;height:70vh;z-index:1;overflow:hidden;background:#000;-webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%),radial-gradient(ellipse 60% 80% at 50% 40%,#000 55%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,#000 55%,transparent 100%),radial-gradient(ellipse 60% 80% at 50% 40%,#000 55%,transparent 100%);mask-composite:intersect}
 .stv-art::after{content:"";position:absolute;inset:0;pointer-events:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);-webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 40%,transparent 45%,#000 90%);mask-image:radial-gradient(ellipse 60% 70% at 50% 40%,transparent 45%,#000 90%)}
-.stv-art.in{animation:opnIn .7s steps(6) both}.stv-art canvas{width:100%;height:100%;display:block;object-fit:cover;image-rendering:pixelated}
+.stv.noart .stv-art{opacity:0;transition:opacity .4s}.stv-art.in{animation:opnIn .7s steps(6) both}.stv-art canvas{width:100%;height:100%;display:block;object-fit:cover;image-rendering:pixelated}
 /* the opening shows its pictures as a framed window seen from afar instead of filling the screen */
 .stv-far .stv-art{left:50%;right:auto;top:6vh;transform:translateX(-50%);width:min(760px,88vw,96vh);height:auto;aspect-ratio:2/1;-webkit-mask-image:none;mask-image:none;border:3px solid #1a1626;box-shadow:0 0 0 2px #3a3452,0 10px 40px rgba(0,0,0,.6)}
 .stv-far .stv-art canvas{object-fit:contain}
@@ -1790,6 +1790,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .padthrhead{position:sticky;top:-10px;z-index:4;background:var(--panel);margin:-10px -10px 6px;padding:8px 10px;border-bottom:1px solid var(--line)}.padtopq{margin-left:auto}
 #socStage .padthrhead{top:0;margin:0 0 6px;padding:6px 0}
 .padtop{position:sticky;bottom:8px;display:block;margin:8px 0 0 auto;padding:6px 12px;font-size:12.5px;background:var(--panel2);color:var(--cyan);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),2px 2px 0 rgba(0,0,0,.3);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s;z-index:4}.padtop.show{opacity:1;pointer-events:auto}
+.unlockbox{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:22px 28px;max-width:360px}.unlockt{font-size:20px;color:var(--gold)}
 .dishfx{font-size:13px;color:var(--gold)}.dishfx b{color:var(--cyan);margin-right:4px}.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
 .sgchat{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto;padding:8px;background:var(--deep);border:1px solid var(--line)}
 .sgmsg{max-width:82%;display:flex;flex-direction:column;gap:2px}.sgmsg.me{align-self:flex-end;align-items:flex-end}.sgmsg.them{align-self:flex-start}
@@ -5675,8 +5676,18 @@ function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||'
   if(k==='opening'){OP_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')});add('[조우]','ttl')}
   const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
   return out.join('')}
-var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호']];
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛']];
 const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k];
+// once 생명 유지 장치 is repaired every crew member sees its story one time (the next time they are in the game), then the 마이룸 popup
+function lifeStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
+  if(!STORY_ON.life)return;// held back (운영진 included) until 이야기 공개 releases it
+  const pt=roomLife();if(!pt||!shipDone(pt)||(P.stSeen||{}).life)return;if($('#story')||$('#opCrawl')||(typeof raidLocked==='function'&&raidLocked()))return;if(STORY_ON.opening&&(P.opSeen||0)<4)return;
+  P.stSeen=Object.assign({},P.stSeen,{life:Date.now()});save();playStory('life',lifeUnlockPop)}
+function lifeUnlockPop(){const old=$('#unlockPop');if(old)old.remove();const el=document.createElement('div');el.id='unlockPop';el.className='modal';el.style.zIndex=230;
+  el.innerHTML=`<div class="px infobox unlockbox" role="dialog" aria-label="마이룸 해금"><span class="lbl">Unlocked · 해금</span><b class="unlockt">🔓 마이룸이 해금되었습니다!</b><span class="hint">우주선 탭에서 내 방을 꾸밀 수 있습니다.</span><button class="btn gold" type="button" id="unlockOk">확인</button></div>`;
+  document.body.appendChild(el);const close=()=>{el.remove();document.removeEventListener('keydown',kk,true)},kk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.code==='Space'){e.preventDefault();close()}};
+  el.querySelector('#unlockOk').addEventListener('click',close);document.addEventListener('keydown',kk,true);try{sfxFanfare(false)}catch(e){}}
+setInterval(()=>{try{lifeStoryCheck()}catch(e){}},8000);
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
 function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 우주함선이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
 const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
@@ -6775,7 +6786,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794637886';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794639979';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -6938,7 +6949,17 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'o_robot',lines:[{t:'고르지 않은 땅을 건너는 바퀴 소리 같은 것이 들린 후 나타난 것은, 어떻게 봐도 낡아보이는 로봇 하나.'},{v:'완전히 초박살났군.',who:'???'}]},
   {art:'o_pan',lines:[{v:'이곳은 생명체가 활동하기에 그닥 적합하지 않아. 헬멧을 벗지 않는 게 좋을걸.',who:'???'},{v:'이런 걸 어떻게 알고 있냐고? 글쎄…… 그건 나도 모르겠어.',who:'???',art:'o_side'},{v:'하지만 난 이곳에서 아주 오래 살아왔어. 기억을 여섯 번 잃을 동안 말이야.',who:'???',art:'o_side'},{t:'그렇게 말하는 로봇의 몸뚱이에는 빗금이 일곱 개 그어져 있다.',art:'o_tally'}]},
   {art:'o_face',lines:[{v:'나는 녹슨 로봇 7호, 고물상 주인이지.',who:'녹슨 7호'},{v:'필요한 게 있거든 찾아와. 손님이라면 언제든 환영이니까.',who:'녹슨 7호'}]},
-  {art:'monitor',lines:[{t:'화면에 파손된 우주선의 내부 구조도가 표시된다. 복구가 필요한 장치들이 붉은색으로 점멸하고 있다.'},{t:'……생명 유지 장치를 먼저 손보는 게 좋겠다.',btn:'확인한다.'}]}]}};
+  {art:'monitor',lines:[{t:'화면에 파손된 우주선의 내부 구조도가 표시된다. 복구가 필요한 장치들이 붉은색으로 점멸하고 있다.'},{t:'……생명 유지 장치를 먼저 손보는 게 좋겠다.',btn:'확인한다.'}]}]},
+  // played once for everyone when 생명 유지 장치 is repaired (and from 내 정보 › 이야기 afterwards)
+  life:{n:'생명 유지 장치 · 다시 켜진 불빛',scenes:[
+  {art:'l_wreck',lines:[{t:'직접 살펴본 우주선은 훨씬 처참한 상태였다.'},{t:'이만한 인원이 살아있는 것이 신기할 정도다.'},{t:'많은 선원이 죽었고, 흔적도 없이 사라지기도 했다.'},{t:'이 이름 모를 행성에 그들을 두고 갈 순 없다. 또, 여기서 죽을 수도 없다.'}]},
+  {art:'l_land',lines:[{t:'불행 중 다행으로, 이 행성의 자원은 생각보다 풍부하고 다양했다.'},{t:'우리는 나아가 싸웠으며 생명 유지 장치를 고치는 데에 성공했다.'}]},
+  {art:'l_ls',lines:[{t:'생명 유지 장치가 켜진 덕분에 호흡이 수월해졌다.'}]},
+  {art:'l_cabin',sfx:'steps',lines:[{t:'아직 어둡지만 개인실 구역이 진입 가능해졌다.',wait:2.4},{t:'예비 동력으로 선실 내부는 미약하지만 불이 들어온다.'}]},
+  {art:'l_out',lines:[{t:'때마침 고철 소리를 내며 녹슨 7호가 우리를 부르는 소리가 들린다.'}]},
+  {art:'l_bot',lines:[{v:'맞춰보지. 필요한 게 늘었구나.',who:'녹슨 7호'},{v:'손님의 요구는 말하지 않아도 알 수 있어. 내 경력은 자그마치⋯⋯.',who:'녹슨 7호'},{v:'⋯⋯아무튼, 가구점을 새로 꾸릴 테니 크레딧이나 넉넉히 준비해 달라고.',who:'녹슨 7호'}]},
+  {art:'l_lamp',lines:[{t:'다음 할 일 역시 명확하다.'},{t:'이러한 생활이 언제까지 이어질 수 있을지 모르지만⋯⋯.'}]},
+  {art:'black',noart:1,lines:[{t:'동력로를 고치도록 하자.',btn:'▶'}]}]}};
 // 녹슨 7호's voice, read out like Animal Crossing's babble but through a cracked speaker: every Hangul syllable becomes a
 // tiny sped-up "syllable" — a buzzy carrier shaped by the vowel's two formants, with a tick or hiss for the consonant
 const VOW=[[800,1300],[520,1850],[800,1300],[520,1850],[620,1050],[480,1900],[620,1050],[480,1900],[460,820],[800,1300],[520,1850],[480,1900],[460,820],[360,760],[620,1050],[480,1900],[300,2250],[360,760],[420,1450],[300,2250],[300,2250]];
@@ -6959,6 +6980,12 @@ function voiceSyl(a,t,ch,out,o={}){const c=ch.charCodeAt(0);let F=[600,1200],con
     const hp=a.createBiquadFilter();hp.type=cons==='f'?'bandpass':'highpass';hp.frequency.value=cons==='f'?5200:2600;const ng=a.createGain();ng.gain.value=(o.vol||.11)*(cons==='f'?.9:1.3);n.connect(hp).connect(ng).connect(out);n.start(t)}
   return dur}
 function sfxVoice(ch,o){if(!soundOn||!ch)return;const a=ac();if(!a)return;voiceSyl(a,a.currentTime+.005,ch,sfxOut(a),o)}
+function sfxSteps(){if(!soundOn)return;const a=ac();if(!a)return;const out=sfxOut(a),t0=a.currentTime+.25;
+  for(let i=0;i<5;i++){const t=t0+i*.46+(i%2?.03:0),v=.5+i*.1;
+    const o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(48,t+.12);const og=a.createGain();og.gain.setValueAtTime(.0001,t);og.gain.exponentialRampToValueAtTime(.35*v,t+.008);og.gain.exponentialRampToValueAtTime(.0001,t+.16);o.connect(og).connect(out);o.start(t);o.stop(t+.2);
+    const len=Math.floor(a.sampleRate*.09),b=a.createBuffer(1,len,a.sampleRate),d=b.getChannelData(0);for(let k=0;k<len;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/len,3);
+    const n=a.createBufferSource();n.buffer=b;const bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=900+(i%2)*250;bp.Q.value=3;const ng=a.createGain();ng.gain.value=.22*v;n.connect(bp).connect(ng).connect(out);n.start(t);
+    const r=a.createOscillator();r.type='triangle';r.frequency.value=1650+(i%2)*120;const rg=a.createGain();rg.gain.setValueAtTime(.0001,t);rg.gain.exponentialRampToValueAtTime(.03*v,t+.005);rg.gain.exponentialRampToValueAtTime(.0001,t+.25);r.connect(rg).connect(out);r.start(t);r.stop(t+.3)}}
 function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv';op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
   op.innerHTML=`<canvas class="stv-bg"></canvas><button class="stv-skip" type="button">건너뛰기 ▶▶</button><div class="stv-art"><canvas width="240" height="120"></canvas></div>
    <div class="stv-box"><b class="stv-who" hidden></b><p class="stv-txt"></p><button class="stv-next" type="button">▶ 다음</button></div>`;
@@ -7051,6 +7078,21 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     A.dust=(g2,t,X,Y,on)=>{if(!on)return;for(let i=0;i<4;i++){const ph=(t*2.2+i/4)%1;g2.globalAlpha=(1-ph)*.6;g2.fillStyle=B[4];g2.fillRect(X+ph*8|0,Y-1-ph*3|0,1,1)}g2.globalAlpha=1};
     A.bot=(g2,X,Y,bw)=>{if(BOT)g2.drawImage(BOT,Math.round(X),Math.round(Y),bw,bw)};
     OPA=A;return A}
+  // reserve-power lights: mostly on, now and then dropping out for a beat
+  const lampOn=(t,i)=>{const a=Math.sin(t*17+i*3.1)+Math.sin(t*5.3+i*1.7)*.8;return a<-1.2?0:a<-.9?.35:1};
+  // a corridor seen from its middle: ceiling, floor grating, private-room doors on both walls, weak lamps; vx moves the vanishing point
+  // (the camera turning), out opens the far hatch to the night outside
+  function cabin(t,vx,out,lit){R(0,0,W,H,B[0]);const vy=54,bw=44,bh=34,bx=vx-bw/2,by=vy-bh/2,poly=(pts,c)=>{g.fillStyle=c;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.closePath();g.fill()};
+    poly([[0,0],[W,0],[bx+bw,by],[bx,by]],'#08101f');poly([[0,H],[W,H],[bx+bw,by+bh],[bx,by+bh]],'#0c1730');poly([[0,0],[bx,by],[bx,by+bh],[0,H]],'#0a1428');poly([[W,0],[bx+bw,by],[bx+bw,by+bh],[W,H]],'#0a1428');
+    if(out){g.drawImage(SKY||bg,0,0,W,H,bx,by,bw,bh);if(!SKY)R(bx,by,bw,bh,B[1]);R(bx-1,by-1,bw+2,1,B[4]);R(bx-1,by+bh,bw+2,1,B[4])}else{R(bx,by,bw,bh,'#0b1426');R(bx+bw/2-6,by+6,12,bh-6,'#08101e');R(bx+bw/2,by+6,1,bh-6,B[2])}
+    // floor grating lines toward the far end
+    for(let i=1;i<8;i++){const k=i/8,y=by+bh+(H-by-bh)*k*k;g.globalAlpha=.5;R(0,Math.round(y),W,1,B[1]);g.globalAlpha=1}
+    // doors on each wall at three depths
+    const lerp=(a,b,k)=>a+(b-a)*k;[.18,.45,.7].forEach((k,i)=>{for(const side of [0,1]){const x0=side?W:0,xe=side?bx+bw:bx,xa=lerp(x0,xe,k),xb=lerp(x0,xe,k+.13),ta=lerp(0,by,k),tb=lerp(0,by,k+.13),ba=lerp(H,by+bh,k),bb=lerp(H,by+bh,k+.13),ins=.18;
+      const T=(x,y0,y1,f)=>[x,lerp(y0,y1,f)];poly([T(xa,ta,ba,ins),T(xb,tb,bb,ins),T(xb,tb,bb,1-.02),T(xa,ta,ba,1-.02)],'#122142');
+      const on=lampOn(t,i*2+side)*(lit?1:.8);if(on){g.globalAlpha=.5*on;poly([T(lerp(xa,xb,.3),ta,ba,.28),T(lerp(xa,xb,.7),tb,bb,.28),T(lerp(xa,xb,.7),tb,bb,.33),T(lerp(xa,xb,.3),ta,ba,.33)],'#7ea6f0');g.globalAlpha=1}}});
+    // ceiling lamps down the middle, with a pool of light under each
+    [.12,.42,.68].forEach((k,i)=>{const on=lampOn(t,i+7)*(lit?1:.75),x=lerp(W/2,vx,k),y=lerp(0,by,k)+3,w=lerp(40,8,k);R(x-w/2,y,w,Math.max(1,3-2*k),on?B[6]:B[2]);if(on){g.globalAlpha=.12*on;g.fillStyle=B[5];g.beginPath();g.ellipse(x,lerp(H,by+bh,k)-4,w*1.2,lerp(18,3,k),0,0,7);g.fill();g.globalAlpha=1}})}
   // a tiny 3×5 pixel font for the console labels, so they stay crisp when the picture is scaled up
   const F35={A:'010101111101101',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',Y:'101101010010010','-':'000000111000000','·':'000000010000000',' ':'000000000000000'};
   const ptext=(str,X,Y,col)=>{let cx=X;for(const ch of str){const f=F35[ch]||F35[' '];for(let i=0;i<15;i++)if(f[i]==='1')R(cx+(i%3),Y+((i/3)|0),1,1,col);cx+=4}};
@@ -7078,6 +7120,27 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
       const sh=Math.min(7,Math.floor(t*3));for(let i=0;i<Math.min(4,sh);i++)mk(ox+i*s*1.1,oy,ox+i*s*1.1+s*.2,oy+s*2.6);if(sh>4)mk(ox-s*.4,oy+s*2.2,ox+s*3.8,oy+s*.3);for(let i=5;i<sh;i++)mk(ox+s*4.9+(i-5)*s*1.1,oy,ox+s*4.9+(i-5)*s*1.1+s*.2,oy+s*2.6)},
     // the camera tilts up the body to its face
     face:t=>{sky(t);const k=Math.min(1,t/2.6),e=.5-.5*Math.cos(k*Math.PI),bw=216,rx=Math.round(W*.5-bw/2),ry=Math.round(-bw*.62+e*bw*.5+Math.sin(t*2)*1);if(BOT)g.drawImage(BOT,rx,ry,bw,bw)},
+    // ── 생명 유지 장치 story ──
+    black:()=>R(0,0,W,H,'#000'),
+    // the wreck, closer than before, the camera drifting along it
+    l_wreck:t=>{R(0,0,W,H,B[0]);if(SCN0||SCN){const S0=SCN||SCN0,s=1.7,w=S0.width*s,h=S0.height*s,k=Math.min(1,t/12),x=-(w-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(S0,Math.round(x),Math.round(H-h+8),Math.round(w),Math.round(h))}else sky(t);smoke(t,.55)},
+    // the planet outside, wide: no robot this time
+    l_land:t=>{const A=opA(),wide=A.land(1),k=Math.min(1,t/10),x=-(wide.width-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(wide,Math.round(x),-14);A.embers(g,t,Math.round(x));A.smokeAt(g,t,Math.round(x)+W*.82+30,H*.5,.6)},
+    // black, then the console wakes: LIFE SUPPORT stutters red and then holds green, the O2 bar fills
+    l_ls:t=>{R(0,0,W,H,'#000');if(t<1)return;const f=Math.min(1,(t-1)/.6);g.globalAlpha=f;R(30,16,180,88,'#060c16');R(30,16,180,1,B[3]);R(30,103,180,1,B[3]);R(30,16,1,88,B[3]);R(209,16,1,88,B[3]);
+      for(let y=18;y<102;y+=3)R(31,y,178,1,'rgba(127,180,255,.05)');ptext('GAIA - SHIP STATUS',36,22,B[5]);
+      const ok=t>3.4,blink=!ok&&((t*7|0)%3!==0)&&Math.random()>.25,col=ok?'#5cf08a':blink?'#ff4a5a':'#3a0c12';
+      R(56,46,10,10,col);if(ok){g.globalAlpha=f*.25;R(52,42,18,18,'#5cf08a');g.globalAlpha=f}ptext('LIFE SUPPORT',74,49,ok?'#9dffbc':blink?'#ff8a94':'#5a1a22');
+      ptext(ok?'ONLINE':'BOOTING',74,58,ok?'#5cf08a':'#8a6a2a');ptext('AIR',52,78,B[5]);R(70,78,110,5,'#0e1a26');const o2=ok?Math.min(1,(t-3.4)/2.2):Math.max(0,Math.min(.15,(t-1.6)*.08));R(70,78,Math.round(110*o2),5,ok?'#5cf08a':'#a03040');g.globalAlpha=1},
+    // the cabin deck in the dark: a corridor of private rooms, weak lights flickering on reserve power
+    l_cabin:t=>{if(t<1.9){R(0,0,W,H,'#000');return}cabin(t,120,false);const f=Math.min(1,(t-1.9)/1.2);if(f<1){g.globalAlpha=1-f;R(0,0,W,H,'#000');g.globalAlpha=1}},
+    l_out:t=>{const k=Math.min(1,t/2.8),e=.5-.5*Math.cos(k*Math.PI);cabin(t,Math.round(120+e*70),true)},
+    l_bot:t=>{cabin(t,120,true,true);const bw=56,rx=Math.round(W*.5-bw/2),gy=Math.round(H*.86);g.fillStyle='rgba(3,6,15,.6)';g.fillRect(rx+6,gy-2,bw-12,4);if(BOT)g.drawImage(BOT,rx,gy-bw+Math.round(Math.sin(t*3)*1),bw,bw);
+      if(Math.floor(t*1.3)%4===0){P(rx+s16(bw,5),gy-bw+s16(bw,6),B[7]);P(rx+s16(bw,10),gy-bw+s16(bw,6),B[7])}},
+    // a ceiling lamp that can barely keep going
+    l_lamp:t=>{const fl=lampOn(t,0);R(0,0,W,H,B[0]);if(fl){g.globalAlpha=.18*fl;g.fillStyle=B[5];g.beginPath();g.moveTo(104,44);g.lineTo(136,44);g.lineTo(200,H);g.lineTo(40,H);g.fill();g.globalAlpha=1}
+      for(let y=0;y<30;y++)P(120+Math.round(Math.sin(t*1.2)*1*y/30),y,B[2]);R(100,30,40,8,B[2]);R(100,30,40,1,B[4]);R(104,38,32,6,fl?B[7]:B[1]);if(fl>.6)R(108,39,24,4,'#fff');
+      if(!fl&&((t*9)|0)%5===0){P(110+((t*37)|0)%20,46,B[6]);P(112+((t*53)|0)%18,48,B[5])}},
     // the ship's own console: a cut-away plan of the wreck with every damaged system blinking red
     monitor:t=>{const fade=Math.min(1,t/1.8);R(0,0,W,H,'#02030a');if(fade<1){g.globalAlpha=1-fade;sky(t);g.globalAlpha=1}
       g.globalAlpha=fade;R(20,10,200,100,'#0a1420');R(20,10,200,1,B[3]);R(20,109,200,1,B[3]);R(20,10,1,100,B[3]);R(219,10,1,100,B[3]);
@@ -7092,11 +7155,11 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
       ptext('SYSTEM DAMAGE - REPAIR REQUIRED',58,98,red);ptext('GAIA - SHIP STATUS',24,14,B[5]);g.globalAlpha=1}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
-  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent='▶ '+(L.btn||(last?'확인한다.':'다음'))}
+  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
   function cur(){const L=S.scenes[si].lines[li];return L.v?`“${L.v}”`:L.t}
   const at=performance.now();let st0=at,artNow='';
-  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){artNow=an;st0=now}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
-    const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.floor((now-t0)/1000*(L0.v?13:26)));if(n>shown){for(let i=shown;i<n;i++)if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;q('.stv-next').classList.add('on')}}
+  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxSteps()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
+    const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++)if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;q('.stv-next').classList.add('on')}}
     raf=requestAnimationFrame(loop)}
   function next(){if(!full){full=true;q('.stv-txt').textContent=cur();q('.stv-next').classList.add('on');return}const sc=S.scenes[si];if(li<sc.lines.length-1){li++}else if(si<S.scenes.length-1){si++;li=0;st0=performance.now();const a=q('.stv-art');a.classList.remove('in');void a.offsetWidth;a.classList.add('in')}else{finish();return}t0=performance.now();setLine()}
   function finish(){if(over)return;over=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done()}
