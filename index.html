@@ -6786,7 +6786,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794639979';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794640666';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -6959,6 +6959,7 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'l_out',lines:[{t:'때마침 고철 소리를 내며 녹슨 7호가 우리를 부르는 소리가 들린다.'}]},
   {art:'l_bot',lines:[{v:'맞춰보지. 필요한 게 늘었구나.',who:'녹슨 7호'},{v:'손님의 요구는 말하지 않아도 알 수 있어. 내 경력은 자그마치⋯⋯.',who:'녹슨 7호'},{v:'⋯⋯아무튼, 가구점을 새로 꾸릴 테니 크레딧이나 넉넉히 준비해 달라고.',who:'녹슨 7호'}]},
   {art:'l_lamp',lines:[{t:'다음 할 일 역시 명확하다.'},{t:'이러한 생활이 언제까지 이어질 수 있을지 모르지만⋯⋯.'}]},
+  {art:'black',noart:1,lines:[{t:'......',btn:'▶'}]},
   {art:'black',noart:1,lines:[{t:'동력로를 고치도록 하자.',btn:'▶'}]}]}};
 // 녹슨 7호's voice, read out like Animal Crossing's babble but through a cracked speaker: every Hangul syllable becomes a
 // tiny sped-up "syllable" — a buzzy carrier shaped by the vowel's two formants, with a tick or hiss for the consonant
