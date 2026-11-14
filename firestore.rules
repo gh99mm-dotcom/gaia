@@ -84,6 +84,14 @@ service cloud.firestore {
     }
 
     // 공용 채널
+    // 익명함: 작성자를 적지 않아요 (uid 없음). 선원은 글 쓰기만, 지우기는 운영진만.
+    match /anon/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.keys().hasOnly(['text', 'at', 'an'])
+        && str('text', 300) && request.resource.data.text.size() > 0 && str('an', 8) && request.resource.data.at is int;
+      allow delete: if staff();
+    }
+
     match /chat/{id} {
       allow read: if member();
       allow create: if member() && request.resource.data.uid == me() && str('text', 200);
