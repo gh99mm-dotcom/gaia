@@ -207,6 +207,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .gearpick{display:flex;flex-direction:column;gap:4px;font-size:12.5px}.gprow{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:6px}.gprow>span{color:var(--mute)}.gprow strong{color:var(--cyan);font-weight:700}.gprow .sel{width:100%;min-width:0;padding:3px 4px;font-size:12px}
 .withpet{position:relative;display:inline-block;line-height:0}.withpet .petside{position:absolute;left:0;bottom:0;z-index:1;image-rendering:pixelated}
 .avatar{background:var(--deep);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line);padding:3px}
+.buffs{display:flex;align-items:center;gap:1px;margin:-9px 0 -7px;height:18px}.bufft{font-size:11px;color:var(--mute);margin-left:3px}.pttl{margin-top:1px;line-height:1.35}.buffic{display:block;width:18px;height:18px;padding:2px;box-sizing:border-box;background:rgba(8,10,18,.82);border:1px solid rgba(255,255,255,.28);cursor:help}.buffic svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
 .bagwin{position:fixed;z-index:40;box-sizing:border-box;width:min(620px,calc(100vw - 8px));height:min(80vh,760px);max-width:calc(100vw - 8px);max-height:calc(100vh - 8px);display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45),inset 0 0 0 1px var(--line)}
 .bw-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border-bottom:2px solid var(--ink);background:var(--deep);cursor:move;user-select:none;touch-action:none}.bw-head .hint{flex:1;font-size:11px}
 .bw-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:10px 10px 16px;overscroll-behavior:contain}.bw-grip{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 0 50%,var(--ink) 50% 58%,transparent 58% 68%,var(--ink) 68% 76%,transparent 76% 86%,var(--ink) 86% 94%,transparent 94%)}.bw-body .two{grid-template-columns:minmax(0,1fr)}
@@ -1814,6 +1815,11 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 @media (max-width:760px){.cabs{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:92px;max-height:288px;overflow-y:auto;overscroll-behavior:contain;flex:none;min-height:0}.cab{height:92px}.cabin img{height:32px}}
 .lghd{display:flex;flex-direction:column;gap:1px;padding:5px 8px 6px;margin-bottom:3px;border-bottom:1px solid var(--line)}.lghd b{font-size:13px;color:var(--text);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lghd span{font-size:11.5px;color:var(--gold)}
 .mailpg{display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap;margin:8px 0}.mailpg .qchip.on{border-color:var(--gold);color:var(--gold);font-weight:700}.mailpg .qchip[disabled]{opacity:.4;cursor:default}
+.zonehead{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}.zonehead .lbl{margin:0}
+.rmode{margin:0}.rmode button{padding:4px 16px}.rmode .rmhard[aria-selected="true"]{color:#ff8a94;box-shadow:inset 0 -2px 0 #ff4a5a}
+.raidz.hardz{border-color:#7a2a34;background:linear-gradient(180deg,rgba(255,74,90,.08),transparent 70%)}.raidz.hardz[aria-checked="true"]{box-shadow:inset 0 0 0 2px #ff4a5a}
+.ichip.hardtag,.hardtxt{color:#ff8a94;border-color:#ff4a5a;font-weight:700;letter-spacing:.06em}.btn.hardbtn{box-shadow:inset 0 0 0 2px #ff4a5a}
+.rmode.egoff{display:none}.rushcard{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;border-color:#7a2a34}.rushcard .hint{display:block}
 .dishfx{font-size:13px;color:var(--gold)}.dishfx b{color:var(--cyan);margin-right:4px}.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
 .sgchat{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto;padding:8px;background:var(--deep);border:1px solid var(--line)}
 .sgmsg{max-width:82%;display:flex;flex-direction:column;gap:2px}.sgmsg.me{align-self:flex-end;align-items:flex-end}.sgmsg.them{align-self:flex-start}
@@ -2420,9 +2426,23 @@ const FISH_DB=[
   u:[['강철 청새치','marlin','bars',[200,400],'#1a2a4a','#4a6a9a','#e8f0f8','#2a4a80','#8ad0ff'],['심연 아귀','angler','wart',[30,100],'#2a2a2e','#5a5a62','#b4b0b8','#424248','#a8f0ff'],
    ['기계 상어','shark','plates',[200,500],'#3a4048','#7a8490','#d8dce2','#5a626c','#ff4a3a'],['녹슨 귀상어','hammer','none',[200,450],'#4a4a42','#8e8c80','#e4e2da','#6e6c62','#c0602a']],
   l:[['시간을 삼킨 실러캔스','coel','coel',[150,250],'#18223e','#4a5a8a','#c8d0e6','#6a7ab0','#eaf2ff']]}];
-FISH_DB.forEach(S=>['c','r','u','l'].forEach(t=>{S[t]=S[t].map(d=>mkFish(t,d))}));
+FISH_DB.push({id:'s6',n:'별눈물 호수',liq:'별빛 물',eg:1,d:'하늘의 눈이 흘린 빛이 고인 호수. 오르비스가 나타난 뒤로 처음 보는 것들이 떠오른다.',
+  c:[['별가루 피라미','minnow','speck',[6,14],'#2a2a5a','#7a7ac8','#eaeaff','#9a8ae0','#ffe0ff'],['눈빛 송사리','medaka','none',[3,7],'#3a2a6a','#9a8ad8','#f4f0ff','#b8a8f0','#ffffff'],
+   ['혜성 붕어','carp','scales',[15,38],'#2a3a6a','#6a8ac8','#e8eeff','#5a7ab8','#c0d8ff'],['궤도 각시붕어','bitter','band',[5,9],'#3a3060','#a090d0','#f6f2ff','#c0a0e0','#ff9ad8'],
+   ['성운 구피','guppy','spots',[3,6],'#4a2a6a','#c08ae0','#fbefff','#ff8ad0','#8ad8ff'],['별자리 테트라','tetra','stripe',[3,5],'#1a2a4a','#4a8ac0','#e6f4ff','#ff5a8a','#5affe0'],
+   ['유성 빙어','smelt','glass',[8,15],'#3a4a6a','#a8c0e0','#f6faff','#c8d8f0','#ffffff'],['달그림자 미꾸라지','loach','blot',[10,20],'#2a2438','#6a5a80','#d8d0e8','#4a3e5c','#a890c8'],
+   ['은하 망둑','goby','speck',[6,12],'#3a3a50','#8a8aa8','#e6e6f2','#6a6a90','#ffd8a0'],['빛무리 정어리','sardine','spots',[10,22],'#24305a','#7a90d0','#f0f4ff','#9aa8e0','#5affe0'],
+   ['고요의 금붕어','goldfish','none',[8,18],'#8a3a6a','#ff8ac0','#fff0f8','#ffb0d8','#ffe08a'],['별무늬 블루길','bluegill','ear',[12,22],'#2a3a5a','#6a8ab0','#eef2fa','#4a6a90','#ffb84a']],
+  r:[['시선 송어','trout','trout',[30,60],'#2a3a5a','#8aa0d0','#f0f4ff','#6a80b0','#ff8ac8'],['오로라 가오리','ray','spots',[60,180],'#2a2a4a','#6a6aa0','#dcdcf2','#8a7ad0','#5affd0'],
+   ['초신성 연어','salmon','speck',[50,90],'#3a2a4a','#c87a9a','#fff0f4','#a05a7a','#ffd060'],['궤도 해마','seahorse','band',[10,22],'#4a2a5a','#b07ad8','#f6eaff','#d89af0','#ffe0ff'],
+   ['혜성 꼬리 날치','flying','stripe',[25,45],'#1a3a6a','#5a9ad8','#eef6ff','#8ac8ff','#ffffff'],['별빛 해파리','jelly','glass',[20,60],'#3a3a7a','#a8a8ff','#f4f4ff','#c8b8ff','#ffd8ff']],
+  u:[['눈동자 아로와나','arowana','scales',[70,120],'#3a2a5a','#b098e0','#f6f0ff','#8a70c0','#ffd860'],['하늘눈 쏠배감펭','lionfish','tiger',[25,45],'#5a1a3a','#e05a8a','#ffe8f0','#ff8ab0','#ffffff'],
+   ['심연 성운 상어','shark','grad',[150,300],'#1a1e3a','#4a5a8a','#d8deef','#3a4a7a','#8ad8ff'],['빛나는 실러캔스','coel','coel',[120,200],'#1a2a5a','#4a6ab0','#d0dcf6','#5a7ad0','#ffe08a']],
+  l:[['오르비스의 눈물','dragon','stars',[200,320],'#2a1a4a','#9a6ae0','#f4ecff','#c08aff','#fff2a8']]});
+FISH_DB.forEach(S=>['c','r','u','l'].forEach(t=>{S[t]=S[t].map(d=>{const id=mkFish(t,d);if(S.eg)ITEMS[id].eg=1;return id})}));
 const FSPOTS=FISH_DB;
-const fspot=()=>FSPOTS.find(x=>x.id===(P&&P.fspot))||FSPOTS[0];
+const fspotsVis=()=>FSPOTS.filter(x=>!x.eg||egOpen());
+const fspot=()=>fspotsVis().find(x=>x.id===(P&&P.fspot))||FSPOTS[0];
 const fspotOf=id=>FSPOTS.find(x=>['c','r','u','l'].some(t=>x[t].includes(id)));
 // one catch's length: most fish come out small-to-average, a better rod and a perfect cast tilt it larger; top 10% of the range is a 대어
 function fishSize(id,rod,bonus){const [a,b]=ITEMS[id].sz||[10,30];let u=Math.pow(Math.random(),1.6);u=Math.min(1,u+rod*.03+(bonus?.05:0));const cm=a+(b-a)*u;return{cm:Math.round(cm*10)/10,big:u>=.9,u}}
@@ -2772,6 +2792,10 @@ const COOK=[
  {id:'d_jeon',n:'먼지감자 버섯전',ic:'dPlate',t:'#e0b060',need:[['dustPot',2],['shadeShroom',1],['geyserSalt',1]],sec:50,hp:100,en:28,xp:14,d:'감자를 갈아 버섯을 얹고 바삭하게 부친 전.'},
  {id:'d_punch',n:'은하 수박 화채',ic:'dIce',t:'#f48aa0',need:[['melon',1],['frostCrystal',1],['frostBerry',1]],sec:45,hp:25,en:85,xp:15,buff:{defP:6,dodge:5},bmin:8,d:'수박과 서리 딸기를 띄운 시원한 화채.'},
  {id:'d_gratin',n:'심해 생선 그라탕',ic:'dPot',t:'#f2c860',need:[['fish:u',1],['iceRadish',1],['rationBean',1],['geyserSalt',1]],sec:150,hp:190,en:60,xp:32,buff:{atkP:8,defP:8,critD:10},bmin:12,d:'귀한 생선 살에 치즈를 듬뿍 올려 구운 그라탕.'},
+ {id:'d_starSoup',n:'별눈물 수프',ic:'dBowl',t:'#8a7ae0',eg:1,need:[['fish:u',1],['crystal',10],['mistLotus',2]],sec:120,hp:200,en:80,xp:40,buff:{atkP:15,critD:25},bmin:15,d:'별빛 물에 귀한 생선을 오래 끓인 수프.'},
+ {id:'d_orbisTart',n:'오르비스 타르트',ic:'dPie',t:'#c08aff',eg:1,need:[['pump',3],['frostBerry',3],['starHeart',1]],sec:120,hp:120,en:120,xp:40,buff:{defP:15,dodge:10},bmin:15,d:'붉은 별 심장석의 열로 구운 보랏빛 타르트.'},
+ {id:'d_cometSushi',n:'혜성 초밥 한 상',ic:'dTray',t:'#5ad0ff',eg:1,need:[['fish:r',3],['fish:u',1],['bogRice',3]],sec:150,hp:180,en:100,xp:45,buff:{atkP:10,defP:10,crit:6},bmin:15,d:'레어와 유니크 생선을 한 상 가득 올린 초밥.'},
+ {id:'d_nebulaTea',n:'성운 차',ic:'dCup',t:'#a8a8ff',eg:1,need:[['mazeCore',2],['berry',4],['frostCrystal',2]],sec:60,hp:80,en:150,xp:30,buff:{dodge:8,crit:8},bmin:20,d:'미궁 결정핵을 띄워 우린 반짝이는 차.'},
 ];
 COOK.forEach(c=>{if(c.hp<999){c.hp=Math.round(c.hp*.7);c.en=Math.round(c.en*.7)}});
 // [맛있는!] dishes: a cooking-level roll makes some come out extra good — 1.5x healing, buff strength and experience
@@ -2783,7 +2807,7 @@ const TASTY_MARK='[맛있는!]';
 function tastyBadges(root){if(!root||!root.ownerDocument&&root!==document)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.nodeValue.includes(TASTY_MARK)&&!n.parentNode.closest('option,select,textarea,script,style,.spctag')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});
   const hits=[];while(w.nextNode())hits.push(w.currentNode);hits.forEach(n=>{const parts=n.nodeValue.split(TASTY_MARK),f=document.createDocumentFragment();parts.forEach((t,i)=>{if(i){const b=document.createElement('span');b.className='spctag tastyb';b.textContent='맛있는!';f.append(b)}const tx=i?t.replace(/^ /,'\u00a0'):t;if(tx)f.append(tx)});n.replaceWith(f)})}
 {let q=false;new MutationObserver(()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;tastyBadges(document.body)})}).observe(document.documentElement,{childList:true,subtree:true,characterData:true})}
-COOK.forEach(c=>{const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${buffTxt(k,v)}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf};
+COOK.forEach(c=>{if(c.eg)queueMicrotask(()=>{if(ITEMS[c.id])ITEMS[c.id].eg=1;if(ITEMS[TASTY+c.id])ITEMS[TASTY+c.id].eg=1});const bf=c.buff?' · '+Object.entries(c.buff).map(([k,v])=>`${buffTxt(k,v)}`).join(' ')+` (${c.bmin}분)`:'';ITEMS[c.id]={n:c.n,ic:c.ic,t:c.t,type:'food',hp:c.hp,en:c.en,dish:1,sv:Math.round((c.hp+c.en)/4),d:c.d+(c.hp>=999?' 체력·에너지 완전 회복':` 체력 +${c.hp} · 에너지 +${c.en}`)+bf};
   const tc=tastyOf(c),tb=tc.buff?' · '+Object.entries(tc.buff).map(([k,v])=>`${buffTxt(k,v)}`).join(' ')+` (${tc.bmin}분)`:'';
   ITEMS[TASTY+c.id]=Object.assign({},ITEMS[c.id],{n:'[맛있는!] '+c.n,tasty:c.id,hp:tc.hp,en:tc.en,d:c.d+' 유난히 맛있게 됐습니다.'+(tc.hp>=999?' 체력·에너지 완전 회복':` 체력 +${tc.hp} · 에너지 +${tc.en}`)+tb})});
 // 귀중품 (junk): everyday things found while searching in 조사, kept only to sell (200 CR each)
@@ -3080,7 +3104,7 @@ function renderCook(){const el=$('#cook');if(!el)return;const c=COOK.find(x=>x.i
   <p class="hint tastyhint">요리 레벨 <b>LV.${lifeLv((P.lx||{}).cook)}</b> · 레벨이 오를수록 맛있는 음식을 만들게 될 확률이 높아집니다. <span class="tastytag">[맛있는!]</span> 요리는 효과가 1.5배입니다. (지금 ${tastyPct().toFixed(1)}%)</p>
   ${bf?`<div class="cbuff">${iicon(bf.id,1)}<span>${Object.entries(bf.fx).map(([k,v])=>`${buffTxt(k,v)}`).join(' · ')}</span><b id="buffT">${fmtClock(bf.until-now)}</b></div>`:''}
   ${busy?`<div class="card cooking"><div class="crow">${rcpKnown(cur.id)?iicon(cur.id,2):'<b class="rq big">?</b>'}<div style="min-width:0;flex:1"><b>${rcpKnown(cur.id)?esc(cur.n):'???'}${(ck.n||1)>1?' ×'+ck.n:''}</b><span class="hint" id="cookT">${done?'완성됐습니다!':'조리 중 · '+fmtClock(left)}</span></div></div><div class="bar"><i id="cookB" style="--c:var(--gold);width:${done?100:Math.round((1-left/(cur.sec*(ck.n||1)*1e3))*100)}%"></i></div>${done?`<button class="btn gold sm" data-act="cookdone">꺼내기</button>`:''}</div>`:
-  `<div class="rtiles" role="group" aria-label="레시피">${COOK.map(x=>{const k=rcpKnown(x.id);return`<button type="button" class="rtile ${canCook(x)?'ok':'no'} ${k?'':'unk'}" data-act="cooksel" data-k="${x.id}" aria-pressed="${x.id===c.id}" title="${k?esc(x.n):'아직 모르는 요리'}" aria-label="${k?esc(x.n):'아직 모르는 요리'}">${k?iicon(x.id,1.5):'<b class="rq">?</b>'}</button>`}).join('')}</div>
+  `<div class="rtiles" role="group" aria-label="레시피">${COOK.filter(x=>!x.eg||egOpen()).map(x=>{const k=rcpKnown(x.id);return`<button type="button" class="rtile ${canCook(x)?'ok':'no'} ${k?'':'unk'}" data-act="cooksel" data-k="${x.id}" aria-pressed="${x.id===c.id}" title="${k?esc(x.n):'아직 모르는 요리'}" aria-label="${k?esc(x.n):'아직 모르는 요리'}">${k?iicon(x.id,1.5):'<b class="rq">?</b>'}</button>`}).join('')}</div>
   <div class="card csel">${rcpKnown(c.id)?`<b>${esc(c.n)} <span class="sellp">판매가 ${sellPrice(c.id).toLocaleString()} CR</span></b><span class="hint">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${buffTxt(k,v)}`).join(' ')} ${c.bmin}분`:''}</span>`:`<b>??? <span class="hint">아직 만들어 보지 않은 요리</span></b><span class="hint">아래 재료로 한 번 만들어 보면 어떤 요리인지 알 수 있습니다.</span>`}
    <div class="cneed">${c.need.map(([id,n])=>ingChip(id,n)).join('')}</div>
    ${(()=>{const mx=cookMax(c),n=Math.max(1,Math.min(cookN,mx||1)),t=c.sec*n;return`<div class="row cookqty"><button class="btn sm ghost" data-act="cookq" data-k="-1" ${n>1?'':'disabled'} aria-label="하나 줄이기">−</button><b>${n}개</b><button class="btn sm ghost" data-act="cookq" data-k="1" ${n<mx?'':'disabled'} aria-label="하나 늘리기">+</button><button class="btn sm ghost" data-act="cookq" data-k="max" ${mx>1?'':'disabled'}>최대 ${mx||0}</button></div>
@@ -3389,6 +3413,7 @@ function seasonWatch(){if(mode!=='online')return;seasonRef().onSnapshot(async sn
   seasonQuit()},()=>{})}
 const SEASON_WIPE=['players','members','invites','feedback','grants','org','imgs','chat','posts','memos','guest','shipdon','farmlog','parties','duel','farm','boss','bonds','relbox','attend','pbak'];
 function storyAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec" data-adm="story"><span class="lbl">Story · 이야기 공개</span><span class="hint">이야기는 운영자가 공개하기 전까지 선원에게 보이지 않습니다. 오프닝을 공개하면 접속 중인 선원에게 바로 한 번 재생되고, 나머지는 다음 접속 때 봅니다. 운영자·관리자는 언제나 볼 수 있습니다.</span><div class="storyadm">${STORY_LIST.map(([k,n])=>`<div class="row" style="gap:8px;align-items:center"><b style="color:${STORY_ON[k]?'var(--green)':'var(--mute)'}">${STORY_ON[k]?'🔓 공개':'🔒 비공개'}</b><span>${esc(n)}</span><button class="btn sm ${STORY_ON[k]?'ghost':''}" data-act="admstory" data-k="${k}">${STORY_ON[k]?'다시 숨기기':'공개하기'}</button></div>`).join('')}</div></div>`}
+function egAdminHTML(){if(mode!=='online')return'';const c=egCond();return`<div class="info-sec"><span class="lbl">End-game · 통신 장치 이후 콘텐츠</span><span class="hint">하드모드 던전 · 보스 러시 · 별눈물 호수 · 고급 요리. 운영자·관리자에게는 늘 보입니다. 선원에게는 「공개」를 켜고, 통신 장치 수리와 오르비스 등장이 모두 끝나야 열립니다.</span><div class="row" style="gap:8px;align-items:center;flex-wrap:wrap"><b style="color:${EG_OPEN?'var(--green)':'var(--mute)'}">${EG_OPEN?'🔓 공개 켜짐':'🔒 운영진만'}</b><span class="hint">조건: ${c?'충족 (지금 선원에게 '+(EG_OPEN?'보임':'숨김')+')':'아직 (통신 장치 · 오르비스)'}</span><button class="btn sm ${EG_OPEN?'ghost':''}" data-act="admeg">${EG_OPEN?'다시 숨기기':'공개 켜기'}</button></div></div>`}
 function preopenAdminHTML(){if(mode!=='online')return'';return`<div class="info-sec"><span class="lbl">Pre-open · 오픈 준비 잠금</span><span class="hint">켜 두면 선원들은 모든 게임 화면에 들어갈 수 없고 교류 › PAD만 쓸 수 있습니다. 운영자·관리자는 그대로 둘러볼 수 있습니다.</span><div class="row" style="gap:8px;align-items:center"><b style="color:${PREOPEN?'var(--red)':'var(--green)'}">${PREOPEN?'🔒 잠금 중 (오픈 준비)':'🔓 열림 (정상 운영)'}</b><button class="btn sm ${PREOPEN?'':'ghost'}" data-act="admpreopen">${PREOPEN?'잠금 풀기 (오픈!)':'오픈 준비 잠금 켜기'}</button></div></div>`}
 let padRstArm=false,padRstBusy=false;
 function padResetHTML(){if(mode!=='online')return'';return`<div class="info-sec seasonbox" data-adm="reset"><span class="lbl">PAD · 게시글 초기화</span>
@@ -3435,7 +3460,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}${preopenAdminHTML()}`:''}`}
+   ${admStaffHTML(others)}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -3473,7 +3498,7 @@ function renderInfo0(){if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();r
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',{h:`${wNmH()} +${P.wlv}`}],['우주복',`${SUITS[P.suit||0].n} +${P.suit||0}`],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
     <section class="mecard"><span class="lbl">Story · 이야기</span>${STORY_LIST.some(([k])=>storyOpen(k))?STORY_LIST.filter(([k])=>storyOpen(k)).map(([k,n])=>`<div class="strow${storyTxt===k?' on':''}"><button type="button" class="strow-t" data-act="storytxt" data-k="${k}">▶ ${esc(n)}</button><button type="button" class="strow-play" data-act="${k==='opening'?'opreplay':'storyplay'}" data-k="${k}">재생 ▶</button></div>`).join(''):'<span class="hint">아직 공개된 이야기가 없습니다.</span>'}</section>
-    <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${Object.keys(P.dex||{}).length} / 115`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
+    <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${dexN(P)} / ${egOpen()?FISHES.c.length+FISHES.r.length+FISHES.u.length+FISHES.l.length:115}`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · ${jobLocked()?'한 번 정한 직업은 바꿀 수 없습니다':'아직 직업이 없습니다 · 한 번 정하면 바꿀 수 없습니다'}</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}" ${jobLocked()&&!on?'disabled':''}><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
    <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3](),bt=`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?ttlHTML(t[0],t[1]):'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:t[2]?'잠김 · '+t[2]:'잠김'}</span><span class="ttlfx">${ttlFxTxt(t[0])}</span></button>`,br=(P.ttlBrag||{})[t[0]];
@@ -3609,12 +3634,21 @@ function gearPickHTML(){const own=P.own||[],opt=(v,n,on)=>`<option value="${esc(
 document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.eq)return;const k=t.dataset.eq,v=t.value;t.blur();
   if(k==='wpn'){if(v)A.wpnon({k:v});else A.wpnoff()}else if(k==='suit')A.eqsuit({k:v});else{const n=k==='acc1'?1:0;if(v)A.accon({id:v,k:n});else A.accoff({k:n})}});
 let pilotOpen=false;try{pilotOpen=localStorage.getItem('gaia-pilot-open')==='1'}catch(e){}
+/* food buffs as little icons on the portrait's corner: 공격 a sword, 방어 a shield, 치명타 a red plus, 회피 three blue lines; hover tells which and how long */
+const BUFF_IC={atk:['칼','<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M9 1h2v2L5 9 3 7z" fill="#dfe6f2"/><path d="M9 1h2v2l-1 1-2-2z" fill="#fff"/><path d="M2 8l2 2-1 1-2-2zM3 6l3 3-1 1-3-3z" fill="#c9a14a"/></svg>'],
+  def:['방패','<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1l4 1.5V6c0 2.5-1.8 4-4 5-2.2-1-4-2.5-4-5V2.5z" fill="#6aa0e0"/><path d="M6 1v10c-2.2-1-4-2.5-4-5V2.5z" fill="#3e74b8"/><path d="M6 3l2 .8V6c0 1.4-.9 2.3-2 2.9z" fill="#bcd8ff"/></svg>'],
+  crit:['치명타','<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 1h3v3.5H11v3H7.5V11h-3V7.5H1v-3h3.5z" fill="#ff4a5a"/><path d="M5 1.5h1.5v4h4V7" fill="none" stroke="#ffb0b8" stroke-width=".8"/></svg>'],
+  dodge:['회피','<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 2h8v1.6H3zM1 5.2h10v1.6H1zM4 8.4h7V10H4z" fill="#4ab0ff"/></svg>']};
+const BUFF_GRP={atk:'atk',atkP:'atk',def:'def',defP:'def',crit:'crit',critD:'crit',dodge:'dodge'};
+function buffBadges(){const bf=P&&P.buff,now=Date.now();if(!bf||!bf.fx||now>=bf.until)return'';const left=Math.max(1,Math.ceil((bf.until-now)/60e3)),src=ITEMS[bf.id]?ITEMS[bf.id].n:'요리',g={};
+  Object.entries(bf.fx).forEach(([k,v])=>{const gk=BUFF_GRP[k];if(gk)(g[gk]=g[gk]||[]).push(buffTxt(k,v))});
+  return`<div class="buffs" role="group" aria-label="버프">${['atk','def','crit','dodge'].filter(k=>g[k]).map(k=>{const t=`${g[k].join(' · ')} — ${src} · ${left}분 남음`;return`<i class="buffic" title="${esc(t)}" aria-label="${esc(t)}" tabindex="0">${BUFF_IC[k][1]}</i>`}).join('')}</div>`}
 function renderPilot(){if(pilotBusy())return;
   regen();queueMicrotask(renderCook);queueMicrotask(crWatch);
   const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
   $('#pilot').classList.toggle('pcol',!pilotOpen);$('#pilot').innerHTML=`
-  <div class="pilot-top"><div class="avatar">${withPet(meImg(3),P,3)}</div>
-   <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl} · ${ttlHTML(P.title||'rookie',titleName())}</div></div></div>
+  ${buffBadges()}<div class="pilot-top"><div class="avatar">${withPet(meImg(3),P,3)}</div>
+   <div class="pncol" style="min-width:0"><div class="row pnrow" style="gap:4px;flex-wrap:nowrap"><button class="pilot-name namebtn" data-act="profile" title="내 정보 보기">${esc(P.nick)}</button><span class="pnbtns"><button class="mailbtn ${mailList().length?'has':''}" id="mailBtn" data-act="mailopen" title="우편함" aria-label="우편함">${img(ENV12,null,2)}<em>${mailList().length?Math.min(mailList().length,99):''}</em></button><button class="mailbtn bagbtn ${bagOpen?'has':''}" type="button" data-act="bagtoggle" title="가방" aria-label="가방" aria-pressed="${bagOpen}">${img(trimG(IC.bag),null,2)}</button><button class="mailbtn bellbtn ${notiUnread()?'has':''}" id="bellBtn" type="button" title="PAD 알림" aria-label="PAD 알림" aria-expanded="false">${img(trimG(BELL),null,2,'',isLight()?null:{k:'#9a9fb4'})}<em>${notiUnread()?Math.min(notiUnread(),99):''}</em></button></span></div><div class="lv">LV.${P.lvl}</div><div class="lv pttl">${ttlHTML(P.title||'rookie',titleName())}</div></div></div>
   <div class="stat" data-tip="내 체력입니다."><div class="stat-row"><span>${img(IC.heart,null,2)}HP 체력</span><b id="hpT">${P.hp}/${maxHp()}</b></div><div class="bar"><i id="hpB" style="--c:var(--pink);width:${pct(P.hp,maxHp())}%"></i></div></div>
   <div class="stat" data-tip="우주복의 에너지입니다."><div class="stat-row"><span>${img(IC.bolt,null,2)}EN 에너지</span><b id="enT">${P.en}/${maxEn()}</b></div><div class="bar"><i id="enB" style="--c:var(--gold);width:${pct(P.en,maxEn())}%"></i></div></div>
   <div class="stat"><div class="stat-row"><span>${img(IC.star,null,2)}XP 경험치</span><b>${P.lvl>=MAX_LV?'MAX':P.xp+'/'+need(P.lvl)}</b></div><div class="bar"><i style="--c:var(--cyan);width:${P.lvl>=MAX_LV?100:pct(P.xp,need(P.lvl))}%"></i></div></div>
@@ -4017,7 +4051,7 @@ const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mi
 // monsters are tuned for a full party of 4; smaller parties meet weaker ones (HP and attack) so the fight stays about as long
 const RAID_HPF=[0,.36,.57,.79,1],RAID_ATKF=[0,.77,.85,.92,1];
 const RAID_HARD={r4:[1.6,1.4],r5:[1.9,1.55],r6:[2.2,1.7]};
-function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx=RAID_HARD[zone&&zone.id]||[1,1],def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
+function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx0=RAID_HARD[zone&&zone.id]||[1,1],hx=zone&&zone.hard?[hx0[0]*RAID_HARDX.hp,hx0[1]*RAID_HARDX.atk]:hx0,def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
   return{n:name,L,kind:kind||'',hp,max:hp,atk,def,agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
@@ -4026,8 +4060,27 @@ const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 function raidHpSync(){const r=MYRAID,me=r&&r.m&&r.m[uid];if(!raidLocked()||r.phase==='end'||!me)return;const v=Math.max(1,Math.min(maxHp(),Math.round(me.hp)));if(v!==P.hp){P.hp=v;renderPilot()}}
 const raidRef=id=>db.doc('parties/'+id);
 const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,job:P.job||'',atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:critPct(),critD:BUFF('critD')+WA('critD'),dodge:Math.max(0,BUFF('dodge')+WA('dodge'))});
-const raidZone=r=>RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];
-const raidFits=z=>P.lvl>=z.min;
+const RAID_HARDX={hp:2.2,atk:1.5,rw:2,mat:1.5};// 하드: 몬스터 체력·공격 배율, 경험치·크레딧 배율, 우주선 재료 배율
+let raidMode='normal';const HARDZ={};
+const RAID_HARDZ={r1:['분노하는 먼지 평원',44,50],r2:['경계하는 결정 미궁',48,56],r3:['주시하는 안개 늪',54,60,1]};
+const hardZ=z=>{if(HARDZ[z.id])return HARDZ[z.id];const h=RAID_HARDZ[z.id]||[z.n,z.min,z.max];return HARDZ[z.id]=Object.assign({},z,{hard:1,base:z.n,n:h[0],min:h[1],max:h[2],open:!!h[3]})};
+const raidHardList=()=>RAID_ZONES.filter(z=>RAID_HARDZ[z.id]).map(hardZ);
+const zLvTxt=z=>`Lv.${z.min}~${z.open||z.id==='r6'&&!z.hard?' 이상':z.max}`;
+let EG_OPEN=false;
+const egCond=()=>mode==='online'&&!!SHIP.find(x=>x.id==='comm')&&shipDone(SHIP.find(x=>x.id==='comm'))&&!!END&&(!!END.on||!!END.done);
+const egOpen=()=>mode==='online'&&(isStaff()||(EG_OPEN&&egCond()));
+const egPublic=()=>mode==='online'&&EG_OPEN&&egCond();
+const isEgItem=id=>!!(ITEMS[id]&&ITEMS[id].eg);
+const egHide=id=>isEgItem(id)&&!egOpen();// not shown on this screen
+const egLock=id=>isEgItem(id)&&!egPublic();// never leaves the operator's own bag (gift, mail, trade, PAD, announcements)
+const dexN=p=>Object.keys((p&&p.dex)||{}).filter(id=>!isEgItem(id)||egOpen()).length;
+// 보스 러시: the six zone bosses back to back (odd steps a boss, even steps a short rest); the run's zone is the current boss's zone
+const RUSH_N=6,RUSH_MIN=40,RUSHZ={};
+const rushStage=r=>Math.min(RUSH_N,Math.max(1,Math.ceil((r.step||1)/2)));
+const rushZ=z=>RUSHZ[z.id]||(RUSHZ[z.id]=Object.assign({},z,{rush:1}));
+const raidZone=r=>{if(r&&r.rush)return rushZ(RAID_ZONES[rushStage(r)-1]);const z=RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];return r&&r.hard?hardZ(z):z};
+const raidHardOpen=z=>!!RAID_HARDZ[z.id]&&(((P.mdex||{})[z.boss.replace(/^흉포한 /,'')]||0)>0||!!(P.rclr||{})[z.id]);
+const raidFits=(z,hard)=>P.lvl>=z.min&&(!hard||raidHardOpen(z));
 const raidNow=()=>sNow();
 function raidTx(id,fn){const r=raidRef(id);if(r.tx)return r.tx(fn);return r.get().then(s=>{const nx=fn(s.exists?JSON.parse(JSON.stringify(s.data())):null);return nx?r.set(nx).then(()=>nx):null})}
 function raidLog(b,t){b.log=[...(b.log||[]),t].slice(-7)}
@@ -4050,6 +4103,8 @@ function raidRoll(r,seed){let x=seed;const rnd=()=>(x=(x*16807)%2147483647)/2147
 function raidLvFn(r,z,rnd){const n=raidIn(r).length,avg=Math.round(raidIn(r).reduce((a,u)=>a+r.m[u].lvl,0)/n),cl=v=>Math.max(z.min,Math.min(z.max,v)),lo=cl(avg-3),hi=cl(avg+3),f=(Math.min(r.step,RAID_STEPS-1)-1)/(RAID_STEPS-2);
   return d=>cl(Math.round(lo+(hi-lo)*f)+d+Math.floor(rnd()*3)-1)}
 function raidStep(r){const z=raidZone(r),rnd=raidRoll(r,(r.seed+r.step*7919)%2147483646+1),n=raidIn(r).length,avg=Math.round(raidIn(r).reduce((a,u)=>a+r.m[u].lvl,0)/n);
+  if(r.rush){const st=rushStage(r);if(r.step%2===0)return raidEvApply(r,z,rnd,avg,{n:'숨 고르기',t:`${z.boss}을(를) 쓰러뜨렸다. 다음 보스가 기다린다…`,heal:.3});
+    const b=raidMon(z,Math.max(z.max+3,avg+2),'boss',z.boss,n);r.rushMax=Math.max(r.rushMax||0,st-1);return raidBattle(r,[b],`보스 러시 ${st}/${RUSH_N} · ${b.n} (Lv.${b.L})`)}
   const lvl=raidLvFn(r,z,rnd),zr=RZR[z.id];
   // a fork in the road: the party picks one of two paths (any member may choose for everyone)
   if(zr&&zr.forks&&zr.forks.includes(r.step)&&RAID_FORK[z.id]){const pr=RAID_FORK[z.id][Math.floor(rnd()*RAID_FORK[z.id].length)];r.phase='fork';r.fork={opts:pr};r.ev={n:'갈림길',t:'길이 둘로 갈라진다. 어느 쪽으로 갈까?'};r.b=null;return r}
@@ -4063,7 +4118,7 @@ function raidEvApply(r,z,rnd,avg,ev,pre){const res=[];
   raidIn(r).forEach(u=>{const me=r.m[u],L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});
     if(ev.dmg&&me.hp>0){const d=Math.max(1,Math.round(me.maxHp*ev.dmg));me.hp=Math.max(1,me.hp-d)}
     if(ev.heal&&me.hp>0)me.hp=Math.min(me.maxHp,me.hp+Math.round(me.maxHp*ev.heal));
-    const evk=raidLvX(me.lvl,Math.min(z.max,avg));if(ev.xp){const zl=Math.min(z.max,avg);L.xp+=Math.round(raidMonXp(zl)*ev.xp*evk)}
+    const evk=raidLvX(me.lvl,Math.min(z.max,avg))*(z.hard?RAID_HARDX.rw:1);if(ev.xp){const zl=Math.min(z.max,avg);L.xp+=Math.round(raidMonXp(zl)*ev.xp*evk)}
     if(ev.cr){const c=Math.round(crs(ev.cr[0]+Math.floor(rnd()*(ev.cr[1]-ev.cr[0]+1)))*evk);L.cr+=c;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.ev+=c}
     (ev.item||[]).forEach(id=>{if(evk>=1||Math.random()<evk)L.it[id]=(L.it[id]||0)+1})});
   if(ev.dmg)res.push(`모두 최대 체력의 ${Math.round(ev.dmg*100)}% 피해`);if(ev.heal)res.push(`모두 체력 ${Math.round(ev.heal*100)}% 회복`);if(ev.xp)res.push('경험치 획득');if(ev.cr)res.push('크레딧 획득');if(ev.item)res.push(ev.item.map(i=>ITEMS[i]?ITEMS[i].n:i).filter((v,i,a)=>a.indexOf(v)===i).join('·')+' 획득');
@@ -4102,12 +4157,12 @@ const raidPartyX=r=>1+.1*(Math.max(1,Math.min(4,raidIn(r).length))-1);
 function raidSettle(r){const b=r.b,z=raidZone(r);
   if(b.mons.every(m=>m.hp<=0)){raidIn(r).forEach(u=>{if(r.m[u]){delete r.m[u].psn;delete r.m[u].frz}});if(raidIn(r).some(u=>r.m[u].job==='medic'&&r.m[u].hp>0)){raidIn(r).forEach(u=>{const m=r.m[u];if(m.hp>0)m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*.1))});raidLog(b,'의무원이 전투가 끝난 동료들을 치료했다. 모두 체력 +10%')}let xp=0,cr=0;b.mons.forEach(m=>{xp+=raidMonXp(m.L,m.kind);cr+=m.L*2*({elite:2,mid:4,boss:8}[m.kind]||1)});
     // bigger parties earn more each: solo is the base, +10% per extra member (x1.3 for four)
-    const pm=raidPartyX(r)*(b.bx||1);xp=Math.round(xp*pm);const crB=crs(Math.round(b.mons.filter(m=>m.kind==='boss').reduce((a,m)=>a+m.L*16,0)*pm));cr=crs(Math.round(cr*pm));const crM=Math.max(0,cr-crB);
+    const pm=raidPartyX(r)*(b.bx||1)*(z.hard?RAID_HARDX.rw:1);xp=Math.round(xp*pm);const crB=crs(Math.round(b.mons.filter(m=>m.kind==='boss').reduce((a,m)=>a+m.L*16,0)*pm));cr=crs(Math.round(cr*pm));const crM=Math.max(0,cr-crB);
     const mL=b.mons.reduce((a,m)=>a+m.L,0)/Math.max(1,b.mons.length),lx=u=>raidLvX(r.m[u].lvl,mL);
-    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});const k=lx(u),cu=Math.round(cr*k),cmu=Math.min(cu,Math.round(crM*k));L.xp+=Math.round(xp*k);L.cr+=cu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=cmu;L.cb.boss+=cu-cmu;L.k=L.k||{};b.mons.forEach(m=>{const nm=String(m.n).replace(/^흉포한 /,'');L.k[nm]=(L.k[nm]||0)+1});if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')&&Math.random()<k){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35*k)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n1=n0&&r.m[u].job==='mech'?n0+1:n0,n=Math.floor(n1*(k<1?.5:1)*RAID_MAT_X+Math.random());/* 우주선 수리 재료: 60% of the old drop (RAID_MAT_X), and half of that once the dungeon is too easy; random rounding keeps the average exact */if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
+    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});const k=lx(u),cu=Math.round(cr*k),cmu=Math.min(cu,Math.round(crM*k));L.xp+=Math.round(xp*k);L.cr+=cu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=cmu;L.cb.boss+=cu-cmu;L.k=L.k||{};b.mons.forEach(m=>{const nm=String(m.n).replace(/^흉포한 /,'');L.k[nm]=(L.k[nm]||0)+1});if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')&&Math.random()<k){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35*k)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n1=n0&&r.m[u].job==='mech'?n0+1:n0,n=Math.floor(n1*(k<1?.5:1)*RAID_MAT_X*(z.hard?RAID_HARDX.mat:1)+Math.random());/* 우주선 수리 재료: 60% of the old drop (RAID_MAT_X), and half of that once the dungeon is too easy; random rounding keeps the average exact */if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
-    const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치와 보상이 줄어듭니다)':''}`};
-    if(boss){const cb=crs(Math.round(200*raidPartyX(r)));raidIn(r).forEach(u=>{const L=r.loot[u];const cbu=Math.round(cb*lx(u));L.xp+=Math.round(xp*.5*lx(u));L.cr+=cbu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cbu})}return r}
+    const boss0=b.mons.some(m=>m.kind==='boss'),rushOn=boss0&&r.rush&&rushStage(r)<RUSH_N,boss=boss0&&!rushOn;if(boss0&&r.rush)r.rushMax=Math.max(r.rushMax||0,rushStage(r));r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:rushOn?`${z.boss} 격파! 보스 러시 ${rushStage(r)}/${RUSH_N}`:boss?(r.rush?`보스 러시 완주! 여섯 보스를 모두 쓰러뜨렸다!`:`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`):'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치와 보상이 줄어듭니다)':''}`};
+    if(boss){const cb=crs(Math.round((r.rush?600:200)*raidPartyX(r)*(z.hard?RAID_HARDX.rw:1)));raidIn(r).forEach(u=>{const L=r.loot[u];const cbu=Math.round(cb*lx(u));L.xp+=Math.round(xp*.5*lx(u));L.cr+=cbu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cbu})}return r}
   if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 체력 1로 베이스캠프에 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);if(L.cb){for(const k in L.cb)L.cb[k]=Math.round(L.cb[k]/2)}L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
@@ -4182,7 +4237,7 @@ function raidClaim(r){if(!r||raidClaiming===r.id)return;const mark=()=>{if(!(P.r
     const d=await myRef.get(),v=d&&d.exists?(typeof d.data==='function'?d.data():d.data):null;if(!v||!(v.raidDone||[]).includes(r.id))return;
     await raidTx(r.id,cur=>{if(!cur||(cur.claimed||{})[uid])return null;cur.claimed=Object.assign({},cur.claimed,{[uid]:Date.now()});return cur})}catch(e){}finally{raidClaiming=null}})()}
 function raidPay(r){const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
-  if(!(r.left||{})[uid]){P.mdex=P.mdex||{};Object.entries(L.k||{}).forEach(([nm,c])=>{P.mdex[nm]=(P.mdex[nm]||0)+(+c||0)});gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));if(r.result==='wipe'){P.hp=1;log('원정에 실패해 체력 1만 남기고 겨우 돌아왔다.','bad')}stat('raid');if(r.result==='clear')stat('raidclear');
+  if(!(r.left||{})[uid]){P.mdex=P.mdex||{};Object.entries(L.k||{}).forEach(([nm,c])=>{P.mdex[nm]=(P.mdex[nm]||0)+(+c||0)});gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));if(r.result==='wipe'){P.hp=1;log('원정에 실패해 체력 1만 남기고 겨우 돌아왔다.','bad')}stat('raid');if(r.rush)P.rushBest=Math.max(+P.rushBest||0,+r.rushMax||0);if(r.result==='clear'&&!r.rush){stat('raidclear');P.rclr=Object.assign({},P.rclr,{[r.zone]:1})}
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
 let raidWid=null;
 // battle sounds from what changed between two snapshots: a monster losing health = a hit landing, a crew member losing health = taking a blow
@@ -4243,10 +4298,10 @@ setInterval(()=>{if(mode==='online'&&raidRefilter()&&tab==='raid')renderPanel()}
 // parties already on their way: shown in the lobby to watch, listened to only while the 원정 lobby is open (each turn rewrites the party)
 let RAIDS_RUN=[];
 const runAlive=v=>v.phase!=='end'&&raidIn(v).length>0&&lobbyAlive(v);
-function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).sort((a,b)=>(b.at||0)-(a.at||0));
+function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).filter(x=>egOpen()||!(x.rush||x.hard)).sort((a,b)=>(b.at||0)-(a.at||0));
   return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),mp=raidMapImg(zz.id,1,false,RAID_STEPS,true,true);
     return`<div class="pcard run"><div class="pcban"><img class="pix" src="${mp.src}" alt=""></div>
-     <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
+     <div class="pcbody"><b class="pcname">${x.rush?'보스 러시':esc(zz.n)}${x.hard?' <span class="ichip hardtag">HARD</span>':''}${x.rush?' <span class="ichip hardtag">RUSH</span>':''}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
       <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
 function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));raidRefilter();if(tab==='raid')renderPanel()},()=>{}));
@@ -4255,10 +4310,10 @@ function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('par
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
   clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
 /* ---- lobby actions ---- */
-async function raidCreate(solo){const z=RAID_ZONES.find(x=>x.id===raidSel);if(!z||mode!=='online')return;if(!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!spend(RAID_EN))return;
-  const id='p'+raidNow().toString(36)+Math.random().toString(36).slice(2,6),me=raidMe(),r={host:uid,hostN:P.nick,zone:z.id,ids:[uid],m:{[uid]:me},state:'lobby',at:raidNow(),seed:1+Math.floor(Math.random()*2e9),step:0,seq:0,loot:{},hb:{[uid]:raidNow()}};
+async function raidCreate(solo,rush){if(rush&&(!egOpen()||P.lvl<RUSH_MIN)){toast(`보스 러시는 Lv.${RUSH_MIN} 이상만 갈 수 있습니다.`);return}const hard=!rush&&raidMode==='hard',z0=rush?RAID_ZONES[0]:RAID_ZONES.find(x=>x.id===raidSel),z=z0&&hard?hardZ(z0):z0;if(!z||mode!=='online')return;if(rush&&MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!rush&&!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(hard&&!raidHardOpen(z)){toast(RAID_HARDZ[z.id]?`${z.n}은(는) ${z.base} 보스를 쓰러뜨린 뒤 열립니다.`:'이 구역의 하드는 아직 열리지 않았습니다.');return}if(MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!spend(RAID_EN))return;
+  const id='p'+raidNow().toString(36)+Math.random().toString(36).slice(2,6),me=raidMe(),r={host:uid,hostN:P.nick,zone:z.id,ids:[uid],m:{[uid]:me},state:'lobby',at:raidNow(),seed:1+Math.floor(Math.random()*2e9),step:0,seq:0,loot:{},hb:{[uid]:raidNow()}};if(hard)r.hard=1;if(rush)r.rush=1;
   try{await raidRef(id).set(r);raidWatch(id);commit();if(solo)raidStart(id)}catch(e){heal(0,RAID_EN);toast('원정을 만들지 못했습니다.')}}
-function raidJoin(id){const L=RAIDS.find(x=>x.id===id);if(!L||MYRAID)return;const z=raidZone(L);if(!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(!spend(RAID_EN))return;const me=raidMe();
+function raidJoin(id){const L=RAIDS.find(x=>x.id===id);if(!L||MYRAID)return;const z=raidZone(L);if(L.rush){if(!egOpen()||P.lvl<RUSH_MIN){toast(`보스 러시는 Lv.${RUSH_MIN} 이상만 갈 수 있습니다.`);return}}else if(!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(L.hard&&!raidHardOpen(z)){toast(`${z.n}은(는) ${z.base||z.n} 보스를 쓰러뜨린 뒤 열립니다.`);return}if(!spend(RAID_EN))return;const me=raidMe();
   raidTx(id,r=>{if(!r||r.state!=='lobby'||r.ids.length>=RAID_MAX||r.ids.includes(uid))return null;r.ids.push(uid);r.m[uid]=me;r.hb=Object.assign({},r.hb,{[uid]:raidNow()});return r}).then(nx=>{if(nx){raidWatch(id);commit()}else{heal(0,RAID_EN);toast('참여할 수 없습니다. 이미 출발했거나 자리가 찼습니다.')}}).catch(()=>{heal(0,RAID_EN);toast('참여하지 못했습니다.')})}
 function raidLeave(){const r0=MYRAID;if(!r0)return;
   if(r0.state==='lobby'){if(r0.host===uid){raidRef(r0.id).delete().catch(()=>{})}else raidTx(r0.id,r=>{if(!r||r.state!=='lobby')return null;r.ids=r.ids.filter(u=>u!==uid);delete r.m[uid];return r}).catch(()=>{});heal(0,RAID_EN);raidWatch(null);commit();renderPanel();return}
@@ -4331,17 +4386,17 @@ function monDexHTML(){const D=P.mdex||{},z=RAID_ZONES.find(x=>x.id===mdexZ)||RAI
    <div class="dtabs mdxtabs" role="tablist">${RAID_ZONES.map(z2=>`<button role="tab" aria-selected="${z2.id===z.id}" data-act="mdexz" data-k="${z2.id}" class="${got(z2)>=7?'full':''}">${z2.n} <small>${got(z2)}/7</small></button>`).join('')}</div>
    <div class="mdxhead" style="--zc:${z.t}"><b>${esc(z.n)}</b><span class="hint">${esc(z.d)}</span><span class="mdxreward ${done?'on':''}">${done?'완성!':'완성 보상'} · 칭호 ${tt?ttlHTML(tt[0],tt[1]):''}</span></div>
    <div class="mdxgrid">${cards}</div></section>`}
-function raidLobbyHTML(){const zones=RAID_ZONES.map(z=>{const ok=raidFits(z);return`<button class="site raidz" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><span class="zcost" title="입장할 때만 에너지 ${RAID_EN}을 씁니다. 원정 안에서는 에너지를 쓰지 않습니다.">${img(IC.bolt,null,1)}-${RAID_EN}</span><b>${z.n} <span class="lv">Lv.${z.min}~${z.id==='r6'?'':z.max}${z.id==='r6'?' 이상':''}</span></b><span class="hint">${z.d}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 부족합니다</span>`}</button>`}).join('');
-  const z=RAID_ZONES.find(x=>x.id===raidSel)||RAID_ZONES[0],list=RAIDS.filter(x=>x.ids.length<RAID_MAX);
+function raidLobbyHTML(){if(!egOpen())raidMode='normal';const HM=raidMode==='hard';if(HM&&!RAID_HARDZ[raidSel])raidSel='r1';const zones=(HM?raidHardList():RAID_ZONES).map(z=>{const ok=raidFits(z),hop=raidHardOpen(z);return`<button class="site raidz${HM?' hardz':''}" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><span class="zcost" title="입장할 때만 에너지 ${RAID_EN}을 씁니다. 원정 안에서는 에너지를 쓰지 않습니다.">${img(IC.bolt,null,1)}-${RAID_EN}</span><b>${z.n} <span class="lv">${zLvTxt(z)}</span></b><span class="hint">${z.d}</span>${raidZoneMat(z)?`<span class="ichip zmat">${iicon(raidZoneMat(z),1)}${ITEMS[raidZoneMat(z)].n} · 우주선 자재</span>`:''}${ok?'':`<span class="ichip minus">레벨이 부족합니다</span>`}${HM&&ok&&!hop?`<span class="ichip minus">🔒 ${esc(z.base)} 보스 처치 필요</span>`:''}${HM&&ok&&hop?`<span class="ichip hardtag">HARD</span>`:''}</button>`}).join('');
+  const z0=RAID_ZONES.find(x=>x.id===raidSel)||RAID_ZONES[0],z=HM?hardZ(z0):z0,list=RAIDS.filter(x=>x.ids.length<RAID_MAX&&(egOpen()||!(x.rush||x.hard)));
   return`<p class="lead">혼자 또는 최대 ${RAID_MAX}명의 파티로 원정을 떠납니다. 전투는 민첩이 높은 순서로 턴이 돌아오며, 한 사람의 턴은 ${RAID_TURN/1000}초입니다. 출발한 뒤에는 새로 합류할 수 없습니다.</p>
-  <div class="row" style="gap:6px;margin:8px 0"><button class="btn" data-act="raidnew" data-k="solo" ${raidFits(z)?'':'disabled'}>혼자 출발</button><button class="btn alt" data-act="raidnew" data-k="party" ${raidFits(z)?'':'disabled'}>파티 모집</button><span class="hint">선택 구역 · ${z.n}</span></div>
-  <div class="card"><div class="stat-row"><span>모집 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),ok=raidFits(zz),mp=raidMapImg(zz.id,1,false,RAID_STEPS,true);
-    return`<div class="pcard ${ok?'':'off'}"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">Lv.${zz.min}~${zz.id==='r6'?'':zz.max}${zz.id==='r6'?' 이상':''}</span></div>
-     <div class="pcbody"><b class="pcname">${esc(zz.n)}</b><span class="hint">파티장 ${esc(x.hostN||'선원')}</span>
+  <div class="row" style="gap:6px;margin:8px 0"><button class="btn${HM?' hardbtn':''}" data-act="raidnew" data-k="solo" ${raidFits(z,HM)?'':'disabled'}>혼자 출발</button><button class="btn alt${HM?' hardbtn':''}" data-act="raidnew" data-k="party" ${raidFits(z,HM)?'':'disabled'}>파티 모집</button><span class="hint">선택 구역 · ${z.n}${HM?' <b class="hardtxt">HARD</b>':''}</span></div>
+  <div class="card"><div class="stat-row"><span>모집 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),ok=x.rush?(egOpen()&&P.lvl>=RUSH_MIN):raidFits(zz,!!x.hard),mp=raidMapImg(zz.id,1,false,RAID_STEPS,true);
+    return`<div class="pcard ${ok?'':'off'}"><div class="pcban"><img class="pix" src="${mp.src}" alt=""><span class="pclv">${zLvTxt(zz)}</span></div>
+     <div class="pcbody"><b class="pcname">${x.rush?'보스 러시':esc(zz.n)}${x.hard?' <span class="ichip hardtag">HARD</span>':''}${x.rush?' <span class="ichip hardtag">RUSH</span>':''}</b><span class="hint">파티장 ${esc(x.hostN||'선원')}</span>
       <div class="pcmem">${Array.from({length:RAID_MAX},(_,k)=>{const u=x.ids[k],m=u&&(x.m[u]||{});return u?`<span class="pcm${u===x.host?' host':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small><small class="pcjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</small></span>`:`<span class="pcm empty"><i></i><em>빈 자리</em></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn sm" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 부족'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
   ${raidRunListHTML()}
-  <span class="lbl" style="display:block;margin-top:10px">Zone · 원정 구역</span><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>${monDexHTML()}`}
+  <div class="zonehead"><span class="lbl">Zone · 원정 구역</span><div class="dtabs rmode${egOpen()?'':' egoff'}" role="tablist" aria-label="난이도"><button role="tab" aria-selected="${!HM}" data-act="raidmode" data-k="normal">일반</button><button role="tab" class="rmhard" aria-selected="${HM}" data-act="raidmode" data-k="hard">하드</button></div></div><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>${egOpen()?`<div class="card rushcard"><div><b>보스 러시</b> <span class="lv">Lv.${RUSH_MIN} 이상</span><span class="hint">먼지 평원부터 붉은 별의 핵까지, 여섯 보스와 차례로 싸웁니다. 보스 사이에 잠깐 숨을 고릅니다.${+P.rushBest?` · 내 최고 기록 ${P.rushBest}/${RUSH_N}`:''}</span></div><div class="row" style="gap:6px"><button class="btn sm hardbtn" data-act="raidnew" data-k="rsolo" ${P.lvl>=RUSH_MIN?'':'disabled'}>혼자 도전</button><button class="btn sm alt hardbtn" data-act="raidnew" data-k="rparty" ${P.lvl>=RUSH_MIN?'':'disabled'}>파티 모집</button></div></div>`:''}${monDexHTML()}`}
 // the battle as a side-view stage: our crew on the left, the enemies on the right, each with name, level and HP above
 function raidStageHTML(r,z){const b=r.b,T=RAID_TERRAIN[z.id]||RAID_TERRAIN.r1,cur=b.cur||{};
   const crew=r.ids.filter(u=>r.m[u]).map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="rbu rbp ${m.hp<=0||gone?'down':''} ${m.frz?'frz':''} ${cur.k==='p'&&cur.id===u?'turn':''} ${u===uid?'me':''}" data-ru="p${u}"><div class="rbtag"><b>${b.mons.some(x=>x.lock===u&&x.hp>0)?'🎯 ':''}${m.frz?'❄ ':''}${esc(m.nick)}</b><small>Lv.${m.lvl}</small>${raidBar(m.hp,m.maxHp,'var(--green)')}</div><span class="rbspr">${meImg(3,whoP(u))}</span></div>`}).join('');
@@ -4487,7 +4542,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);EG_OPEN=!!(sn.exists&&sn.data().eg);{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -5034,7 +5089,7 @@ const fkHTML=()=>mode==='online'?`<div class="fkgrid">${fkCard(false)}${fkCard(t
 // a cast needs 3 energy; with exactly 3 left it takes only 2 so you keep 1 and fishing can't knock you out
 const CAST_EN=3,castEn=()=>{regen();return P.en===CAST_EN?CAST_EN-1:CAST_EN};
 function fspotHTML(busy){const cur=fspot(),D=P.dex||{},cnt=x=>['c','r','u','l'].reduce((a,t)=>a+x[t].filter(id=>D[id]).length,0);
-  return`<div class="fspots"><div class="dtabs fsptabs" role="tablist" aria-label="낚시터">${FSPOTS.map(x=>`<button role="tab" aria-selected="${x.id===cur.id}" data-act="fspot" data-k="${x.id}" ${busy&&x.id!==cur.id?'disabled':''}>${x.n} <small>${cnt(x)}/23</small></button>`).join('')}</div>
+  return`<div class="fspots"><div class="dtabs fsptabs" role="tablist" aria-label="낚시터">${fspotsVis().map(x=>`<button role="tab" aria-selected="${x.id===cur.id}" data-act="fspot" data-k="${x.id}" ${busy&&x.id!==cur.id?'disabled':''}>${x.n} <small>${cnt(x)}/23</small></button>`).join('')}</div>
    <div class="fspinfo"><span class="hint">${esc(cur.d)}</span></div></div>`}
 /* grade odds: luck, fishing level and gear add one bonus B, spread over 레어 · 유니크 · 레전더리 with diminishing returns,
    so a high B lifts every grade a little instead of pushing 일반 to zero (B=30 → 레어 +12 · 유니크 +3 · 레전더리 +0.3) */
@@ -5266,6 +5321,8 @@ const LAKE_K={
      d:{s0:'#c8946a',s1:'#f0d4b4',st0:'#fff',st1:'#fff',ridge:'#8a6a5a',cone:'#6a5048',lava:'#ff7a3a',lava2:'#ffd060',smoke:'#c0b0a8',w0:'#c8805a',w1:'#e8b08a',d0:'#f0c8a0',d1:'#fbe0c4',refl:'#f8dcc0',mote:'#ffe0a0',sun:'#fff0c0'}},
  s5:{n:{s0:'#04060a',s1:'#1a1620',st0:'#3a3440',st1:'#d0c4c8',ridge:'#08070a',hull:'#1c1614',rust:'#5a2e1a',port:'#ffd27a',w0:'#14120e',w1:'#080706',d0:'#2a2418',d1:'#3a3020',refl:'#4a3a24',mote:'#a89070',beacon:'#ff3a3a',moon:'#f0e0d0'},
      d:{s0:'#c8a878',s1:'#f2e2c4',st0:'#fff',st1:'#fff',ridge:'#8a7a68',hull:'#6a5a50',rust:'#b0602e',port:'#3a3430',w0:'#8a7a5a',w1:'#b4a47c',d0:'#d0c098',d1:'#e8dcbc',refl:'#f0e4c8',mote:'#fff4d8',beacon:'#ff5a3a',sun:'#fff4d0'}}};
+// 별눈물 호수: 메탄 호수's look, washed in violet starlight
+LAKE_K.s6={n:Object.assign({},LAKE_K.s1.n,{s0:'#07041a',s1:'#1c1240',st1:'#e8dcff',ridge:'#06031a',w0:'#140e34',w1:'#08061a',refl:'#8a6ae0',mote:'#d8c0ff',moon:'#f0e4ff'}),d:Object.assign({},LAKE_K.s1.d,{s0:'#8a7ac8',s1:'#d8ccf6',ridge:'#5a4a8a',w0:'#6a5aa8',w1:'#9a8ad0',refl:'#e8dcff',mote:'#ffffff',sun:'#fff4e0'})};
 function drawLake(){const cv=$('#lakeCv');if(!cv)return;const w=Math.max(80,Math.round(cv.clientWidth/3)),h=Math.round(cv.clientHeight/3)||50;
   if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;LAKE=null}if(!LAKE||LAKE.W!==w)LAKE=lakeBase(w,h,Math.round(h*.38));
   const sp=fspot().id,day=isDay(),K=LAKE_K[sp][day?'d':'n'];
@@ -5321,10 +5378,10 @@ function drawLake(){const cv=$('#lakeCv');if(!cv)return;const w=Math.max(80,Math
   L.motes.forEach(m=>{const yy=Math.round(m.y-((ph*m.s*6)%(h-hz-4)));const yv=yy<hz+3?yy+(h-hz-4):yy;R(Math.round(m.x+Math.sin(ph+m.x)*2),yv,1,1,K.mote)})}
 let dexOpen=false,dexTab='';
 function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],got=all.filter(id=>P.dex[id]).length;
-  const sp=FSPOTS.find(x=>x.id===dexTab)||fspot(),cnt=x=>['c','r','u','l'].reduce((a,t)=>a+x[t].filter(id=>P.dex[id]).length,0);
+  const sp=fspotsVis().find(x=>x.id===dexTab)||fspot(),cnt=x=>['c','r','u','l'].reduce((a,t)=>a+x[t].filter(id=>P.dex[id]).length,0);
   const cell=(id,t)=>`<div class="dx-${t}" title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span>${P.dex[id]&&(P.fsz||{})[id]?`<span class="hint dexlen">최대 ${fmtLen(P.fsz[id])}</span>`:''}</div>`;
   return`<div class="card dexbox"><button class="dex-head" data-act="dextoggle" aria-expanded="${dexOpen}"><span class="lbl">Fish log · 어류 도감</span><b>${got}/${all.length}</b><span class="caret">${dexOpen?'▾':'▸'}</span></button>
-  ${dexOpen?`<div class="dtabs" role="tablist">${FSPOTS.map(x=>`<button role="tab" aria-selected="${sp.id===x.id}" data-act="dextab" data-k="${x.id}">${x.n} <em>${cnt(x)}/23</em></button>`).join('')}</div>
+  ${dexOpen?`<div class="dtabs" role="tablist">${fspotsVis().map(x=>`<button role="tab" aria-selected="${sp.id===x.id}" data-act="dextab" data-k="${x.id}">${x.n} <em>${cnt(x)}/23</em></button>`).join('')}</div>
   <div class="dexsp">${[['c','일반'],['r','레어'],['u','유니크'],['l','레전더리']].map(([t,n])=>`<div class="dexrow"><span class="dexrl t-${t}">${n} <em>${sp[t].filter(id=>P.dex[id]).length}/${sp[t].length}</em></span><div class="dex">${sp[t].map(id=>cell(id,t)).join('')}</div></div>`).join('')}</div>`:''}</div>`}
 // 탐사's old signal receiver: catches a stray signal every 30 minutes (up to 5) while no invader is loose; investigating works like 조사
 const ASIG_MS=30*60e3,ASIG_MAX=5;let lastAsig=null;
@@ -5868,10 +5925,10 @@ const scanLocked=f=>f&&f.scan&&!(P.own||[]).includes(f.id);
 function gridOnS(x,grid,ox,oy,k,po){const pal=Object.assign({},PAL,po||{});for(let j=0;j<grid.length;j++)for(let i=0;i<grid[j].length;i++){const c=pal[grid[j][i]];if(!c)continue;x.fillStyle=c;x.fillRect(ox+i*k,oy+j*k,k,k)}}
 function gridOn(x,grid,ox,oy,tint,po){const pal=Object.assign({},PAL,po||{});if(tint){tint=mix(tint,'#5d6274',.55);pal.a=tint;pal.b=mix(tint,'#07080e',.5);pal.h=mix(tint,'#c4c7d4',.35)}for(let j=0;j<grid.length;j++)for(let i=0;i<grid[j].length;i++){const c=pal[grid[j][i]];if(!c)continue;x.fillStyle=c;x.fillRect(ox+i,oy+j,1,1)}}
 // the 메탄 수조 in 마이룸: the rarest grade this member has caught; within it, the catch closest to its species' biggest size (then the species last in the list, the rarer one)
-function bestFish(dex,fsz){const rk={l:4,u:3,r:2,c:1},ids=Object.keys(dex||{}).filter(id=>ITEMS[id]&&ITEMS[id].fish&&dex[id]>0),
+function bestFish(dex,fsz){const rk={l:4,u:3,r:2,c:1},ids=Object.keys(dex||{}).filter(id=>ITEMS[id]&&ITEMS[id].fish&&dex[id]>0&&!egHide(id)),
   big=id=>{const it=ITEMS[id],cm=+((fsz||{})[id])||0,mx=it.sz&&it.sz[1]||1;return cm/mx};
   ids.sort((a,b)=>(rk[ITEMS[b].fish]-rk[ITEMS[a].fish])||(big(b)-big(a))||(FISHES[ITEMS[b].fish].indexOf(b)-FISHES[ITEMS[a].fish].indexOf(a)));return ids[0]||'fc0'}
-function trophies(dex){const out=[];for(const tr of ['l','u','r','c'])for(const id of FISHES[tr])if(dex&&dex[id]&&out.length<4)out.push(id);return out}
+function trophies(dex){const out=[];for(const tr of ['l','u','r','c'])for(const id of FISHES[tr])if(dex&&dex[id]&&!egHide(id)&&out.length<4)out.push(id);return out}
 const THEMES={
  ruin:{n:'폐허 선실',d:'추락 뒤 버려진 채 남은 빈 선실. 녹슨 벽에 금이 가 있고 창문만 멀쩡해요',price:0,wall:{pat:'ruinwall',c:['#24221f','#121110','#6a4a32']},floor:{pat:'ruinfloor',c:['#201e1b','#100f0e','#3a342c']},trim:'#3a3530',slab:'#0e0d0c',view:'space',light:'150,128,104',acc:'#7a6a58'},
  space:{n:'우주 정거장',d:'별빛 패널과 커다란 현창이 있는 거주실',price:1500,wall:{pat:'starpanel',c:['#161c30','#0d1122','#3a4466']},floor:{pat:'plate',c:['#1d2130','#151824','#2e3448']},trim:'#3a4258',slab:'#0e1018',view:'space',light:'150,140,220',acc:'#8a86a8'},
@@ -6249,7 +6306,7 @@ function renderRoom(){
   const rm=roomOf(P);
   const emo=`<div class="row emotes">${Object.keys(EMOTES).map(k=>`<button class="qchip emo" data-act="emote" data-k="${k}" aria-label="감정 표현">${img(EMOTES[k],null,2)}</button>`).join('')}</div>`;
   const scene=`<div class="roomlay"><div class="roommain">${emo}<div class="roomwrap"><canvas id="roomCv" class="roomcv" aria-label="${vis?esc(vis.nick)+'의 방':'내 방'}"></canvas><div class="roomnames" id="roomNames"></div><span class="roomtag">${vis?esc(vis.nick)+' 님의 방':'내 방 · C-12'}</span>${!vis&&Object.keys(preview).length?`<span class="pvtag">미리보기 ${Object.keys(preview).length}개</span>`:''}</div>${!vis?pvBar():''}</div>${visitHTML(others)}</div>`;
-  if(vis)return head()+shipSubTabs()+scene+`<div class="row"><button class="btn sm ghost" data-act="roomhome">내 방으로 돌아가기</button><span class="hint">Lv.${vis.lvl||1} · 어류 도감 ${Object.keys(vis.dex||{}).length}종</span></div>`;
+  if(vis)return head()+shipSubTabs()+scene+`<div class="row"><button class="btn sm ghost" data-act="roomhome">내 방으로 돌아가기</button><span class="hint">Lv.${vis.lvl||1} · 어류 도감 ${dexN(vis)}종</span></div>`;
   const sl=FURN[roomSlot]||FURN.wallp;const lk=lookOf(P);
   return head()+shipSubTabs()+scene+`
   <div><div class="dtabs" role="tablist"><button role="tab" aria-selected="${roomSlot==='ward'||roomSlot==='look'}" data-act="rslot" data-k="ward">옷장</button>${Object.entries(FURN).filter(([k])=>!ROOM_HIDE.has(k)).map(([k,v])=>`<button role="tab" aria-selected="${roomSlot===k}" data-act="rslot" data-k="${k}">${v.n}</button>`).join('')}</div>
@@ -6828,7 +6885,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794666105';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794667932';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7452,7 +7509,7 @@ const A={
  cartsell(){const L=Object.entries(sellCart).filter(([id,n])=>n>0&&(P.inv[id]||0)>=n&&!isBound(id));if(!L.length)return;let gain=0,cnt=0;L.forEach(([id,n])=>{if(take(id,n)){gain+=sellPrice(id)*n;cnt+=n}});sellCart={};P.cr=(P.cr||0)+gain;sfxSell(cnt>1);log(`판매 바구니의 ${L.length}종 ${cnt}개를 팔았다. (+${gain.toLocaleString()} CR)`,'good');toast(`+${gain.toLocaleString()} CR`);commit()},
  cooksel(d){cookN=1;cookSel=d.k;renderCook()},
  cookq(d){const c=COOK.find(x=>x.id===cookSel);if(!c)return;const mx=cookMax(c);cookN=d.k==='max'?mx:Math.max(1,Math.min(mx,cookN+(+d.k)));renderCook()},
- cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel);const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)ingTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
+ cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel&&(!x.eg||egOpen()));const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)ingTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;const n=ck.n||1,c=COOK.find(x=>x.id===ck.id);let t=0;for(let i=0;i<n;i++)if(Math.random()*100<tastyPct())t++;
   const fresh=!rcpKnown(ck.id);if(fresh)P.rcp=[...(P.rcp||[]),ck.id];if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(c.xp||6)*n);stat('cook',n);sfxCoin();
   log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit();if(fresh)rcpPop(ck.id)},
@@ -7488,7 +7545,8 @@ const A={
   const added=FARM.cap-FARM.water,wait=Math.min(3600e3,Math.max(60e3,Math.round(added/FARM.cap*3600e3)));FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+wait;sfxWater();
   if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:FARM.refCd}).catch(()=>{});else farmSave();log(`공용 물탱크에 물 ${added}을(를) 채워 가득 채웠다. ${fmtClock(wait)} 뒤에 다시 채울 수 있다.`,'good');commit()},
  raidzone(d){raidSel=d.k;renderPanel()},
- raidnew(d){raidCreate(d.k==='solo')},
+ raidmode(d){raidMode=d.k==='hard'&&egOpen()?'hard':'normal';renderPanel()},
+ raidnew(d){if(d.k==='rsolo'||d.k==='rparty'){raidCreate(d.k==='rsolo',true);return}raidCreate(d.k==='solo')},
  raidjoin(d){raidJoin(d.k)},
  raidleave(){raidLeave()},
  raidgo(){raidStart()},
@@ -7535,8 +7593,8 @@ const A={
  gdur(d){gDur=d.k==='s10'?'s10':+d.k;renderPanel()},
  gclaim(){if(claimGather())commit()},
  grecall(){const x=expInfo();if(!x)return;claimGather();if(P.exp){const un=Math.max(0,x.G-x.gd),back=un*G_EN;if(back)P.en=Math.min(maxEn(),P.en+back);log(`${x.site.n}에서 채집 로봇을 불러들였다. (${x.gd}/${x.G}회 채집${back?` · 못 쓴 에너지 ${back} 돌려받음`:''})`);P.exp=null}commit()},
- fspot(d){if(['wait','bite','aim'].includes(fish.ph))return;if(!FSPOTS.some(x=>x.id===d.k))return;P.fspot=d.k;LAKE=null;lastFish=null;save();renderPanel()},
- cast(){if(['wait','bite','aim'].includes(fish.ph))return;ac();regen();if(P.en<CAST_EN){toast(`에너지가 부족합니다 (필요 ${CAST_EN})`);return}if(!spend(castEn()))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:9,zc:nextZc};nextZc=ri(-68,68);commit();
+ fspot(d){if(['wait','bite','aim'].includes(fish.ph))return;if(!fspotsVis().some(x=>x.id===d.k))return;P.fspot=d.k;LAKE=null;lastFish=null;save();renderPanel()},
+ cast(){if(['wait','bite','aim'].includes(fish.ph))return;if(fspot().eg&&!egPublic()&&typeof duelOn==='function'&&duelOn()){toast('낚시 대결 중에는 별눈물 호수에서 낚을 수 없습니다.');return}ac();regen();if(P.en<CAST_EN){toast(`에너지가 부족합니다 (필요 ${CAST_EN})`);return}if(!spend(castEn()))return;fish={ph:'aim',a:-84,dir:1,bonus:null,zone:9,zc:nextZc};nextZc=ri(-68,68);commit();
   const step=matchMedia('(prefers-reduced-motion: reduce)').matches?3:4;
   sfxLever();
   // the needle's angle comes from elapsed time, not from counting timer ticks, so a busy or throttled page can't slow it down
@@ -7555,8 +7613,8 @@ const A={
   if(rod===0&&Math.random()<.1){const seeds=Object.keys(ITEMS).filter(k=>ITEMS[k].type==='seed'),sid=seeds[ri(0,seeds.length-1)],sxp=3;add(sid);gainXp(sxp);lxp('fish',4);lastFish={id:sid,ms,xp:sxp,bonus:fish.bonus};fish={ph:'idle',a:fish.a};
     log(`물고기 대신 ${ITEMS[sid].n}이(가) 낚싯바늘에 걸려 올라왔다!`,'good');commit();return}
   const fpool=fspot()[tr],id=fpool[ri(0,fpool.length-1)],first=!P.dex[id],sz=fishSize(id,rod,fish.bonus),rec=!first&&sz.cm>((P.fsz||{})[id]||0),xp=Math.round(FT[tr].xp*(sz.big?1.5:1));P.fsz=Object.assign({},P.fsz);if(sz.cm>(P.fsz[id]||0))P.fsz[id]=sz.cm;add(id);P.dex[id]=(P.dex[id]||0)+1;gainXp(xp);stat('fish');if(tr==='l')stat('legend');lxp('fish',{c:8,r:15,u:30,l:60}[tr]);duelCatch(tr,id,sz);fkCatch(tr);lastFish={id,ms,xp,bonus:fish.bonus,cm:sz.cm,big:sz.big,rec,first};fish={ph:'idle',a:fish.a};
-  log(`${ITEMS[id].n}을(를) 낚았다! 크기 ${fmtLen(sz.cm)}${sz.big?' · 대어!':''}${rec?' · 내 최고 기록!':''} (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'||sz.big?'rare':'good');if(tr==='l')sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」(${fmtLen(sz.cm)})을 낚았습니다!`);commit()},
- async fishshare(){const f=lastFish;if(!f||!f.cm||f.shared||mode!=='online')return;const it=ITEMS[f.id];f.shared=true;renderPanel();
+  log(`${ITEMS[id].n}을(를) 낚았다! 크기 ${fmtLen(sz.cm)}${sz.big?' · 대어!':''}${rec?' · 내 최고 기록!':''} (${ITEMS[id].tier}${first?' · 도감 등록':''})`,tr!=='c'||sz.big?'rare':'good');if(tr==='l')if(!egLock(id))sys(`${P.nick} 님이 ${ITEMS[id].tier} 어종 「${ITEMS[id].n}」(${fmtLen(sz.cm)})을 낚았습니다!`);commit()},
+ async fishshare(){const f=lastFish;if(!f||!f.cm||f.shared||mode!=='online')return;if(egLock(f.id)){toast('아직 선원에게 공개되지 않은 물고기라 PAD에 올릴 수 없습니다.');return}const it=ITEMS[f.id];f.shared=true;renderPanel();
   const fishc={id:f.id,tr:it.fish,cm:f.cm,big:!!f.big,rec:!!f.rec,first:!!f.first,ms:f.ms,xp:f.xp,bonus:!!f.bonus};
   try{await db.collection('posts').add({uid,nick:P.nick,at:Date.now(),text:(String(f.note||'').trim().slice(0,200))||fishShareDef(f),fishc})}catch(e){f.shared=false;socErr(e);renderPanel();return}sfxCoin();toast('PAD에 공유했습니다.');renderPanel()},
  ttltoggle(){ttlOpen=!ttlOpen;renderInfo()},
@@ -7681,6 +7739,7 @@ const A={
   try{await lim(db.doc('members/'+uid).delete(),10000)}catch(e){}
   if(left2.length){show(`⚠ 지우지 못한 기록: ${left2.join(' · ')}`);show('잠시 뒤 새로고침합니다. 다시 초기화를 눌러 주십시오.');console.warn('초기화 후 남은 기록',left2);setTimeout(()=>location.reload(),12000);return}
   show(`완료! 기록 ${n}건을 지웠습니다. 운영자도 운영자 군번을 발급받아 다시 합류합니다.`);setTimeout(()=>location.reload(),3500)},
+ admeg(){if(!isAdmin||mode!=='online')return;const next=!EG_OPEN;if(next&&!confirm('통신 장치 이후 콘텐츠를 선원에게 공개할까요? (통신 장치 수리 + 오르비스 등장 조건도 맞아야 열립니다)'))return;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{eg:next})).then(()=>toast(next?'공개를 켰습니다.':'다시 운영진만 보이게 했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
  admpreopen(){if(!isAdmin||mode!=='online')return;const next=!PREOPEN;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{preopen:next})).then(()=>{toast(next?'오픈 준비 잠금을 켰습니다. 선원들은 PAD만 쓸 수 있습니다.':'잠금을 풀었습니다. 게임이 열렸습니다!');if(!next)sys('[공지] 가이아 우주함선이 정식으로 출항했습니다! 이제 모든 화면을 이용할 수 있습니다.',true,'beacon')}).catch(()=>toast('바꾸지 못했습니다.'))},
  preopenpad(){socTab='pad';socDrawer(true)},
  admaff(d){if(!isAdmin||mode!=='online')return;const a=admAffA,b=admAffB;if(!a||!b||a===b){toast('두 선원을 골라 주십시오.');return}
@@ -7843,7 +7902,7 @@ const A={
 let giftTo=null,giftSel={},giftCr=0,giftMsg='';
 function openGift(id){if(!PLAYERS[id])return;giftTo=id;giftSel={};giftCr=0;giftMsg='';renderGift();$('#giftModal').hidden=false}
 // dishes and 귀중품 (scouting finds) can be gifted; a 귀중품 pleases like a favourite dish
-const GIFT_MAX=1,isDish=i=>COOK.some(c=>c.id===dishBase(i)),isJunk=i=>!!ITEMS[i]&&ITEMS[i].type==='junk',canGift=i=>isDish(i)||isJunk(i),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
+const GIFT_MAX=1,isDish=i=>COOK.some(c=>c.id===dishBase(i)),isJunk=i=>!!ITEMS[i]&&ITEMS[i].type==='junk',canGift=i=>(isDish(i)||isJunk(i))&&!egLock(i),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
 function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]&&canGift(i));const sel=Object.entries(giftSel);
   {const gb=document.querySelector('#giftBox .bag');window.__gbs=gb?gb.scrollTop:0}$('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2><span class="hint">내가 ${esc(t.nick)} 님을 생각하는 마음 ${affBadge(affOf(P,giftTo))}</span></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
   ${affOf(P,giftTo)>=10?(tasteHTML(t)||'<span class="hint">이 선원은 아직 취향을 정하지 않았습니다.</span>'):'<div class="info-sec"><span class="lbl">Taste · 취향</span><span class="hint tastelock">🔒 호감도 10 이상이면 좋아하는·싫어하는 음식이 보입니다</span></div>'}
@@ -7923,7 +7982,7 @@ const attList=o=>Object.entries(o).filter(([i,n])=>ITEMS[i]&&!isBound(i)&&n>0).m
 const mlChips=(list,cr)=>[...list.filter(x=>ITEMS[x.id]).map(x=>`<span class="ichip">${iicon(x.id,1)}${ITEMS[x.id].n} ×${x.n}</span>`),...(cr>0?[`<span class="ichip">${img(IC.coin,null,1)}${(+cr).toLocaleString()} CR</span>`]:[])].join('');
 const haveAll=(list,cr)=>list.every(x=>(P.inv[x.id]||0)>=x.n)&&(P.cr||0)>=(cr||0);
 // pick items out of my bag: tap to attach (up to 3 kinds), set how many (up to 10 each)
-function attPicker(sel,act,qact){const ids=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i]&&!isBound(i));const L=attList(sel);
+function attPicker(sel,act,qact){const ids=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i]&&!isBound(i)&&!egLock(i));const L=attList(sel);
   return`<div class="mlatt">${L.length?L.map(x=>`<div class="mlrow">${iicon(x.id,2)}<b>${esc(ITEMS[x.id].n)}</b><input class="sel mlq" type="number" min="1" max="${Math.min(ML_EACH,P.inv[x.id]||0)}" value="${x.n}" data-q="${qact}" data-k="${x.id}" aria-label="${esc(ITEMS[x.id].n)} 개수"><span class="hint">/ ${Math.min(ML_EACH,P.inv[x.id]||0)}</span><button class="pvx" data-act="${act}" data-id="${x.id}" aria-label="빼기">×</button></div>`).join(''):'<span class="hint">아래 가방에서 넣을 아이템을 누르십시오.</span>'}</div>
    <span class="hint">아이템은 ${ML_TYPES}종류까지, 종류마다 ${ML_EACH}개까지 넣을 수 있습니다. (${L.length}/${ML_TYPES})</span>
    ${ids.length?`<div class="bag mlbag">${ids.map(i=>`<button class="slot" data-act="${act}" data-id="${i}" aria-pressed="${!!sel[i]}" title="${esc(ITEMS[i].n)}" aria-label="${esc(ITEMS[i].n)} ${P.inv[i]}개">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">가방이 비어 있습니다.</p>'}`}
@@ -7951,7 +8010,7 @@ function mailWriteHTML(){if(mode!=='online')return'<p class="hint" style="paddin
    <span class="lbl">첨부할 아이템</span>${attPicker(mlAtt,'mlatt','ml')}
    <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="mlsend" ${mlBusy?'disabled':''}>편지 보내기</button></div></div>`}
 function mailTradeHTML(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">거래는 온라인에 접속했을 때 할 수 있습니다.</p>';
-  const W=attList(trWant),cat=ORDER.filter(i=>ITEMS[i]&&!isBound(i)&&!trWant[i]);
+  const W=attList(trWant),cat=ORDER.filter(i=>ITEMS[i]&&!isBound(i)&&!trWant[i]&&!egLock(i));
   return`<div class="card mlform"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="lbl">거래할 선원</span>${toSel('trTo',trTo)}</div>
    <span class="lbl">내가 줄 것</span>${attPicker(trGive,'trgive','tg')}
    <div class="row" style="gap:6px;align-items:center"><span class="hint">크레딧도 함께 주기</span><input id="trGiveCr" class="sel" type="number" min="0" max="${P.cr||0}" value="${trGiveCr||0}" style="width:100px" aria-label="줄 크레딧"><span class="hint">CR (가진 크레딧 ${(P.cr||0).toLocaleString()})</span></div>
@@ -8019,7 +8078,7 @@ document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.va
 let raidPd=null;addEventListener('pointerdown',e=>{const a=e.target.closest&&e.target.closest('[data-act]');raidPd=a&&/^raid(atk|def|sk|item|tgt|to|pick|bag)$/.test(a.dataset.act)?{el:a,act:a.dataset.act,k:a.dataset.k}:null},{capture:true,passive:true});
 addEventListener('pointerup',e=>{const d=raidPd;raidPd=null;if(!d||d.el.isConnected)return;setTimeout(()=>{const t=document.elementFromPoint(e.clientX,e.clientY),a=t&&t.closest('[data-act]');if(a&&a!==d.el&&a.dataset.act===d.act&&a.dataset.k===d.k&&!a.disabled)a.click()})},{capture:true,passive:true});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['mailpg','sentcat','visithome','mailcat','padtop','anonopen','anonclose','anonsend','anondel','antab','anmore','anlike','lgmenu','sugopen','sugback','notiall','sharex','sharego','slotshare','scanshare','ttlbragx','ttlbraggo','ttlpopclose','ttlpopwear','ttlpopbrag','ttlbrag','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raidfork','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','noticeopen','noticeclose','ntcpost','topen','tclose','tmode','tunpick','tpick','tsave','rbopen','rbclose','rbsend','rbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['admeg','mailpg','sentcat','visithome','mailcat','padtop','anonopen','anonclose','anonsend','anondel','antab','anmore','anlike','lgmenu','sugopen','sugback','notiall','sharex','sharego','slotshare','scanshare','ttlbragx','ttlbraggo','ttlpopclose','ttlpopwear','ttlpopbrag','ttlbrag','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raidfork','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','noticeopen','noticeclose','ntcpost','topen','tclose','tmode','tunpick','tpick','tsave','rbopen','rbclose','rbsend','rbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 function lgClose(){const m=document.getElementById('lgMenu');if(m)m.remove()}
@@ -8410,7 +8469,7 @@ function profActsHTML(id){const p=whoP(id);if(!p||id===uid||!PLAYERS[id])return'
   return`<div class="profacts2"><span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'||preLock()?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="btn sm ghost" data-act="profgo" data-a="gift" data-k="${k}" ${preLock()?'disabled title="오픈 준비 중"':''}>선물</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}" ${preLock()?'disabled title="오픈 준비 중"':''}>우편</button></div>`}
 function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PLAYERS[id]))return'';
   const on=isOn(id),gr=(P.greet||{})[id]===dayKey(),k=esc(id);
-  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',jobOf(p)?jobOf(p).n:'없음'],['어류 도감',`${Object.keys(p.dex||{}).length}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
+  const facts=[['레벨',`LV.${p.lvl||1}`],['칭호',ttlOf(p)],['직업',jobOf(p)?jobOf(p).n:'없음'],['어류 도감',`${dexN(p)}/115`],['침략자 공격',`${(p.st&&p.st.boss)||0}회`]];
   if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up once my own 호감도 toward them (the number shown) reaches 10
     const af=affOf(p,uid),open=affOf(P,id)>=10,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 10 이상이면 보입니다</span>';
