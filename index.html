@@ -2041,22 +2041,28 @@ const CODE={'permission-denied':'permission_denied','resource-exhausted':'quota_
 const wrapErr=e=>{const x=new Error(e&&e.message||'error');x.code=CODE[String(e&&e.code||'').replace(/^(firestore|storage)\//,'')]||'upstream_error';return x};
 const W=p=>p.catch(e=>{throw wrapErr(e)});
 
+/* ---- usage counters (operator diagnostics): server reads and writes per place since this page opened ---- */
+const RST={},WST={};window.__rstat=RST;window.__wstat=WST;window.__rsince=Date.now();
+const KEEP=new Set(['boss','org','farm','duel','rooms']);
+const lbl=(path,w)=>{const ps=String(path).split('/');let o=ps[0];if(ps.length>1)o+='/'+(KEEP.has(ps[0])?ps[1]:'*');if(ps.length>2)o+='/'+ps.slice(2).filter((x,i)=>i%2===0).join('/');return o+(w&&w.length?'?'+w.map(x=>x[0]).join(','):'')};
+const cR=(k,n)=>{RST[k]=(RST[k]||0)+Math.max(1,n|0)},cW=k=>{WST[k]=(WST[k]||0)+1};
+const qN=qs=>qs.metadata&&qs.metadata.fromCache?0:qs.docChanges().length;
 /* ---- db: Firestore with the doc()/collection() surface the game uses ---- */
 const ds=s=>({id:s.id,exists:s.exists(),data:()=>s.data()});
 // counters for inc(): "a.b.c" keys become nested fields; m holds amounts to add, ex plain values to set alongside
 const nestKeys=(m,ex)=>{const o={};const put=(k,v)=>{const ps=k.split('.');let t=o;ps.slice(0,-1).forEach(p=>{t=t[p]=t[p]&&typeof t[p]==='object'?t[p]:{}});t[ps[ps.length-1]]=v};
   for(const k in m)put(k,increment(m[k]));for(const k in ex||{})put(k,ex[k]);return o};
 function makeDoc(path){const r=doc(fs,path);return{id:r.id,path,
-  get:()=>W(getDoc(r)).then(ds),set:d=>W(setDoc(r,d)),update:d=>W(setDoc(r,d,{merge:true})),inc:(m,ex)=>W(setDoc(r,nestKeys(m,ex),{merge:true})),tx:fn=>W(runTransaction(fs,async t=>{const s=await t.get(r);const nx=fn(s.exists()?JSON.parse(JSON.stringify(s.data())):null);if(nx)t.set(r,nx);return nx})),delete:()=>W(deleteDoc(r)),
-  onSnapshot:(n,e)=>onSnapshot(r,s=>n(ds(s)),x=>e&&e(wrapErr(x))),collection:p=>makeQuery(path+'/'+p)}}
+  get:()=>{cR(lbl(path),1);return W(getDoc(r)).then(ds)},set:d=>{cW(lbl(path));return W(setDoc(r,d))},update:d=>{cW(lbl(path));return W(setDoc(r,d,{merge:true}))},inc:(m,ex)=>{cW(lbl(path));return W(setDoc(r,nestKeys(m,ex),{merge:true}))},tx:fn=>W(runTransaction(fs,async t=>{cR(lbl(path),1);const s=await t.get(r);const nx=fn(s.exists()?JSON.parse(JSON.stringify(s.data())):null);if(nx){cW(lbl(path));t.set(r,nx)}return nx})),delete:()=>{cW(lbl(path));return W(deleteDoc(r))},
+  onSnapshot:(n,e)=>onSnapshot(r,s=>{if(!(s.metadata&&s.metadata.fromCache))cR(lbl(path),1);n(ds(s))},x=>e&&e(wrapErr(x))),collection:p=>makeQuery(path+'/'+p)}}
 function makeQuery(path,w=[],o=null,l=0){
   const srvOrder=!!o&&w.every(x=>x[0]===o[0]);
   const build=()=>{const cs=w.map(([f,op,v])=>where(f,op,v));if(o&&srvOrder)cs.push(orderBy(o[0],o[1]||'asc'));if(l&&(srvOrder||!o))cs.push(limit(l));return query(collection(fs,path),...cs)};
   const shape=qs=>{let docs=qs.docs.map(d=>({id:d.id,data:()=>d.data()}));if(o&&!srvOrder){const [f,dir]=o,sg=dir==='desc'?-1:1;docs.sort((a,b)=>((a.data()[f]??0)>(b.data()[f]??0)?1:-1)*sg);if(l)docs=docs.slice(0,l)}return{docs,size:docs.length,empty:!docs.length}};
   return{where:(f,op,v)=>makeQuery(path,[...w,[f,op,v]],o,l),orderBy:(f,dir)=>makeQuery(path,w,[f,dir],l),limit:n=>makeQuery(path,w,o,n),
     doc:id=>makeDoc(path+'/'+(id||doc(collection(fs,path)).id)),
-    add:async d=>{const r=await W(addDoc(collection(fs,path),d));return makeDoc(path+'/'+r.id)},
-    get:()=>W(getDocs(build())).then(shape),onSnapshot:(n,e)=>onSnapshot(build(),qs=>n(shape(qs)),x=>e&&e(wrapErr(x)))}}
+    add:async d=>{cW(lbl(path+'/x'));const r=await W(addDoc(collection(fs,path),d));return makeDoc(path+'/'+r.id)},
+    get:()=>W(getDocs(build())).then(qs=>{cR(lbl(path,w),qs.size);return shape(qs)}),onSnapshot:(n,e)=>onSnapshot(build(),qs=>{const k=qN(qs);if(k)cR(lbl(path,w),k);n(shape(qs))},x=>e&&e(wrapErr(x)))}}
 const db={doc:makeDoc,collection:p=>makeQuery(p)};
 // server-clock save stamps for the game's "who saved since" poll
 window.__srvTS=()=>serverTimestamp();window.__tsFrom=ms=>Timestamp.fromMillis(Math.max(0,+ms||0));
@@ -2070,11 +2076,11 @@ function makeRoom(name){const slow=name==='lobby',STALE=slow?420e3:150e3,HB=slow
   const peersC=collection(fs,'rooms',name,'peers'),evC=collection(fs,'rooms',name,'events'),me=doc(peersC,ME.uid);
   let state={},wT=null,lastW=0,peerFns=[],peerDocs=[],unE=null,handlers={},left=false;const seen=new Set(),joined=Date.now();
   const emitPeers=()=>{const now=Date.now(),sNow=now+clockOff,peers=peerDocs.filter(d=>d.id===ME.uid||(stMs(d)?sNow-stMs(d):now-(d.ts||0))<STALE).map(d=>({id:d.id,presence:d.p||{},isMe:d.id===ME.uid}));if(!peers.some(x=>x.isMe)&&lastW)peers.push({id:ME.uid,presence:state,isMe:true});peerFns.forEach(f=>{try{f({peers})}catch(e){console.error(e)}})};
-  const flush=()=>{lastW=Date.now();sentId=idOf();return setDoc(me,{p:state,ts:Date.now(),st:serverTimestamp()}).catch(()=>{})};
+  const flush=()=>{lastW=Date.now();sentId=idOf();cW('rooms/'+(slow?'lobby':'마이룸')+'/peers');return setDoc(me,{p:state,ts:Date.now(),st:serverTimestamp()}).catch(()=>{})};
   const idOf=()=>JSON.stringify(Object.assign({},state,{act:0}));let sentId='';
   const write=()=>{if(left)return;if(slow&&lastW&&idOf()===sentId)return;clearTimeout(wT);wT=setTimeout(flush,Math.max(0,1200-(Date.now()-lastW)))};
   const hb=setInterval(()=>{if(!left)flush()},HB),tick=setInterval(emitPeers,30e3);
-  const unP=onSnapshot(slow?query(peersC,where('st','>=',Timestamp.fromMillis(Date.now()-30*60e3))):peersC,{includeMetadataChanges:true},qs=>{peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));const mine=qs.docs.find(d=>d.id===ME.uid&&!d.metadata.hasPendingWrites);if(mine){const v=mine.data(),st=stMs(v);if(st&&v.ts&&Date.now()-v.ts<30e3)clockOff=st-v.ts;window.__clockOff=clockOff}emitPeers()},()=>{});
+  const unP=onSnapshot(slow?query(peersC,where('st','>=',Timestamp.fromMillis(Date.now()-30*60e3))):peersC,{includeMetadataChanges:true},qs=>{{const k=qN(qs);if(k)cR('rooms/'+(slow?'lobby':'마이룸')+'/peers',k)}peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));const mine=qs.docs.find(d=>d.id===ME.uid&&!d.metadata.hasPendingWrites);if(mine){const v=mine.data(),st=stMs(v);if(st&&v.ts&&Date.now()-v.ts<30e3)clockOff=st-v.ts;window.__clockOff=clockOff}emitPeers()},()=>{});
   const onVis=()=>{if(!left&&document.visibilityState==='visible'){if(!slow||Date.now()-lastW>60e3)flush();emitPeers()}};document.addEventListener('visibilitychange',onVis);
   const api={
     presence:async patch=>{for(const k in patch){if(patch[k]==null)delete state[k];else state[k]=patch[k]}write()},
@@ -3463,7 +3469,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}${verAdminHTML()}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
+   ${admStaffHTML(others)}${verAdminHTML()}${diagAdminHTML()}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -3574,7 +3580,7 @@ function save(){if(seasonLock||tabStale)return;if(mode==='online'&&P&&P.nick==='
 const flushNow=()=>{if(mode==='online'&&dirty&&!seasonLock&&!tabStale){clearTimeout(saveT);saveT=null;return flush()}};
 window.__flushSave=async()=>{await flushNow()};
 addEventListener('pagehide',flushNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushNow()});
-async function flush(){if(saving)return;saving=true;try{while(dirty&&!tabStale){dirty=false;P.seen=Date.now();P.tab=TAB_ID;P.sv=(+P.sv||0)+1;if(SN_PUB&&P.sn!==SN_PUB)P.sn=SN_PUB;if(P.scout&&P.scout.last)scLastSafe(P.scout.last);const out=JSON.parse(JSON.stringify(P));if(mbReady){delete out.mbox;delete out.sent;mbWrite()}
+async function flush(){if(saving)return;saving=true;try{while(dirty&&!tabStale){dirty=false;P.seen=Date.now();if(window.__rstat)P.dbg={v:GAIA_VER,since:+window.__rsince||0,at:Date.now(),r:window.__rstat,w:window.__wstat||{}};P.tab=TAB_ID;P.sv=(+P.sv||0)+1;if(SN_PUB&&P.sn!==SN_PUB)P.sn=SN_PUB;if(P.scout&&P.scout.last)scLastSafe(P.scout.last);const out=JSON.parse(JSON.stringify(P));if(mbReady){delete out.mbox;delete out.sent;mbWrite()}
       // never overwrite a newer save from another device: a phone tab left open in the background used to wake up with old data and wipe progress
       // nor one that would take the level back down (only a deleted character or a new season may start over)
       if(myRef.tx){let lost=false;await myRef.tx(cur=>{if(cur&&cur.tab&&cur.tab!==TAB_ID&&(+cur.sv||0)>=(+out.sv||0)){lost=true;return null}
@@ -6922,7 +6928,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794676818';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794679135';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -6933,6 +6939,13 @@ async function verCheck(){verApply()}
 // the operator page: what is deployed now (version.json) against what the crew were last told
 async function verFetch(){try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return'';const j=await r.json();return j&&j.v?String(j.v):''}catch(e){return''}}
 const verTime=v=>{const n=+v;if(!n)return'없음';const d=new Date(n<1e12?n*1000:n);return d.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})};
+function diagAdminHTML(){if(mode!=='online')return'';const now=Date.now(),L=Object.entries(PLAYERS).filter(([id,p])=>now-(+p.seen||0)<3*3600e3);
+  const fresh=L.filter(([id,p])=>p.dbg&&now-(+p.dbg.at||0)<3*3600e3),old=L.filter(([id,p])=>!p.dbg);
+  const R={},Wt={};let rT=0,wT=0;fresh.forEach(([id,p])=>{const h=Math.max(.1,((+p.dbg.at||now)-(+p.dbg.since||now))/3600e3);for(const k in p.dbg.r||{}){const v=p.dbg.r[k]/h;R[k]=(R[k]||0)+v;rT+=v}for(const k in p.dbg.w||{}){const v=p.dbg.w[k]/h;Wt[k]=(Wt[k]||0)+v;wT+=v}});
+  const rows=(o,n)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n).map(([k,v])=>`<div class="stat-row"><span>${esc(k)}</span><b>${Math.round(v).toLocaleString()}</b></div>`).join('')||'<span class="hint">아직 보고가 없습니다</span>';
+  return`<div class="info-sec"><span class="lbl">Usage · 서버 사용 진단 (시간당, 최근 3시간 안에 저장한 선원 합계)</span>
+   <span class="hint">새 화면 ${fresh.length}명 보고 · 예전 화면 ${old.length}명${old.length?': '+old.map(([id,p])=>esc(p.nick||'선원')).join(', '):''}</span>
+   <div class="row" style="gap:16px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>읽기 약 ${Math.round(rT).toLocaleString()}/시간</b>${rows(R,14)}</div><div style="flex:1;min-width:220px"><b>쓰기 약 ${Math.round(wT).toLocaleString()}/시간</b>${rows(Wt,10)}</div></div></div>`}
 function verAdminHTML(){if(mode!=='online')return'';if(Date.now()-verLatestAt>30e3){verLatestAt=Date.now();verFetch().then(v=>{if(v!==verLatest){verLatest=v;if(adminShown&&adminShown())adminRefresh()}})}
   const fresh=!verLatest||+verLatest>+(VER_ANN||0);
   return`<div class="info-sec"><span class="lbl">Update · 업데이트 알림</span><span class="hint">누르면 접속 중인 선원 화면 위에 「새 버전이 나왔습니다 · 새로고침」이 뜹니다. 누르기 전에는 새 버전이 배포돼도 알림이 뜨지 않습니다.</span><div class="row" style="gap:8px;align-items:center;flex-wrap:wrap"><span class="hint">배포된 버전 <b>${verTime(verLatest)}</b> · 마지막 알림 <b>${verTime(VER_ANN)}</b>${GAIA_VER.startsWith('__')?'':' · 내 화면 '+verTime(GAIA_VER)}</span><button class="btn sm ${fresh?'gold':'ghost'}" data-act="admver" ${fresh?'':'disabled'}>${fresh?'업데이트 알림 보내기':'알릴 새 버전 없음'}</button></div></div>`}
