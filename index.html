@@ -5617,7 +5617,7 @@ function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArri
 const SHIP=[
  {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',2000],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',1000],['pot',500],['mistLotus',200]]},
  {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['crystal',1500],['mazeCore',1000],['plainSpore',1000],['glowStal',450],['echoQuartz',200],['pot',500],['berry',500],['crystalBean',500],['pump',500]]},
- {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',1000],['mazeCore',1000],['bogResin',1000],['oldBoard',150],['iceShell',300],['marshFossil',200],['carrot',500],['rationBean',500],['melon',500],['frostBerry',500]]},
+ {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',1000],['mazeCore',1000],['bogResin',1000],['oldBoard',350],['iceShell',400],['marshFossil',400],['carrot',500],['rationBean',500],['melon',500],['frostBerry',500]]},
  {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',230],['crystal',2000],['volcAsh',120],['dark',440],['bogResin',1000],['wreckNozzle',1000],['corn',400],['canyonPepper',240]]},
  {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',190],['brokenLens',150],['impactGlass',250],['abyssPrism',2500],['pump',300],['frozenTomato',240]]},
  {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',2120],['craterIron',150],['rustBolt',110],['sandSlate',110],['starHeart',3000],['carrot',400],['dustPot',300]]},
@@ -5863,6 +5863,10 @@ const scanLocked=f=>f&&f.scan&&!(P.own||[]).includes(f.id);
 // the 40×40 avatar grid drawn at half a room pixel per cell, so it keeps the old 20-wide footprint
 function gridOnS(x,grid,ox,oy,k,po){const pal=Object.assign({},PAL,po||{});for(let j=0;j<grid.length;j++)for(let i=0;i<grid[j].length;i++){const c=pal[grid[j][i]];if(!c)continue;x.fillStyle=c;x.fillRect(ox+i*k,oy+j*k,k,k)}}
 function gridOn(x,grid,ox,oy,tint,po){const pal=Object.assign({},PAL,po||{});if(tint){tint=mix(tint,'#5d6274',.55);pal.a=tint;pal.b=mix(tint,'#07080e',.5);pal.h=mix(tint,'#c4c7d4',.35)}for(let j=0;j<grid.length;j++)for(let i=0;i<grid[j].length;i++){const c=pal[grid[j][i]];if(!c)continue;x.fillStyle=c;x.fillRect(ox+i,oy+j,1,1)}}
+// the 메탄 수조 in 마이룸: the rarest grade this member has caught; within it, the catch closest to its species' biggest size (then the species last in the list, the rarer one)
+function bestFish(dex,fsz){const rk={l:4,u:3,r:2,c:1},ids=Object.keys(dex||{}).filter(id=>ITEMS[id]&&ITEMS[id].fish&&dex[id]>0),
+  big=id=>{const it=ITEMS[id],cm=+((fsz||{})[id])||0,mx=it.sz&&it.sz[1]||1;return cm/mx};
+  ids.sort((a,b)=>(rk[ITEMS[b].fish]-rk[ITEMS[a].fish])||(big(b)-big(a))||(FISHES[ITEMS[b].fish].indexOf(b)-FISHES[ITEMS[a].fish].indexOf(a)));return ids[0]||'fc0'}
 function trophies(dex){const out=[];for(const tr of ['l','u','r','c'])for(const id of FISHES[tr])if(dex&&dex[id]&&out.length<4)out.push(id);return out}
 const THEMES={
  ruin:{n:'폐허 선실',d:'추락 뒤 버려진 채 남은 빈 선실. 녹슨 벽에 금이 가 있고 창문만 멀쩡해요',price:0,wall:{pat:'ruinwall',c:['#24221f','#121110','#6a4a32']},floor:{pat:'ruinfloor',c:['#201e1b','#100f0e','#3a342c']},trim:'#3a3530',slab:'#0e0d0c',view:'space',light:'150,128,104',acc:'#7a6a58'},
@@ -6098,7 +6102,7 @@ function drawRoomCv(){const cv=$('#roomCv');if(!cv)return;const W=192,H=96,FY=66
   themeWindow(x,R,rnd,TH,rm,W,H,FY);themeDecorBack(x,R,TH,rm,W,H,FY);
   /* wall deco (area 13..43 x 14..38) */
   const glz=[];const frame=(a,b,w2,h2,fc,ic)=>{R(a+.5,b+h2+.5,w2+1,1,'rgba(0,0,0,.28)');R(a+w2+.5,b+.5,1,h2+1,'rgba(0,0,0,.2)');R(a-1,b-1,w2+2,h2+2,OL(fc));Bx(a-.5,b-.5,w2+1,h2+1,fc,{ol:false,g:.3});R(a+1,b+1,w2-2,h2-2,ic);glz.push([a+1,b+1,w2-2,h2-2])};
-  const best=trophies(who.dex)[0]||'fc0';
+  const best=bestFish(who.dex,who.fsz);
   switch(WD.k){
    case 'nebula':frame(14,16,28,20,'#3a3f4f','#1b1830');for(let k=0;k<70;k++){const a=15+Math.floor(rnd()*26),b=17+Math.floor(rnd()*18),q=rnd();R(a,b,1,1,q<.4?'#5f5a80':q<.7?'#93707f':q<.9?'#7a6fa0':'#e2e3ea')}R(26,25,3,2,'#c4c7d4');break;
    case 'photo':frame(16,14,24,22,'#c9cbd8','#0d111c');for(let j=-6;j<=6;j++)for(let i=-6;i<=6;i++)if(i*i+j*j<=36){const sea=(i*3+j*5+36)%7<4;R(28+i,24+j,1,1,(i+j)>3?'#a9c3d4':sea?'#4f7a96':'#6f8f6a')}R(20,33,12,1,'#7e8193');break;
@@ -6169,7 +6173,7 @@ function drawRoomCv(){const cv=$('#roomCv');if(!cv)return;const W=192,H=96,FY=66
   switch(FD.k){
    case 'throne':{const im=thronePic(FD.tk);sh(124,86,20);if(im.complete&&im.naturalWidth){x.imageSmoothingEnabled=false;x.drawImage(im,124,61,20,25)}else im.onload=()=>drawRoomCv();break}
    case 'pot':sh(130,82,12);gridOn(x,PL.young,128,57,null);pot(136,70.5,'#6a5a48');break;
-   case 'tank':case 'jelly':sh(121,86,26);R(121.5,61,25,25,'#05060b');for(let j=0;j<18;j+=.5)R(122.5,63+j,23,.5,mix('#1f4a62','#08121e',j/18));R(122.5,63.5,23,.5,'rgba(190,230,240,.5)');for(let k=0;k<4;k++)for(let j=0;j<14;j+=.5)R(126+k*5+j*.35,64+j,.5,.5,'rgba(190,230,240,.05)');for(let i=0;i<23;i+=.5){const q=((i*7)%5);R(122.5+i,79.5+(q%2)*.5,.5,1.5,['#5d5348','#7a6a52','#4d4337','#8a7a62','#62563d'][q])}for(const [px2,hh,c2] of [[125,7,'#3e7a52'],[127,5,'#5f9a6a'],[142,9,'#3e7a52'],[143.5,6,'#71877a']])for(let t=0;t<hh;t+=.5)R(px2+Math.sin(t*.9)*.6,80-t,.5,.5,c2);Bx(122,81.5,24,4,'#2a2e3a');R(124,83,6,.5,'#7fd0d0');Bx(121.5,61,25,1.5,'#41444f');if(FD.k==='jelly'){gridOn(x,TPL.jelly,126,63,'#a8778c')}else gridOn(x,TPL[ITEMS[best].ic],128,68,ITEMS[best].t);for(const [bx2,by2] of [[140,70],[140.5,67],[141,64.5],[126,74],[126.5,71.5]])R(bx2,by2,.5,.5,'rgba(196,240,250,.8)');R(123,63,.5,17,'rgba(226,227,234,.28)');R(124,63,.5,10,'rgba(226,227,234,.12)');R(145,63,.5,17,'rgba(0,0,0,.25)');break;
+   case 'tank':case 'jelly':sh(121,86,26);R(121.5,61,25,25,'#05060b');for(let j=0;j<18;j+=.5)R(122.5,63+j,23,.5,mix('#1f4a62','#08121e',j/18));R(122.5,63.5,23,.5,'rgba(190,230,240,.5)');for(let k=0;k<4;k++)for(let j=0;j<14;j+=.5)R(126+k*5+j*.35,64+j,.5,.5,'rgba(190,230,240,.05)');for(let i=0;i<23;i+=.5){const q=((i*7)%5);R(122.5+i,79.5+(q%2)*.5,.5,1.5,['#5d5348','#7a6a52','#4d4337','#8a7a62','#62563d'][q])}for(const [px2,hh,c2] of [[125,7,'#3e7a52'],[127,5,'#5f9a6a'],[142,9,'#3e7a52'],[143.5,6,'#71877a']])for(let t=0;t<hh;t+=.5)R(px2+Math.sin(t*.9)*.6,80-t,.5,.5,c2);Bx(122,81.5,24,4,'#2a2e3a');R(124,83,6,.5,'#7fd0d0');Bx(121.5,61,25,1.5,'#41444f');if(FD.k==='jelly'){gridOn(x,TPL.jelly,126,63,'#a8778c')}else{const it=ITEMS[best],g=it&&it.big&&TPL[it.big];if(g){const gw=g[0].length,gh=g.length,k=Math.min(20/gw,14/gh);gridOnS(x,g,134-gw*k/2,71.5-gh*k/2,k,it.f2)}else gridOn(x,TPL[ITEMS[best].ic],128,68,ITEMS[best].t)}for(const [bx2,by2] of [[140,70],[140.5,67],[141,64.5],[126,74],[126.5,71.5]])R(bx2,by2,.5,.5,'rgba(196,240,250,.8)');R(123,63,.5,17,'rgba(226,227,234,.28)');R(124,63,.5,10,'rgba(226,227,234,.12)');R(145,63,.5,17,'rgba(0,0,0,.25)');break;
    case 'robot':sh(124,84,16);gridOn(x,IC.robot,124,68,null);break;
    case 'globe':sh(126,85,14);R(132.5,75,2,9,'#05060b');Cyl(133,75,1.5,9,'#a99a74');R(127.5,83.5,11,2.5,'#05060b');Bx(128,83.5,10,2,'#5a4430',{ol:false});for(let j=-6;j<=6;j+=.5)for(let i=-6;i<=6;i+=.5){const d=(i+.25)**2+(j+.25)**2;if(d<=36){const land=(Math.floor(i*1.5)*2+Math.floor(j*1.4)*3+40)%9<4,l=-(i+j)/20-d/140+.05;R(133.25+i,68.25+j,.5,.5,d>31?OL('#3a5160'):shade(land?'#6f8f6a':'#3a5160',l))}}for(let a=-.5;a<=3.7;a+=.08)R(133.25+Math.cos(a+1.57)*7.3,68.25-Math.sin(a+1.57)*7.3,.5,.5,'#c9a06a');R(130,65,1.5,.5,'rgba(226,227,234,.6)');R(129.5,65.5,.5,1,'rgba(226,227,234,.4)');break;
    case 'scope':sh(122,85,22);R(126,72,1,14,'#41444f');R(133,72,1,14,'#41444f');R(129,72,1,14,'#2a2e3a');for(let t=0;t<16;t++){R(124+t,70-Math.round(t*.6),4,3,'#5d6274');R(124+t,70-Math.round(t*.6),4,1,'#8a8da0')}R(139,59,3,4,'#8aa9bd');break;
@@ -6820,7 +6824,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794654317';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794655332';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
