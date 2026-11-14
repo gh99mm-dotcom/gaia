@@ -6902,7 +6902,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794673286';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794675994';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8586,8 +8586,8 @@ addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener
 function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'선원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'선원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'선원'} 님이 PAD에서 나를 언급했습니다.`)})}
 // PAD keeps every post: the feed shows 20 at a time behind a 더보기 button, and when the loaded posts run out it asks the server for 150 more
 let padShow=20,padLoad=30,padUnsub=null,padMore=false;
-let padLim=0;const padWantLim=()=>socOpen?padLoad:1;function padSync(){if(padUnsub&&padWantLim()!==padLim)padListen()}
-function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();padUnsub=db.collection('posts').orderBy('at','desc').limit(padLim).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLim&&padLim>1;notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
+let padLim=0,padNeed=5;const padTop=()=>POSTS.filter(p=>!(p.rt?(p.rto||{}):p).re).length;const padWantLim=()=>socOpen?padLoad:1;function padSync(){if(padUnsub&&padWantLim()!==padLim)padListen()}
+function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();padUnsub=db.collection('posts').orderBy('at','desc').limit(padLim).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLim&&padLim>1;if(socOpen&&padMore&&padLim===padLoad&&padTop()<padNeed&&padLoad<600){padLoad+=30;padListen()}notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
 function socSubscribe(){
   padListen();setTimeout(nboxBackfill,4000);
   db.collection('guest').where('to','==',uid).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
@@ -8611,7 +8611,7 @@ const SA={
  async memodel(d){if(!d.k){memoDelArm=null;renderPanel();return}if(!d.x){memoDelArm=d.k;renderPanel();return}memoDelArm=null;try{await memoRef().doc(d.k).delete()}catch(e){toast('삭제하지 못했습니다.')}renderPanel()},
  sotab(d){const was=socTab;socTab=d.k;if((was==='chat')!==(d.k==='chat'))setPresence();pdelArm=null;profId=null;profBio=false;if(d.k!=='pad'&&padThread)openThread(null);renderPanel();if(d.k==='dm'&&dmPeer)setTimeout(()=>{const i=$('#dmIn');if(i)i.focus()},30)},
  padview(d){padView=d.k;padTag='';padShow=20;renderPanel()},
- padmore(){padShow+=20;if(mode==='online'&&padMore&&padShow*2>POSTS.length){padLoad+=30;padListen()}renderPanel()},
+ padmore(){padShow+=20;padNeed=Math.max(padNeed,padTop()+10);if(mode==='online'&&padMore&&(padShow*2>POSTS.length||padTop()<padNeed)){padLoad+=30;padListen()}renderPanel()},
  padtag(d){padTag=d.k||'';padShow=20;if(padThread)openThread(null);renderPanel()},
  memogo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;anonView=false;adminView=false;socTab='memo';socDrawer(true,1);
   const A=MEMOS.filter(m=>m&&m.text),i=A.findIndex(m=>m.id===d.k);if(i>=0)memoPage=Math.floor(i/MEMO_PG);memoOpen=d.k;memoReply=null;memoEdit=null;renderPanel();const go=()=>{const a=[...document.querySelectorAll('[data-act="memocm"]')].find(b=>b.dataset.k===d.k),mm=a&&a.closest('.memo'),c=d.c&&mm&&[...mm.querySelectorAll('.mcm')].find(x=>x.dataset.cid===d.c);if(c){c.scrollIntoView({block:'center',behavior:'smooth'});c.classList.remove('mcmhit');void c.offsetWidth;c.classList.add('mcmhit')}else if(mm)mm.scrollIntoView({block:'start',behavior:'smooth'})};setTimeout(go,60);setTimeout(go,450)},
