@@ -1793,7 +1793,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .unlockbox{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:22px 28px;max-width:360px}.unlockt{font-size:20px;color:var(--gold)}
 @keyframes mcmHit{0%,30%{background:rgba(255,214,102,.28);box-shadow:inset 3px 0 0 #ffd666}100%{background:transparent;box-shadow:none}}.mcm.mcmhit{animation:mcmHit 2.6s ease-out 1}
 .cabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:78px;gap:6px;align-content:start;overflow-y:auto;min-height:230px;flex:1 1 0;max-height:none;padding-right:2px}
-.vside{container-type:inline-size}@container (min-width:360px){.cabs{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));min-height:250px}}
+.vside{container-type:inline-size}@container (min-width:360px){.cabs{min-height:250px}}
 .cab{position:relative;display:flex;flex-direction:column;padding:0;background:#0b0f1a;border:2px solid #2a3046;box-shadow:inset 0 0 0 1px #000;cursor:pointer;overflow:hidden;font:inherit;color:inherit;width:100%;height:78px;min-width:0;box-sizing:border-box}
 .cab.empty{cursor:default;opacity:.55}
 .cabno{position:relative;z-index:3;display:block;padding:1px 0;font-size:10.5px;line-height:1.3;text-align:center;letter-spacing:.04em;color:#cfd6ea;background:#1c2236;border-bottom:1px solid #000}
@@ -1809,8 +1809,8 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .cab .von{position:absolute;z-index:4;right:3px;top:3px;width:6px;height:6px;background:var(--green);border:1px solid var(--ink)}
 :root[data-skin="light"] .cab{background:#e9e6df;border-color:#9a958b}:root[data-skin="light"] .cabno{background:#d6d1c6;color:#4a463e}
 :root[data-skin="light"] .cabin{background:radial-gradient(ellipse at 50% 40%,#fbfaf6,#dcd7cc 75%)}:root[data-skin="light"] .cabdoor i{background:linear-gradient(180deg,#b8b3a8,#a39e93 55%,#8f8a80);border-top-color:#d6d1c6}
-@media (hover:none){.cab:not(.empty) .cabdoor i:first-child{transform:translateX(-62%)}.cab:not(.empty) .cabdoor i:last-child{transform:translateX(62%)}}
-@media (max-width:760px){.cabs{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));max-height:none;overflow:visible;flex:none;min-height:0}}
+@media (hover:none){.cab:not(.empty) .cabdoor i:first-child{transform:translateX(-88%)}.cab:not(.empty) .cabdoor i:last-child{transform:translateX(88%)}}
+@media (max-width:760px){.cabs{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:92px;max-height:none;overflow:visible;flex:none;min-height:0}.cab{height:92px}.cabin img{height:32px}}
 .lghd{display:flex;flex-direction:column;gap:1px;padding:5px 8px 6px;margin-bottom:3px;border-bottom:1px solid var(--line)}.lghd b{font-size:13px;color:var(--text);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lghd span{font-size:11.5px;color:var(--gold)}
 .dishfx{font-size:13px;color:var(--gold)}.dishfx b{color:var(--cyan);margin-right:4px}.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
 .sgchat{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto;padding:8px;background:var(--deep);border:1px solid var(--line)}
@@ -6817,7 +6817,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794649699';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794652804';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
