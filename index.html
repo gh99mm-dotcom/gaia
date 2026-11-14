@@ -6825,7 +6825,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794656429';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794656734';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8494,7 +8494,7 @@ const SA={
  profclose(){profId=null;profBio=false;profView=false;renderPanel()},
  profgo(d){if(A[d.a])A[d.a]({k:d.k})},
  // 교류 대화: a name opens a small menu right under it (my own name goes straight to my profile)
- lgmenu(d,e){lgClose();const k=d.k;if(!k)return;if(k===uid){A.profopen({k});return}const p=PLAYERS[k];if(!p){toast('지금은 볼 수 없는 선원입니다.');return}
+ lgmenu(d,e){{const cur=document.getElementById('lgMenu'),src=e&&e.target&&e.target.closest&&e.target.closest('[data-act]');if(cur&&cur.dataset.k===d.k&&cur.dataset.at===((src&&src.dataset.at)||'')){lgClose();return}}/* the same name clicked again closes its menu */lgClose();const k=d.k;if(!k)return;if(k===uid){A.profopen({k});return}const p=PLAYERS[k];if(!p){toast('지금은 볼 수 없는 선원입니다.');return}
   const el=e&&e.target&&e.target.closest('[data-act]'),r=el?el.getBoundingClientRect():{left:innerWidth/2,bottom:innerHeight/2},gr=(P.greet||{})[k]===dayKey(),ke=esc(k);
   const m=document.createElement('div');m.id='lgMenu';m.className='lgmenu';m.setAttribute('role','menu');
   const ag=String(p.ba||'').trim();m.innerHTML=`<div class="lghd"><b>${esc(p.nick||'선원')}</b><span>나이 ${ag?esc(ag)+(/^\d+$/.test(ag)?'세':''):'—'}</span></div><button type="button" role="menuitem" data-act="lgpick" data-a="profopen" data-k="${ke}">프로필</button><button type="button" role="menuitem" data-act="lgpick" data-a="hi" data-k="${ke}" ${gr||mode!=='online'?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button type="button" role="menuitem" data-act="lgpick" data-a="gift" data-k="${ke}">선물</button>`;
