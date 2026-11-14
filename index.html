@@ -4335,7 +4335,17 @@ function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();rai
     if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
     const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;anonView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(ae&&ae.id==='rcIn'){if(!raidSoftPaint(r)){}}else if(!isField(ae))renderPanel();raidAnimRun()}},()=>{})}
 // a lobby stays listed while anyone in it is still sending the 15-second heartbeat (however long they have been waiting); silent for 3 min → hidden
-let RAIDS_ALL=[];const lobbyAlive=v=>raidNow()-Math.max(+v.at||0,...Object.values(v.hb||{}).map(Number))<3*60e3;
+let RAIDS_ALL=[];const partyGone=new Set();
+const partyLast=v=>Math.max(+v.at||0,...Object.values(v.hb||{}).map(Number));
+function partySweep(list){if(mode!=='online'||!db)return;const now=raidNow();let n=0;
+  list.forEach(v=>{if(n>=10||partyGone.has(v.id))return;const quiet=now-partyLast(v);
+    if((v.state==='lobby'&&quiet>30*60e3)||(v.state==='run'&&quiet>2*3600e3)){partyGone.add(v.id);n++;raidRef(v.id).update({state:'done',swept:now}).catch(()=>{})}})}
+// my own finished or long-gone parties: the host removes them, so the "my parties" list stays short
+function partyTidyMine(docs){if(mode!=='online'||!db)return;const now=raidNow();let n=0;
+  docs.forEach(v=>{if(n>=20||partyGone.has('x'+v.id)||v.host!==uid)return;const old=now-(+v.at||0);if((v.state==='done'&&old>3600e3)||old>6*3600e3){partyGone.add('x'+v.id);n++;raidRef(v.id).delete().catch(()=>{})}})}
+// an operator's page clears every party older than a day once per visit (one read of the leftovers, then they are gone for everyone)
+let partyStaffDone=false;function partyStaffSweep(){if(partyStaffDone||mode!=='online'||!db||!isStaff())return;partyStaffDone=true;
+  db.collection('parties').where('at','<',raidNow()-24*3600e3).get().then(sn=>sn.docs.slice(0,400).forEach(d=>raidRef(d.id).delete().catch(()=>{}))).catch(()=>{})}const lobbyAlive=v=>raidNow()-Math.max(+v.at||0,...Object.values(v.hb||{}).map(Number))<3*60e3;
 function raidRefilter(){const before=RAIDS.map(v=>v.id).join();RAIDS.length=0;RAIDS_ALL.forEach(v=>{if(lobbyAlive(v))RAIDS.push(v)});return before!==RAIDS.map(v=>v.id).join()}
 setInterval(()=>{if(mode==='online'&&raidRefilter()&&tab==='raid')renderPanel()},20e3);
 // parties already on their way: shown in the lobby to watch, listened to only while the 원정 lobby is open (each turn rewrites the party)
@@ -4347,9 +4357,9 @@ function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).filter(x=>egOpe
      <div class="pcbody"><b class="pcname">${x.rush?'보스 러시':esc(zz.n)}${x.hard?' <span class="ichip hardtag">HARD</span>':''}${x.rush?' <span class="ichip hardtag">RUSH</span>':''}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
       <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
-function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{const sig=x=>JSON.stringify(x.map(v=>Object.assign({},v,{hb:0})));const was=sig(RAIDS_ALL);RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));const moved=raidRefilter();if(tab==='raid'&&(moved||sig(RAIDS_ALL)!==was))renderPanel()},()=>{}));
-  tabSub(()=>tab==='raid'&&!MYRAID,()=>{let on=true;const pull=()=>db.collection('parties').where('state','==','run').get().then(sn=>{if(!on)return;const nx=sn.docs.map(d=>Object.assign({id:d.id},d.data())),sig=x=>x.filter(runAlive).map(v=>v.id+':'+v.step+':'+raidIn(v).length).join();const was=sig(RAIDS_RUN);RAIDS_RUN=nx;if(tab==='raid'&&!MYRAID&&sig(nx)!==was)renderPanel()}).catch(()=>{});pull();const t=setInterval(pull,60e3);return()=>{on=false;clearInterval(t)}});
-  db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
+function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{const sig=x=>JSON.stringify(x.map(v=>Object.assign({},v,{hb:0})));const was=sig(RAIDS_ALL);RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));partySweep(RAIDS_ALL);partyStaffSweep();const moved=raidRefilter();if(tab==='raid'&&(moved||sig(RAIDS_ALL)!==was))renderPanel()},()=>{}));
+  tabSub(()=>tab==='raid'&&!MYRAID,()=>{let on=true;const pull=()=>db.collection('parties').where('state','==','run').get().then(sn=>{if(!on)return;const nx=sn.docs.map(d=>Object.assign({id:d.id},d.data()));partySweep(nx);const sig=x=>x.filter(runAlive).map(v=>v.id+':'+v.step+':'+raidIn(v).length).join();const was=sig(RAIDS_RUN);RAIDS_RUN=nx;if(tab==='raid'&&!MYRAID&&sig(nx)!==was)renderPanel()}).catch(()=>{});pull();const t=setInterval(pull,60e3);return()=>{on=false;clearInterval(t)}});
+  db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{partyTidyMine(sn.docs.map(d=>Object.assign({id:d.id},d.data())));const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
   clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
 /* ---- lobby actions ---- */
@@ -6928,7 +6938,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794679135';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794679699';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
