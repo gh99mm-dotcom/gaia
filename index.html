@@ -4035,9 +4035,9 @@ function raidEvApply(r,z,rnd,avg,ev,pre){const res=[];
   raidIn(r).forEach(u=>{const me=r.m[u],L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});
     if(ev.dmg&&me.hp>0){const d=Math.max(1,Math.round(me.maxHp*ev.dmg));me.hp=Math.max(1,me.hp-d)}
     if(ev.heal&&me.hp>0)me.hp=Math.min(me.maxHp,me.hp+Math.round(me.maxHp*ev.heal));
-    if(ev.xp){const zl=Math.min(z.max,avg);L.xp+=Math.round(raidMonXp(zl)*ev.xp*raidLvX(me.lvl,zl))}
-    if(ev.cr){const c=crs(ev.cr[0]+Math.floor(rnd()*(ev.cr[1]-ev.cr[0]+1)));L.cr+=c;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.ev+=c}
-    (ev.item||[]).forEach(id=>L.it[id]=(L.it[id]||0)+1)});
+    const evk=raidLvX(me.lvl,Math.min(z.max,avg));if(ev.xp){const zl=Math.min(z.max,avg);L.xp+=Math.round(raidMonXp(zl)*ev.xp*evk)}
+    if(ev.cr){const c=Math.round(crs(ev.cr[0]+Math.floor(rnd()*(ev.cr[1]-ev.cr[0]+1)))*evk);L.cr+=c;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.ev+=c}
+    (ev.item||[]).forEach(id=>{if(evk>=1||Math.random()<evk)L.it[id]=(L.it[id]||0)+1})});
   if(ev.dmg)res.push(`모두 최대 체력의 ${Math.round(ev.dmg*100)}% 피해`);if(ev.heal)res.push(`모두 체력 ${Math.round(ev.heal*100)}% 회복`);if(ev.xp)res.push('경험치 획득');if(ev.cr)res.push('크레딧 획득');if(ev.item)res.push(ev.item.map(i=>ITEMS[i]?ITEMS[i].n:i).filter((v,i,a)=>a.indexOf(v)===i).join('·')+' 획득');
   if(ev.skip)r.step=Math.min(RAID_STEPS-1,r.step+1);
   r.phase='event';r.ev={n:ev.n,t:(pre||'')+ev.t,res:res.join(' · ')};r.b=null;return r}
@@ -4076,10 +4076,10 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
     // bigger parties earn more each: solo is the base, +10% per extra member (x1.3 for four)
     const pm=raidPartyX(r)*(b.bx||1);xp=Math.round(xp*pm);const crB=crs(Math.round(b.mons.filter(m=>m.kind==='boss').reduce((a,m)=>a+m.L*16,0)*pm));cr=crs(Math.round(cr*pm));const crM=Math.max(0,cr-crB);
     const mL=b.mons.reduce((a,m)=>a+m.L,0)/Math.max(1,b.mons.length),lx=u=>raidLvX(r.m[u].lvl,mL);
-    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});L.xp+=Math.round(xp*lx(u));L.cr+=cr;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=crM;L.cb.boss+=cr-crM;L.k=L.k||{};b.mons.forEach(m=>{const nm=String(m.n).replace(/^흉포한 /,'');L.k[nm]=(L.k[nm]||0)+1});if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n=n0&&r.m[u].job==='mech'?n0+1:n0;if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
+    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});const k=lx(u),cu=Math.round(cr*k),cmu=Math.min(cu,Math.round(crM*k));L.xp+=Math.round(xp*k);L.cr+=cu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=cmu;L.cb.boss+=cu-cmu;L.k=L.k||{};b.mons.forEach(m=>{const nm=String(m.n).replace(/^흉포한 /,'');L.k[nm]=(L.k[nm]||0)+1});if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')&&Math.random()<k){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35*k)L.it.crystal=(L.it.crystal||0)+1;{const zm=raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n1=n0&&r.m[u].job==='mech'?n0+1:n0,n=k<1?Math.floor(n1*.5+Math.random()):n1;/* 우주선 수리 재료: half (not the full level-gap cut) once the dungeon is too easy */if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
-    const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치가 줄어듭니다)':''}`};
-    if(boss){const cb=crs(Math.round(200*raidPartyX(r)));raidIn(r).forEach(u=>{const L=r.loot[u];L.xp+=Math.round(xp*.5*lx(u));L.cr+=cb;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cb})}return r}
+    const boss=b.mons.some(m=>m.kind==='boss');r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:boss?`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`:'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치와 보상이 줄어듭니다)':''}`};
+    if(boss){const cb=crs(Math.round(200*raidPartyX(r)));raidIn(r).forEach(u=>{const L=r.loot[u];const cbu=Math.round(cb*lx(u));L.xp+=Math.round(xp*.5*lx(u));L.cr+=cbu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cbu})}return r}
   if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 체력 1로 베이스캠프에 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);if(L.cb){for(const k in L.cb)L.cb[k]=Math.round(L.cb[k]/2)}L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
 /* ---- transactions: every move checks it is still the expected turn ---- */
@@ -6786,7 +6786,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794640940';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794643362';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
