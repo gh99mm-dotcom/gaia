@@ -3770,9 +3770,9 @@ const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
    summon: the boss calls minions; while any is alive the boss takes half damage
    forks: on these steps the party picks one of two paths
    ev: events that only happen in this dungeon (mixed in with the common ones) */
-const RZR={r6:{lava:.03,rage:.5,boom:3,forks:[4,8],rule:'용암 지대 · 분노 · 대폭발'},
- r5:{freeze:.18,breath:'서리 숨결',breathFrz:.5,forks:[4,8],rule:'빙결 · 서리 숨결'},
- r4:{shield:.12,shieldP:.5,focus:.4,forks:[4,8],rule:'보호막 · 집중 포격'},
+const RZR={r6:{lava:.04,rage:.5,boom:3,forks:[4,8],rule:'용암 지대 · 분노 · 대폭발'},
+ r5:{freeze:.24,breath:'서리 숨결',breathFrz:.5,forks:[4,8],rule:'빙결 · 서리 숨결'},
+ r4:{shield:.18,shieldP:.7,focus:.5,forks:[4,8],rule:'보호막 · 집중 포격'},
  r3:{fog:.15,poison:.35,hide:1,forks:[4,8],rule:'안개 · 독 — 안개 때문에 일반 공격이 15% 확률로 빗나갑니다(직업 스킬은 빗나가지 않음). 몬스터에게 맞으면 35% 확률로 3턴 동안 독(턴마다 최대 체력 4%)에 걸리며, 의무원 스킬이나 회복 아이템으로 풉니다. 보스 「모르가」는 안개 속에 숨어 한 턴 동안 피해를 받지 않고 체력을 회복합니다.'},
  r2:{armor:.4,summon:'결정 하수인',forks:[4,8],rule:'결정 갑옷 — 💎 표시가 있는 적은 직업 스킬로 갑옷을 깨기 전까지 받는 피해가 절반입니다. 보스 「셀레네」는 결정 하수인을 불러내고, 하수인이 살아 있는 동안 피해를 절반만 받습니다.'}};
 const RAID_ZEV={r6:[
@@ -3889,7 +3889,8 @@ const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.042*({elite:1.5,mid:3,boss:6}[ki
 const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mid:[22,3.5,1.15],boss:[34,2.5,1.2]};
 // monsters are tuned for a full party of 4; smaller parties meet weaker ones (HP and attack) so the fight stays about as long
 const RAID_HPF=[0,.36,.57,.79,1],RAID_ATKF=[0,.77,.85,.92,1];
-function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]));
+const RAID_HARD={r4:[1.6,1.4],r5:[1.9,1.55],r6:[2.2,1.7]};
+function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx=RAID_HARD[zone&&zone.id]||[1,1],def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
   return{n:name,L,kind:kind||'',hp,max:hp,atk,def,agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
@@ -6656,7 +6657,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794619769';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794620073';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
