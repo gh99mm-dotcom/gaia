@@ -1685,6 +1685,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .scll p{margin:0}
 .scll .scdim{color:var(--mute)}
 .sclgot{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.scbrag{cursor:pointer;font:inherit;font-size:12px;padding:3px 9px;background:color-mix(in srgb,var(--hc,#7fd0d0) 16%,transparent);border-color:color-mix(in srgb,var(--hc,#7fd0d0) 60%,transparent);color:#e4f4f8;letter-spacing:.02em;transition:background .15s,border-color .15s}.scbrag i{font-style:normal;color:var(--hc,#7fd0d0)}.scbrag:hover:not([disabled]){background:color-mix(in srgb,var(--hc,#7fd0d0) 30%,transparent);border-color:var(--hc,#7fd0d0)}.scbrag[disabled]{cursor:default;opacity:.55}
 .sclog.fresh .scll>.anim{opacity:0;animation:sclin .35s ease-out var(--d) forwards}
 .scll .scnew{display:inline-block;animation:sclin .5s ease-out}
 @keyframes sclin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
@@ -5447,7 +5448,7 @@ function scLogHTML(sc,i){const T=TRAILS[i],mv=sc.mv,pick=x=>x&&!mv&&x.tr===i&&x.
   else if(L)lines=[...L.acts.map(a=>`${esc(a)}`),...(L.evNote?[`<span class="sce sce-evend">이동 중 사건 · ${esc(L.evNote)}</span>`]:[]),`<b>${esc(L.ev)}</b>`];
   else if(sc.pend)lines=[`${esc(T.nodes[sc.at-1])}에 도착했다.`,'<span class="scdim">주변을 살펴보는 중…</span>'];
   else lines=[`${esc(T.nodes[sc.at-1])}은(는) 이미 둘러보았다.`,'<span class="scdim">더 들어가거나 정착지로 돌아갈 수 있습니다.</span>'];
-  return`<div class="sclog holo ${fresh?'fresh':''}" aria-live="polite" aria-label="조사 기록"><i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i><div class="scll" id="scLogL">${lines.map((l,n)=>{const a=!L||!L.leg||l.includes('class="anim"');return`<p class="${a?'anim':''}" style="--d:${(L&&L.leg?Math.max(0,n-lines.length+2):n)*.45}s">${l}</p>`}).join('')}${L&&(scGot(L).length||L.extra)?`<div class="sclgot anim" style="--d:${(L.leg?2:lines.length)*.45}s">${chipsOf(scGot(L),L.extra)}</div>`:''}${L&&L===lastScan&&mode==='online'&&(L.got||[]).some(([id])=>ITEMS[id]&&ITEMS[id].type==='junk')?`<div class="row anim" style="--d:${(L.leg?2:lines.length)*.45+.3}s;justify-content:flex-end"><button class="qchip" data-act="scanshare" ${L.jshared?'disabled':''}>${L.jshared?'PAD에 자랑함':'귀중품을 PAD에 자랑하기'}</button></div>`:''}</div></div>`}
+  return`<div class="sclog holo ${fresh?'fresh':''}" aria-live="polite" aria-label="조사 기록"><i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i><div class="scll" id="scLogL">${lines.map((l,n)=>{const a=!L||!L.leg||l.includes('class="anim"');return`<p class="${a?'anim':''}" style="--d:${(L&&L.leg?Math.max(0,n-lines.length+2):n)*.45}s">${l}</p>`}).join('')}${L&&(scGot(L).length||L.extra)?`<div class="sclgot anim" style="--d:${(L.leg?2:lines.length)*.45}s">${chipsOf(scGot(L),L.extra)}</div>`:''}${L&&L===lastScan&&mode==='online'&&(L.got||[]).some(([id])=>ITEMS[id]&&ITEMS[id].type==='junk')?`<div class="row anim" style="--d:${(L.leg?2:lines.length)*.45+.3}s;justify-content:flex-end"><button type="button" class="ichip scbrag" data-act="scanshare" ${L.jshared?'disabled':''}><i aria-hidden="true">✦</i>${L.jshared?'PAD에 자랑함':'귀중품 PAD에 자랑하기'}</button></div>`:''}</div></div>`}
 const scLogList=(sc,i)=>{const h=scLogHTML(sc,i),a=h.indexOf('<div class="scll"'),b=h.lastIndexOf('</div></div>');return h.slice(a,b+6)};
 function scFpHTML(sc){const mv=sc.mv,i=mv?mv.t:sc.t,T=TRAILS[i],k=mv?mv.to:sc.at,ahead=Math.min(SC_N,mv?mv.to:sc.at+1),end=!mv&&sc.at>=SC_N;
   const where=mv?`${esc(T.n)} ${mv.to}지점으로 가는 중`:`${esc(T.n)} ${sc.at}지점 · ${esc(T.nodes[sc.at-1])}`;
@@ -6826,7 +6827,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794661905';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794664221';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
