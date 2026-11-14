@@ -3461,7 +3461,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
-   ${admStaffHTML(others)}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
+   ${admStaffHTML(others)}${verAdminHTML()}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
@@ -4559,7 +4559,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);EG_OPEN=!!(sn.exists&&sn.data().eg);{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);EG_OPEN=!!(sn.exists&&sn.data().eg);VER_ANN=String((sn.exists&&sn.data().ver)||'');verApply();{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -6902,13 +6902,20 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794672165';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794672443';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
 window.__verReload=verReload;window.__verShut=()=>{verShut=true;verBar()};
-async function verCheck(){if(GAIA_VER.startsWith('__'))return;try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j&&j.v&&String(j.v)!==GAIA_VER){if(verNew!==String(j.v)){verNew=String(j.v);verShut=false}verBar()}}catch(e){}}
-setTimeout(verCheck,20e3);setInterval(verCheck,180e3);
+let VER_ANN='',verLatest='',verLatestAt=0;
+function verApply(){if(GAIA_VER.startsWith('__'))return;if(VER_ANN&&+VER_ANN>+GAIA_VER){if(verNew!==VER_ANN){verNew=VER_ANN;verShut=false}verBar()}}
+async function verCheck(){verApply()}
+// the operator page: what is deployed now (version.json) against what the crew were last told
+async function verFetch(){try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return'';const j=await r.json();return j&&j.v?String(j.v):''}catch(e){return''}}
+const verTime=v=>{const n=+v;if(!n)return'없음';const d=new Date(n<1e12?n*1000:n);return d.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})};
+function verAdminHTML(){if(mode!=='online')return'';if(Date.now()-verLatestAt>30e3){verLatestAt=Date.now();verFetch().then(v=>{if(v!==verLatest){verLatest=v;if(adminShown&&adminShown())adminRefresh()}})}
+  const fresh=!verLatest||+verLatest>+(VER_ANN||0);
+  return`<div class="info-sec"><span class="lbl">Update · 업데이트 알림</span><span class="hint">누르면 접속 중인 선원 화면 위에 「새 버전이 나왔습니다 · 새로고침」이 뜹니다. 누르기 전에는 새 버전이 배포돼도 알림이 뜨지 않습니다.</span><div class="row" style="gap:8px;align-items:center;flex-wrap:wrap"><span class="hint">배포된 버전 <b>${verTime(verLatest)}</b> · 마지막 알림 <b>${verTime(VER_ANN)}</b>${GAIA_VER.startsWith('__')?'':' · 내 화면 '+verTime(GAIA_VER)}</span><button class="btn sm ${fresh?'gold':'ghost'}" data-act="admver" ${fresh?'':'disabled'}>${fresh?'업데이트 알림 보내기':'알릴 새 버전 없음'}</button></div></div>`}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){verHidAt=Date.now();return}
   const away=verHidAt&&Date.now()-verHidAt>10*60e3;verHidAt=0;verCheck().then(()=>{if(away&&verNew&&!(typeof raidLocked==='function'&&raidLocked()))verReload()})});
 // tidy the address after a version reload
@@ -7757,6 +7764,9 @@ const A={
   if(left2.length){show(`⚠ 지우지 못한 기록: ${left2.join(' · ')}`);show('잠시 뒤 새로고침합니다. 다시 초기화를 눌러 주십시오.');console.warn('초기화 후 남은 기록',left2);setTimeout(()=>location.reload(),12000);return}
   show(`완료! 기록 ${n}건을 지웠습니다. 운영자도 운영자 군번을 발급받아 다시 합류합니다.`);setTimeout(()=>location.reload(),3500)},
  admeg(){if(!isAdmin||mode!=='online')return;const next=!EG_OPEN;if(next&&!confirm('통신 장치 이후 콘텐츠를 선원에게 공개할까요? (통신 장치 수리 + 오르비스 등장 조건도 맞아야 열립니다)'))return;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{eg:next})).then(()=>toast(next?'공개를 켰습니다.':'다시 운영진만 보이게 했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
+ async admver(){if(!isAdmin||mode!=='online')return;const v=await verFetch();if(!v){toast('배포된 버전을 확인하지 못했습니다.');return}verLatest=v;verLatestAt=Date.now();
+  if(!(+v>+(VER_ANN||0))){toast('이미 알린 버전입니다.');adminRefresh();return}if(!confirm('선원들에게 업데이트 알림을 보낼까요?'))return;
+  bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{ver:v})).then(()=>toast('업데이트 알림을 보냈습니다. 선원 화면에 새로고침 안내가 뜹니다.')).catch(()=>toast('보내지 못했습니다.'))},
  admpreopen(){if(!isAdmin||mode!=='online')return;const next=!PREOPEN;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{preopen:next})).then(()=>{toast(next?'오픈 준비 잠금을 켰습니다. 선원들은 PAD만 쓸 수 있습니다.':'잠금을 풀었습니다. 게임이 열렸습니다!');if(!next)sys('[공지] 가이아 우주함선이 정식으로 출항했습니다! 이제 모든 화면을 이용할 수 있습니다.',true,'beacon')}).catch(()=>toast('바꾸지 못했습니다.'))},
  preopenpad(){socTab='pad';socDrawer(true)},
  admaff(d){if(!isAdmin||mode!=='online')return;const a=admAffA,b=admAffB;if(!a||!b||a===b){toast('두 선원을 골라 주십시오.');return}
