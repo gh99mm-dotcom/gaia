@@ -38,6 +38,12 @@ service cloud.firestore {
     }
 
     // 캐릭터: 모두 읽고, 자기 캐릭터만 저장. 운영자는 캐릭터 삭제 표시 가능.
+    // 캐릭터 자동 백업: 하루 한 번 본인 기록을 요일 칸(0~6)에 보관. 본인과 운영진만 읽고, 되돌리기는 운영진만.
+    match /pbak/{id} {
+      allow read: if staff() || (member() && resource.data.uid == me());
+      allow create, update: if staff() || (member() && request.resource.data.uid == me() && id.matches(me() + '_[0-6]'));
+      allow delete: if staff();
+    }
     match /players/{uid} {
       allow read: if member();
       allow write: if member() && (me() == uid || staff());
