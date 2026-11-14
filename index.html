@@ -4043,12 +4043,12 @@ function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidN
 // rewards are taken once per expedition: the claim is first written onto the party record itself (claimed[uid]) in a transaction,
 // and only a claim that lands there pays out, so reloading the page (or a save that hasn't gone through yet) can't pay twice
 let raidClaiming=null;
-function raidClaim(r){if(!r||(P.raidDone||[]).includes(r.id)||raidClaiming===r.id)return;const done=()=>{P.raidDone=[...(P.raidDone||[]).filter(x=>x!==r.id).slice(-40),r.id]};
-  if((r.claimed||{})[uid]){done();commit();return}
-  if(mode!=='online'){done();raidPay(r);return}
-  raidClaiming=r.id;
-  raidTx(r.id,cur=>{if(!cur||(cur.claimed||{})[uid])return null;cur.claimed=Object.assign({},cur.claimed,{[uid]:Date.now()});return cur})
-   .then(nx=>{raidClaiming=null;done();if(nx)raidPay(nx);else commit()}).catch(()=>{raidClaiming=null})}
+// rewards are paid once per expedition. Whether I've been paid is decided only by my own save (P.raidDone), which is written in the same save
+// as the rewards themselves, so they can never come apart: if that save is lost, the next visit simply pays again (and the old run stops coming back).
+// The party record's claimed[uid] is just a note for others now; trusting it used to drop rewards whenever the save after a claim didn't go through.
+function raidClaim(r){if(!r||(P.raidDone||[]).includes(r.id)||raidClaiming===r.id)return;raidClaiming=r.id;
+  P.raidDone=[...(P.raidDone||[]).filter(x=>x!==r.id).slice(-40),r.id];raidPay(r);try{flushNow()}catch(e){}raidClaiming=null;
+  if(mode==='online')raidTx(r.id,cur=>{if(!cur||(cur.claimed||{})[uid])return null;cur.claimed=Object.assign({},cur.claimed,{[uid]:Date.now()});return cur}).catch(()=>{})}
 function raidPay(r){const L=r.loot[uid]||{xp:0,cr:0,it:{}},me=r.m[uid];
   if(!(r.left||{})[uid]){P.mdex=P.mdex||{};Object.entries(L.k||{}).forEach(([nm,c])=>{P.mdex[nm]=(P.mdex[nm]||0)+(+c||0)});gainXp(L.xp||0);P.cr=(P.cr||0)+(L.cr||0);Object.entries(L.it||{}).forEach(([i,n])=>{if(ITEMS[i])add(i,n)});if(me)P.hp=Math.max(1,Math.min(maxHp(),me.hp));if(r.result==='wipe'){P.hp=1;log('원정에 실패해 체력 1만 남기고 겨우 돌아왔다.','bad')}stat('raid');if(r.result==='clear')stat('raidclear');
     log(`원정 ${r.result==='clear'?'성공':'종료'} · ${raidZone(r).n} · 경험치 +${(L.xp||0).toLocaleString()} · 크레딧 +${L.cr||0}`,r.result==='clear'?'rare':'good')}commit()}
@@ -6656,7 +6656,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794617312';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794617513';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
