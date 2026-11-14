@@ -2058,6 +2058,8 @@ function makeQuery(path,w=[],o=null,l=0){
     add:async d=>{const r=await W(addDoc(collection(fs,path),d));return makeDoc(path+'/'+r.id)},
     get:()=>W(getDocs(build())).then(shape),onSnapshot:(n,e)=>onSnapshot(build(),qs=>n(shape(qs)),x=>e&&e(wrapErr(x)))}}
 const db={doc:makeDoc,collection:p=>makeQuery(p)};
+// server-clock save stamps for the game's "who saved since" poll
+window.__srvTS=()=>serverTimestamp();window.__tsFrom=ms=>Timestamp.fromMillis(Math.max(0,+ms||0));
 
 /* ---- room: presence + short-lived events, kept in Firestore ---- */
 // liveness is judged on the server's clock: every heartbeat also carries a server timestamp (st), and each client learns how far
@@ -3512,6 +3514,20 @@ function renderLog(){$('#log').innerHTML=LOG.length?LOG.map(l=>`<li><time>${hhmm
 /* ───────── network ───────── */
 let mode='boot',db=null,room=null,uid=null,myRef=null;
 let PLAYERS={},DELP={},CHAT=[],PEERS=[],chimeSeen=null;
+// a save stamp in the server's clock (Firebase) so "saved since" never depends on anyone's device clock
+const wtNow=()=>window.__srvTS?window.__srvTS():Date.now();
+const wtMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():v&&v.seconds!=null?v.seconds*1e3+Math.floor((v.nanoseconds||0)/1e6):+v||0;
+let plWm=0,plFullAt=0,plPollAt=0,plBusy=false;
+function plApply(docs,full){const m=full?{}:Object.assign({},PLAYERS),dl=full?{}:Object.assign({},DELP);
+  docs.forEach(d=>{const v=d.data();plWm=Math.max(plWm,wtMs(v&&v.wt));if(d.id===uid)return;delete m[d.id];delete dl[d.id];if(v&&v.deleted){dl[d.id]=v;return}if(v&&v.nick)m[d.id]=v});
+  if(PLAYERS[uid])m[uid]=PLAYERS[uid];if(DELP[uid])dl[uid]=DELP[uid];PLAYERS=m;DELP=dl;plRedraw()}
+let plT=null;function plRedraw(){if(plT)return;plT=setTimeout(()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},900)}
+function plPoll(force){if(mode!=='online'||!db||plBusy)return;const now=Date.now(),duel=tab==='fish'&&typeof duelOn==='function'&&duelOn();
+  if(!force&&document.visibilityState==='hidden')return;if(!force&&now-plPollAt<(duel?30e3:120e3)-500)return;plPollAt=now;plBusy=true;
+  const full=force||!plFullAt||now-plFullAt>3600e3;if(full)plFullAt=now;
+  const q=full?db.collection('players'):db.collection('players').where('wt','>',window.__tsFrom?window.__tsFrom(plWm):plWm);
+  q.get().then(sn=>plApply(sn.docs,full)).catch(()=>{}).then(()=>{plBusy=false})}
+setInterval(()=>plPoll(),10e3);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')plPoll()});
 // a save rewrites the whole character and is sent to every other player, so quick actions in a row are batched into one write;
 // leaving or hiding the page writes straight away so nothing is lost
 const SAVE_MS=30000;   // at most one save per 30 s: each save is sent to every crew member online, so fewer saves keep big evenings light
@@ -3562,8 +3578,8 @@ async function flush(){if(saving)return;saving=true;try{while(dirty&&!tabStale){
       // never overwrite a newer save from another device: a phone tab left open in the background used to wake up with old data and wipe progress
       // nor one that would take the level back down (only a deleted character or a new season may start over)
       if(myRef.tx){let lost=false;await myRef.tx(cur=>{if(cur&&cur.tab&&cur.tab!==TAB_ID&&(+cur.sv||0)>=(+out.sv||0)){lost=true;return null}
-          if(cur&&!cur.deleted&&(+cur.lvl||0)>(+out.lvl||0)&&(cur.sn||'')===(out.sn||'')){lost=true;return null}return out});if(lost){tabGoStale();break}}
-      else await myRef.set(out);
+          if(cur&&!cur.deleted&&(+cur.lvl||0)>(+out.lvl||0)&&(cur.sn||'')===(out.sn||'')){lost=true;return null}return Object.assign(out,{wt:wtNow()})});if(lost){tabGoStale();break}}
+      else await myRef.set(Object.assign(out,{wt:wtNow()}));
       pbakDaily(out);if(!dirty)pendClear()}}catch(e){if(e&&e.code==='invalid_argument'){goSolo('이 화면에서는 공용 저장 권한이 없어 혼자 모드로 전환했습니다.','저장을 시도했지만 권한이 없다고 거절됐습니다.')}else toast('저장이 잠시 늦어지고 있습니다. 다음 행동 때 다시 저장합니다.')}saving=false;if(dirty)flush()}
 // adm marks a notice sent from the admin side: it pins to the ticker and rings the chime for everyone
 function sys(text,adm,snd){if(mode!=='online'||!TICK_RE.test(text))return;const d={uid,nick:P.nick,text,at:Date.now(),sys:true};if(adm&&isAdmin)d.adm=true;if(snd)d.snd=snd;db.collection('chat').add(d).catch(()=>{})}
@@ -3592,8 +3608,12 @@ async function connect(){
   if(seasonFromDoc&&!P._fresh&&P.nick!=='새 선원'){P.tab=TAB_ID;P.sv=(+P.sv||0)+1;myRef.update({tab:TAB_ID,sv:P.sv}).catch(()=>{})}
   renderNet();renderAll();seasonWatch();seenSync();loadMySn();mbLoad();if(pendUsed){pendUsed=false;save();flushNow()}setTimeout(openingOnce,400);
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
-  let plT=null;const plDraw=()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()};
-  db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}if(!v||!v.nick)return;m[d.id]=v});if(m[uid]){seenPushLocal();seenMerge(m[uid]);tabCheck(m[uid])}PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
+  
+  /* other crew are no longer followed live (every save used to reach every screen): the whole list is read at login and once an hour,
+     and every 2 min only the characters saved since then (30 s during a fishing duel on the 낚시 tab). My own record stays live. */
+  myRef.onSnapshot(sd=>{const v=sd.exists?sd.data():null;const m=Object.assign({},PLAYERS),dl=Object.assign({},DELP);delete m[uid];delete dl[uid];
+    if(v&&v.deleted){dl[uid]=v;PLAYERS=m;DELP=dl;if(P&&!P._fresh)charDeleted();return}if(v&&v.nick){m[uid]=v;seenPushLocal();seenMerge(v);tabCheck(v)}PLAYERS=m;DELP=dl;plRedraw()},()=>{});
+  plPoll(true);
   db.collection('grants').where('at','>=',Math.max(0,(+P.grSince||+P.joined||0)-864e5)).onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
     if(!r.adm&&r.by&&r.by!==uid&&r.at!==P.rescueSeen&&(!P.faintAt||r.at>=P.faintAt)){P.rescueSeen=r.at;P.rescuedAt=r.at;addAff(r.by,AFF.rescue,'구조');P.rnoti=[{by:r.by,nick:r.nick||'선원',at:r.at},...(P.rnoti||[])].slice(0,20);if(isFaint())wake(r.nick||'누군가',r.med);else{log(`${r.nick||'누군가'} 님이 구조해 줬다.`,'good');commit()}bellRefresh()}
@@ -6902,7 +6922,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794675994';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794676818';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7477,9 +7497,9 @@ const A={
  attday(d){const n=+d.k||0,today=duelDay();let nd=attDayShift(attDay||today,n);if(nd>today)nd=today;attDay=nd;ATT=[];attSub();renderPanel()},
  attdel(d){if(!isAdmin||!d.k)return;db.doc('attend/'+d.k).delete().then(()=>toast('출석 메모를 지웠습니다.')).catch(()=>toast('지우지 못했습니다.'))},
  admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','rb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
- async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
+ async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false,wt:wtNow()});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
- async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'선원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
+ async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick,wt:wtNow()});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'선원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
  suggopen(){$('#suggModal').hidden=false;SUG.uid=null;mySuggSub();renderSugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
  sugopen(d){if(!isStaff())return;SUG.uid=d.k||null;renderSugg();setTimeout(()=>{const t=$('#suggIn');if(t)t.focus()},30)},
  sugback(){SUG.uid=null;renderSugg()},
@@ -7796,7 +7816,7 @@ const A={
   const ref=db.doc('players/'+x.uid);try{const cur=await ref.get(),cv=cur.exists?cur.data():{};
     // keep the record being replaced, just in case
     if(cur.exists)await db.doc('pbak/'+x.uid+'_undo').set({uid:x.uid,day:'되돌리기 전',at:Date.now(),lvl:+cv.lvl||1,nick:String(cv.nick||''),cr:+cv.cr||0,p:cv});
-    await ref.set(Object.assign({},x.p,{sv:(+cv.sv||0)+1000,tab:'restore',restoredAt:Date.now()}))}catch(e){toast('되돌리지 못했습니다. ('+((e&&e.code)||'오류')+')');return}
+    await ref.set(Object.assign({},x.p,{sv:(+cv.sv||0)+1000,tab:'restore',restoredAt:Date.now(),wt:wtNow()}))}catch(e){toast('되돌리지 못했습니다. ('+((e&&e.code)||'오류')+')');return}
   ADMBAK.arm=null;toast(`${x.nick||'선원'} 님의 기록을 ${x.day} 백업으로 되돌렸습니다.`);log(`[운영자] ${x.nick||'선원'} 님의 기록을 ${x.day} 백업(Lv.${x.lvl})으로 되돌렸다.`);A.admbak()},
  async shipunlock(d){if(!isAdmin||mode!=='online')return;const pt=SHIP.find(x=>x.id===d.k);if(!pt||!shipPrevDone(pt))return;if(!confirm(`우주선 「${pt.n}」 구역을 열까요? 모든 선원이 재료를 넣을 수 있게 됩니다.`))return;
   try{await db.doc('org/ship').set({open:Object.assign({},SHIPOPEN,{[pt.id]:Date.now()})})}catch(e){toast('열지 못했습니다. ('+((e&&e.code)||'오류')+')');return}
