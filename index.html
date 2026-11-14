@@ -1792,6 +1792,24 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .padtop{position:sticky;bottom:8px;display:block;margin:8px 0 0 auto;padding:6px 12px;font-size:12.5px;background:var(--panel2);color:var(--cyan);border:2px solid var(--ink);box-shadow:inset 0 0 0 1px var(--line),2px 2px 0 rgba(0,0,0,.3);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s;z-index:4}.padtop.show{opacity:1;pointer-events:auto}
 .unlockbox{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:22px 28px;max-width:360px}.unlockt{font-size:20px;color:var(--gold)}
 @keyframes mcmHit{0%,30%{background:rgba(255,214,102,.28);box-shadow:inset 3px 0 0 #ffd666}100%{background:transparent;box-shadow:none}}.mcm.mcmhit{animation:mcmHit 2.6s ease-out 1}
+.cabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:78px;gap:6px;align-content:start;overflow-y:auto;min-height:220px;flex:1 1 auto;max-height:440px;padding-right:2px}
+.cab{position:relative;display:flex;flex-direction:column;padding:0;background:#0b0f1a;border:2px solid #2a3046;box-shadow:inset 0 0 0 1px #000;cursor:pointer;overflow:hidden;font:inherit;color:inherit;width:100%;height:78px;min-width:0;box-sizing:border-box}
+.cab.empty{cursor:default;opacity:.55}
+.cabno{position:relative;z-index:3;display:block;padding:1px 0;font-size:10.5px;line-height:1.3;text-align:center;letter-spacing:.04em;color:#cfd6ea;background:#1c2236;border-bottom:1px solid #000}
+.cabin{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:radial-gradient(ellipse at 50% 40%,#2c3554,#10141f 75%)}
+.cabin img{height:26px;width:auto;max-width:none}.cabin em{font-style:normal;font-size:10px;max-width:92%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.cabdoor{position:absolute;z-index:2;left:0;right:0;top:15px;bottom:0;display:flex;pointer-events:none}
+.cabdoor i{position:relative;flex:1;background:linear-gradient(180deg,#4a5370,#353c55 55%,#2a3046);border-top:1px solid #6b7596;transition:transform .32s cubic-bezier(.5,0,.2,1)}
+.cabdoor i:first-child{border-right:1px solid #10131d;box-shadow:inset -3px 0 0 rgba(0,0,0,.25)}.cabdoor i:last-child{border-left:1px solid #5d6788}
+.cabdoor i:first-child::after{content:'';position:absolute;right:3px;top:40%;width:3px;height:8px;background:#9aa3c0}
+.cab:not(.empty):hover .cabdoor i:first-child,.cab:not(.empty):focus-visible .cabdoor i:first-child,.cab.on .cabdoor i:first-child{transform:translateX(-100%)}
+.cab:not(.empty):hover .cabdoor i:last-child,.cab:not(.empty):focus-visible .cabdoor i:last-child,.cab.on .cabdoor i:last-child{transform:translateX(100%)}
+.cab:not(.empty):hover,.cab.on{border-color:var(--gold)}.cab.me .cabno{color:var(--gold)}
+.cab .von{position:absolute;z-index:4;right:3px;top:3px;width:6px;height:6px;background:var(--green);border:1px solid var(--ink)}
+:root[data-skin="light"] .cab{background:#e9e6df;border-color:#9a958b}:root[data-skin="light"] .cabno{background:#d6d1c6;color:#4a463e}
+:root[data-skin="light"] .cabin{background:radial-gradient(ellipse at 50% 40%,#fbfaf6,#dcd7cc 75%)}:root[data-skin="light"] .cabdoor i{background:linear-gradient(180deg,#b8b3a8,#a39e93 55%,#8f8a80);border-top-color:#d6d1c6}
+@media (hover:none){.cab:not(.empty) .cabdoor i:first-child{transform:translateX(-62%)}.cab:not(.empty) .cabdoor i:last-child{transform:translateX(62%)}}
+@media (max-width:760px){.cabs{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));max-height:none;overflow:visible;flex:none;min-height:0}}
 .dishfx{font-size:13px;color:var(--gold)}.dishfx b{color:var(--cyan);margin-right:4px}.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
 .sgchat{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto;padding:8px;background:var(--deep);border:1px solid var(--line)}
 .sgmsg{max-width:82%;display:flex;flex-direction:column;gap:2px}.sgmsg.me{align-self:flex-end;align-items:flex-end}.sgmsg.them{align-self:flex-start}
@@ -6200,7 +6218,17 @@ function pvBar(){const ks=Object.entries(preview);if(!ks.length)return'';const p
   return`<div class="pvbar"><div class="pvchips">${ks.map(([slot,id])=>{const f=furnById(id);return`<span class="ichip">${FURN[slot].n} · ${esc(f.n)}${ownsF(id)?' (보유)':''}<button class="pvx" data-act="pvone" data-k="${slot}" aria-label="${esc(f.n)} 미리보기 빼기">×</button></span>`}).join('')}</div>
    <div class="row" style="gap:8px">${pd.lock?'<span class="hint" style="color:var(--red)">조사에서만 얻는 가구가 포함되어 있어요</span>':''}${pd.buy.length?`<span class="price">${img(IC.coin,null,2)}${pd.cost.toLocaleString()}</span>${pd.mats.length?matHTML(pd.mats):''}`:'<span class="hint">모두 보유한 가구예요.</span>'}<span style="margin-left:auto"></span><button class="btn sm ghost" data-act="pvoff">되돌리기</button><button class="btn sm gold" data-act="pvall" ${pd.ok?'':'disabled'}>${pd.buy.length?`전체 구매·배치 (${pd.buy.length}개 구매)`:'전체 배치'}</button></div></div>`}
 // other crew's rooms as small faces next to the room picture; online first
-function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean)),vp=visit&&(others.find(([id])=>id===visit)||[])[1];return`<div class="vside"><span class="lbl">${vp?`<b>${esc(vp.nick||'선원')}</b>의 방`:'선원의 방'}</span>${others.length?`<div class="vfaces">${others.slice().sort((a,b)=>(b[0]===visit)-(a[0]===visit)||on.has(b[0])-on.has(a[0])).map(([id,p])=>`<button class="vface ${visit===id?'on':''}" data-act="visit" data-k="${id}" title="${esc(p.nick||'선원')} 님의 방 구경하기" aria-label="${esc(p.nick||'선원')} 님의 방 구경하기">${headImg(2,p)}${on.has(id)?'<i class="von"></i>':''}</button>`).join('')}</div>`:`<span class="hint">${mode==='online'?'아직 다른 선원이 없습니다.':'온라인에서 볼 수 있습니다.'}</span>`}</div>`}
+/* 선원의 방: the crew's quarters as numbered cabins (1호~30호, more if the crew grows), handed out by who came aboard first.
+   Every door is shut; pointing at one slides it open on its owner's face. Click a cabin to look around that room (your own takes you home). */
+const CABINS=30;
+function cabinList(others){const all=[[uid,P],...others].filter(([id,p])=>id&&p);all.sort((x,y)=>((+x[1].joined||9e15)-(+y[1].joined||9e15))||(x[0]<y[0]?-1:1));return all}
+function visitHTML(others){const on=new Set(PEERS.map(x=>x.presence&&x.presence.uid).filter(Boolean)),vp=visit&&(others.find(([id])=>id===visit)||[])[1];
+  if(mode!=='online')return`<div class="vside"><span class="lbl">선원의 방</span><span class="hint">온라인에서 볼 수 있습니다.</span></div>`;
+  const L=cabinList(others),n=Math.max(CABINS,L.length);
+  const cells=Array.from({length:n},(_,i)=>{const e=L[i],no=`${i+1}호`;if(!e)return`<div class="cab empty" title="${no} · 빈 선실"><span class="cabno">${no}</span><span class="cabin"></span><span class="cabdoor"><i></i><i></i></span></div>`;
+    const [id,p]=e,me=id===uid,cur=me?!visit:visit===id,nm=me?'내 방':(p.nick||'선원');
+    return`<button class="cab${cur?' on':''}${me?' me':''}" data-act="${me?'visithome':'visit'}" data-k="${me?'':id}" title="${no} · ${esc(nm)}" aria-label="${no} ${esc(nm)}${me?'':' 님의 방 구경하기'}"><span class="cabno">${no}</span><span class="cabin">${headImg(2,p)}<em>${esc(nm)}</em></span><span class="cabdoor"><i></i><i></i></span>${on.has(id)&&!me?'<i class="von"></i>':''}</button>`}).join('');
+  return`<div class="vside"><span class="lbl">${vp?`<b>${esc(vp.nick||'선원')}</b>의 방`:'선원 거주 구역'}</span><div class="cabs">${cells}</div></div>`}
 function renderRoom(){
   enterRoomSpace(visit||uid);
   const vis=visit&&PLAYERS[visit];
@@ -6787,7 +6815,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794648729';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794648973';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7464,6 +7492,7 @@ const A={
  pvoff(){preview={};renderPanel()},
  fplace(d){if(!ownsF(d.k))return;delete preview[roomSlot];P.room=Object.assign({},roomOf(P),{[roomSlot]:d.k});save();renderPanel()},
  fbuy(d){const f=FURN[roomSlot].list.find(x=>x.id===d.k);if(!f||ownsF(f.id))return;if((P.cr||0)<f.price){toast('크레딧이 부족해요.');return}if(!hasMat(f.mat)){toast('재료가 부족해요.');return}(f.mat||[]).forEach(([id,n])=>take(id,n));P.cr-=f.price;sfxCoin();P.own=[...(P.own||[]),f.id];delete preview[roomSlot];P.room=Object.assign({},roomOf(P),{[roomSlot]:f.id});log(`${f.n}을(를) 방에 들였다.`,'good');commit()},
+ visithome(){if(!visit)return;visit=null;preview={};renderPanel()},
  visit(d){if(!PLAYERS[d.k])return;visit=d.k;renderPanel();const w=document.querySelector('.roomwrap');if(w)w.scrollIntoView({block:'nearest',behavior:'smooth'})},
  roomhome(){visit=null;renderPanel()},
  emote(d){if(!EMOTES[d.k])return;myEmote={k:d.k,at:Date.now()};pushRoomPresence();drawRoomCv()},
@@ -7958,7 +7987,7 @@ document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.va
 let raidPd=null;addEventListener('pointerdown',e=>{const a=e.target.closest&&e.target.closest('[data-act]');raidPd=a&&/^raid(atk|def|sk|item|tgt|to|pick|bag)$/.test(a.dataset.act)?{el:a,act:a.dataset.act,k:a.dataset.k}:null},{capture:true,passive:true});
 addEventListener('pointerup',e=>{const d=raidPd;raidPd=null;if(!d||d.el.isConnected)return;setTimeout(()=>{const t=document.elementFromPoint(e.clientX,e.clientY),a=t&&t.closest('[data-act]');if(a&&a!==d.el&&a.dataset.act===d.act&&a.dataset.k===d.k&&!a.disabled)a.click()})},{capture:true,passive:true});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['mailcat','padtop','anonopen','anonclose','anonsend','anondel','antab','anmore','anlike','lgmenu','sugopen','sugback','notiall','sharex','sharego','slotshare','scanshare','ttlbragx','ttlbraggo','ttlpopclose','ttlpopwear','ttlpopbrag','ttlbrag','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raidfork','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','noticeopen','noticeclose','ntcpost','topen','tclose','tmode','tunpick','tpick','tsave','rbopen','rbclose','rbsend','rbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['visithome','mailcat','padtop','anonopen','anonclose','anonsend','anondel','antab','anmore','anlike','lgmenu','sugopen','sugback','notiall','sharex','sharego','slotshare','scanshare','ttlbragx','ttlbraggo','ttlpopclose','ttlpopwear','ttlpopbrag','ttlbrag','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidpick','raidfleev','raidnext','raidfork','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','noticeopen','noticeclose','ntcpost','topen','tclose','tmode','tunpick','tpick','tsave','rbopen','rbclose','rbsend','rbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 function lgClose(){const m=document.getElementById('lgMenu');if(m)m.remove()}
