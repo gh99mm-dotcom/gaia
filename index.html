@@ -6807,8 +6807,8 @@ const KEEP_VAL=['anIn','bondIn','admRsLv','admRsXp','admRsCr','admRsMsg','admMai
 function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID&&document.activeElement&&document.activeElement.id==='rcIn'&&raidSoftPaint(MYRAID))return;if(socOpen)queueMicrotask(renderSoc);tabSubsSync();const ae=document.activeElement,kf=ae&&KEEP_FOCUS.has(ae.id)?ae.id:null;if(imeOn&&kf){imeWait=true;return}const pos=kf?ae.selectionStart:null;
   // chat logs keep their scroll: stuck to the newest line if they were there, otherwise where the reader left them
   const logs={};['rcLog','lgLog','bossLog'].forEach(id=>{const l=document.getElementById(id);if(l)logs[id]={t:l.scrollTop,end:l.scrollHeight-l.scrollTop-l.clientHeight<24}});
-  const bags=[...document.querySelectorAll('.mlbag')].map(e=>e.scrollTop);
-  const kv=keepVals();renderPanel0();putVals(kv);
+  const bags=[...document.querySelectorAll('.mlbag')].map(e=>e.scrollTop),cabEl=document.querySelector('.cabs'),cabT=cabEl?cabEl.scrollTop:0;
+  const kv=keepVals();renderPanel0();putVals(kv);{const c=document.querySelector('.cabs');if(c&&cabT)c.scrollTop=cabT}
   Object.entries(logs).forEach(([id,v])=>{const l=document.getElementById(id);if(l)l.scrollTop=v.end?l.scrollHeight:v.t});
   document.querySelectorAll('.mlbag').forEach((e,i)=>{if(bags[i])e.scrollTop=bags[i]});
   {const l=document.getElementById('rcLog');if(l&&!logs.rcLog)l.scrollTop=l.scrollHeight}
@@ -6817,7 +6817,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794649589';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794649699';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
