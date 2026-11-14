@@ -1994,7 +1994,7 @@ window.claude={use:async n=>{const api=await window.__fb;return api[n]||null}};
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,deleteUser,connectAuthEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {initializeFirestore,doc,collection,getDoc,getDocs,setDoc,addDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,writeBatch,increment,runTransaction,serverTimestamp,connectFirestoreEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {initializeFirestore,doc,collection,getDoc,getDocs,setDoc,addDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,writeBatch,increment,runTransaction,serverTimestamp,Timestamp,connectFirestoreEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {getStorage,ref as sref,uploadBytes,deleteObject,connectStorageEmulator} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig={
@@ -2062,17 +2062,18 @@ const db={doc:makeDoc,collection:p=>makeQuery(p)};
 /* ---- room: presence + short-lived events, kept in Firestore ---- */
 // liveness is judged on the server's clock: every heartbeat also carries a server timestamp (st), and each client learns how far
 // its own clock is off from the echo of its own heartbeat, so a phone or PC whose clock is minutes off no longer shows people offline
-const ROOMS=new Set(),STALE=150e3;let ME=null,clockOff=0;
+const ROOMS=new Set();let ME=null,clockOff=0;
 const stMs=d=>d&&d.st&&typeof d.st.toMillis==='function'?d.st.toMillis():0;
-function makeRoom(name){
+function makeRoom(name){const slow=name==='lobby',STALE=slow?420e3:150e3,HB=slow?180e3:60e3;
   const peersC=collection(fs,'rooms',name,'peers'),evC=collection(fs,'rooms',name,'events'),me=doc(peersC,ME.uid);
   let state={},wT=null,lastW=0,peerFns=[],peerDocs=[],unE=null,handlers={},left=false;const seen=new Set(),joined=Date.now();
-  const emitPeers=()=>{const now=Date.now(),sNow=now+clockOff,peers=peerDocs.filter(d=>d.id===ME.uid||(stMs(d)?sNow-stMs(d):now-(d.ts||0))<STALE).map(d=>({id:d.id,presence:d.p||{},isMe:d.id===ME.uid}));peerFns.forEach(f=>{try{f({peers})}catch(e){console.error(e)}})};
-  const flush=()=>{lastW=Date.now();return setDoc(me,{p:state,ts:Date.now(),st:serverTimestamp()}).catch(()=>{})};
-  const write=()=>{if(left)return;clearTimeout(wT);wT=setTimeout(flush,Math.max(0,1200-(Date.now()-lastW)))};
-  const hb=setInterval(()=>{if(!left)flush()},60e3),tick=setInterval(emitPeers,30e3);
-  const unP=onSnapshot(peersC,{includeMetadataChanges:true},qs=>{peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));const mine=qs.docs.find(d=>d.id===ME.uid&&!d.metadata.hasPendingWrites);if(mine){const v=mine.data(),st=stMs(v);if(st&&v.ts&&Date.now()-v.ts<30e3)clockOff=st-v.ts;window.__clockOff=clockOff}emitPeers()},()=>{});
-  const onVis=()=>{if(!left&&document.visibilityState==='visible'){flush();emitPeers()}};document.addEventListener('visibilitychange',onVis);
+  const emitPeers=()=>{const now=Date.now(),sNow=now+clockOff,peers=peerDocs.filter(d=>d.id===ME.uid||(stMs(d)?sNow-stMs(d):now-(d.ts||0))<STALE).map(d=>({id:d.id,presence:d.p||{},isMe:d.id===ME.uid}));if(!peers.some(x=>x.isMe)&&lastW)peers.push({id:ME.uid,presence:state,isMe:true});peerFns.forEach(f=>{try{f({peers})}catch(e){console.error(e)}})};
+  const flush=()=>{lastW=Date.now();sentId=idOf();return setDoc(me,{p:state,ts:Date.now(),st:serverTimestamp()}).catch(()=>{})};
+  const idOf=()=>JSON.stringify(Object.assign({},state,{act:0}));let sentId='';
+  const write=()=>{if(left)return;if(slow&&lastW&&idOf()===sentId)return;clearTimeout(wT);wT=setTimeout(flush,Math.max(0,1200-(Date.now()-lastW)))};
+  const hb=setInterval(()=>{if(!left)flush()},HB),tick=setInterval(emitPeers,30e3);
+  const unP=onSnapshot(slow?query(peersC,where('st','>=',Timestamp.fromMillis(Date.now()-30*60e3))):peersC,{includeMetadataChanges:true},qs=>{peerDocs=qs.docs.map(d=>Object.assign({id:d.id},d.data()));const mine=qs.docs.find(d=>d.id===ME.uid&&!d.metadata.hasPendingWrites);if(mine){const v=mine.data(),st=stMs(v);if(st&&v.ts&&Date.now()-v.ts<30e3)clockOff=st-v.ts;window.__clockOff=clockOff}emitPeers()},()=>{});
+  const onVis=()=>{if(!left&&document.visibilityState==='visible'){if(!slow||Date.now()-lastW>60e3)flush();emitPeers()}};document.addEventListener('visibilitychange',onVis);
   const api={
     presence:async patch=>{for(const k in patch){if(patch[k]==null)delete state[k];else state[k]=patch[k]}write()},
     onPeers:fn=>{peerFns.push(fn);if(peerDocs.length)fn&&emitPeers();return()=>{peerFns=peerFns.filter(f=>f!==fn)}},
@@ -2942,7 +2943,7 @@ let P=newPlayer('새 선원');
 /* listeners only one screen needs: opened when you arrive there, closed when you leave, so busy chats and logs elsewhere cost nothing */
 const TAB_SUBS=[];
 const tabSub=(want,open)=>TAB_SUBS.push({want,open,un:null});
-function tabSubsSync(){TAB_SUBS.forEach(s=>{const w=mode==='online'&&!!db&&s.want();if(w&&!s.un)s.un=s.open()||(()=>{});else if(!w&&s.un){try{s.un()}catch(e){}s.un=null}})}
+function tabSubsSync(){try{padSync();farmSync();if(attUn&&!(tab==='ship'&&shipView==='supply')){try{attUn()}catch(e){}attUn=null;attDay=''}}catch(e){}TAB_SUBS.forEach(s=>{const w=mode==='online'&&!!db&&s.want();if(w&&!s.un)s.un=s.open()||(()=>{});else if(!w&&s.un){try{s.un()}catch(e){}s.un=null}})}
 const AS=k=>Math.max(2,(P.as&&P.as[k])||0);
 const CRAFT={
  head:{n:'머리',ic:'gearH',list:[
@@ -3593,7 +3594,7 @@ async function connect(){
   // every save by anyone lands here, so with a full crew it can fire several times a second: keep the data fresh at once but redraw at most about once a second
   let plT=null;const plDraw=()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()};
   db.collection('players').onSnapshot(sn=>{const m={},dl={};let meDel=false;sn.docs.forEach(d=>{const v=d.data();if(v&&v.deleted){dl[d.id]=v;if(d.id===uid)meDel=true;return}if(!v||!v.nick)return;m[d.id]=v});if(m[uid]){seenPushLocal();seenMerge(m[uid]);tabCheck(m[uid])}PLAYERS=m;DELP=dl;if(meDel&&P&&!P._fresh)charDeleted();if(!plT)plT=setTimeout(plDraw,900)},()=>{});
-  db.collection('grants').onSnapshot(receiveGrants,()=>{});
+  db.collection('grants').where('at','>=',Math.max(0,(+P.grSince||+P.joined||0)-864e5)).onSnapshot(receiveGrants,()=>{});
   db.doc('rescues/'+uid).onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
     if(!r.adm&&r.by&&r.by!==uid&&r.at!==P.rescueSeen&&(!P.faintAt||r.at>=P.faintAt)){P.rescueSeen=r.at;P.rescuedAt=r.at;addAff(r.by,AFF.rescue,'구조');P.rnoti=[{by:r.by,nick:r.nick||'선원',at:r.at},...(P.rnoti||[])].slice(0,20);if(isFaint())wake(r.nick||'누군가',r.med);else{log(`${r.nick||'누군가'} 님이 구조해 줬다.`,'good');commit()}bellRefresh()}
     else if(r.adm&&isFaint()&&r.at>=(P.faintAt||0))wake(r.nick||'누군가',r.med);
@@ -3814,10 +3815,15 @@ function farmPut(i,pl){pl=pl?Object.assign({},POD0,pl):null;FARM.pods[i]=pl;if(m
 function farmInc(path,field,n){const r=db.doc(path);return r.inc?r.inc({[field]:n}):r.get().then(s=>farmMerge(path,{[field]:((s.exists&&+s.data()[field])||0)+n}))}
 function storeAdd(id,n){FSTORE[id]=Math.max(0,(FSTORE[id]||0)+n);if(!FSTORE[id])delete FSTORE[id];if(mode==='online')farmInc('farm/store',id,n).catch(()=>{});else farmSave()}
 tabSub(()=>tab==='farm',()=>db.collection('farmlog').orderBy('at','desc').limit(30).onSnapshot(sn=>{FLOG=sn.docs.map(d=>d.data());if(tab==='farm')renderPanel()},()=>{}));
+let farmUn=[],farmPollT=0;
+const farmPods=sn=>{const d=sn.exists?sn.data():{};FARM=farmShape(d.xu,d.ore,Array.from({length:FIELD_N},(_,i)=>{const pl=d['p'+i]||null;return pl&&pl.seed&&!(ITEMS[pl.seed]&&ITEMS[ITEMS[pl.seed].crop])?Object.assign({},pl,{seed:null}):pl}),d);renderNav();if(tab==='farm')renderPanel()};
+function farmSync(){if(mode!=='online'||!farmOn||!db)return;const want=tab==='farm';
+  if(want&&!farmUn.length){farmUn=[db.doc('farm/pods').onSnapshot(farmPods,()=>{}),db.doc('farm/store').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FSTORE={};for(const k in d)if(ITEMS[k]&&+d[k]>0)FSTORE[k]=+d[k];if(tab==='farm')renderPanel()},()=>{})]}
+  else if(!want&&farmUn.length){farmUn.forEach(u=>{try{u()}catch(e){}});farmUn=[];farmPollT=Date.now()}
+  if(!want&&Date.now()-farmPollT>300e3){farmPollT=Date.now();db.doc('farm/pods').get().then(farmPods).catch(()=>{})}}
+setInterval(farmSync,30e3);
 function farmLoad(){if(farmOn)return;
-  if(mode==='online'){farmOn=true;
-    db.doc('farm/pods').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FARM=farmShape(d.xu,d.ore,Array.from({length:FIELD_N},(_,i)=>{const pl=d['p'+i]||null;return pl&&pl.seed&&!(ITEMS[pl.seed]&&ITEMS[ITEMS[pl.seed].crop])?Object.assign({},pl,{seed:null}):pl}),d);renderNav();if(tab==='farm')renderPanel()},()=>{});
-    db.doc('farm/store').onSnapshot(sn=>{const d=sn.exists?sn.data():{};FSTORE={};for(const k in d)if(ITEMS[k]&&+d[k]>0)FSTORE[k]=+d[k];if(tab==='farm')renderPanel()},()=>{})}
+  if(mode==='online'){farmOn=true;farmSync()}
   else if(!FARM.local){const s=P.sfarm||{};FARM=farmShape(s.xu,s.ore,(s.pods||[]).slice(),s);FSTORE=Object.assign({},s.store);FLOG=(s.log||[]).slice();FARM.local=1}}
 function podHTML(i,seeds){const pl=fpod(i);let pic='',title,body='',cls='',badge='';
   if(!pl||!pl.til){cls='empty';title=`포드 ${i+1} · 비어 있음`;
@@ -4093,7 +4099,7 @@ const raidZone=r=>{if(r&&r.rush)return rushZ(RAID_ZONES[rushStage(r)-1]);const z
 const raidHardOpen=z=>!!RAID_HARDZ[z.id]&&(((P.mdex||{})[z.boss.replace(/^흉포한 /,'')]||0)>0||!!(P.rclr||{})[z.id]);
 const raidFits=(z,hard)=>P.lvl>=z.min&&(!hard||raidHardOpen(z));
 const raidNow=()=>sNow();
-function raidTx(id,fn){const r=raidRef(id);if(r.tx)return r.tx(fn);return r.get().then(s=>{const nx=fn(s.exists?JSON.parse(JSON.stringify(s.data())):null);return nx?r.set(nx).then(()=>nx):null})}
+function raidTx(id,fn0){const r=raidRef(id);/* every move I make also says I'm still here, at no extra write */const fn=x=>{const nx=fn0(x);if(nx&&typeof nx==='object'&&nx.ids&&(nx.ids||[]).includes(uid)){nx.hb=Object.assign({},nx.hb,{[uid]:raidNow()});if(MYRAID&&MYRAID.id===id)raidHbAt=raidNow()}return nx};if(r.tx)return r.tx(fn);return r.get().then(s=>{const nx=fn(s.exists?JSON.parse(JSON.stringify(s.data())):null);return nx?r.set(nx).then(()=>nx):null})}
 function raidLog(b,t){b.log=[...(b.log||[]),t].slice(-7)}
 // crew damage on a monster after the zone rules: a skill breaks 결정 갑옷 (and lands in full), anything else is halved by it; the boss is halved while minions live
 function raidDmgMod(b,m,d,skill){let tag='';if(m.hide)return[0,' (안개 속에 숨음)'];if(m.arm){if(skill){m.arm=0;tag+=' · 결정 갑옷이 깨졌다!'}else{d=Math.max(1,Math.round(d/2));tag+=' (결정 갑옷)'}}
@@ -4107,7 +4113,7 @@ const raidAoeMove=m=>RAID_AOE[[...String(m.n||'')].reduce((a,c)=>a+c.charCodeAt(
 // party members still in the run (not left), and of those the ones still standing
 const raidIn=r=>r.ids.filter(u=>!(r.left||{})[u]);
 const raidUp=r=>raidIn(r).filter(u=>r.m[u]&&r.m[u].hp>0);
-function raidDriver(r){const now=raidNow(),hb=r.hb||{};return raidIn(r).find(u=>now-(hb[u]||0)<45e3)||r.host}
+function raidDriver(r){const now=raidNow(),hb=r.hb||{};return raidIn(r).find(u=>now-(hb[u]||0)<90e3)||r.host}
 /* ---- building a step ---- */
 function raidRoll(r,seed){let x=seed;const rnd=()=>(x=(x*16807)%2147483647)/2147483647;return rnd}
 // monsters ramp up the deeper you go: from about party level -3 at the entrance to +3 near the end (kept inside the zone range); the boss is the zone top level +3
@@ -4224,13 +4230,13 @@ function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidT
 function raidFork(k){const r0=MYRAID;if(!r0||r0.phase!=='fork')return;const st=r0.step;raidTx(r0.id,r=>{if(!r||r.step!==st||r.phase!=='fork')return null;r.seq++;return raidForkGo(r,k,P.nick)}).catch(()=>{})}
 function raidNext(){const r0=MYRAID;if(!r0||(r0.phase!=='event'&&r0.phase!=='won'))return;const st=r0.step;raidTx(r0.id,r=>{if(!r||r.step!==st||(r.phase!=='event'&&r.phase!=='won'))return null;r.seq++;r.step++;return raidStep(r)}).catch(()=>{})}
 /* ---- the driver plays monsters and timeouts; everyone keeps a heartbeat ---- */
-let raidHbAt=0;
+let raidHbAt=0;const RAID_HB=60e3;
 // waiting in the lobby: my entry on the party record follows my character (healing, gear, level) until the party sets out
 let raidLobbyAt=0;const RAID_SYNC=['hp','maxHp','atk','def','agi','crit','critD','dodge','lvl','job','nick'];
 function raidLobbySync(r){if(!r||r.state!=='lobby'||!r.ids.includes(uid)||raidBusy||Date.now()-raidLobbyAt<1500)return;const me=raidMe(),cur=(r.m||{})[uid]||{};if(!RAID_SYNC.some(k=>cur[k]!==me[k]))return;raidLobbyAt=Date.now();
   raidTx(r.id,x=>{if(!x||x.state!=='lobby'||!x.ids.includes(uid))return null;x.m[uid]=Object.assign({},x.m[uid],raidMe());return x}).catch(()=>{})}
 function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();raidQRun();raidLobbySync(r);
-  if(now-raidHbAt>15e3&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:{[uid]:now}}).catch(()=>{})}
+  if(now-Math.max(raidHbAt,+((r.hb||{})[uid])||0)>RAID_HB&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:Object.assign({},r.hb,{[uid]:now})}).catch(()=>{})}
   if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
   if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
@@ -4315,8 +4321,8 @@ function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).filter(x=>egOpe
      <div class="pcbody"><b class="pcname">${x.rush?'보스 러시':esc(zz.n)}${x.hard?' <span class="ichip hardtag">HARD</span>':''}${x.rush?' <span class="ichip hardtag">RUSH</span>':''}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
       <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
-function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));raidRefilter();if(tab==='raid')renderPanel()},()=>{}));
-  tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','run').onSnapshot(sn=>{RAIDS_RUN=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{}));
+function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{const sig=x=>JSON.stringify(x.map(v=>Object.assign({},v,{hb:0})));const was=sig(RAIDS_ALL);RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));const moved=raidRefilter();if(tab==='raid'&&(moved||sig(RAIDS_ALL)!==was))renderPanel()},()=>{}));
+  tabSub(()=>tab==='raid'&&!MYRAID,()=>{let on=true;const pull=()=>db.collection('parties').where('state','==','run').get().then(sn=>{if(!on)return;const nx=sn.docs.map(d=>Object.assign({id:d.id},d.data())),sig=x=>x.filter(runAlive).map(v=>v.id+':'+v.step+':'+raidIn(v).length).join();const was=sig(RAIDS_RUN);RAIDS_RUN=nx;if(tab==='raid'&&!MYRAID&&sig(nx)!==was)renderPanel()}).catch(()=>{});pull();const t=setInterval(pull,60e3);return()=>{on=false;clearInterval(t)}});
   db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
   clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
@@ -6896,7 +6902,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794670312';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794672165';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7932,7 +7938,9 @@ function giftAff(g){if(!g||!g.from||g.sys||g.kind||g.from===uid||!mailHasGift(g)
 function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>!got.includes(g.id));if(MAILG.map(giftAff).some(Boolean)){save();renderPilot()}
   MAILG.forEach(g=>{if(mailNoted.has(g.id))return;mailNoted.add(g.id);if((+g.at||0)>socBoot)toast(`${g.sys?'운영자':(g.nick||'누군가')} 님에게서 ${mailKind(g)}이(가) 왔습니다. 우편함을 확인하십시오.`)});mailRefresh()}
 function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0||+g.xp>0||+g.lv>0||(g.ttl||[]).length)||got.includes(d.id))return;if(g.to&&g.to!==uid)return;
-  if(!g.to&&(+g.at||0)<(P.joined||0)){P.gr=[...(P.gr||[]),d.id].slice(-80);ch=true;return}MAILA.push(Object.assign({id:d.id,grant:1},g))});if(ch)save();mailRefresh()}
+  if(!g.to&&(+g.at||0)<(P.joined||0)){P.gr=[...(P.gr||[]),d.id].slice(-80);ch=true;return}MAILA.push(Object.assign({id:d.id,grant:1},g))});
+  {const pend=MAILA.map(g=>+g.at||0),all=sn.docs.map(d=>+(d.data()||{}).at||0),nx=pend.length?Math.min(...pend):(all.length?Math.max(...all):0);if(nx>(+P.grSince||0)){P.grSince=nx;ch=true}}
+  if(ch)save();mailRefresh()}
 // gift items are stored as [{id,n}] (Firestore refuses nested arrays); older docs may still hold [[id,n]]
 const giftItems=g=>(g.items||[]).map(x=>Array.isArray(x)?x:[x&&x.id,x&&+x.n,x&&x.by]);
 const mailHasGift=g=>giftItems(g).some(([i,n])=>ITEMS[i]&&n>0)||(+g.cr||0)>0;
@@ -8484,7 +8492,7 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
   if(!me){// another member: the same hero card as my profile, with their feelings toward me instead of XP; their tastes open up once my own 호감도 toward them (the number shown) reaches 10
     const af=affOf(p,uid),open=affOf(P,id)>=10,chips=(ids,c)=>(ids||[]).filter(i=>ITEMS[i]).map(i=>`<span class="ichip" style="color:${c}">${iicon(i,1)}${esc(ITEMS[i].n)}</span>`).join('')||'<span class="hint">없음</span>';
     const lock='<span class="hint tastelock">🔒 호감도 10 이상이면 보입니다</span>';
-    return`<div class="card profcard" id="profCard">${p.bio?bioQ(p):''}<div class="profwrap">${idCardHTML(p,id,!!p.pfp&&Math.abs(af)>=30,!!p.pfp&&Math.abs(af)<30)}${profSideHTML(p,id,open)}</div>${PROF_AFF}${profNotesHTML(p,false)}${affNotesHTML(p,false,affOf(P,id))}</div>`}
+    return`<div class="card profcard" id="profCard">${p.bio?bioQ(p):''}<div class="profwrap">${idCardHTML(p,id,!!p.pfp&&Math.abs(affOf(P,id))>=30,!!p.pfp&&Math.abs(affOf(P,id))<30)}${profSideHTML(p,id,open)}</div>${PROF_AFF}${profNotesHTML(p,false)}${affNotesHTML(p,false,affOf(P,id))}</div>`}
   return`<div class="card profcard" id="profCard">${me?'':`<div class="row profacts" style="gap:5px"><button class="btn sm ${gr?'ghost':''}" data-act="hi" data-k="${k}" ${gr||mode!=='online'||preLock()?'disabled':''}>${gr?'오늘 인사함':'인사하기'}</button><button class="qchip" data-act="profgo" data-a="gift" data-k="${k}" ${preLock()?'disabled':''}>선물</button><button class="btn sm alt" data-act="profgo" data-a="mailto" data-k="${k}" ${preLock()?'disabled':''}>우편</button></div>`}<div class="info-head">${meImg(4,p)}<div style="flex:1;min-width:0"><span class="lv">${esc(orgRole(id))}</span><h2>${esc(p.nick||'선원')}${me?' <span class="hint">(나)</span>':''}</h2>${snHTML(p.sn)}<span class="hint" style="color:${on?'var(--green)':'var(--mute)'}">${on?'● 접속 중':'오프라인 · '+agoText(p.seen)}</span></div></div>
    ${me&&profBio?`<div class="sendrow"><input id="profBioIn" class="sel" maxlength="40" autocomplete="off" placeholder="한마디 (최대 40자)" aria-label="한마디" value="${esc(profBioDraft)}"><button class="btn sm" data-act="profbiosave">저장</button><button class="qchip" data-act="profbio">취소</button></div>`:`<p class="bio">${p.bio?'“'+esc(p.bio)+'”':`<span class="hint">${me?'한마디를 적으면 다른 선원에게 보입니다.':'아직 한마디가 없습니다.'}</span>`}${me?` <button class="qchip" data-act="profbio">${p.bio?'고치기':'쓰기'}</button>`:''}</p>`}
    <div class="istats">${facts.map(([a,b])=>`<div><span>${a}</span><b>${esc(String(b))}</b></div>`).join('')}</div>
@@ -8544,7 +8552,8 @@ addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener
 function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'선원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'선원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'선원'} 님이 PAD에서 나를 언급했습니다.`)})}
 // PAD keeps every post: the feed shows 20 at a time behind a 더보기 button, and when the loaded posts run out it asks the server for 150 more
 let padShow=20,padLoad=30,padUnsub=null,padMore=false;
-function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padUnsub=db.collection('posts').orderBy('at','desc').limit(padLoad).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLoad;notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
+let padLim=0;const padWantLim=()=>socOpen?padLoad:1;function padSync(){if(padUnsub&&padWantLim()!==padLim)padListen()}
+function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();padUnsub=db.collection('posts').orderBy('at','desc').limit(padLim).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLim&&padLim>1;notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
 function socSubscribe(){
   padListen();
   db.collection('guest').where('to','==',uid).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
@@ -8678,7 +8687,7 @@ const JA={
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
 Object.assign(A,EA);SAFE_ACT.add('endreset');   // the admin can always call the raid off, even knocked out
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
-setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},180e3);
+setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},600e3);
 $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#callsign').value.trim().slice(0,12);if(!v){if(J)jGo(1);toast('이름을 적어 주십시오.');setTimeout(()=>$('#callsign').focus(),40);return}
   if(J&&(J.step||1)<4){if(J.step===3&&!J.job){toast('직업을 골라 주십시오.');return}jGo((J.step||1)+1);return}
   if(J&&!J.job){toast('직업을 골라 주십시오.');jGo(3);return}
