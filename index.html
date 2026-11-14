@@ -1810,7 +1810,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 :root[data-skin="light"] .cab{background:#e9e6df;border-color:#9a958b}:root[data-skin="light"] .cabno{background:#d6d1c6;color:#4a463e}
 :root[data-skin="light"] .cabin{background:radial-gradient(ellipse at 50% 40%,#fbfaf6,#dcd7cc 75%)}:root[data-skin="light"] .cabdoor i{background:linear-gradient(180deg,#b8b3a8,#a39e93 55%,#8f8a80);border-top-color:#d6d1c6}
 @media (hover:none){.cab:not(.empty) .cabdoor i:first-child{transform:translateX(-88%)}.cab:not(.empty) .cabdoor i:last-child{transform:translateX(88%)}}
-@media (max-width:760px){.cabs{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:92px;max-height:none;overflow:visible;flex:none;min-height:0}.cab{height:92px}.cabin img{height:32px}}
+@media (max-width:760px){.cabs{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:92px;max-height:288px;overflow-y:auto;overscroll-behavior:contain;flex:none;min-height:0}.cab{height:92px}.cabin img{height:32px}}
 .lghd{display:flex;flex-direction:column;gap:1px;padding:5px 8px 6px;margin-bottom:3px;border-bottom:1px solid var(--line)}.lghd b{font-size:13px;color:var(--text);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lghd span{font-size:11.5px;color:var(--gold)}
 .dishfx{font-size:13px;color:var(--gold)}.dishfx b{color:var(--cyan);margin-right:4px}.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
 .sgchat{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto;padding:8px;background:var(--deep);border:1px solid var(--line)}
@@ -3178,8 +3178,8 @@ const anSeen=()=>+anGet('sd_anseen',0)||0;
 const anKeys=()=>anGet('sd_ankeys',{})||{};// my posts: id → the secret that lets me take it down
 const anMine=()=>new Set(Object.keys(anKeys()));
 const anLiked=()=>new Set(anGet('sd_anlike',[])||[]);
-function anTag(){const d=duelDay(),v=anGet('sd_antag',{})||{};if(v.d===d&&v.t)return v.t;const t=Math.random().toString(36).slice(2,5).toUpperCase().padEnd(3,'X');anSet('sd_antag',{d,t});return t}
-const AN_HUE=t=>{let h=0;for(const c of String(t))h=(h*31+c.charCodeAt(0))%360;return h};
+function anTag(){return Math.random().toString(36).slice(2,5).toUpperCase().padEnd(3,'X')}
+const AN_HUE=t=>{if(!t)return 232;let h=0;for(const c of String(t))h=(h*31+c.charCodeAt(0))%360;return h};
 async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 const anLive=()=>ANON.filter(x=>!x.gone);
 function anBadge(){const b=$('#anBtn');if(!b)return;const mine=anMine(),n=anonView?0:anLive().filter(x=>x.at>anSeen()&&!mine.has(x.id)).length;b.innerHTML=img(ENV,null,1)+'익명함'+(n?`<span class="fbbadge">${n>99?'99+':n}</span>`:'')}
@@ -3187,18 +3187,21 @@ function anMarkSeen(){const t=ANON.reduce((m,x)=>Math.max(m,x.at),0);if(t>anSeen
 function anAv(tag,big){return`<div class="twav anav${big?' big':''}" style="--h:${AN_HUE(tag)}" aria-hidden="true"><span>?</span></div>`}
 function anText(t){return esc(t).replace(/(^|[\s(])#([0-9A-Za-z가-힣_]{1,20})/g,(m,a,x)=>`${a}<span class="tag">#${x}</span>`)}
 function anPostHTML(x,big){const mine=anMine().has(x.id),liked=anLiked().has(x.id),k=esc(x.id),canDel=mine||(isStaff()&&mode==='online');
-  return`<article class="tw anpost${mine?' mine':''}"><div class="twrow">${anAv(x.an)}<div class="twbody">
-   <div class="twh"><b class="anname" style="--h:${AN_HUE(x.an)}">${mine?'나 (익명)':'익명'}</b><i class="antag" style="--h:${AN_HUE(x.an)}">${esc(x.an)}</i><span class="hint">· ${shortAgo(x.at||Date.now())}</span>${canDel?`<button class="twbtn twdel ${anDelArm===x.id?'arm':''}" data-act="anondel" data-k="${k}">${anDelArm===x.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
+  return`<article class="tw anpost${mine?' mine':''}"><div class="twrow">${anAv('')}<div class="twbody">
+   <div class="twh"><b class="anname" style="--h:${AN_HUE('')}">${mine?'나 (익명)':'익명'}</b><span class="hint">· ${shortAgo(x.at||Date.now())}</span>${canDel?`<button class="twbtn twdel ${anDelArm===x.id?'arm':''}" data-act="anondel" data-k="${k}">${anDelArm===x.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
    <p class="twtext">${anText(x.text)}</p>
    <div class="twact"><button class="twbtn like ${liked?'on':''}" data-act="anlike" data-k="${k}" aria-pressed="${liked}" aria-label="좋아요 ${+x.lk||0}"><i>♥</i>${Math.max(0,+x.lk||0)}</button></div></div></div></article>`}
-function anCompose(){const t=anTag();return`<div class="padc padnew">${anAv(t,1)}<div class="padcb"><b class="padwho"><span class="anname" style="--h:${AN_HUE(t)}">익명</span> <i class="antag" style="--h:${AN_HUE(t)}">${t}</i> <span class="hint">오늘 내 글에 붙는 표식</span></b>
+function anCompose(){return`<div class="padc padnew">${anAv('',1)}<div class="padcb"><b class="padwho"><span class="anname" style="--h:${AN_HUE('')}">익명</span> <span class="hint">이름도 표식도 남지 않습니다</span></b>
   <textarea id="anIn" class="suggta socta" maxlength="300" placeholder="이름 없이 하고 싶은 이야기를 남겨 보세요" aria-label="익명 글 쓰기"></textarea>
   <div class="row" style="justify-content:space-between"><span class="hint">Ctrl+Enter로 게시 · 최대 300자</span><button class="btn sm" data-act="anonsend" ${anBusy?'disabled':''}>${anBusy?'올리는 중…':'게시'}</button></div></div></div>`}
 function anonPageHTML(){const head=`<div class="stage-head mehead"><button class="qchip" data-act="anonclose">← 돌아가기</button><h2>익명함</h2><span class="loc">이름 없이 모든 선원과 이야기합니다</span></div>`;
   const mine=anMine(),L=anLive().filter(x=>!x.re).sort((a,b)=>b.at-a.at);
   return head+anCompose()+`<div class="twfeed anfeed">${!anonLoaded&&mode==='online'?'<p class="empty" style="padding:18px">불러오는 중…</p>':L.length?L.slice(0,anShow).map(x=>anPostHTML(x)).join('')+(L.length>anShow?`<button class="btn sm alt padmore" data-act="anmore">더보기</button>`:''):`<p class="empty" style="padding:18px">익명함이 조용합니다. 첫 글을 남겨 보세요.</p>`}</div>`}
+// once per operator device: old posts kept their writer's daily tag in the record; give each one its own random tag so nothing links them
+let anScrubbed=false;function anScrub(){if(anScrubbed||!isStaff()||mode!=='online'||!db)return;anScrubbed=true;if(anGet('sd_anscrub2',0))return;
+  Promise.all(ANON.map(x=>db.doc('anon/'+x.id).update({an:anTag()}).catch(()=>{}))).then(()=>anSet('sd_anscrub2',Date.now()))}
 function anonSnap(sn){ANON=sn.docs.map(d=>{const x=d.data();return{id:d.id,text:String(x.text||''),at:+x.at||0,an:String(x.an||''),re:x.re?String(x.re):'',lk:+x.lk||0,gone:!!x.gone}});anonLoaded=true;
-  if(anonView){renderPanel();anMarkSeen()}else anBadge()}
+  if(anonView){renderPanel();anMarkSeen()}else anBadge();if(ANON.length)anScrub()}
 const noticeAll=()=>{const m=new Map();[...PINS,...CHAT].forEach(x=>{if(x&&x.adm&&x.id)m.set(x.id,x)});return[...m.values()].sort((a,b)=>(+b.at||0)-(+a.at||0))};
 const ntcDate=t=>{const d=new Date(t);return`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
 function ntcRefresh(){const b=$('#ntcBtn');if(!b||!P)return;const seen=P.ntcSeen||0,n=noticeAll().filter(x=>(+x.at||0)>seen&&x.uid!==uid).length;b.innerHTML=img(ENV,null,1)+'공지'+(n?`<span class="fbbadge">${n}</span>`:'');if(noticeView&&!userScrolling())renderPanel()}
@@ -6817,7 +6820,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794652804';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794653332';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
