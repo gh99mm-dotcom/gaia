@@ -3287,7 +3287,7 @@ const TTL_FX={rookie:['plain',{hp:10}],farm1:['soil',{farm:.5}],farm2:['leaf',{f
  fish3:['water',{fish:1,luck:.5}],fish4:['calm',{fish:2,en:5}],fish5:['deep',{luck:1,fish:.5}],fish6:['nebula',{luck:1.5,fish:1}],fish7:['gold',{luck:2}],fish8:['star',{luck:2,fish:2,xp:3}],
  scan2:['road',{scan:1.5,en:5}],scan3:['glitch',{scan:2,crit:1}],rich2:['coin',{sell:3}],wpn:['flame',{atk:15,critD:5}],ending:['cosmic',{atkP:5,defP:5,hpP:5}],suit:['nebula',{def:30,hpP:3}],
  lv20:['orbit',{xp:3}],lv40:['orbit',{xp:5,hp:30}],lv60:['star',{atk:20,def:20,hp:60}],soc1:['heart',{hp:15,en:3}],soc2:['heart',{xp:2}],adv1:['blood',{atk:10,crit:1}],adv2:['abyss',{atkP:3,critD:8}],
- dm1:['whisper',{dodge:2}],all5:['prism',{farm:1,gather:1,fish:1,scan:1}],farmmax:['bloom',{farm:3,hpP:3}],gathermax:['gold',{gather:3,atkP:2}],fishmax:['abyss',{fish:3,luck:2}],scanmax:['star',{scan:3,crit:2}],
+ all5:['prism',{farm:1,gather:1,fish:1,scan:1}],farmmax:['bloom',{farm:3,hpP:3}],gathermax:['gold',{gather:3,atkP:2}],fishmax:['abyss',{fish:3,luck:2}],scanmax:['star',{scan:3,crit:2}],
  rcp15:['warm',{cook:1}],rcp30:['warm',{cook:2,en:5}],rcp45:['flame',{cook:3,hpP:3}],cook10:['oops',{cook:.5}],cook100:['warm',{cook:1,sell:2}],cook500:['warm',{cook:2,hp:30}],cook1000:['cosmic',{cook:4,hpP:5,en:10}],
  gold:['gold',{sell:5}],dex_r1:['dust',{atk:5,hp:20}],dex_r2:['glitch',{crit:1,en:3}],dex_r3:['leaf',{dodge:2,hp:20}],dex_r4:['steel',{def:15,atk:5}],dex_r5:['deep',{def:20,hpP:2}],dex_r6:['flame',{atkP:3,critD:5}],dex_all:['cosmic',{atkP:3,defP:3,xp:5}]};
 const TF_N={atk:['공격',''],def:['방어',''],hp:['최대 체력',''],en:['최대 에너지',''],crit:['치명타','%'],critD:['치명타 피해','%'],dodge:['회피','%'],atkP:['공격력','%'],defP:['방어력','%'],hpP:['최대 체력','%'],
@@ -3346,11 +3346,10 @@ const TITLES=[
  ['dex_all','가이아의 박물학자','몬스터 도감 42종 모두 완성',()=>RAID_ZONES.every(z=>dexDone(z.id))],
  ['soc1','다정한 이웃','선원에게 인사 10번 건네기',()=>st('hi')>=10],
  ['soc2','광장의 이야기꾼','PAD에 글 10개 쓰기',()=>st('post')>=10],
- ['dm1','속삭이는 별','귓속말 30번 보내기',()=>st('dm')>=30],
  ['ending','테라의 마지막 수호자','',()=>(P.st?.ending||0)>=1],
 ];
 // titles the operator gave back (P.ttlGrant) count as earned whatever the record says
-TITLES.forEach(t=>{const f=t[3];t[3]=()=>!!(P&&(P.ttlGrant||[]).includes(t[0]))||f()});
+TITLES.forEach(t=>{const f=t[3];t[3]=()=>!!(P&&((P.ttlGrant||[]).includes(t[0])||(P.ttlHave||[]).includes(t[0])))||f()});// a title once earned is kept even when its condition stops holding (e.g. 크레딧 보유)
 const st=k=>(P.st&&P.st[k])||0;
 const dexDone=id=>{const z=RAID_ZONES.find(x=>x.id===id),D=P.mdex||{};return!!z&&[...z.mons,z.mid,z.boss].every(n=>D[n]>0)};
 // isOwnerAcct: the 운영자 account itself. isAdmin: anyone with admin powers — the 운영자 and the 관리자 it appoints
@@ -3723,7 +3722,7 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
     if(kind==='ready'){px(15,gap+2,'#ffe27a');px(14,gap+2,'rgba(255,226,122,.6)');px(16,gap+2,'rgba(255,226,122,.6)');px(15,gap+1,'rgba(255,226,122,.6)');px(15,gap+3,'rgba(255,226,122,.6)')}
   }
   return MD[key]=c.toDataURL()}
-function migrate(){if(P&&P.feat){P.note=[P.feat,P.note].filter(Boolean).join('\n');delete P.feat}if(P&&P.sv2!==1){const old=Math.max(P.suitMax||0,P.suit||0);P.suit=[0,5,10,15][Math.min(3,old)]||0;P.suitMax=P.suit;P.sv2=1}if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.lxv!==2){P.lx=lxOf(P);P.lxv=2}
+function migrate(){if(P&&P.title==='dm1'){P.title='rookie'}/* 속삭이는 별 was removed */if(P&&P.feat){P.note=[P.feat,P.note].filter(Boolean).join('\n');delete P.feat}if(P&&P.sv2!==1){const old=Math.max(P.suitMax||0,P.suit||0);P.suit=[0,5,10,15][Math.min(3,old)]||0;P.suitMax=P.suit;P.sv2=1}if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.lxv!==2){P.lx=lxOf(P);P.lxv=2}
   // recipes start hidden; players from before this keep the dishes they have in the bag as already known
   if(!Array.isArray(P.rcp))P.rcp=COOK.filter(c=>(P.inv||{})[c.id]>0||(P.inv||{})[TASTY+c.id]>0).map(c=>c.id);
   // 머리·팔·발 장비 were retired for the two 장신구 slots: give back what each crafted piece cost, once
@@ -6829,7 +6828,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794665662';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794666105';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
