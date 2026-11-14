@@ -100,6 +100,13 @@ service cloud.firestore {
       allow delete: if staff();
     }
 
+    // 우편함 보관 (읽은 우편 · 보낸 편지): 본인만 읽고 씀. 운영진은 읽기와 지우기만.
+    match /mailbox/{uid} {
+      allow read: if member() && (me() == uid || staff());
+      allow create, update: if member() && me() == uid && request.resource.data.uid == uid;
+      allow delete: if staff();
+    }
+
     match /chat/{id} {
       allow read: if member();
       allow create: if member() && request.resource.data.uid == me() && str('text', 200);
