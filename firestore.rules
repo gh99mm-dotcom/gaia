@@ -84,11 +84,19 @@ service cloud.firestore {
     }
 
     // 공용 채널
-    // 익명함: 작성자를 적지 않아요 (uid 없음). 선원은 글 쓰기만, 지우기는 운영진만.
+    // 익명함: 작성자를 적지 않아요 (uid 없음). 글쓴이는 비밀 열쇠(kh = 열쇠의 sha256)로만 자기 글을 지울 수 있어요.
+    // 좋아요는 숫자(lk)만 1씩 오르내려요. 운영진은 아무 글이나 지울 수 있어요.
     match /anon/{id} {
       allow read: if member();
-      allow create: if member() && request.resource.data.keys().hasOnly(['text', 'at', 'an'])
-        && str('text', 300) && request.resource.data.text.size() > 0 && str('an', 8) && request.resource.data.at is int;
+      allow create: if member() && request.resource.data.keys().hasOnly(['text', 'at', 'an', 'kh', 'lk'])
+        && str('text', 300) && request.resource.data.text.size() > 0 && str('an', 8) && request.resource.data.at is int
+        && str('kh', 64) && request.resource.data.get('lk', 0) == 0;
+      allow update: if staff() || (member() && (
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lk']) && request.resource.data.lk is int
+          && (request.resource.data.lk == resource.data.get('lk', 0) + 1 || request.resource.data.lk == resource.data.get('lk', 0) - 1))
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['gone', 'text', 'k'])
+          && request.resource.data.gone == true && request.resource.data.text == '' && str('k', 64)
+          && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh.lower())));
       allow delete: if staff();
     }
 
