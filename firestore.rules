@@ -62,10 +62,13 @@ service cloud.firestore {
       allow create, update: if member() && request.resource.data.uid == me() && id == request.resource.data.day + '_' + me();
       allow delete: if member() && (resource.data.uid == me() || staff());
     }
+    // 건의함 1:1 대화: list = 선원이 보낸 말, rep = 운영진 답장(선원에게는 '운영자'로 보임). 선원은 자기 말과 읽음 표시만, 답장은 운영진만.
     match /feedback/{uid} {
       allow read: if member() && (me() == uid || staff());
-      allow write: if member() && me() == uid;
-      allow delete, update: if staff();
+      allow create: if member() && me() == uid && !('rep' in request.resource.data);
+      allow update: if staff() || (member() && me() == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick', 'at', 'list', 'seenU']));
+      allow delete: if staff();
     }
 
     // 운영자 전용 데이터: 전체 선물, 조직도 임명.
