@@ -1778,7 +1778,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .shiprep b{display:block;font-family:"Galmuri11",var(--f-pix);font-size:clamp(26px,6vw,46px);color:#ffe9a8;letter-spacing:.12em;text-shadow:0 0 12px #ffc04a99,2px 2px 0 #000}.shiprep .shiprep2{font-size:clamp(15px,3vw,24px);letter-spacing:.08em}.shiprep span{display:block;font-size:clamp(14px,2.6vw,20px);color:#f0dfa8;background:#0009;padding:4px 12px;border:1px solid #e8b44088}
 .anav{background:hsl(var(--h) 35% 18%);border-color:hsl(var(--h) 50% 40%)}.anav span{font:700 20px/1 var(--pix,monospace);color:hsl(var(--h) 70% 68%)}.anav.big span{font-size:24px}
 .anname{color:hsl(var(--h) 70% 68%);font-size:14.5px}.antag{font-style:normal;margin:0 2px 0 6px;padding:0 5px;border:1px solid hsl(var(--h) 60% 55%);color:hsl(var(--h) 70% 68%);font-size:11px}
-.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
+.dishfx{font-size:13px;color:var(--gold)}.dishfx b{color:var(--cyan);margin-right:4px}.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
 .sgchat{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto;padding:8px;background:var(--deep);border:1px solid var(--line)}
 .sgmsg{max-width:82%;display:flex;flex-direction:column;gap:2px}.sgmsg.me{align-self:flex-end;align-items:flex-end}.sgmsg.them{align-self:flex-start}
 .sgmsg p{margin:0;padding:7px 10px;white-space:pre-wrap;word-break:break-all;font-size:14px;line-height:1.5;background:var(--panel2);border:1px solid var(--line)}.sgmsg.me p{background:color-mix(in srgb,var(--gold) 18%,var(--panel2));border-color:color-mix(in srgb,var(--gold) 45%,var(--line))}
@@ -3023,6 +3023,9 @@ function ingTake(id,n){if(!id.startsWith('fish:'))return take(id,n);for(let k=0;
 function ingChip(id,n){const h=ingHave(id),ok=h>=n,nm=id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id),ic=id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],1):iicon(id,1);return`<span class="ichip ${ok?'':'miss'}">${ic}${nm} <b>${Math.min(h,99)}/${n}</b></span>`}
 const canCook=c=>c.need.every(([id,n])=>ingHave(id)>=n);
 function BUFF(k){const b=P.buff;if(!b||Date.now()>=b.until)return 0;return(b.fx&&b.fx[k])||0}
+// what a dish does beyond 체력/에너지, shown in the bag before eating
+function dishFxHTML(id){const c0=COOK.find(x=>x.id===dishBase(id));if(!c0)return'';const c=id===c0.id?c0:Object.assign({},c0,tastyOf(c0));const L=[];if(c.xp)L.push(`경험치 +${c.xp}`);
+  if(c.buff)L.push(`${Object.entries(c.buff).map(([k,v])=>buffTxt(k,v)).join(' · ')} <span class="hint">(${c.bmin}분)</span>`);return L.length?`<span class="dishfx"><b>추가 효과</b> ${L.join(' · ')}</span>`:''}
 function applyDish(id){const c0=COOK.find(x=>x.id===dishBase(id));if(!c0)return;const c=id===c0.id?c0:Object.assign({},c0,tastyOf(c0),{n:ITEMS[id].n});if(c.xp)gainXp(c.xp);if(c.buff){P.buff={id,fx:Object.assign({},c.buff),until:Date.now()+c.bmin*60e3};log(`${c.n} 덕분에 힘이 솟는다. ${Object.entries(c.buff).map(([k,v])=>`${buffTxt(k,v)}`).join(', ')} (${c.bmin}분)`,'rare')}}
 let cookSel='d_potRoast',cookN=1;
 const rcpKnown=id=>((P&&P.rcp)||[]).includes(id);
@@ -6714,7 +6717,7 @@ function bagInner(){
   const it=selItem&&ITEMS[selItem];
   return`<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
    ${ids.length?`<div class="bagkey" role="group" aria-label="종류별로 보기"><button class="bk bk-all" data-act="bagf" data-k="" aria-pressed="${!bagF}">전체 <small>${all.length}</small></button>${BAGCAT.map(([k,n])=>{const c=all.filter(id=>bagCat(id)===k).length;return`<button class="bk bk-${k}" data-act="bagf" data-k="${k}" aria-pressed="${bagF===k}" ${c?'':'disabled'}><i></i>${n} <small>${c}</small></button>`}).join('')}</div><div class="bag">${ids.map(id=>`<button class="slot bc-${bagCat(id)}" data-act="sel" data-id="${id}" data-tip="${esc(ITEMS[id].n)} ×${P.inv[id]}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
-   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}${isBound(selItem)?'':` <span class="sellp">판매가 ${sellPrice(selItem).toLocaleString()} CR</span>`}</b><span class="hint">${it.type==='food'?`체력 +${it.hp} · 에너지 +${it.en}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}${it.tasty?(()=>{const mk=tmkView(selItem);return mk.length?`<span class="hint tmaker">제작자: ${mk.map(([k,n])=>esc(k)+(mk.length>1||n>1?` ×${n}`:'')).join(' · ')}</span>`:''})():''}
+   <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}${isBound(selItem)?'':` <span class="sellp">판매가 ${sellPrice(selItem).toLocaleString()} CR</span>`}</b><span class="hint">${it.type==='food'?`${it.hp>=999?'체력·에너지 완전 회복':`체력 +${it.hp} · 에너지 +${it.en}`}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type==='food'?dishFxHTML(selItem):''}${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}${it.tasty?(()=>{const mk=tmkView(selItem);return mk.length?`<span class="hint tmaker">제작자: ${mk.map(([k,n])=>esc(k)+(mk.length>1||n>1?` ×${n}`:'')).join(' · ')}</span>`:''})():''}
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
   </div><section class="card cook farmcook benchcook" id="cook" aria-label="요리"></section>`;
@@ -6760,7 +6763,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794636015';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794636183';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
