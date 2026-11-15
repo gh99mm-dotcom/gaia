@@ -3707,7 +3707,7 @@ addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.
   addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)},{passive:true});
 setTimeout(()=>{try{const sd=localStorage.getItem(SOCS_LS);if(sd)socSetSide(sd);const v=localStorage.getItem(SOCH_LS);if(v!=null)socHandlePos(+v)}catch(e){}},0);
 addEventListener('resize',()=>{const h=document.querySelector('.sochandle');if(h&&h.style.top)socHandlePos(parseFloat(h.style.top))});
-function socDrawer(open,keep){const was=socOpen;socOpen=!!open;if(was!==socOpen)setPresence();tabSubsSync();const d=$('#socDock');if(d){d.classList.toggle('open',socOpen);d.querySelector('.sochandle').setAttribute('aria-expanded',socOpen)}if(socOpen){renderSoc();if(!keep){const t=$('#socStage');if(t)t.scrollTop=0}}socBadge()}
+function socDrawer(open,keep){const was=socOpen;socOpen=!!open;if(was&&!socOpen)socShutAt=Date.now();if(was!==socOpen)setPresence();tabSubsSync();const d=$('#socDock');if(d){d.classList.toggle('open',socOpen);d.querySelector('.sochandle').setAttribute('aria-expanded',socOpen)}if(socOpen){renderSoc();if(!keep){const t=$('#socStage');if(t)t.scrollTop=0}}socBadge()}
 const socTop=()=>{const t=$('#socStage');if(t)t.scrollTo({top:0,behavior:'smooth'})};
 function socBadge(){const b=$('#socBadge');if(!b)return;const n=socUnread();b.textContent=n?String(Math.min(99,n)):'';b.hidden=!n||socOpen}
 // redraw the terminal (not while someone is typing in it: that waits for the field to lose focus)
@@ -4265,7 +4265,7 @@ function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidN
   if(now-Math.max(raidHbAt,+((r.hb||{})[uid])||0)>RAID_HB&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:Object.assign({},r.hb,{[uid]:now})}).catch(()=>{})}
   if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
-  if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
+  if(r.state==='run'&&r.phase==='end')runIdxEnd(r);if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
 // rewards are taken once per expedition: the claim is first written onto the party record itself (claimed[uid]) in a transaction,
 // and only a claim that lands there pays out, so reloading the page (or a save that hasn't gone through yet) can't pay twice
 let raidClaiming=null;
@@ -4349,18 +4349,23 @@ let partyStaffDone=false;function partyStaffSweep(){if(partyStaffDone||mode!=='o
 function raidRefilter(){const before=RAIDS.map(v=>v.id).join();RAIDS.length=0;RAIDS_ALL.forEach(v=>{if(lobbyAlive(v))RAIDS.push(v)});return before!==RAIDS.map(v=>v.id).join()}
 setInterval(()=>{if(mode==='online'&&raidRefilter()&&tab==='raid')renderPanel()},20e3);
 // parties already on their way: shown in the lobby to watch, listened to only while the 원정 lobby is open (each turn rewrites the party)
-let RAIDS_RUN=[];
-const runAlive=v=>v.phase!=='end'&&raidIn(v).length>0&&lobbyAlive(v);
-function raidRunListHTML(){const list=RAIDS_RUN.filter(runAlive).filter(x=>egOpen()||!(x.rush||x.hard)).sort((a,b)=>(b.at||0)-(a.at||0));
-  return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${list.length}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const zz=raidZone(x),mp=raidMapImg(zz.id,1,false,RAID_STEPS,true,true);
+let RAIDS_RUN=[];const runIdxRef=()=>db.doc('boss/raidrun');const runIdxDone=new Set();
+const RUN_KEEP=2*3600e3,RUN_SHOW_END=15*60e3;
+function runIdxTidy(cur){const o={},now=raidNow();for(const k in cur||{}){const v=cur[k];if(!v||typeof v!=='object')continue;if(v.end?now-(+v.end.at||0)<RUN_SHOW_END:now-(+v.at||0)<RUN_KEEP)o[k]=v}return o}
+function runIdxStart(r){if(mode!=='online'||!r)return;const z=raidZone(r);
+  bossTx(runIdxRef(),cur=>Object.assign(runIdxTidy(cur),{[r.id]:{zid:z.id,zn:r.rush?'보스 러시':z.n,hard:r.hard?1:0,rush:r.rush?1:0,host:r.host,hostN:r.hostN||'',at:raidNow(),ids:r.ids.slice(),m:Object.fromEntries(r.ids.map(u=>[u,{nick:(r.m[u]||{}).nick||'',lvl:(r.m[u]||{}).lvl||0}]))}})).catch(()=>{})}
+function runIdxEnd(r){if(mode!=='online'||!r||runIdxDone.has(r.id))return;runIdxDone.add(r.id);
+  bossTx(runIdxRef(),cur=>{const o=runIdxTidy(cur),v=o[r.id];if(!v||v.end)return null;o[r.id]=Object.assign({},v,{end:{at:raidNow(),res:r.result||'end'}});return o}).catch(()=>{})}
+function raidRunListHTML(){const list=RAIDS_RUN.filter(x=>egOpen()||!(x.rush||x.hard)).sort((a,b)=>(!!a.end-!!b.end)||(b.at||0)-(a.at||0));const live=list.filter(x=>!x.end).length;
+  return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${live}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const mp=raidMapImg(x.zid||'r1',1,false,RAID_STEPS,true,true),st=x.end?({clear:'클리어',wipe:'실패',fled:'도주'}[x.end.res]||'종료'):'공략 중';
     return`<div class="pcard run"><div class="pcban"><img class="pix" src="${mp.src}" alt=""></div>
-     <div class="pcbody"><b class="pcname">${x.rush?'보스 러시':esc(zz.n)}${x.hard?' <span class="ichip hardtag">HARD</span>':''}${x.rush?' <span class="ichip hardtag">RUSH</span>':''}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · ${x.phase==='battle'?'전투 중':'이동 중'} · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 결성</span>
-      <div class="pcmem">${x.ids.map(u=>{const m=x.m[u]||{},down=(m.hp||0)<=0||(x.left||{})[u];return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small></span>`}).join('')}</div>
-      <div class="pcfoot"><b>${x.ids.length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
+     <div class="pcbody"><b class="pcname">${esc(x.zn||'원정')}${x.hard?' <span class="ichip hardtag">HARD</span>':''}${x.rush?' <span class="ichip hardtag">RUSH</span>':''}</b><span class="hint">파티장 ${esc(x.hostN||'선원')} · <b style="color:${x.end?(x.end.res==='clear'?'var(--green)':'var(--mute)'):'var(--gold)'}">${st}</b> · ${fmtDur(Math.max(1,Math.round((raidNow()-(x.at||0))/60e3)))} 전 출발</span>
+      <div class="pcmem">${(x.ids||[]).map(u=>{const m=(x.m||{})[u]||{},down=false;return`<span class="pcm${u===x.host?' host':''}${down?' down':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small></span>`}).join('')}</div>
+      <div class="pcfoot"><b>${(x.ids||[]).length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
 function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{const sig=x=>JSON.stringify(x.map(v=>Object.assign({},v,{hb:0})));const was=sig(RAIDS_ALL);RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));partySweep(RAIDS_ALL);partyStaffSweep();const moved=raidRefilter();if(tab==='raid'&&(moved||sig(RAIDS_ALL)!==was))renderPanel()},()=>{}));
-  tabSub(()=>tab==='raid'&&!MYRAID,()=>{let on=true;const pull=()=>db.collection('parties').where('state','==','run').get().then(sn=>{if(!on)return;const nx=sn.docs.map(d=>Object.assign({id:d.id},d.data()));partySweep(nx);const sig=x=>x.filter(runAlive).map(v=>v.id+':'+v.step+':'+raidIn(v).length).join();const was=sig(RAIDS_RUN);RAIDS_RUN=nx;if(tab==='raid'&&!MYRAID&&sig(nx)!==was)renderPanel()}).catch(()=>{});pull();const t=setInterval(pull,60e3);return()=>{on=false;clearInterval(t)}});
-  db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{partyTidyMine(sn.docs.map(d=>Object.assign({id:d.id},d.data())));const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
-    if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{});
+  tabSub(()=>tab==='raid'&&!MYRAID,()=>runIdxRef().onSnapshot(sn=>{const d=runIdxTidy(sn.exists?sn.data():{});RAIDS_RUN=Object.entries(d).map(([id,v])=>Object.assign({id},v));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{}));
+  tabSub(()=>!MYRAID&&!!uid,()=>db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{partyTidyMine(sn.docs.map(d=>Object.assign({id:d.id},d.data())));const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
+    if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{}));
   clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
 /* ---- lobby actions ---- */
 async function raidCreate(solo,rush){if(rush&&(!egOpen()||P.lvl<RUSH_MIN)){toast(`보스 러시는 Lv.${RUSH_MIN} 이상만 갈 수 있습니다.`);return}const hard=!rush&&raidMode==='hard',z0=rush?RAID_ZONES[0]:RAID_ZONES.find(x=>x.id===raidSel),z=z0&&hard?hardZ(z0):z0;if(!z||mode!=='online')return;if(rush&&MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!rush&&!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(hard&&!raidHardOpen(z)){toast(RAID_HARDZ[z.id]?`${z.n}은(는) ${z.base} 보스를 쓰러뜨린 뒤 열립니다.`:'이 구역의 하드는 아직 열리지 않았습니다.');return}if(MYRAID){toast('이미 참여 중인 원정이 있습니다.');return}if(!spend(RAID_EN))return;
@@ -4375,7 +4380,7 @@ function raidLeave(){const r0=MYRAID;if(!r0)return;
     if(!raidIn(r).length){r.phase='end';r.result='wipe';r.ev={n:'원정 중단',res:''};return r}
     if(r.phase==='battle'&&r.b&&r.b.cur&&r.b.cur.k==='p'&&r.b.cur.id===uid)raidNextTurn(r);return r}).catch(()=>{});P.raidDone=[...(P.raidDone||[]),r0.id];{const me=r0.m&&r0.m[uid],cur=me?Math.min(maxHp(),me.hp):P.hp,cut=Math.round(maxHp()*.5);P.hp=Math.max(1,cur-cut)}log(`원정을 포기하고 돌아왔다. 최대 체력의 절반(-${Math.round(maxHp()*.5)})을 잃었고, 이번 원정의 보상은 받지 못한다.`,'bad');raidWatch(null);commit();renderPanel();return}
   raidWatch(null);renderPanel()}
-function raidStart(id){raidTx(id||MYRAID.id,r=>{if(!r||r.state!=='lobby'||r.host!==uid)return null;r.state='run';r.step=1;r.seq++;r.ids.forEach(u=>r.loot[u]={xp:0,cr:0,it:{}});return raidStep(r)}).catch(()=>toast('출발하지 못했습니다.'))}
+function raidStart(id){raidTx(id||MYRAID.id,r=>{if(!r||r.state!=='lobby'||r.host!==uid)return null;r.state='run';r.step=1;r.seq++;r.ids.forEach(u=>r.loot[u]={xp:0,cr:0,it:{}});return raidStep(r)}).then(nx=>{if(nx)runIdxStart(Object.assign({id:id||MYRAID.id},nx))}).catch(()=>toast('출발하지 못했습니다.'))}
 /* ---- views ---- */
 const MON_SPR=["................","....kk....kk....","...kaak..kaak...","...kabbkkbbak...","....kaaaaaak.....","...kaawaawaak...","..kaaakaakaaak..","..kaaaaaaaaaak..","..kabaaaaaabak..","...kaabbbbaak...","....kaaaaaak....","...kak.kk.kak...","..kk..k..k..kk..","................","................","................"];
 // every expedition monster has its own look (16px; middle bosses and bosses 20px), tinted in its zone's colour; eyes and cores glow
@@ -6938,7 +6943,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794679699';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794703262';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8629,7 +8634,7 @@ addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener
 function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'선원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'선원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'선원'} 님이 PAD에서 나를 언급했습니다.`)})}
 // PAD keeps every post: the feed shows 20 at a time behind a 더보기 button, and when the loaded posts run out it asks the server for 150 more
 let padShow=20,padLoad=30,padUnsub=null,padMore=false;
-let padLim=0,padNeed=5;const padTop=()=>POSTS.filter(p=>!(p.rt?(p.rto||{}):p).re).length;const padWantLim=()=>socOpen?padLoad:1;function padSync(){if(padUnsub&&padWantLim()!==padLim)padListen()}
+let padLim=0,padNeed=5;const padTop=()=>POSTS.filter(p=>!(p.rt?(p.rto||{}):p).re).length;let socShutAt=0;const PAD_LINGER=180e3;const padWantLim=()=>socOpen||Date.now()-socShutAt<PAD_LINGER?padLoad:1;setInterval(()=>{try{padSync()}catch(e){}},30e3);function padSync(){if(padUnsub&&padWantLim()!==padLim)padListen()}
 function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();padUnsub=db.collection('posts').orderBy('at','desc').limit(padLim).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLim&&padLim>1;if(socOpen&&padMore&&padLim===padLoad&&padTop()<padNeed&&padLoad<600){padLoad+=30;padListen()}notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
 function socSubscribe(){
   padListen();setTimeout(nboxBackfill,4000);
