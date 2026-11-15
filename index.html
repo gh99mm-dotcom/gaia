@@ -1060,7 +1060,7 @@ header .logo[data-tab]{cursor:pointer}header .logo[data-tab]:focus-visible{outli
 :root[data-skin="light"] .rkhead .namebtn{background:#2a2418}:root[data-skin="light"] .rkhead .rk1{color:#c8901a;text-shadow:2px 2px 0 #2a2418}
 :root[data-skin="light"] .rklist li.me{background:color-mix(in srgb,var(--me-name) 12%,#fff)}
 
-.pfpbox{position:relative;overflow:hidden}.pfpimg{width:3cm;height:4cm;flex:none;object-fit:cover;object-position:center;display:block;margin:auto;cursor:zoom-in;image-rendering:auto}.pfpbox:has(.pfpimg){display:grid;place-items:center}
+.slot{position:relative}.slot .slotlock{position:absolute;left:2px;top:1px;font-size:10px;font-style:normal;line-height:1;pointer-events:none}.pfpbox{position:relative;overflow:hidden}.pfpimg{width:3cm;height:4cm;flex:none;object-fit:cover;object-position:center;display:block;margin:auto;cursor:zoom-in;image-rendering:auto}.pfpbox:has(.pfpimg){display:grid;place-items:center}
 .pfplock{position:absolute;left:4px;right:4px;bottom:4px;font-size:10px;line-height:1.35;white-space:normal;text-align:center;background:#07080ecc;color:#cfd3e0;padding:2px 4px}
 .idc{--nv:#0f1f4a;--nv2:#1a3270;--cy:#8a9ab4;--gd:#f2c66a;position:relative;max-width:430px;padding:10px;background:linear-gradient(160deg,#1c2236,#121522 70%);border:3px solid #07080e;outline:3px solid var(--cy);outline-offset:-6px;color:#0f1f4a;overflow:hidden;image-rendering:auto;
   background-image:radial-gradient(1.5px 1.5px at 72% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 88% 8%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 60% 92%,#fff 50%,transparent 51%),radial-gradient(2px 2px at 95% 88%,#ffe9a8 50%,transparent 51%),linear-gradient(160deg,#1c2236,#121522 70%)}
@@ -3088,8 +3088,8 @@ function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.m
 /* cooking logic */
 const FTIERS={c:['c','r','u','l'],r:['r','u','l'],u:['u','l']};
 const FNAME={c:'아무 물고기',r:'레어 이상 물고기',u:'유니크 이상 물고기'};
-function ingHave(id){if(id.startsWith('fish:'))return FTIERS[id.slice(5)].reduce((s2,tr)=>s2+FISHES[tr].reduce((a,f)=>a+(P.inv[f]||0),0),0);return P.inv[id]||0}
-function ingTake(id,n){if(!id.startsWith('fish:'))return take(id,n);for(let k=0;k<n;k++){let got=false;for(const tr of FTIERS[id.slice(5)]){const f=FISHES[tr].filter(f2=>P.inv[f2]).sort((a,b)=>P.inv[b]-P.inv[a])[0];if(f){take(f);got=true;break}}if(!got)return false}return true}
+function ingHave(id){if(id.startsWith('fish:'))return FTIERS[id.slice(5)].reduce((s2,tr)=>s2+FISHES[tr].reduce((a,f)=>a+(isLocked(f)?0:(P.inv[f]||0)),0),0);return isLocked(id)?0:(P.inv[id]||0)}
+function ingTake(id,n){if(!id.startsWith('fish:'))return isLocked(id)?false:take(id,n);for(let k=0;k<n;k++){let got=false;for(const tr of FTIERS[id.slice(5)]){const f=FISHES[tr].filter(f2=>P.inv[f2]&&!isLocked(f2)).sort((a,b)=>P.inv[b]-P.inv[a])[0];if(f){take(f);got=true;break}}if(!got)return false}return true}
 function ingChip(id,n){const h=ingHave(id),ok=h>=n,nm=id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id),ic=id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],1):iicon(id,1);return`<span class="ichip ${ok?'':'miss'}">${ic}${nm} <b>${Math.min(h,99)}/${n}</b></span>`}
 const canCook=c=>c.need.every(([id,n])=>ingHave(id)>=n);
 function BUFF(k){const b=P.buff;if(!b||Date.now()>=b.until)return 0;return(b.fx&&b.fx[k])||0}
@@ -6593,8 +6593,8 @@ let shipQty={};
 function shipGive(partId,only,qty){
   const pt=SHIP.find(x=>x.id===partId);if(!pt||mode!=='online')return;if(!shipOpen(pt)){toast('앞 구역을 먼저 고쳐야 합니다.');return}
   const list=[];
-  pt.need.forEach(([id])=>{if(only&&id!==only)return;const n=Math.min(shipLeft(pt,id),P.inv[id]||0,1000,qty>0?qty:Infinity);if(n>0)list.push([id,n])});if(only)delete shipQty[only];
-  if(!list.length){toast('넣을 수 있는 재료가 없습니다.');return}
+  let lockedHit=false;pt.need.forEach(([id])=>{if(only&&id!==only)return;if(isLocked(id)&&(P.inv[id]||0)>0){lockedHit=true;return}const n=Math.min(shipLeft(pt,id),P.inv[id]||0,1000,qty>0?qty:Infinity);if(n>0)list.push([id,n])});if(only)delete shipQty[only];
+  if(!list.length){if(lockedHit)lockMsg();else toast('넣을 수 있는 재료가 없습니다.');return}
   const finish=pt.need.every(([id])=>shipLeft(pt,id)-((list.find(x=>x[0]===id)||[,0])[1])<=0);
   list.forEach(([id,n])=>take(id,n));
   const cnt=list.reduce((a,[,n])=>a+n,0);
@@ -6897,8 +6897,9 @@ function bagInner(){
   if(selItem&&!P.inv[selItem])selItem=null;
   const it=selItem&&ITEMS[selItem];
   return`<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-   ${ids.length?`<div class="bagkey" role="group" aria-label="종류별로 보기"><button class="bk bk-all" data-act="bagf" data-k="" aria-pressed="${!bagF}">전체 <small>${all.length}</small></button>${BAGCAT.map(([k,n])=>{const c=all.filter(id=>bagCat(id)===k).length;return`<button class="bk bk-${k}" data-act="bagf" data-k="${k}" aria-pressed="${bagF===k}" ${c?'':'disabled'}><i></i>${n} <small>${c}</small></button>`}).join('')}</div><div class="bag">${ids.map(id=>`<button class="slot bc-${bagCat(id)}" data-act="sel" data-id="${id}" data-tip="${esc(ITEMS[id].n)} ×${P.inv[id]}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}">${iicon(id,2)}<em>${P.inv[id]}</em></button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
+   ${ids.length?`<div class="bagkey" role="group" aria-label="종류별로 보기"><button class="bk bk-all" data-act="bagf" data-k="" aria-pressed="${!bagF}">전체 <small>${all.length}</small></button>${BAGCAT.map(([k,n])=>{const c=all.filter(id=>bagCat(id)===k).length;return`<button class="bk bk-${k}" data-act="bagf" data-k="${k}" aria-pressed="${bagF===k}" ${c?'':'disabled'}><i></i>${n} <small>${c}</small></button>`}).join('')}</div><div class="bag">${ids.map(id=>`<button class="slot bc-${bagCat(id)}${isLocked(id)?' locked':''}" data-act="sel" data-id="${id}" data-tip="${esc(ITEMS[id].n)} ×${P.inv[id]}${isLocked(id)?' · 잠김':''}" aria-pressed="${id===selItem}" aria-label="${ITEMS[id].n}${isLocked(id)?' (잠김)':''}">${iicon(id,2)}<em>${P.inv[id]}</em>${isLocked(id)?'<i class="slotlock" aria-hidden="true">🔒</i>':''}</button>`).join('')}</div>`:'<p class="lead">가방이 비어 있습니다.</p>'}
    <div class="card" style="min-height:96px">${it?`<div class="result">${iicon(selItem,3)}<div style="display:flex;flex-direction:column;gap:6px"><b>${it.n} ×${P.inv[selItem]}${isBound(selItem)?'':` <span class="sellp">판매가 ${sellPrice(selItem).toLocaleString()} CR</span>`}</b><span class="hint">${it.type==='food'?`${it.hp>=999?'체력·에너지 완전 회복':`체력 +${it.hp} · 에너지 +${it.en}`}${it.tier?' · '+it.tier+' 등급':''}`:it.d}</span>${it.type==='food'?dishFxHTML(selItem):''}${it.type!=='relic'&&matUse(selItem)?`<span class="hint"><b>쓰임</b> ${matUse(selItem)}</span>`:''}${it.tasty?(()=>{const mk=tmkView(selItem);return mk.length?`<span class="hint tmaker">제작자: ${mk.map(([k,n])=>esc(k)+(mk.length>1||n>1?` ×${n}`:'')).join(' · ')}</span>`:''})():''}
+     ${isBound(selItem)?'':`<button class="btn sm ${isLocked(selItem)?'gold':'ghost'}" data-act="itemlock" data-id="${selItem}">${isLocked(selItem)?'🔒 잠김 · 풀기':'🔓 잠그기'}</button>`}${isLocked(selItem)?'<span class="hint">잠긴 아이템은 팔거나 요리·선물·우편·거래·우주선·공용 창고에 쓸 수 없습니다.</span>':''}
      ${it.type==='food'?`<button class="btn sm" data-act="use" data-id="${selItem}">먹기</button>`:it.type==='relic'?`<button class="btn sm gold" data-act="use" data-id="${selItem}">해독하기</button>`:it.type==='seed'?`<button class="btn sm ghost" data-tab="farm">농사로 가기</button>`:''}</div></div>`:'<span class="hint">아이템을 누르면 설명과 사용 버튼이 나옵니다.</span>'}</div>
   </div>
   </div><section class="card cook farmcook benchcook" id="cook" aria-label="요리"></section>`;
@@ -6944,7 +6945,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794731297';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794738366';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7608,9 +7609,9 @@ const A={
  fsq(d){const e=$('#fsQty-'+d.q);if(!e)return;const mx=+e.max||1,v=d.k==='max'?mx:(+e.value||1)+(+d.k);e.value=Math.max(1,Math.min(mx,v));fsQ[e.dataset.fsqk]=+e.value},
  fstake(d){const have=FSTORE[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-store')||{}).value)||1)));if(n<1||have<n)return;storeAdd(d.id,-n);add(d.id,n);storeLogAdd('take',d.id,n);delete fsQ['store:'+d.id];log(`공용 창고에서 ${ITEMS[d.id].n} ${n}개를 꺼냈다.`);commit()},
  // every seed and crop in my bag goes into the shared store in one go (second press confirms)
- fsputall(d){if(d.k==='no'){fsAllArm=false;renderPanel();return}const mine=ORDER.filter(id=>P.inv[id]>0&&storable(id));if(!mine.length){fsAllArm=false;return}if(!fsAllArm){fsAllArm=true;renderPanel();return}fsAllArm=false;
+ fsputall(d){if(d.k==='no'){fsAllArm=false;renderPanel();return}const mine=ORDER.filter(id=>P.inv[id]>0&&storable(id)&&!isLocked(id));if(!mine.length){fsAllArm=false;return}if(!fsAllArm){fsAllArm=true;renderPanel();return}fsAllArm=false;
   let tot=0;mine.forEach(id=>{const n=P.inv[id];if(take(id,n)){storeAdd(id,n);storeLogAdd('put',id,n);tot+=n}});fpSel=null;log(`공용 창고에 가방의 씨앗·작물 ${mine.length}종 ${tot}개를 모두 넣었다.`,'good');toast(`${tot}개를 공용 창고에 넣었습니다.`);commit()},
- fsput(d){const have=P.inv[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-bag')||{}).value)||1)));if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);storeLogAdd('put',d.id,n);delete fsQ['bag:'+d.id];log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
+ fsput(d){if(isLocked(d.id)){lockMsg();return}const have=P.inv[d.id]||0,n=Math.min(have,Math.max(1,Math.floor(+(($('#fsQty-bag')||{}).value)||1)));if(!storable(d.id)||n<1||!take(d.id,n))return;storeAdd(d.id,n);storeLogAdd('put',d.id,n);delete fsQ['bag:'+d.id];log(`공용 창고에 ${ITEMS[d.id].n} ${n}개를 넣었다.`);commit()},
  shipsel(d){shipSel=d.k;renderPanel()},
  shipgive(d){const inp=d.i&&document.querySelector(`[data-shipq="${d.i}"]`);shipGive(d.k,d.i,inp?Math.max(1,Math.floor(+inp.value||1)):0)},
  refill(){if(FARM.water>=FARM.cap)return;if(Date.now()<FARM.refCd){toast(`아직 물을 채울 수 없습니다. ${fmtClock(FARM.refCd-Date.now())} 뒤에 다시 채울 수 있습니다.`);return}
@@ -7871,8 +7872,8 @@ const A={
  petrel(d){if(!myPet())return;if(d.k==='no'){petArm=false;renderPanel();return}if(!petArm){petArm=true;renderPanel();return}const p=myPet();petArm=false;P.pet=null;log(`「${p.n}」을(를) 떠나보냈다. 잘 지내렴.`);commit()},
  bartalk(){barLine=(barLine+1)%BAR_LINES.length;renderPanel()},
  mailtab(d){mailTab=['in','write','sent','trade'].includes(d.k)?d.k:'in';renderPanel()},
- mlatt(d){const o=mlAtt;if(o[d.id]){delete o[d.id]}else{if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=Math.min(ML_EACH,P.inv[d.id]||0,1)}renderPanel()},
- trgive(d){const o=trGive;if(o[d.id]){delete o[d.id]}else{if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=1}renderPanel()},
+ mlatt(d){const o=mlAtt;if(o[d.id]){delete o[d.id]}else{if(isLocked(d.id)){lockMsg();return}if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=Math.min(ML_EACH,P.inv[d.id]||0,1)}renderPanel()},
+ trgive(d){const o=trGive;if(o[d.id]){delete o[d.id]}else{if(isLocked(d.id)){lockMsg();return}if(attList(o).length>=ML_TYPES){toast(`아이템은 ${ML_TYPES}종류까지 넣을 수 있습니다.`);return}o[d.id]=1}renderPanel()},
  trwantadd(){const id=($('#trPick')||{}).value||trPick;if(!ITEMS[id]||trWant[id])return;if(attList(trWant).length>=ML_TYPES){toast(`${ML_TYPES}종류까지 고를 수 있습니다.`);return}trWant[id]=1;trPick='';renderPanel()},
  trwantx(d){delete trWant[d.id];renderPanel()},
  mlsend(){if(mode!=='online'||mlBusy)return;const to=($('#mlTo')||{}).value||mlTo,msg=String(($('#mlMsg')||{}).value??mlMsg).trim().slice(0,200),items=attList(mlAtt);
@@ -7924,7 +7925,7 @@ const A={
  buysuit(d){return;const lv=+d.k,u=SUITS[lv];if(!u||suitMax()>=lv)return;if((P.cr||0)<u.price){toast('크레딧이 부족합니다.');return}if(!hasMat(u.mat)){toast('재료가 부족합니다.');return}u.mat.forEach(([id,n])=>take(id,n));P.cr-=u.price;sfxFanfare(lv>=3);P.suit=lv;P.suitMax=lv;log(`${u.n}을 입었다. 방어력 +${u.def}${u.en?` · 최대 에너지 +${Math.round(u.en*100)}%`:''}`,'rare');commit();suitPop(lv)},
  buyrod(d){const lv=+d.k,r=RODS[lv];if(!r||rodMax()>=lv)return;if((P.cr||0)<r.price){toast('크레딧이 부족합니다.');return}P.cr-=r.price;sfxCoin();P.rod=lv;P.rodMax=lv;log(`${r.n}을 샀다. 이제 ${lv>=2?'레전더리':'유니크'} 어종까지 낚을 수 있다.`,'rare');commit()},
  buy(d){const row=[...BUY,...SPECIAL].find(r=>r[0]===d.id);if(!row)return;const once=ITEMS[d.id].once;if(once&&((P.once||{})[d.id]||P.inv[d.id]>0)){toast('한 계정에 한 장만 살 수 있습니다.');return}const n=once?1:+d.n,cost=row[1]*n;if((P.cr||0)<cost){toast('크레딧이 부족합니다.');return}P.cr-=cost;sfxCoin();add(d.id,n);if(once)P.once=Object.assign({},P.once,{[d.id]:Date.now()});log(`상점에서 ${ITEMS[d.id].n} ${n}개를 샀다. (-${cost} CR)`);commit()},
- sellones(d){if(d.k==='no'){sellArm=false;renderPanel();return}const ones=ORDER.filter(id=>P.inv[id]===1&&ITEMS[id].type!=='keep');if(ones.length<2)return;if(!sellArm){sellArm=true;renderPanel();return}sellArm=false;let gain=0;ones.forEach(id=>{const pr=sellPrice(id);take(id,1);gain+=pr;delete sellCart[id]});if(ones.includes(sellSel))sellSel=null;P.cr=(P.cr||0)+gain;sfxSell(true);log(`1개짜리 아이템 ${ones.length}종을 한 번에 팔았다. (+${gain} CR)`,'good');commit()},
+ sellones(d){if(d.k==='no'){sellArm=false;renderPanel();return}const ones=ORDER.filter(id=>P.inv[id]===1&&ITEMS[id].type!=='keep'&&!isLocked(id));if(ones.length<2)return;if(!sellArm){sellArm=true;renderPanel();return}sellArm=false;let gain=0;ones.forEach(id=>{const pr=sellPrice(id);take(id,1);gain+=pr;delete sellCart[id]});if(ones.includes(sellSel))sellSel=null;P.cr=(P.cr||0)+gain;sfxSell(true);log(`1개짜리 아이템 ${ones.length}종을 한 번에 팔았다. (+${gain} CR)`,'good');commit()},
  spresadd(){if(!isAdmin||mode!=='online')return;const st=spresAt($('#spDay').value,+$('#spHour').value===20?20:8),h=+$('#spDur').value||12,mat=$('#spMat').value,n=Math.max(1,Math.min(99,Math.round(+$('#spN').value)||0)),cr=Math.max(1,Math.round(+$('#spCr').value)||0),lim=Math.max(1,Math.min(99,Math.round(+$('#spLim').value)||1));
   if(!isFinite(st)){toast('시작 날짜를 골라 주십시오.');return}if(!ITEMS[mat]){toast('자재를 골라 주십시오.');return}const end=st+h*3600e3;if(end<=Date.now()){toast('이미 지난 시간입니다.');return}
   const e={id:'sp'+Date.now().toString(36),start:st,end,mat,n,cr,lim,line:ri(0,SPRES_LINE.length-1),by:P.nick,at:Date.now()};let clash=false;
@@ -7936,7 +7937,7 @@ const A={
  reqgo(d){const R=reqList(),i=+d.k,q=R.list[i];if(!q||R.done.includes(i))return;if(ingHave(q.id)<q.n){toast('물건이 모자랍니다.');return}ingTake(q.id,q.n);R.done=[...R.done,i];P.cr=(P.cr||0)+q.cr;stat('req');sfxFanfare(false);log(`의뢰 완료 · ${q.who}에게 ${reqName(q.id)} ${q.n}개를 납품했다. (+${q.cr.toLocaleString()} CR)`,'rare');commit()},
  sellsel(d){sellArm=false;sellSel=sellSel===d.id?null:d.id;sellN=1;renderPanel()},
  sellq(d){const have=P.inv[sellSel]||0;sellN=d.k==='max'?have:Math.max(1,Math.min(have,sellN+(+d.k)));renderPanel()},
- sell(d){const have=P.inv[d.id]||0;if(!have||isBound(d.id))return;const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
+ sell(d){const have=P.inv[d.id]||0;if(!have||isBound(d.id))return;if(isLocked(d.id)){lockMsg();return}const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
  asigskip(){if(bossAlive(BOSS))return;if(!useAsig())return;lastAsig=null;log('구식 신호기: 잡힌 신호를 무시하고 흘려보냈다.');commit()},
  asigpow(){if(bossAlive(BOSS))return;const sg=asigState();P.asig=sg.off?{n:sg.n,t:Date.now()}:{n:sg.n,t:Date.now(),off:1};log(sg.off?'구식 신호기를 다시 켰다. SOS 신호를 보내기 시작한다.':'구식 신호기를 껐다.');commit()},
  asigscan(){if(bossAlive(BOSS))return;if(asigState().n<=0){toast('아직 잡힌 신호가 없습니다.');return}if(!spendKeep(4))return;sfxBeep();useAsig();const ev=SCANS[ri(0,SCANS.length-1)];const r=ev.fx(P);let got=(r.add||[]).slice();{const rl=relicRoll(P.lvl);if(rl)got.push([rl,1])}got.forEach(([id,n])=>add(id,n));let extra='';
@@ -7978,7 +7979,7 @@ const A={
 let giftTo=null,giftSel={},giftCr=0,giftMsg='';
 function openGift(id){if(!PLAYERS[id])return;giftTo=id;giftSel={};giftCr=0;giftMsg='';renderGift();$('#giftModal').hidden=false}
 // dishes and 귀중품 (scouting finds) can be gifted; a 귀중품 pleases like a favourite dish
-const GIFT_MAX=1,isDish=i=>COOK.some(c=>c.id===dishBase(i)),isJunk=i=>!!ITEMS[i]&&ITEMS[i].type==='junk',canGift=i=>(isDish(i)||isJunk(i))&&!egLock(i),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
+const GIFT_MAX=1,isDish=i=>COOK.some(c=>c.id===dishBase(i)),isJunk=i=>!!ITEMS[i]&&ITEMS[i].type==='junk',canGift=i=>(isDish(i)||isJunk(i))&&!egLock(i)&&!isLocked(i),giftCount=()=>Object.values(giftSel).reduce((a,n)=>a+n,0);
 function renderGift(){const t=PLAYERS[giftTo];if(!t)return;const ids=ORDER.filter(i=>P.inv[i]&&canGift(i));const sel=Object.entries(giftSel);
   {const gb=document.querySelector('#giftBox .bag');window.__gbs=gb?gb.scrollTop:0}$('#giftBox').innerHTML=`<div class="info-head">${meImg(3,t)}<div style="flex:1;min-width:0"><span class="lv">GIFT · 선물 보내기</span><h2>${esc(t.nick)} 님에게</h2><span class="hint">내가 ${esc(t.nick)} 님을 생각하는 마음 ${affBadge(affOf(P,giftTo))}</span></div><button class="btn sm ghost" data-act="giftclose">닫기</button></div>
   ${affOf(P,giftTo)>=10?(tasteHTML(t)||'<span class="hint">이 선원은 아직 취향을 정하지 않았습니다.</span>'):'<div class="info-sec"><span class="lbl">Taste · 취향</span><span class="hint tastelock">🔒 호감도 10 이상이면 좋아하는·싫어하는 음식이 보입니다</span></div>'}
@@ -8056,7 +8057,8 @@ let mailTab='in',MYTR=[],mlTo='',mlMsg='',mlAtt={},trTo='',trMsg='',trGive={},tr
 const mailKind=g=>g.kind==='trade'?'거래 제안':g.kind==='tradeok'?'거래 성사':g.kind==='tradeno'?'거래 반환':g.kind==='letter'?'편지':mailHasGift(g)?'선물':'쪽지';
 const trLock=tid=>db.doc('boss/tr_'+tid);
 const isBound=id=>!!(ITEMS[id]&&ITEMS[id].bound);
-const attList=o=>Object.entries(o).filter(([i,n])=>ITEMS[i]&&!isBound(i)&&n>0).map(([id,n])=>({id,n:Math.min(ML_EACH,Math.floor(n))}));
+const isLocked=id=>!!(P&&P.lock&&P.lock[id]);const lockMsg=()=>toast('잠긴 아이템입니다. 가방에서 잠금을 풀어 주십시오.');
+const attList=o=>Object.entries(o).filter(([i,n])=>ITEMS[i]&&!isBound(i)&&!isLocked(i)&&n>0).map(([id,n])=>({id,n:Math.min(ML_EACH,Math.floor(n))}));
 const mlChips=(list,cr)=>[...list.filter(x=>ITEMS[x.id]).map(x=>`<span class="ichip">${iicon(x.id,1)}${ITEMS[x.id].n} ×${x.n}</span>`),...(cr>0?[`<span class="ichip">${img(IC.coin,null,1)}${(+cr).toLocaleString()} CR</span>`]:[])].join('');
 const haveAll=(list,cr)=>list.every(x=>(P.inv[x.id]||0)>=x.n)&&(P.cr||0)>=(cr||0);
 // pick items out of my bag: tap to attach (up to 3 kinds), set how many (up to 10 each)
@@ -8734,7 +8736,8 @@ Object.assign(A,SA,{
  async invdel(d){if(!isAdmin)return;try{await db.doc('invites/'+d.k).delete();toast('초대장을 취소했습니다.')}catch(e){toast('취소하지 못했습니다.')}},
  async invcopy(d){const t=`[가이아 프로젝트 초대장]\n주소: ${location.origin}${location.pathname}\n초대코드: ${fmtCode(d.k)}`;
   try{await navigator.clipboard.writeText(t);if(!d.quiet)toast('초대 안내문을 복사했습니다.');else toast(`초대장 ${fmtCode(d.k)} 발급! 안내문도 복사했습니다.`)}catch(e){if(!d.quiet)toast('복사하지 못했습니다. 코드를 직접 알려 주십시오: '+fmtCode(d.k))}}});
-['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','pedit','pedstop','peditno','peditsave','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel'].forEach(k=>SAFE_ACT.add(k));
+['invnew','invdel','invcopy'].forEach(k=>SAFE_ACT.add(k));
+A.itemlock=d=>{if(!d.id||!ITEMS[d.id])return;const L=Object.assign({},P.lock);if(L[d.id])delete L[d.id];else L[d.id]=1;P.lock=L;toast(L[d.id]?`${ITEMS[d.id].n}을(를) 잠갔습니다.`:`${ITEMS[d.id].n} 잠금을 풀었습니다.`);commit()};['relopen','profopen','profclose','profgo','profbio','profbiosave','padimgx','imgview','sotab','padview','padtag','padopen','padback','padpost','padreply','padrt','plike','pdel','pedit','pedstop','peditno','peditsave','dmopen','dmsend','gbsend','gbdel','bioedit','biosave','biocancel'].forEach(k=>SAFE_ACT.add(k));
 /* ───────── join page: character creation ───────── */
 const JST_META={str:['⚔','#e07a6e'],vit:['♥','#e58fb0'],agi:['➶','#7fd0d0'],end:['⛨','#e0b860'],luk:['✦','#a99ae0']};
 const J_START=2,J_FREE=15,J_MAX=2,J_STEPS=[['이름 · 내 모습','다른 선원에게 보일 이름과 모습을 정합니다.'],['좋아하는 것 · 싫어하는 것','좋아하는 요리와 싫어하는 요리를 2개씩 고릅니다. 건너뛰어도 됩니다.'],['직업','직업마다 잘하는 일이 다릅니다. 한 번 정하면 바꿀 수 없습니다.'],['스테이터스','능력치에 포인트를 나눠 줍니다. 남긴 포인트는 나중에 써도 됩니다.']];
