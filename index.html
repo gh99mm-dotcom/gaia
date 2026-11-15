@@ -3468,7 +3468,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    ${admGroups()}</div>
   ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
    <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
-   <button class="btn alt admbig" data-act="admchat">최근 알림 지우기</button></div>
+   <button class="btn alt admbig" data-act="admchat">최근 알림 지우기 (공지 제외)</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
    ${admStaffHTML(others)}${verAdminHTML()}${diagAdminHTML()}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
 const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
@@ -6944,7 +6944,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794715403';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794731117';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7856,7 +7856,7 @@ const A={
  admnotice(){if(!isAdmin||mode!=='online')return;const v=$('#admNotice').value.trim().slice(0,80);if(!v)return;db.collection('chat').add({uid,nick:P.nick,text:'[공지] '+v,at:Date.now(),sys:true,adm:true}).then(()=>{$('#admNotice').value='';toast('공지를 보냈습니다.')}).catch(()=>toast('보내지 못했습니다.'))},
  admrescue(d){if(!isAdmin||mode!=='online')return;db.doc('rescues/'+d.k).set({by:uid,nick:'운영자',at:Date.now(),adm:true}).then(()=>toast('기절 해제 신호를 보냈습니다.')).catch(()=>toast('보내지 못했습니다.'))},
  tickdel(d){if(!isAdmin||mode!=='online'||!d.k)return;db.collection('chat').doc(d.k).delete().then(()=>{CHAT=CHAT.filter(m=>m.id!==d.k);PINS=PINS.filter(m=>m.id!==d.k);renderChat();ntcRefresh();toast('알림을 삭제했습니다.')}).catch(()=>toast('삭제하지 못했습니다.'))},
- admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{for(const d of sn.docs){try{await db.collection('chat').doc(d.id).delete()}catch(e){}}toast('최근 알림을 지웠습니다.')}).catch(()=>toast('지우지 못했습니다.'))},
+ admchat(){if(!isAdmin||mode!=='online')return;db.collection('chat').orderBy('at','desc').limit(50).get().then(async sn=>{let n=0;for(const d of sn.docs){if((d.data()||{}).adm)continue;try{await db.collection('chat').doc(d.id).delete();n++}catch(e){}}toast(`최근 알림 ${n}개를 지웠습니다. (공지는 그대로 둡니다)`)}).catch(()=>toast('지우지 못했습니다.'))},
  profile(){meView=true;mailView=false;orgView=false;rankView=false;profView=false;orgView=false;rankView=false;profView=false;secretView=false;anonView=false;adminView=false;renaming=false;abPend={};renderPanel();window.scrollTo({top:$('#stage').getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
  infoclose(){meView=false;renderPanel()},
  socside(){socSetSide(socSide==='right'?'left':'right')},
