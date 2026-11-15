@@ -4273,7 +4273,7 @@ let raidClaiming=null;
 // rewards are paid once per expedition, in this order: pay + note the run in my own save (P.raidDone) → wait for that save to land →
 // only then mark claimed[uid] on the party record. So a claimed mark always means "paid and saved": such a run is never paid again
 // (nor reopened, however long ago it was), while a run whose save was lost carries no mark and is simply paid again on the next visit.
-function raidClaim(r){if(!r||raidClaiming===r.id)return;const mark=()=>{if(!(P.raidDone||[]).includes(r.id))P.raidDone=[...(P.raidDone||[]).slice(-199),r.id]};
+function raidClaim(r){if(!r||raidClaiming===r.id)return;runIdxEnd(r);const mark=()=>{if(!(P.raidDone||[]).includes(r.id))P.raidDone=[...(P.raidDone||[]).slice(-199),r.id]};
   if((r.claimed||{})[uid]||(P.raidDone||[]).includes(r.id)){if(!(P.raidDone||[]).includes(r.id)){mark();save()}return}
   raidClaiming=r.id;mark();raidPay(r);
   (async()=>{try{if(mode!=='online')return;await flushNow();if(tabStale)return;
@@ -4342,7 +4342,7 @@ function partySweep(list){if(mode!=='online'||!db)return;const now=raidNow();let
   list.forEach(v=>{if(n>=10||partyGone.has(v.id))return;const quiet=now-partyLast(v);
     if((v.state==='lobby'&&quiet>30*60e3)||(v.state==='run'&&quiet>2*3600e3)){partyGone.add(v.id);n++;raidRef(v.id).update({state:'done',swept:now}).catch(()=>{})}})}
 // my own finished or long-gone parties: the host removes them, so the "my parties" list stays short
-function partyTidyMine(docs){if(mode!=='online'||!db)return;const now=raidNow();let n=0;
+function partyTidyMine(docs){if(mode!=='online'||!db)return;const now=raidNow();let n=0;docs.forEach(v=>{if((v.state==='done'||v.phase==='end')&&now-(+v.at||0)<RUN_KEEP)runIdxEnd(v)});
   docs.forEach(v=>{if(n>=20||partyGone.has('x'+v.id)||v.host!==uid)return;const old=now-(+v.at||0);if((v.state==='done'&&old>3600e3)||old>6*3600e3){partyGone.add('x'+v.id);n++;raidRef(v.id).delete().catch(()=>{})}})}
 // an operator's page clears every party older than a day once per visit (one read of the leftovers, then they are gone for everyone)
 let partyStaffDone=false;function partyStaffSweep(){if(partyStaffDone||mode!=='online'||!db||!isStaff())return;partyStaffDone=true;
@@ -4351,12 +4351,12 @@ function raidRefilter(){const before=RAIDS.map(v=>v.id).join();RAIDS.length=0;RA
 setInterval(()=>{if(mode==='online'&&raidRefilter()&&tab==='raid')renderPanel()},20e3);
 // parties already on their way: shown in the lobby to watch, listened to only while the 원정 lobby is open (each turn rewrites the party)
 let RAIDS_RUN=[];const runIdxRef=()=>db.doc('boss/raidrun');const runIdxDone=new Set();
-const RUN_KEEP=2*3600e3,RUN_SHOW_END=15*60e3;
-function runIdxTidy(cur){const o={},now=raidNow();for(const k in cur||{}){const v=cur[k];if(!v||typeof v!=='object')continue;if(v.end?now-(+v.end.at||0)<RUN_SHOW_END:now-(+v.at||0)<RUN_KEEP)o[k]=v}return o}
+const RUN_KEEP=90*60e3,RUN_SHOW_END=15*60e3;
+function runIdxTidy(cur){const o={},now=raidNow();for(const k in cur||{}){const v=cur[k];if(!v||typeof v!=='object'||v.end)continue;if(now-(+v.at||0)<RUN_KEEP)o[k]=v}return o}
 function runIdxStart(r){if(mode!=='online'||!r)return;const z=raidZone(r);
   bossTx(runIdxRef(),cur=>Object.assign(runIdxTidy(cur),{[r.id]:{zid:z.id,zn:r.rush?'보스 러시':z.n,hard:r.hard?1:0,rush:r.rush?1:0,host:r.host,hostN:r.hostN||'',at:raidNow(),ids:r.ids.slice(),m:Object.fromEntries(r.ids.map(u=>[u,{nick:(r.m[u]||{}).nick||'',lvl:(r.m[u]||{}).lvl||0}]))}})).catch(()=>{})}
 function runIdxEnd(r){if(mode!=='online'||!r||runIdxDone.has(r.id))return;runIdxDone.add(r.id);
-  bossTx(runIdxRef(),cur=>{const o=runIdxTidy(cur),v=o[r.id];if(!v||v.end)return null;o[r.id]=Object.assign({},v,{end:{at:raidNow(),res:r.result||'end'}});return o}).catch(()=>{})}
+  bossTx(runIdxRef(),cur=>{const o=runIdxTidy(cur);if(!o[r.id]&&Object.keys(o).length===Object.keys(cur||{}).length)return null;delete o[r.id];return o}).catch(()=>{})}
 function raidRunListHTML(){const list=RAIDS_RUN.filter(x=>egOpen()||!(x.rush||x.hard)).sort((a,b)=>(!!a.end-!!b.end)||(b.at||0)-(a.at||0));const live=list.filter(x=>!x.end).length;
   return`<div class="card"><div class="stat-row"><span>공략 중인 파티</span><b>${live}개</b></div>${list.length?`<div class="pcards">${list.map(x=>{const mp=raidMapImg(x.zid||'r1',1,false,RAID_STEPS,true,true),st=x.end?({clear:'클리어',wipe:'실패',fled:'도주'}[x.end.res]||'종료'):'공략 중';
     return`<div class="pcard run"><div class="pcban"><img class="pix" src="${mp.src}" alt=""></div>
@@ -4374,7 +4374,7 @@ async function raidCreate(solo,rush){if(rush&&(!egOpen()||P.lvl<RUSH_MIN)){toast
   try{await raidRef(id).set(r);raidWatch(id);commit();if(solo)raidStart(id)}catch(e){heal(0,RAID_EN);toast('원정을 만들지 못했습니다.')}}
 function raidJoin(id){const L=RAIDS.find(x=>x.id===id);if(!L||MYRAID)return;const z=raidZone(L);if(L.rush){if(!egOpen()||P.lvl<RUSH_MIN){toast(`보스 러시는 Lv.${RUSH_MIN} 이상만 갈 수 있습니다.`);return}}else if(!raidFits(z)){toast(`이 구역은 Lv.${z.min} 이상만 들어갈 수 있습니다.`);return}if(L.hard&&!raidHardOpen(z)){toast(`${z.n}은(는) ${z.base||z.n} 보스를 쓰러뜨린 뒤 열립니다.`);return}if(!spend(RAID_EN))return;const me=raidMe();
   raidTx(id,r=>{if(!r||r.state!=='lobby'||r.ids.length>=RAID_MAX||r.ids.includes(uid))return null;r.ids.push(uid);r.m[uid]=me;r.hb=Object.assign({},r.hb,{[uid]:raidNow()});return r}).then(nx=>{if(nx){raidWatch(id);commit()}else{heal(0,RAID_EN);toast('참여할 수 없습니다. 이미 출발했거나 자리가 찼습니다.')}}).catch(()=>{heal(0,RAID_EN);toast('참여하지 못했습니다.')})}
-function raidLeave(){const r0=MYRAID;if(!r0)return;
+function raidLeave(){const r0=MYRAID;if(!r0)return;if(r0.state==='run'&&raidIn(r0).filter(u=>u!==uid).length===0)runIdxEnd(r0);
   if(r0.state==='lobby'){if(r0.host===uid){raidRef(r0.id).delete().catch(()=>{})}else raidTx(r0.id,r=>{if(!r||r.state!=='lobby')return null;r.ids=r.ids.filter(u=>u!==uid);delete r.m[uid];return r}).catch(()=>{});heal(0,RAID_EN);raidWatch(null);commit();renderPanel();return}
   if(r0.state==='run'&&r0.phase!=='end'){raidTx(r0.id,r=>{if(!r)return null;r.left=Object.assign({},r.left,{[uid]:1});r.seq++;
     // the last one out closes the expedition, whatever it was doing, so it stops showing as under way
@@ -6944,7 +6944,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794703810';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794709387';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
