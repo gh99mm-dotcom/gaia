@@ -4756,13 +4756,13 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
   if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;if(tabGate('adv'))return;   // 탐사 still locked for me: I could not have fought it
   P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 /* the invader record: live while 탐사 is open or while no invader is out (so a new one shows up at once);
-   during a fight, crew on other screens check it every 3 minutes instead of receiving every single hit */
-const BOSS_POLL=3*60e3;let bossUn=null,bossPollT=0;
+   during a fight, crew on other screens check it every minute instead of receiving every single hit */
+const BOSS_POLL=60e3;let bossUn=null,bossPollT=0;
 function bossOn(sn){BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint();bossSubSync()}
 function bossSubSync(){const w=mode==='online'&&!!db&&(tab==='adv'||!bossAlive(BOSS));if(w&&!bossUn)bossUn=bossRef().onSnapshot(bossOn,()=>{});else if(!w&&bossUn){try{bossUn()}catch(e){}bossUn=null}}
 function bossSubscribe(){
   endSub();memSub();affSub();bondSub();
-  bossSubSync();if(!bossPollT)bossPollT=setInterval(()=>{if(mode==='online'&&db&&!bossUn&&!document.hidden)bossRef().get().then(bossOn,()=>{})},BOSS_POLL);
+  bossSubSync();if(!bossPollT)document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode==='online'&&db&&!bossUn)bossRef().get().then(bossOn,()=>{})});if(!bossPollT)bossPollT=setInterval(()=>{if(mode==='online'&&db&&!bossUn&&!document.hidden)bossRef().get().then(bossOn,()=>{})},BOSS_POLL);
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
@@ -7126,7 +7126,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794756720';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794757046';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
