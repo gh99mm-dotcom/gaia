@@ -3594,7 +3594,7 @@ function plApply(docs,full){const m=full?{}:Object.assign({},PLAYERS),dl=full?{}
   if(PLAYERS[uid])m[uid]=PLAYERS[uid];if(DELP[uid])dl[uid]=DELP[uid];PLAYERS=m;DELP=dl;plRedraw()}
 let plT=null;function plRedraw(){if(plT)return;plT=setTimeout(()=>{plT=null;adminRefresh();renderCrew();if(tab==='fish'&&duelOn())renderPanel()},900)}
 function plPoll(force){if(mode!=='online'||!db||plBusy)return;const now=Date.now(),duel=tab==='fish'&&typeof duelOn==='function'&&duelOn();
-  if(!force&&document.visibilityState==='hidden')return;if(!force&&now-plPollAt<(duel?30e3:120e3)-500)return;plPollAt=now;plBusy=true;
+  if(!force&&document.visibilityState==='hidden')return;if(!force&&typeof raidLocked==='function'&&raidLocked())return;if(!force&&now-plPollAt<(duel?30e3:120e3)-500)return;plPollAt=now;plBusy=true;
   const full=force||!plFullAt||now-plFullAt>3600e3;if(full)plFullAt=now;
   const q=full?db.collection('players'):db.collection('players').where('wt','>',window.__tsFrom?window.__tsFrom(plWm):plWm);
   q.get().then(sn=>plApply(sn.docs,full)).catch(()=>{}).then(()=>{plBusy=false})}
@@ -4164,25 +4164,29 @@ const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mi
 // monsters are tuned for a full party of 4; smaller parties meet weaker ones (HP and attack) so the fight stays about as long
 const RAID_HPF=[0,.36,.57,.79,1],RAID_ATKF=[0,.77,.85,.92,1];
 const RAID_HARD={r4:[1.6,1.4],r5:[1.9,1.55],r6:[2.2,1.7]};
-function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx0=RAID_HARD[zone&&zone.id]||[1,1],hx=zone&&zone.hard?[hx0[0]*RAID_HARDN.hp[pn-1],hx0[1]*RAID_HARDN.atk[pn-1]]:hx0,def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
+// hard zones on top of the shared hard factors: [hp, attack] — every hard zone outhits 붉은 별의 핵 (r6), and each step is harder than the last
+const HARD_ZX={r1:[1.3,1.4],r2:[1.35,1.4],r3:[1.5,1.5]};
+function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx0=RAID_HARD[zone&&zone.id]||[1,1],hzx=zone&&zone.hard?(HARD_ZX[zone.id]||[1,1]):[1,1],hx=zone&&zone.hard?[hx0[0]*RAID_HARDN.hp[pn-1]*hzx[0],hx0[1]*RAID_HARDN.atk[pn-1]*hzx[1]]:hx0,def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
   return{n:name,L,kind:kind||'',hp,max:hp,atk,def,agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
-const RAIDS=[];let raidSig='',MYRAID=null,raidSel='r1',raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
+// the zone (and normal/hard) I picked last is remembered on this device
+const RAID_SEL_LS='nebula-raid-sel';const raidSelLoad=()=>{try{const v=JSON.parse(localStorage.getItem(RAID_SEL_LS)||'{}');return v&&typeof v==='object'?v:{}}catch(e){return{}}},raidSelSave=()=>{try{localStorage.setItem(RAID_SEL_LS,JSON.stringify({z:raidSel,m:raidMode}))}catch(e){}};
+const RAIDS=[];let raidSig='',MYRAID=null,raidSel=(v=>typeof v.z==='string'&&/^r\d$/.test(v.z)?v.z:'r1')(raidSelLoad()),raidUnsub=null,raidTimer=0,raidTgt=0,raidItemTo=null,raidBusy=false,raidBag=false,raidPick=null;
 // once the party has set out, the expedition holds the screen until you return to the station
 const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 // while I'm out on an expedition my profile HP follows my expedition HP (never below 1 here, so the main game doesn't faint me mid-run)
 function raidHpSync(){const r=MYRAID,me=r&&r.m&&r.m[uid];if(!raidLocked()||r.phase==='end'||!me)return;const v=Math.max(1,Math.min(maxHp(),Math.round(me.hp)));if(v!==P.hp){P.hp=v;renderPilot()}}
 const raidRef=id=>db.doc('parties/'+id);
 const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,job:P.job||'',atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:critPct(),critD:BUFF('critD')+WA('critD'),dodge:Math.min(45,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')))});
-const RAID_HARDX={hp:2.2,atk:1.5,rw:2,mat:1.5};
+const RAID_HARDX={hp:3.3,atk:1.8,rw:2,mat:1.5};
 // hard monsters by party size (1–4): a solo crew meets a milder hard, a full party the full one; rewards stay doubled for everyone
-const RAID_HARDN={hp:[1.4,1.7,2.0,2.2],atk:[1.2,1.3,1.4,1.5]};// 하드: 몬스터 체력·공격 배율, 경험치·크레딧 배율, 우주선 재료 배율
-let raidMode='normal';const HARDZ={};
+const RAID_HARDN={hp:[2.1,2.55,3.0,3.3],atk:[1.44,1.56,1.68,1.8]};// 하드: 몬스터 체력·공격 배율, 경험치·크레딧 배율, 우주선 재료 배율
+let raidMode=(()=>{try{return(JSON.parse(localStorage.getItem('nebula-raid-sel')||'{}')||{}).m==='hard'?'hard':'normal'}catch(e){return'normal'}})();const HARDZ={};
 const RAID_HARDZ={r1:['분노하는 먼지 평원',44,50],r2:['경계하는 결정 미궁',48,56],r3:['주시하는 안개 늪',54,60,1]};
 const HARD_PRE={r1:'분노하는',r2:'경계하는',r3:'주시하는'};
 const HARD_NEW={r1:['모래폭풍 정령','운석 가시두더지','먼지 망령','녹슨 채굴 드론','사막 독전갈'],
  r2:['프리즘 감시자','결정 가시고슴도치','거울 환영','공명 나방','수정 파수병'],
  r3:['늪의 눈알 군체','안개 그림자','메탄 거품괴물','덩굴 올가미','썩은 감시 드론']};
-const RAID_STEPS_H=12,raidStepsOf=r=>r&&r.hard&&!r.rush?RAID_STEPS_H:RAID_STEPS;
+const RAID_STEPS_H=12,raidStepsOf=r=>r&&r.rush?RUSH_N*2:r&&r.hard?RAID_STEPS_H:RAID_STEPS;
 const hardZ=z=>{if(HARDZ[z.id])return HARDZ[z.id];const h=RAID_HARDZ[z.id]||[z.n,z.min,z.max],pre=HARD_PRE[z.id],pf=n=>pre?pre+' '+n:n;
   return HARDZ[z.id]=Object.assign({},z,{hard:1,base:z.n,n:h[0],min:h[1],max:h[2],open:!!h[3],mons:[...z.mons,...(HARD_NEW[z.id]||[])].map(pf),mid:pf(z.mid),boss:pf(z.boss)})};
 const raidHardList=()=>RAID_ZONES.filter(z=>RAID_HARDZ[z.id]).map(hardZ);
@@ -4195,11 +4199,12 @@ const isEgItem=id=>!!(ITEMS[id]&&ITEMS[id].eg);
 const egHide=id=>isEgItem(id)&&!egOpen();// not shown on this screen
 const egLock=id=>isEgItem(id)&&!egPublic();// never leaves the operator's own bag (gift, mail, trade, PAD, announcements)
 const dexN=p=>Object.keys((p&&p.dex)||{}).filter(id=>!isEgItem(id)||egOpen()).length;
-// 보스 러시: the six zone bosses back to back (odd steps a boss, even steps a short rest); the run's zone is the current boss's zone
-const RUSH_N=6,RUSH_MIN=40,RUSHZ={};
+// 보스 러시: the six zone bosses, then the three hard bosses, back to back (odd steps a boss, even steps a short rest); the run's zone is the current boss's zone
+const RUSH_HARD=['r1','r2','r3'],RUSH_N=6+RUSH_HARD.length,RUSH_MIN=40,RUSHZ={};
 const rushStage=r=>Math.min(RUSH_N,Math.max(1,Math.ceil((r.step||1)/2)));
-const rushZ=z=>RUSHZ[z.id]||(RUSHZ[z.id]=Object.assign({},z,{rush:1}));
-const raidZone=r=>{if(r&&r.rush)return rushZ(RAID_ZONES[rushStage(r)-1]);const z=RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];return r&&r.hard?hardZ(z):z};
+const rushZ=z=>{const k=(z.hard?'h':'')+z.id;return RUSHZ[k]||(RUSHZ[k]=Object.assign({},z,{rush:1}))};
+const rushZoneAt=st=>st<=6?RAID_ZONES[st-1]:hardZ(RAID_ZONES.find(x=>x.id===RUSH_HARD[st-7]));
+const raidZone=r=>{if(r&&r.rush)return rushZ(rushZoneAt(rushStage(r)));const z=RAID_ZONES.find(z=>z.id===r.zone)||RAID_ZONES[0];return r&&r.hard?hardZ(z):z};
 const raidHardOpen=z=>!!RAID_HARDZ[z.id]&&(((P.mdex||{})[(RAID_ZONES.find(x=>x.id===z.id)||z).boss]||0)>0||!!(P.rclr||{})[z.id]);
 const raidFits=(z,hard)=>P.lvl>=z.min&&(!hard||raidHardOpen(z));
 const raidNow=()=>sNow();
@@ -4286,7 +4291,7 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
     const mL=b.mons.reduce((a,m)=>a+m.L,0)/Math.max(1,b.mons.length),lx=u=>raidLvX(r.m[u].lvl,mL);
     raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});const k=lx(u),cu=Math.round(cr*k),cmu=Math.min(cu,Math.round(crM*k));L.xp+=Math.round(xp*k);L.cr+=cu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=cmu;L.cb.boss+=cu-cmu;L.k=L.k||{};b.mons.forEach(m=>{const nm=String(m.n).replace(/^흉포한 /,'');L.k[nm]=(L.k[nm]||0)+1});if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')&&Math.random()<k){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(Math.random()<.35*k)L.it.crystal=(L.it.crystal||0)+1;{const zm=z.hard?RAID_HARD_MATS[z.id]:raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n1=n0&&r.m[u].job==='mech'?n0+1:n0,n=Math.floor(n1*(k<1?.5:1)*RAID_MAT_X*(z.hard?RAID_HARDX.mat:1)+Math.random());/* 우주선 수리 재료: 60% of the old drop (RAID_MAT_X), and half of that once the dungeon is too easy; random rounding keeps the average exact */if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
-    const boss0=b.mons.some(m=>m.kind==='boss'),rushOn=boss0&&r.rush&&rushStage(r)<RUSH_N,boss=boss0&&!rushOn;if(boss0&&r.rush)r.rushMax=Math.max(r.rushMax||0,rushStage(r));r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:rushOn?`${z.boss} 격파! 보스 러시 ${rushStage(r)}/${RUSH_N}`:boss?(r.rush?`보스 러시 완주! 여섯 보스를 모두 쓰러뜨렸다!`:`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`):'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치와 보상이 줄어듭니다)':''}`};
+    const boss0=b.mons.some(m=>m.kind==='boss'),rushOn=boss0&&r.rush&&rushStage(r)<RUSH_N,boss=boss0&&!rushOn;if(boss0&&r.rush)r.rushMax=Math.max(r.rushMax||0,rushStage(r));r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:rushOn?`${z.boss} 격파! 보스 러시 ${rushStage(r)}/${RUSH_N}`:boss?(r.rush?`보스 러시 완주! 아홉 보스를 모두 쓰러뜨렸다!`:`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`):'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치와 보상이 줄어듭니다)':''}`};
     if(boss){const cb=crs(Math.round((r.rush?600:200)*raidPartyX(r)*(z.hard?RAID_HARDX.rw:1)));raidIn(r).forEach(u=>{const L=r.loot[u];const cbu=Math.round(cb*lx(u));L.xp+=Math.round(xp*.5*lx(u));L.cr+=cbu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cbu})}return r}
   if(!raidUp(r).length){r.phase='end';r.result='wipe';r.ev={n:'모두 쓰러졌다… 원정 실패',res:'얻은 보상의 절반만 가지고 체력 1로 베이스캠프에 돌아갑니다.'};raidIn(r).forEach(u=>{const L=r.loot[u];if(L){L.xp=Math.round(L.xp/2);L.cr=Math.round(L.cr/2);if(L.cb){for(const k in L.cb)L.cb[k]=Math.round(L.cb[k]/2)}L.it={}}r.m[u].hp=1});return r}
   raidNextTurn(r);return r}
@@ -4300,7 +4305,7 @@ function raidQRun(){const q=raidQ;if(!q||raidBusy)return;if(Date.now()-q.at>5e3)
 function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e3)raidBusy=false;if(r0&&raidBusy&&['atk','def','item','sk'].includes(kind)){if(raidQ)raidQ.res(null);return new Promise(res=>{raidQ={kind,arg,res,at:Date.now()}})}if(!r0||raidBusy)return Promise.resolve(null);raidBusy=true;raidBusyAt=Date.now();const want=turnKey(r0.b&&r0.b.cur),seq=r0.seq;
   return raidTx(r0.id,r=>{if(!r||r.seq!==seq||r.phase!=='battle'||turnKey(r.b.cur)!==want)return null;const b=r.b,a=b.cur;
     // only the member whose turn it is may attack, defend or use an item; monsters and timeouts act only on their own turns
-    if(!a||(['atk','def','item','sk'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;
+    if(!a||(['atk','def','item','sk'].includes(kind)&&!(a.k==='p'&&a.id===uid))||(kind==='mon'&&a.k!=='m')||(kind==='auto'&&a.k!=='p'))return null;r.seq++;delete r.fr;
     if(a.k==='p'){const me=r.m[a.id];
       if(kind==='sk'){const j=rJob(me),i=arg&&arg.s|0,sk=rskList(r,j)[i];if(!sk||rskLeft(b,a.id,i)>0)return null;b.cd=b.cd||{};b.cd[a.id]=Object.assign({s0:0,s1:0,s2:0},b.cd[a.id]);b.cd[a.id]['s'+i]=sk.cd;b.skfx={n:sk.n,j,by:me.nick,id:((b.skfx&&b.skfx.id)||0)+1};
         const live=b.mons.map((m,k)=>m.hp>0?k:-1).filter(k=>k>=0),tm=b.mons[live.includes(arg.tgt)?arg.tgt:live[0]];
@@ -4321,7 +4326,10 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
       else if(kind==='def'){b.def[a.id]=1;raidLog(b,`${me.nick} 님이 방어 태세를 취했다.`)}
       else if(kind==='item'){const it=ITEMS[arg.id],to=r.m[arg.to];if(!it||!to)return null;const h=it.hp>=999?to.maxHp:Math.round((it.hp||0)*(me.job==='medic'?1.5:1));if(to.hp<=0&&h>0)to.hp=0;to.hp=Math.min(to.maxHp,to.hp+h);delete to.psn;raidLog(b,`${me.nick} 님이 ${arg.to===a.id?'':to.nick+' 님에게 '}${it.n}을(를) 썼다. (체력 +${h})`)}
       else{const live=b.mons.map((m,i)=>m.hp>0?i:-1).filter(i=>i>=0),ti=live.includes(arg)?arg:live[0],m=b.mons[ti],zf=(zrOf(raidZone(r))||{}).fog;if(zf&&!m.hide&&Math.random()<zf){raidLog(b,`${me.nick}${kind==='auto'?'(자동)':''} → ${m.n} 빗나감 (안개)`);return raidSettle(r)}const [d0,c]=raidHit(me.atk*(me.od>0?2:1),m.def,me.crit||0,me.critD||0),[d,tg]=raidDmgMod(b,m,d0,false);m.hp=Math.max(0,m.hp-d);raidLog(b,`${me.nick}${kind==='auto'?'(자동)':''} → ${m.n} ${d} 피해${c?' · 치명타!':''}${tg}${m.hp<=0?' · 쓰러뜨렸다!':''}`)}}
-    else{const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
+    else return raidMonChain(r);
+    return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false;setTimeout(raidQRun)})}
+// one monster's turn (the monster in b.cur acts, then the turn passes on)
+function raidMonTurn(r){const b=r.b,a=b.cur;const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
       if(m.shMax&&!m.shT&&m.sh<m.shMax)m.sh=m.shMax;
       if(m.hide){m.hide=0;raidLog(b,`${m.n}${jo(m.n,'이','가')} 안개 속에서 모습을 드러냈다!`)}
       {const zr=zrOf(raidZone(r));if(zr&&zr.hide&&m.kind==='boss'&&!m.chg&&((b.round>1&&b.round%3===0&&m.hr!==b.round)||(!m.h1&&m.hp<m.max*.5))){m.h1=1;m.hr=b.round;m.hide=1;const h=Math.round(m.max*.08);m.hp=Math.min(m.max,m.hp+h);
@@ -4339,36 +4347,42 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
         raidLog(b,`⚠ ${m.n}${jo(m.n,'이','가')} ${r.m[t].nick} 님을 표적으로 고정했다! 다음 턴에 집중 포격합니다.`);b.skfx={n:'표적 고정',j:'warn',by:`${m.n} → ${r.m[t].nick} · 다음 턴 집중 포격`,id:((b.skfx&&b.skfx.id)||0)+1}}}}
       if(m.rage&&m.hp>0){if(aoe&&mv==='대폭발')m.cd=zrOf(raidZone(r)).boom+1;else{m.cd=(m.cd||1)-1;if(m.cd<=1){m.chg='대폭발';raidLog(b,`⚠ ${m.n}의 핵이 폭주한다! 다음 턴에 대폭발 — 파티 전원에게 큰 피해!`);b.skfx={n:'대폭발 직전',j:'warn',by:`${m.n} · 다음 턴 전원 공격 · 방어하십시오`,id:((b.skfx&&b.skfx.id)||0)+1}}else raidLog(b,`⚠ ${m.n}의 대폭발까지 ${m.cd-1}턴`)}}
       const zbr=(zrOf(raidZone(r))||{}).breath;
-      if(!(raidZone(r).hard&&HSEQ[monBase(m.n)])&&!aoe&&!m.lock&&!m.rage&&m.hp>0&&((m.kind==='boss'&&(zbr||Math.random()<.3))||(m.kind==='mid'&&Math.random()<.15))){const mv2=m.kind==='boss'&&zbr?zbr:raidAoeMove(m);m.chg=mv2;raidLog(b,`⚠ ${m.kind==='boss'?'보스':'정예'} ${m.n}${jo(m.n,'이','가')} ${mv2}${jo(mv2,'을','를')} 준비합니다! 다음 턴에 파티 전원을 공격합니다.`);b.skfx={n:mv2+' 준비',j:'warn',by:`${m.n} · 다음 턴 전체 공격`,id:((b.skfx&&b.skfx.id)||0)+1}}}
-    return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false;setTimeout(raidQRun)})}
+      if(!(raidZone(r).hard&&HSEQ[monBase(m.n)])&&!aoe&&!m.lock&&!m.rage&&m.hp>0&&((m.kind==='boss'&&(zbr||Math.random()<.3))||(m.kind==='mid'&&Math.random()<.15))){const mv2=m.kind==='boss'&&zbr?zbr:raidAoeMove(m);m.chg=mv2;raidLog(b,`⚠ ${m.kind==='boss'?'보스':'정예'} ${m.n}${jo(m.n,'이','가')} ${mv2}${jo(mv2,'을','를')} 준비합니다! 다음 턴에 파티 전원을 공격합니다.`);b.skfx={n:mv2+' 준비',j:'warn',by:`${m.n} · 다음 턴 전체 공격`,id:((b.skfx&&b.skfx.id)||0)+1}}
+  return raidSettle(r)}
+// monsters standing next to each other in the turn order act in ONE write (each write is read by every crew member):
+// the states after each of them ride along in r.fr, and every screen replays them one second apart, so it looks the same as before
+function raidMonChain(r){const fr=[];let x=raidMonTurn(r);
+  for(let g=0;g<12;g++){const b=x&&x.b,c=b&&b.cur;if(!x||x.phase!=='battle'||!c||c.k!=='m'||!(b.mons[c.id]&&b.mons[c.id].hp>0))break;fr.push(JSON.parse(JSON.stringify({b:x.b,m:x.m})));x.seq++;x=raidMonTurn(x)}
+  if(x&&fr.length){x.fr={id:x.seq,f:fr};if(x.phase==='battle'&&x.b)x.b.turnEnd=Math.max(x.b.turnEnd||0,raidNow())+fr.length*RAID_MON_TURN}return x}
 /* skill kinds: double (two quick hits) · pierce (ignores defence) · drain (heals itself) · poison · stun (target skips a turn)
    aoe (weak hit on everyone, no warning) · heal (mends the most hurt ally) · buff (allies hit harder) · shield (barrier on itself)
    shieldAll · hide (unhittable for a turn) · mark (locks a target for a heavy hit next turn) · tele (announces a big area attack)
    poisonAll · healAll */
 const HSK={
- '먼지 진드기':{t:'double',n:'떼 지어 물기'},'바위 딱정벌레':{t:'shield',n:'등껍질 웅크리기'},'모래 도마뱀':{t:'stun',n:'모래 뿌리기'},
- '떠돌이 드론':{t:'mark',n:'조준 레이저'},'운석 쥐':{t:'drain',n:'갉아먹기'},'모래폭풍 정령':{t:'aoe',n:'모래 회오리'},
- '운석 가시두더지':{t:'pierce',n:'가시 돌진'},'먼지 망령':{t:'hide',n:'먼지 속으로'},'녹슨 채굴 드론':{t:'double',n:'드릴 연타'},'사막 독전갈':{t:'poison',n:'독침'},
- '결정 거미':{t:'stun',n:'결정 거미줄'},'빛먹이 박쥐':{t:'drain',n:'빛 흡수'},'수정 골렘':{t:'pierce',n:'결정 주먹'},'동굴 이끼괴물':{t:'poison',n:'포자 뿜기'},
- '메아리 뱀':{t:'mark',n:'메아리 탐지'},'프리즘 감시자':{t:'aoe',n:'프리즘 광선'},'결정 가시고슴도치':{t:'shield',n:'가시 갑옷'},'거울 환영':{t:'double',n:'거울 분신'},
- '공명 나방':{t:'buff',n:'공명 날갯짓'},'수정 파수병':{t:'heal',n:'결정 재생'},
- '늪 거머리':{t:'drain',n:'흡혈'},'독안개 해파리':{t:'poison',n:'마비 촉수'},'진흙 두꺼비':{t:'stun',n:'혀 휘감기'},'갈대 사냥꾼':{t:'hide',n:'갈대 은신'},
- '부패한 드론':{t:'aoe',n:'부패 가스'},'늪의 눈알 군체':{t:'mark',n:'응시'},'안개 그림자':{t:'double',n:'그림자 연격'},'메탄 거품괴물':{t:'aoe',n:'메탄 폭발'},
- '덩굴 올가미':{t:'stun',n:'올가미'},'썩은 감시 드론':{t:'buff',n:'감시 신호'}};
+ '먼지 진드기':[{t:'double',n:'떼 지어 물기'},{t:'bleed',n:'진드기 흡착'}],'바위 딱정벌레':[{t:'shield',n:'등껍질 웅크리기'},{t:'rage',n:'돌진'}],'모래 도마뱀':[{t:'stun',n:'모래 뿌리기'},{t:'sweep',n:'꼬리 휘두르기'}],
+ '떠돌이 드론':[{t:'mark',n:'조준 레이저'},{t:'combo3',n:'연사'}],'운석 쥐':[{t:'drain',n:'갉아먹기'},{t:'bleed',n:'이빨 갉기'}],'모래폭풍 정령':[{t:'aoe',n:'모래 회오리'},{t:'stunAll',n:'모래 눈보라'}],
+ '운석 가시두더지':[{t:'pierce',n:'가시 돌진'},{t:'execute',n:'약점 찌르기'}],'먼지 망령':[{t:'hide',n:'먼지 속으로'},{t:'drain',n:'생기 흡수'}],'녹슨 채굴 드론':[{t:'double',n:'드릴 연타'},{t:'combo3',n:'삼연 드릴'}],'사막 독전갈':[{t:'poison',n:'독침'},{t:'execute',n:'급소 독침'}],
+ '결정 거미':[{t:'stun',n:'결정 거미줄'},{t:'bleed',n:'결정 송곳니'}],'빛먹이 박쥐':[{t:'drain',n:'빛 흡수'},{t:'sweep',n:'날개 베기'}],'수정 골렘':[{t:'pierce',n:'결정 주먹'},{t:'rage',n:'결정 분노'}],'동굴 이끼괴물':[{t:'poison',n:'포자 뿜기'},{t:'aoe',n:'포자 폭발'}],
+ '메아리 뱀':[{t:'mark',n:'메아리 탐지'},{t:'execute',n:'메아리 일격'}],'프리즘 감시자':[{t:'aoe',n:'프리즘 광선'},{t:'stunAll',n:'섬광'}],'결정 가시고슴도치':[{t:'shield',n:'가시 갑옷'},{t:'combo3',n:'가시 난사'}],'거울 환영':[{t:'double',n:'거울 분신'},{t:'sweep',n:'거울 반사'}],
+ '공명 나방':[{t:'buff',n:'공명 날갯짓'},{t:'stunAll',n:'공명 가루'}],'수정 파수병':[{t:'heal',n:'결정 재생'},{t:'pierce',n:'수정 창'}],
+ '늪 거머리':[{t:'drain',n:'흡혈'},{t:'bleed',n:'출혈 흡착'}],'독안개 해파리':[{t:'poison',n:'마비 촉수'},{t:'stunAll',n:'마비 안개'}],'진흙 두꺼비':[{t:'stun',n:'혀 휘감기'},{t:'rage',n:'진흙 몸통박치기'}],'갈대 사냥꾼':[{t:'hide',n:'갈대 은신'},{t:'execute',n:'매복 일격'}],
+ '부패한 드론':[{t:'aoe',n:'부패 가스'},{t:'bleed',n:'부식 탄'}],'늪의 눈알 군체':[{t:'mark',n:'응시'},{t:'combo3',n:'연속 응시'}],'안개 그림자':[{t:'double',n:'그림자 연격'},{t:'execute',n:'그림자 처형'}],'메탄 거품괴물':[{t:'aoe',n:'메탄 폭발'},{t:'rage',n:'폭발 직전'}],
+ '덩굴 올가미':[{t:'stun',n:'올가미'},{t:'sweep',n:'덩굴 채찍'}],'썩은 감시 드론':[{t:'buff',n:'감시 신호'},{t:'combo3',n:'기관총'}]};
 const HSEQ={
- '성난 굴착충':[{t:'tele',n:'지진',x:1},{t:'drain',n:'통째로 삼키기'},{t:'pierce',n:'굴착 돌진'}],
- '평원의 포식자 「그라울」':[{t:'drain',n:'포식'},{t:'aoe',n:'모래폭풍 숨결'},{t:'tele',n:'대지 붕괴',x:1.3},{t:'buff',n:'포효'},{t:'mark',n:'사냥감 지정'}],
- '미궁의 수문장':[{t:'shieldAll',n:'결정 방벽'},{t:'tele',n:'결정 폭발',x:1},{t:'pierce',n:'수문장의 창'}],
- '결정 여왕 「셀레네」':[{t:'healAll',n:'결정의 노래'},{t:'stun',n:'수정 감옥'},{t:'tele',n:'결정 폭풍',x:1.2},{t:'pierce',n:'결정 창'},{t:'shieldAll',n:'여왕의 장벽'}],
- '늪의 늙은 악어':[{t:'pierce',n:'죽음의 회전'},{t:'tele',n:'꼬리 휩쓸기',x:1},{t:'drain',n:'물어뜯기'}],
- '안개의 주인 「모르가」':[{t:'poisonAll',n:'독안개'},{t:'mark',n:'주시'},{t:'tele',n:'안개 폭풍',x:1.2},{t:'hide',n:'안개 속 잠적'},{t:'stun',n:'안개 손아귀'}]};
+ '성난 굴착충':[{t:'tele',n:'지진',x:1},{t:'drain',n:'통째로 삼키기'},{t:'pierce',n:'굴착 돌진'},{t:'combo3',n:'연속 굴착'},{t:'stunAll',n:'지반 진동'}],
+ '평원의 포식자 「그라울」':[{t:'drain',n:'포식'},{t:'aoe',n:'모래폭풍 숨결'},{t:'tele',n:'대지 붕괴',x:1.3},{t:'buff',n:'포효'},{t:'mark',n:'사냥감 지정'},{t:'execute',n:'목덜미 물기'},{t:'bleed',n:'찢어발기기'}],
+ '미궁의 수문장':[{t:'shieldAll',n:'결정 방벽'},{t:'tele',n:'결정 폭발',x:1},{t:'pierce',n:'수문장의 창'},{t:'sweep',n:'창 휘두르기'},{t:'stunAll',n:'결정 진동'}],
+ '결정 여왕 「셀레네」':[{t:'healAll',n:'결정의 노래'},{t:'stun',n:'수정 감옥'},{t:'tele',n:'결정 폭풍',x:1.2},{t:'pierce',n:'결정 창'},{t:'shieldAll',n:'여왕의 장벽'},{t:'combo3',n:'결정 비'},{t:'execute',n:'심판의 결정'}],
+ '늪의 늙은 악어':[{t:'pierce',n:'죽음의 회전'},{t:'tele',n:'꼬리 휩쓸기',x:1},{t:'drain',n:'물어뜯기'},{t:'bleed',n:'이빨 갈기'},{t:'sweep',n:'몸통 휩쓸기'}],
+ '안개의 주인 「모르가」':[{t:'poisonAll',n:'독안개'},{t:'mark',n:'주시'},{t:'tele',n:'안개 폭풍',x:1.2},{t:'hide',n:'안개 속 잠적'},{t:'stun',n:'안개 손아귀'},{t:'execute',n:'안개 처형'},{t:'stunAll',n:'공포의 안개'}]};
 // one hit from a hard move (respects dodge, defending and the shield-bearer's taunt like ordinary hits)
 function hardHit(r,b,m,u,mul,pierce){const me=r.m[u];let [d]=raidHitP(m.atk*mul,pierce?0:me.def,m.kind==='boss'?8:3);let tag='';
   if(d>0&&me.dodge&&Math.random()*100<me.dodge){d=0;tag=' (회피!)'}else if(b.def[u]){d=Math.round(d/2);tag=' (방어로 절반)'}me.hp=Math.max(0,me.hp-d);return{d,tag,down:me.hp<=0}}
 const hhTxt=(me,h)=>`${me.nick} ${h.d}${h.tag}${h.down?' · 쓰러졌다!':''}`;
 function hardMove(r,b,m,tg){const base=monBase(m.n),seq=HSEQ[base];let sk=null;
   if(seq){m.hti=(m.hti||0);sk=seq[m.hti%seq.length];m.hti++}
-  else{const k=HSK[base];if(k&&Math.random()<(m.kind==='elite'?.55:.4))sk=k}
+  else{const k=HSK[base],ks=Array.isArray(k)?k:k?[k]:[];if(ks.length&&Math.random()<(m.kind==='elite'?.65:.5))sk=ks[(Math.random()*ks.length)|0]}
+  if((m.kind==='boss'||m.kind==='mid')&&!m.enr&&m.hp>0&&m.hp<m.max*.3){m.enr=1;if(m.atk0==null)m.atk0=m.atk;m.atk=Math.round(m.atk*1.35);raidLog(b,`⚠ ${m.n}${jo(m.n,'이','가')} 격노했다! 공격력이 크게 올랐다.`);b.skfx={n:'격노',j:'warn',by:`${m.n} · 공격력 +35%`,id:((b.skfx&&b.skfx.id)||0)+1};return true}
   if(!sk)return false;
   const tz=b.taunt&&tg.includes(b.taunt.u)?b.taunt.u:null,one=tz||raidAggro(r,tg),me=r.m[one],allies=b.mons.filter(x=>x.hp>0),L=t=>raidLog(b,t),W=(n,by)=>{b.skfx={n,j:'warn',by,id:((b.skfx&&b.skfx.id)||0)+1}};
   const nm=`${m.n}의 「${sk.n}」`;
@@ -4388,6 +4402,12 @@ function hardMove(r,b,m,tg){const base=monBase(m.n),seq=HSEQ[base];let sk=null;
    case 'hide':{m.hide=1;const g=Math.round(m.max*.05);m.hp=Math.min(m.max,m.hp+g);L(`${nm} → ${m.n}${jo(m.n,'이','가')} 모습을 감췄다! 다음 차례까지 피해를 받지 않는다. (체력 +${g})`);break}
    case 'mark':{const up=raidUp(r),t=up.reduce((a,u)=>r.m[u].hp/r.m[u].maxHp<r.m[a].hp/r.m[a].maxHp?u:a,up[0]);m.lock=t;L(`⚠ ${nm} → ${r.m[t].nick} 님을 노린다! 다음 턴에 강한 공격이 온다.`);W(sk.n,`${m.n} → ${r.m[t].nick} · 다음 턴 집중 공격`);break}
    case 'tele':{m.chg=sk.n;m.chgX=sk.x||1;L(`⚠ ${m.kind==='boss'?'보스':'중간 보스'} ${m.n}${jo(m.n,'이','가')} ${sk.n}${jo(sk.n,'을','를')} 준비합니다! 다음 턴에 파티 전원을 공격합니다.`);W(sk.n+' 준비',`${m.n} · 다음 턴 전체 공격 · 방어하십시오`);break}
+   case 'combo3':{const hs=[];for(let i=0;i<3&&me.hp>0;i++)hs.push(hardHit(r,b,m,one,.45));L(`${nm} (3연타) → ${me.nick} ${hs.map(h=>h.d+h.tag).join(' · ')}${me.hp<=0?' · 쓰러졌다!':''}`);break}
+   case 'sweep':{const t=tz?[tz]:[...tg].sort(()=>Math.random()-.5).slice(0,2);L(`${nm} → ${t.map(u=>hhTxt(r.m[u],hardHit(r,b,m,u,.8))).join(', ')}`);break}
+   case 'execute':{const up=tz?[tz]:raidUp(r),t=up.reduce((a,u)=>r.m[u].hp/r.m[u].maxHp<r.m[a].hp/r.m[a].maxHp?u:a,up[0]),x=r.m[t],h=hardHit(r,b,m,t,1.5);L(`⚠ ${nm} (가장 약한 선원을 노림) → ${hhTxt(x,h)}`);break}
+   case 'bleed':{const h=hardHit(r,b,m,one,.7);if(h.d>0&&me.hp>0)me.psn={d:Math.max(1,Math.round(me.maxHp*.08)),t:3};L(`${nm} → ${hhTxt(me,h)}${h.d>0&&me.hp>0?' · 출혈! (3턴)':''}`);break}
+   case 'rage':{const h=hardHit(r,b,m,one,1.3);m.bf=Math.min(2,(m.bf||0)+1);if(m.atk0==null)m.atk0=m.atk;m.atk=Math.round(m.atk0*(1+.1*m.bf));L(`${nm} → ${hhTxt(me,h)} · ${m.n}의 공격력이 올랐다!`);break}
+   case 'stunAll':{const t=tz?[tz]:tg;L(`⚠ ${nm} → ${t.map(u=>{const x=r.m[u],h=hardHit(r,b,m,u,.3),st=h.d>0&&x.hp>0&&Math.random()<.35;if(st)x.frz=1;return hhTxt(x,h)+(st?' · 기절!':'')}).join(', ')}`);W(sk.n,`${m.n} · 전원 공격 · 일부 기절`);break}
    default:return false}
   return true}
 function raidFleeVote(){const r0=MYRAID;if(!r0||r0.phase!=='battle')return;raidTx(r0.id,r=>{if(!r||r.phase!=='battle')return null;r.b.flee[uid]=!r.b.flee[uid];r.seq++;
@@ -4404,7 +4424,7 @@ function raidLobbySync(r){if(!r||r.state!=='lobby'||!r.ids.includes(uid)||raidBu
   raidTx(r.id,x=>{if(!x||x.state!=='lobby'||!x.ids.includes(uid))return null;x.m[uid]=Object.assign({},x.m[uid],raidMe());return x}).catch(()=>{})}
 function raidTick(){const r=MYRAID;if(!r||mode!=='online')return;const now=raidNow();raidQRun();raidLobbySync(r);
   if(now-Math.max(raidHbAt,+((r.hb||{})[uid])||0)>RAID_HB&&r.state!=='done'){raidHbAt=now;raidRef(r.id).update({hb:Object.assign({},r.hb,{[uid]:now})}).catch(()=>{})}
-  if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
+  if(r.state==='run'&&r.phase==='battle'&&raidDriver(r)===uid&&!raidBusy&&!raidReplaying()){const a=r.b.cur;if(a&&now>=r.b.turnEnd)raidAct(a.k==='m'?'mon':'auto',raidTgt)}
   const t=$('#raidT');if(t&&r.b&&r.b.cur){t.textContent=Math.max(0,Math.ceil((r.b.turnEnd-now)/1000))+'초'}
   if(r.state==='run'&&r.phase==='end')runIdxEnd(r);if(r.state==='run'&&r.phase==='end'&&!(P.raidDone||[]).includes(r.id))raidClaim(r)}
 // rewards are taken once per expedition: the claim is first written onto the party record itself (claimed[uid]) in a transaction,
@@ -4470,11 +4490,20 @@ function rcSay(txt){const t=String(txt||'').trim().slice(0,120),r=MYRAID;if(!t||
   return bossTx(rcRef(r.id),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-RC_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
 document.addEventListener('submit',e=>{if(e.target.id!=='rcForm')return;e.preventDefault();const i=$('#rcIn');const v=i.value;if(!v.trim())return;i.value='';rcDraft='';rcSay(v)});
 document.addEventListener('input',e=>{if(e.target.id==='rcIn')rcDraft=e.target.value});
-function raidWatch(id){raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();raidUnsub=null}if(rcUnsub){rcUnsub();rcUnsub=null}RCHAT=[];if(!id){MYRAID=null;return}
+function raidWatch(id){raidReplayStop();raidSig='';raidWid=id||null;if(raidUnsub){raidUnsub();raidUnsub=null}if(rcUnsub){rcUnsub();rcUnsub=null}RCHAT=[];if(!id){MYRAID=null;return}
   if(mode==='online')rcUnsub=rcRef(id).onSnapshot(sn=>{const prev=RCHAT.length;RCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='raid'){const l=$('#rcLog');if(l){l.innerHTML=rcLogHTML();if(RCHAT.length>prev)l.scrollTop=l.scrollHeight}}},()=>{});
   raidUnsub=raidRef(id).onSnapshot(s=>{if(raidWid!==id)return;if(!s.exists){MYRAID=null;if(tab==='raid')renderPanel();return}const r=Object.assign({id},s.data());
-    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
-    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;anonView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(ae&&ae.id==='rcIn'){if(!raidSoftPaint(r)){}}else if(!isField(ae))renderPanel();raidAnimRun()}},()=>{})}
+    if(!r.ids.includes(uid)){MYRAID=null;if(tab==='raid')renderPanel();return}if(raidReplay(r,raidApplySnap))return;raidApplySnap(r)},()=>{})}
+// heartbeats only say who is still around; a snapshot that changed nothing else must not redraw the whole screen
+function raidApplySnap(r){
+    const sig=JSON.stringify(Object.assign({},r,{hb:0})),same=sig===raidSig;raidSig=sig;if(!same){raidSfx(MYRAID,r);raidLobbySfx(MYRAID,r)}MYRAID=r;raidHpSync();if(raidLocked()&&tab!=='raid'){tab='raid';meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;anonView=false;adminView=false;renderNav();renderPanel();return}if(!same&&tab==='raid'){const ae=document.activeElement;if(ae&&ae.id==='rcIn'){if(!raidSoftPaint(r)){}}else if(!isField(ae))renderPanel();raidAnimRun()}}
+// several monster moves arrive in one write (r.fr): show the state after each one a second apart, then the real record
+const RAID_RP={t:0,last:null},raidRpDone=new Set();const raidReplaying=()=>!!RAID_RP.t;
+function raidReplayStop(){clearTimeout(RAID_RP.t);RAID_RP.t=0;RAID_RP.last=null}
+function raidReplay(r,apply){if(RAID_RP.t){RAID_RP.last=r;return true}
+  const fr=r.fr,k=fr&&r.id+':'+fr.id;if(!fr||fr.id!==r.seq||!Array.isArray(fr.f)||!fr.f.length||raidRpDone.has(k)||!MYRAID||MYRAID.id!==r.id||(MYRAID.seq||0)>=r.seq)return false;raidRpDone.add(k);
+  const frames=fr.f.map(f=>Object.assign({},r,{b:f.b,m:f.m,fr:null,phase:'battle',result:r.phase==='battle'?r.result:null}));let i=0;RAID_RP.last=r;
+  const step=()=>{if(i<frames.length){apply(frames[i++]);RAID_RP.t=setTimeout(step,RAID_MON_TURN)}else{const L=RAID_RP.last;RAID_RP.t=0;RAID_RP.last=null;if(L&&raidWid===L.id)apply(L)}};step();return true}
 // a lobby stays listed while anyone in it is still sending the 15-second heartbeat (however long they have been waiting); silent for 3 min → hidden
 let RAIDS_ALL=[];const partyGone=new Set();
 const partyLast=v=>Math.max(+v.at||0,...Object.values(v.hb||{}).map(Number));
@@ -4538,7 +4567,31 @@ const MON_PO={r:'#e85a5a',q:'#ffd65f'},monNameParts=n=>{const m=String(n||'').ma
  MON_HI={},scale2x=g=>{const H=g.length,W=g[0].length,at=(y,x)=>y<0||y>=H||x<0||x>=W?'.':g[y][x],o=[];
   for(let y=0;y<H;y++){let r0='',r1='';for(let x=0;x<W;x++){const P0=at(y,x),A=at(y-1,x),B=at(y,x+1),C=at(y,x-1),D=at(y+1,x);
     r0+=(C===A&&C!==D&&A!==B?A:P0)+(A===B&&A!==C&&B!==D?B:P0);r1+=(D===C&&D!==B&&C!==A?C:P0)+(B===D&&B!==A&&D!==C?D:P0)}o.push(r0,r1)}return o},
- monImg=(m,sc)=>{const k=monSprKey(m.n);if(!k)return img(MON_SPR,m.t,sc);if(isHardMon(m.n)){const g=MON_HI[k]||(MON_HI[k]=scale2x(MON_SPRS[k]));return img(g,m.t,sc/2,'hres',MON_PO)}return img(MON_SPRS[k],m.t,sc,'',MON_PO)};
+ monImg=(m,sc)=>{const k=monSprKey(m.n);if(!k)return img(MON_SPR,m.t,sc);if(isHardMon(m.n)){const g=MON_HI[k]||(MON_HI[k]=scale2x(MON_SPRS[k])),s=monHiSpr(g,m.t,monHardZ(m.n));return`<img class="pix hres" src="${s.src}" width="${s.w*sc/2}" height="${s.h*sc/2}" alt="">`}return img(MON_SPRS[k],m.t,sc,'',MON_PO)};
+// hard monsters get a richer hand-shaded look: a 5-step light ramp (lit from the top left) with ordered dithering, a tinted outline,
+// glowing eyes, a faint aura in the zone's colour and a zone mark (r1 embers in the shadows, r2 crystal glints, r3 violet watching spots)
+const MON_HZ={'분노하는':'r1','경계하는':'r2','주시하는':'r3'},monHardZ=n=>{const m=String(n||'').match(/(분노하는|경계하는|주시하는) /);return m?MON_HZ[m[1]]:'r1'},
+ MON_HZC={r1:{ac:'#ff7a3a',eye:'#ffd65f',mk:['#ff8a3a','#ffd65f']},r2:{ac:'#7fe8ff',eye:'#e8fdff',mk:['#e8fdff','#9ff0ff']},r3:{ac:'#b07dff',eye:'#f0e0ff',mk:['#9b6bff','#d0b0ff']}},MON_HIS={};
+function monHiSpr(g,tint,zid){const key=zid+'|'+tint+'|'+g.join('');if(MON_HIS[key])return MON_HIS[key];
+  const Z=MON_HZC[zid]||MON_HZC.r1,H=g.length,W=g[0].length,PD=2,cv=document.createElement('canvas');cv.width=W+PD*2;cv.height=H+PD*2;const x=cv.getContext('2d');
+  const a=mix(tint||'#8a8ea6','#5d6274',.55),sh=mix(mix(a,'#07080e',.4),Z.ac,.12),ramp=[mix(sh,'#07080e',.45),sh,a,mix(a,'#eef1fa',.3),mix(a,'#ffffff',.58)],
+   ol=mix(mix(a,'#07080e',.78),Z.ac,.1),inner='#07080e',at=(yy,xx)=>yy<0||yy>=H||xx<0||xx>=W?'.':g[yy][xx],body=c=>c==='a'||c==='b'||c==='h',
+   open=c=>c==='.'||c==='k',BY=[[0,.5],[.75,.25]],hs=(i,j)=>{let v=(i*374761393+j*668265263)^0x5bd1e995;v=(v^(v>>>13))*1274126177;return((v^(v>>>16))>>>0)/4294967296},
+   P=(i,j,c,al)=>{x.globalAlpha=al==null?1:al;x.fillStyle=c;x.fillRect(i+PD,j+PD,1,1)};
+  // aura: two soft rings of the zone colour just outside the outline
+  for(let j=-PD;j<H+PD;j++)for(let i=-PD;i<W+PD;i++){if(at(j,i)!=='.')continue;let d=9;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)if(at(j+dy,i+dx)!=='.')d=Math.min(d,Math.max(Math.abs(dx),Math.abs(dy)));if(d<=2)P(i,j,Z.ac,d===1?.32:.12)}
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const c=g[j][i];if(c==='.')continue;
+    if(c==='k'){const edge=[[0,1],[1,0],[0,-1],[-1,0]].some(([dy,dx])=>at(j+dy,i+dx)==='.');P(i,j,edge?ol:inner);continue}
+    if(c==='w'){P(i,j,Z.eye);continue}
+    if(!body(c)){P(i,j,MON_PO[c]||PAL[c]||a);continue}
+    let L=c==='h'?1.1:c==='b'?-1:0;if(open(at(j-1,i))||open(at(j,i-1)))L+=.9;if(open(at(j-1,i-1)))L+=.3;if(open(at(j+1,i))||open(at(j,i+1)))L-=.8;if(open(at(j+1,i+1)))L-=.3;
+    L+=(.42-j/H)*1.3+(.5-i/W)*.35;if([[0,1],[1,0],[0,-1],[-1,0]].some(([dy,dx])=>at(j+dy,i+dx)==='w'))L+=.7;
+    let t=Math.max(0,Math.min(4,L+2.3+(BY[j&1][i&1]-.375)*.55));t=Math.floor(t);let col=ramp[t];
+    const r=hs(i,j);if(zid==='r1'&&t<=1&&c==='b'&&r<.12)col=Z.mk[r<.04?1:0];else if(zid==='r2'&&t>=3&&r<.07)col=Z.mk[r<.03?0:1];else if(zid==='r3'&&t===2&&r<.035)col=Z.mk[0];
+    P(i,j,col)}
+  // eye glow spills one pixel onto the body
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++)if(g[j][i]==='w')[[0,1],[1,0],[0,-1],[-1,0]].forEach(([dy,dx])=>{if(body(at(j+dy,i+dx)))P(i+dx,j+dy,Z.eye,.35)});
+  x.globalAlpha=1;return MON_HIS[key]={src:cv.toDataURL(),w:W+PD*2,h:H+PD*2}}
 function raidBar(v,max,col){return`<div class="bar"><i style="--c:${col};width:${Math.max(0,v/max*100)}%"></i></div>`}
 const MON_LORE_H={
  '모래폭풍 정령':'모래폭풍이 스스로 의지를 가진 것. 눈앞을 가리는 사이 등 뒤에서 덮쳐 온다.',
@@ -4637,7 +4690,7 @@ function raidLobbyHTML(){if(!egOpen())raidMode='normal';const HM=raidMode==='har
       <div class="pcmem">${Array.from({length:RAID_MAX},(_,k)=>{const u=x.ids[k],m=u&&(x.m[u]||{});return u?`<span class="pcm${u===x.host?' host':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small><small class="pcjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</small></span>`:`<span class="pcm empty"><i></i><em>빈 자리</em></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn sm" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 부족'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
   ${raidRunListHTML()}
-  <div class="zonehead"><span class="lbl">Zone · 원정 구역</span><div class="dtabs rmode${egOpen()?'':' egoff'}" role="tablist" aria-label="난이도"><button role="tab" aria-selected="${!HM}" data-act="raidmode" data-k="normal">일반</button><button role="tab" class="rmhard" aria-selected="${HM}" data-act="raidmode" data-k="hard">하드</button></div></div><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>${egOpen()?`<div class="card rushcard"><div><b>보스 러시</b> <span class="lv">Lv.${RUSH_MIN} 이상</span><span class="hint">먼지 평원부터 붉은 별의 핵까지, 여섯 보스와 차례로 싸웁니다. 보스 사이에 잠깐 숨을 고릅니다.${+P.rushBest?` · 내 최고 기록 ${P.rushBest}/${RUSH_N}`:''}</span></div><div class="row" style="gap:6px"><button class="btn sm hardbtn" data-act="raidnew" data-k="rsolo" ${P.lvl>=RUSH_MIN?'':'disabled'}>혼자 도전</button><button class="btn sm alt hardbtn" data-act="raidnew" data-k="rparty" ${P.lvl>=RUSH_MIN?'':'disabled'}>파티 모집</button></div></div>`:''}${monDexHTML()}`}
+  <div class="zonehead"><span class="lbl">Zone · 원정 구역</span><div class="dtabs rmode${egOpen()?'':' egoff'}" role="tablist" aria-label="난이도"><button role="tab" aria-selected="${!HM}" data-act="raidmode" data-k="normal">일반</button><button role="tab" class="rmhard" aria-selected="${HM}" data-act="raidmode" data-k="hard">하드</button></div></div><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>${egOpen()?`<div class="card rushcard"><div><b>보스 러시</b> <span class="lv">Lv.${RUSH_MIN} 이상</span><span class="hint">먼지 평원부터 붉은 별의 핵, 이어서 하드 보스 셋까지 아홉 보스와 차례로 싸웁니다. 보스 사이에 잠깐 숨을 고릅니다.${+P.rushBest?` · 내 최고 기록 ${P.rushBest}/${RUSH_N}`:''}</span></div><div class="row" style="gap:6px"><button class="btn sm hardbtn" data-act="raidnew" data-k="rsolo" ${P.lvl>=RUSH_MIN?'':'disabled'}>혼자 도전</button><button class="btn sm alt hardbtn" data-act="raidnew" data-k="rparty" ${P.lvl>=RUSH_MIN?'':'disabled'}>파티 모집</button></div></div>`:''}${monDexHTML()}`}
 // the battle as a side-view stage: our crew on the left, the enemies on the right, each with name, level and HP above
 function raidStageHTML(r,z){const b=r.b,T=RAID_TERRAIN[z.id]||RAID_TERRAIN.r1,cur=b.cur||{};
   const crew=r.ids.filter(u=>r.m[u]).map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="rbu rbp ${m.hp<=0||gone?'down':''} ${m.frz?'frz':''} ${cur.k==='p'&&cur.id===u?'turn':''} ${u===uid?'me':''}" data-ru="p${u}"><div class="rbtag"><b>${b.mons.some(x=>x.lock===u&&x.hp>0)?'🎯 ':''}${m.frz?'❄ ':''}${esc(m.nick)}</b><small>Lv.${m.lvl}</small>${raidBar(m.hp,m.maxHp,'var(--green)')}</div><span class="rbspr">${meImg(3,whoP(u))}</span></div>`}).join('');
@@ -7258,7 +7311,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794841536';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794845462';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7989,8 +8042,8 @@ const A={
   // the wait before the next refill grows with how much water went in: a whole tank's worth is an hour
   const added=FARM.cap-FARM.water,wait=Math.min(3600e3,Math.max(60e3,Math.round(added/FARM.cap*3600e3)));FARM.water=FARM.cap;FARM.wset=true;FARM.refCd=Date.now()+wait;sfxWater();
   if(mode==='online')farmMerge('farm/pods',{water:FARM.cap,refCd:FARM.refCd}).catch(()=>{});else farmSave();log(`공용 물탱크에 물 ${added}을(를) 채워 가득 채웠다. ${fmtClock(wait)} 뒤에 다시 채울 수 있다.`,'good');commit()},
- raidzone(d){raidSel=d.k;renderPanel()},
- raidmode(d){raidMode=d.k==='hard'&&egOpen()?'hard':'normal';renderPanel()},
+ raidzone(d){raidSel=d.k;raidSelSave();renderPanel()},
+ raidmode(d){raidMode=d.k==='hard'&&egOpen()?'hard':'normal';raidSelSave();renderPanel()},
  raidnew(d){if(d.k==='rsolo'||d.k==='rparty'){raidCreate(d.k==='rsolo',true);return}raidCreate(d.k==='solo')},
  raidjoin(d){raidJoin(d.k)},
  raidleave(){raidLeave()},
