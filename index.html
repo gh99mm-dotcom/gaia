@@ -1463,6 +1463,8 @@ body:has(#endHud){padding-bottom:200px}
 @media (max-width:480px){.upnow .wpnimg{width:48px;height:48px}}
 .uptable td.upw .wpnfx::after{display:none}
 .jdex{margin-top:12px}.jdexn{font-family:var(--f-pix);color:var(--gold)}.jdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.jdc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;background:var(--deep);border:1px solid var(--line)}.jdc span{font-size:11px;text-align:center;line-height:1.2;word-break:keep-all}.jdc.no img{filter:brightness(0) drop-shadow(0 0 1px #8a9ab466)!important}:root[data-skin="light"] .jdc.no img{filter:brightness(0) opacity(.7)!important}.jdc.no span{color:var(--dim)}
+/* bag and picker slots: a picture never stretches its slot (big fish art is drawn up to 45px) */
+.slot>img.pix{width:min(32px,86%)!important;height:auto!important;aspect-ratio:1;object-fit:contain;flex:none}
 /* every item picture in the shop sits in the same 32×32 box (2× the 16px art) */
 .shop .srow>img.pix,.shop .srow .spcico img,.shop .slot img.pix{width:32px!important;height:32px!important;object-fit:contain;flex:none}.shop .spcico{width:32px;height:32px;display:grid;place-items:center}
 .memonew{display:flex;flex-direction:column;gap:6px;padding:10px;margin-bottom:10px}.memota{width:100%;min-height:64px;resize:vertical;box-sizing:border-box;font:inherit;line-height:1.5}
@@ -7138,7 +7140,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794822686';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794824304';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
