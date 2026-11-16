@@ -4168,7 +4168,7 @@ const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 // while I'm out on an expedition my profile HP follows my expedition HP (never below 1 here, so the main game doesn't faint me mid-run)
 function raidHpSync(){const r=MYRAID,me=r&&r.m&&r.m[uid];if(!raidLocked()||r.phase==='end'||!me)return;const v=Math.max(1,Math.min(maxHp(),Math.round(me.hp)));if(v!==P.hp){P.hp=v;renderPilot()}}
 const raidRef=id=>db.doc('parties/'+id);
-const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,job:P.job||'',atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:critPct(),critD:BUFF('critD')+WA('critD'),dodge:Math.max(0,BUFF('dodge')+WA('dodge'))});
+const raidMe=()=>({uid,nick:P.nick,lvl:P.lvl,job:P.job||'',atk:atk(),def:def(),maxHp:maxHp(),hp:Math.max(1,P.hp),agi:Math.round(5+AS('agi')*2+P.lvl*.3),crit:critPct(),critD:BUFF('critD')+WA('critD'),dodge:Math.min(45,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')))});
 const RAID_HARDX={hp:2.2,atk:1.5,rw:2,mat:1.5};
 // hard monsters by party size (1–4): a solo crew meets a milder hard, a full party the full one; rewards stay doubled for everyone
 const RAID_HARDN={hp:[1.4,1.7,2.0,2.2],atk:[1.2,1.3,1.4,1.5]};// 하드: 몬스터 체력·공격 배율, 경험치·크레딧 배율, 우주선 재료 배율
@@ -7237,7 +7237,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794829961';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794830850';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
