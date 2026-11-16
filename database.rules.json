@@ -8,6 +8,15 @@
           ".validate": "newData.hasChildren(['s','t'])"
         }
       }
+    },
+    "pres": {
+      "$room": {
+        ".read": "auth != null",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['ts'])"
+        }
+      }
     }
   }
 }
