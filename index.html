@@ -7132,7 +7132,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794813245';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794813602';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8530,7 +8530,7 @@ async function memoCmDelete(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)ret
   const kids=cms.some(x=>x.pid===cid);const out=kids?cms.map(x=>x.id===cid?Object.assign({},x,{text:'',del:1}):x):cms.filter(x=>x.id!==cid);
   try{await memoRef().doc(mid).update({cm:out})}catch(e){toast('댓글을 지우지 못했습니다.')}renderPanel()}
 async function memoCmPost(id,pid=''){const m=MEMOS.find(x=>x.id===id);if(!m)return;const key=id+'|'+pid,i=$('#memoCmIn'),t=String((i&&i.value)||memoCm[key]||'').trim().slice(0,MEMO_CM);if(!t){toast('댓글을 적어 주십시오.');return}
-  const cm=[...memoCms(m),{id:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),pid,uid,nick:P.nick,text:t,at:Date.now()}].slice(-300);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus()},30)}
+  const cm=[...memoCms(m),{id:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),pid,uid,nick:P.nick,text:t,at:Date.now()}].slice(-300);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();if(!pid)setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus({preventScroll:true})},30)}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoEdIn')memoEdTx={k:t.dataset.k+'|'+(t.dataset.c||''),v:t.value};else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k,t.dataset.p||'')}});
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
