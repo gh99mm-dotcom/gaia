@@ -845,6 +845,12 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .visitors{font-size:12px;color:var(--green)}
 .ichip.exc{color:var(--gold);box-shadow:inset 0 0 0 1px #5e5236}
 .pix.legend{filter:drop-shadow(0 0 3px rgba(226,211,154,.55))}
+.bphbadge{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 2px;padding:0;font:inherit;font-size:12.5px;color:var(--text);background:none;border:0;cursor:pointer;text-align:left}
+.bphbadge .lbl{margin:0;display:inline}.bphbadge b{font-weight:700;color:var(--red)}.bphbadge small{flex-basis:100%;font-size:11.5px;color:var(--gold);letter-spacing:.02em}
+.bphd{display:inline-flex;gap:2px}.bphd i{width:9px;height:9px;background:var(--line);border:2px solid var(--ink);display:block}.bphd i.done{background:color-mix(in srgb,var(--red) 45%,var(--line))}.bphd i.on{background:var(--red)}
+.bphbadge.hot .bphd i.on,.bphbadge.hot small{animation:bphHot .8s steps(2) infinite}.bphbadge.hot small{color:var(--red)}@keyframes bphHot{50%{opacity:.35}}
+.bphbadge:hover b{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){.bphbadge.hot .bphd i.on,.bphbadge.hot small{animation:none}}
 /* social */
 .socbox{display:flex;flex-direction:column;gap:8px}
 .socta{min-height:72px}
@@ -3525,7 +3531,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기 (공지 제외)</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
    ${admStaffHTML(others)}${verAdminHTML()}${diagAdminHTML()}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
-const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 확률 +1% · 회피율 ↑'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
+const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 확률 +1% · 회피 +0.5%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 // points are placed first and only applied when 확인 is pressed
@@ -4729,48 +4735,51 @@ const BOSS_CD=60e3,BOSS_LIMIT=2*3600e3,BOSS_CHAT_MAX=30;
 const BOSS_G={eye:['......kkkkkkkk......','....kkBBBBBBBBkk....','...kBBDDDDDDDDBBk...','..kBDDDDDDDDDDDDBk..','.kBDDDkkkkkkkkDDDBk.','.kBDDkEEEEEEEEkDDBk.','kBDDkEEEkkkkEEEkDDBk','kBDDkEEkXXXXkEEkDDBk','kBDDkEEkXkkXkEEkDDBk','kBDDkEEEkkkkEEEkDDBk','.kBDDkEEEEEEEEkDDBk.','.kBDDDkkkkkkkkDDDBk.','..kBDBDBDDDDBDBDBk..','..kBk.kBk..kBk.kBk..','..kk...kk..kk...kk..','....................'],tent:['.......kkkkkk.......','.....kkBBBBBBkk.....','....kBBBBBBBBBBk....','...kBBBBBBBBBBBBk...','...kBBkkBBBBkkBBk...','...kBkEEkBBkEEkBk...','...kBkEFkBBkEFkBk...','...kBBkkBBBBkkBBk...','...kDBBBBBBBBBBDk...','....kDDBBXXBBDDk....','...kDkDDkDDkDDkDk...','..kDk.kDk..kDk.kDk..','..kDk.kDk..kDk.kDk..','.kDk..kDk..kDk..kDk.','.kk....kk..kk....kk.','....................'],horn:['.kk..............kk.','.kXk............kXk.','..kXk..kkkkkk..kXk..','..kXXkkBBBBBBkkXXk..','...kXBBBBBBBBBBXk...','...kBBBBBBBBBBBBk...','..kBBkkkBBBBkkkBBk..','..kBkEEEkBBkEEEkBk..','..kBkEFEkBBkEFEkBk..','..kBBkkkBBBBkkkBBk..','...kBBBBBkkBBBBBk...','...kDBBBBBBBBBBDk...','....kDkXkXkXkXDk....','....kDDkDkDkDDk.....','.....kkkkkkkkkk.....','....................'],shard:['.........kk.........','........kXXk........','.......kXBBXk.......','......kXBBBBXk......','.....kXBBBBBBXk.....','....kXBBkkkkBBXk....','...kXBBkEEEEkBBXk...','..kXBBBkEFFEkBBBXk..','..kDBBBkEEEEkBBBDk..','...kDBBBkkkkBBBDk...','....kDBBBBBBBBDk....','.....kDBBBBBBDk.....','......kDBBBBDk......','.......kDBBDk.......','........kDDk........','.........kk.........'],maw:['....kkkkkkkkkkkk....','..kkBBBBBBBBBBBBkk..','.kBBDDDDDDDDDDDDBBk.','kBDDkkkkkkkkkkkkDDBk','kBDkXkXkXkXkXkXkkDBk','kBDkFFFFFFFFFFFFkDBk','kBDkFFFFEEEEFFFFkDBk','kBDkFFFFEEEEFFFFkDBk','kBDkFFFFFFFFFFFFkDBk','kBDkkXkXkXkXkXkXkDBk','kBDDkkkkkkkkkkkkDDBk','.kBBDDDDDDDDDDDDBBk.','..kkBBDDDDDDDDBBkk..','....kkBBDDDDBBkk....','......kkBBBBkk......','........kkkk........']};
 // every invader has its own body; the first five use the base shapes, the rest their own
 const BOSS_G2={baal:["......kkkkkkkk......", "....kkBBBBBBBBkk....", "...kBBBBBBBBBBBBk...", "..kBkkkBBBBBBkkkBk..", "..kkEEEkBBBBkEEEkk..", ".kBkEFEkBBBBkEFEkBk.", ".kBBkkkBkkkkBkkkBBk.", "kBBBBBBkEEEEkBBBBBBk", "kBDBBBkEEkkEEkBBBDBk", "kBDBBBkEEkkEEkBBBDBk", "kBDDBBBkEEEEkBBBDDBk", ".kBDDBBBkkkkBBBDDBk.", ".kkBDDDBBBBBBDDDBkk.", "..kXkBDDDDDDDDBkXk..", "..kXk.kkkkkkkk.kXk..", "...k............k..."],levia:["...k...k....k...k...", "...XkkkXkkkkXkkkX...", "...kXXXXXXXXXXXXk...", "..kBBBBBBBBBBBBBBk..", ".kBBBBBBBBBBBBBBBBk.", ".kBBkkBBBBBBBBkkBBk.", ".kBkEEkBBBBBBkEEkBk.", ".kBBkkBBBBBBBBkkBBk.", ".kDBBBBBkkkkBBBBBDk.", "..kDDDDDDDDDDDDDDk..", "..kDkDkkDkkDkkDkDk..", "..kEkDk.kDk.kDkEk...", "...kEkDk.kDk.kEk....", "...kEk.kDk.kDkEk....", "....k..kEk.kEk.k....", ".......k...k........"],morgas:[".......kkkkkk.......", ".....kkDDDDDDkk.....", "....kDDDDDDDDDDk....", "...kDDkkkkkkkkDDk...", "...kDkBBBBBBBBkDk...", "..kDDkBkkBBkkBkDDk..", "..kDDkBkEBBkEBkDDk..", "..kDDkBBBkkBBBkDDk..", "..kDDkkBkBBkBkkDDk..", ".kDDDDkkBkBkBkkDDDDk", ".kDDDDDkkkkkkDDDDDk.", "kDDXDDDDDDDDDDDDXDDk", "kDXEXDDDDDDDDDDXEXDk", "kDDXDDDDDDDDDDDDXDDk", "kDDDDDDDDDDDDDDDDDDk", ".kkkkkkkkkkkkkkkkkk."],zenos:["........k...........", ".......kXk....k.....", "...k...kBXk..kXk....", "..kXk..kBBXk.kBXk...", "..kBXk.kBBBXkkBBXk..", ".kBBBXkkBkkBXkBBBk..", ".kBBBBXkBEEkBXkBBXk.", ".kDBBBBkkEFkBBkBBBk.", "..kDBBBBkkkBBBkDBk..", "..kDDBBBBBBBBBkDDk..", "...kDDBBBBBBBDDDk...", "..kXkDDDBBBBDDDkXk..", ".kXBXkDDDDDDDDkXBXk.", ".kDDDkkDDDDDDkkDDDk.", "..kkk..kkkkkk..kkk..", "...................."],scara:["..k..............k..", "..kXk..........kXk..", "...kXk.kkkkkk.kXk...", "....kXkBBBBBBkXk....", ".....kBEkBBkEBk.....", "....kBBkkBBkkBBk....", "..kkkkkkkkkkkkkkkk..", ".kDBBBBBBkkBBBBBBDk.", "kDBBXBBBBkkBBBBXBBDk", "kDBXEXBBBkkBBBXEXBDk", "kDBBXBBBBkkBBBBXBBDk", "kDDBBBBBBkkBBBBBBDDk", ".kDDBBBBBkkBBBBBDDk.", "kXkkDDDDDkkDDDDDkkXk", "k.k.kkkkkkkkkkkk.k.k", "...................."],omnis:["kk................kk", "kXkk............kkXk", ".kXXkk..kkkk..kkXXk.", ".kXBXXkkBBBBkkXXBXk.", "..kXBBkBBBBBBkBBXk..", "..kXBkBBkkkkBBkBXk..", "...kkBBkEEEEkBBkk...", "...kBBkEEkkEEkBBk...", "...kBBkEEkkEEkBBk...", "...kkBBkEEEEkBBkk...", "..kXBkBBkkkkBBkBXk..", "..kXBBkBBBBBBkBBXk..", ".kXBXXkkBBBBkkXXBXk.", ".kXXkk..kkkk..kkXXk.", "kXkk............kkXk", "kk................kk"],abyss:["..kk............kk..", "..kXk..........kXk..", "..kXBk........kBXk..", "..kXBBkkkkkkkkBBXk..", "...kBBBBBBBBBBBBk...", "..kBBkkBBBBBBkkBBk..", "..kBkEEkBBBBkEEkBk..", "..kBkEFkBBBBkFEkBk..", "..kBBkkBBkkBBkkBBk..", "...kBBBBkBBkBBBBk...", "...kBBkXkkkkXkBBk...", "kk..kBBkXBBXkBBk..kk", "kDkkkDBBBBBBBBDkkkDk", ".kDDDkDDDDDDDDkDDDk.", "..kkk.kkkkkkkk.kkk..", "...................."],igna:[".........k..........", "....k...kXk...k.....", "...kXk..kXk..kXk....", "...kXXk.kXXkkXXk....", "..kXBXXkXBBXkXBXk...", "..kXBBXXBBBBXXBBXk..", ".kXBBBBBBBBBBBBBXk..", ".kXBBkkkBBBBkkkBBXk.", ".kXBkEEEkBBkEEEkBXk.", ".kXBkEFEkBBkEFEkBXk.", ".kXBBkkkBBBBkkkBBXk.", "..kXBBBBkkkkBBBBXk..", "..kXBBBkEEEEkBBBXk..", "...kXBBBkkkkBBBXk...", "....kXXDDDDDDXXk....", ".....kkkkkkkkkk....."],nidhogg:["k..................k", "kXk..............kXk", ".kXk..kkkkkkkk..kXk.", "..kXkkBBBBBBBBkkXk..", "...kBBBBBBBBBBBBk...", "..kBBkkkBBBBkkkBBk..", "..kBkEEFkBBkFEEkBk..", "..kBBkkkBBBBkkkBBk..", "..kBBBBBBBBBBBBBBk..", ".kDBBBBBBBBBBBBBBDk.", ".kDBkXkXkXkXkXkXBDk.", ".kDBkkkkkkkkkkkkBDk.", ".kDBkEEEEEEEEEEkBDk.", ".kDBBkXkXkXkXkXkBDk.", "..kDDDkkkkkkkkDDDk..", "...kkkkkkkkkkkkkk..."]};
+// invaders marked off are retired: no longer summoned, kept only so an old record still draws (kinds are stored by number)
 const BOSS_KINDS=[
- {n:"공허의 눈 「아자토스」",g:BOSS_G.eye,po:{B:'#7a6fa0',D:'#4a4470',E:'#7fd0d0',F:'#3a8a94',X:'#a8626b'},hp:1,atk:1},
- {n:"심연의 촉수 「크툴라」",g:BOSS_G.tent,po:{B:'#5f8a6a',D:'#37503e',E:'#ffd65f',F:'#8a6a20',X:'#a8626b'},hp:1.1,atk:0.95},
- {n:"침묵의 군주 「보르그」",g:BOSS_G.horn,po:{B:'#8f555c',D:'#4d2a30',E:'#ffb05f',F:'#a8402a',X:'#d6d8e0'},hp:0.95,atk:1.15},
- {n:"검은 별의 사도 「니알라」",g:BOSS_G.shard,po:{B:'#5a7ab0',D:'#2c3e64',E:'#d6f0ff',F:'#7fb4d2',X:'#b9bccb'},hp:0.85,atk:1.2},
- {n:"끝없는 굶주림 「가르간」",g:BOSS_G.maw,po:{B:'#8a6a4e',D:'#4e3a28',E:'#ff5f6a',F:'#5a1a20',X:'#e6dcc0'},hp:1.25,atk:0.9},
- {n:"핏빛 응시 「바알」",g:BOSS_G2.baal,po:{B:'#a8626b',D:'#5a2a30',E:'#ffd65f',F:'#a8802a',X:'#2a2d38'},hp:0.95,atk:1.1},
- {n:"심해의 왕관 「레비아」",g:BOSS_G2.levia,po:{B:'#4a6a9a',D:'#24385a',E:'#7fe0f0',F:'#2a7a94',X:'#d6d8e0'},hp:1.15,atk:1},
- {n:"뼈의 사제 「모르가스」",g:BOSS_G2.morgas,po:{B:'#d6d0c0',D:'#8a8270',E:'#7dff9b',F:'#2a8a4a',X:'#5a524c'},hp:1,atk:1.05},
- {n:"분홍 결정체 「제노스」",g:BOSS_G2.zenos,po:{B:'#c48aa4',D:'#6a3a54',E:'#fff0f6',F:'#e0a0c0',X:'#7a6fa0'},hp:0.9,atk:1.15},
- {n:"사막의 아가리 「스카라」",g:BOSS_G2.scara,po:{B:'#c8a46a',D:'#7a5a30',E:'#ffe9a8',F:'#a87a2a',X:'#4e3a28'},hp:1.2,atk:0.95},
- {n:"황금 군단의 눈 「옴니스」",g:BOSS_G2.omnis,po:{B:'#bfae80',D:'#6a5a34',E:'#ff5f6a',F:'#7a2028',X:'#3a2a12'},hp:1.05,atk:1.05},
- {n:"밤의 사냥꾼 「아비스」",g:BOSS_G2.abyss,po:{B:'#3a3450',D:'#1a1628',E:'#b48ae6',F:'#5a3a8a',X:'#7a6fa0'},hp:1,atk:1.2},
- {n:"불꽃의 화신 「이그나」",g:BOSS_G2.igna,po:{B:'#e0904a',D:'#8a3a1a',E:'#ffffaa',F:'#ffb05f',X:'#4a1a10'},hp:0.9,atk:1.3},
- {n:"행성핵을 갉아먹는 자 「니드호그」",g:BOSS_G2.nidhogg,po:{B:'#4a6a3a',D:'#243a1c',E:'#d6ff7f',F:'#6a8a2a',X:'#b0906f'},hp:1.35,atk:1}];
+ {n:"공허의 눈 「아자토스」",g:BOSS_G.eye,po:{B:'#7a6fa0',D:'#4a4470',E:'#7fd0d0',F:'#3a8a94',X:'#a8626b'},hp:1,atk:1,pk:'aza'},
+ {n:"심연의 촉수 「크툴라」",g:BOSS_G.tent,po:{B:'#5f8a6a',D:'#37503e',E:'#ffd65f',F:'#8a6a20',X:'#a8626b'},hp:1.1,atk:0.95,pk:'cthu'},
+ {n:"침묵의 군주 「보르그」",g:BOSS_G.horn,po:{B:'#8f555c',D:'#4d2a30',E:'#ffb05f',F:'#a8402a',X:'#d6d8e0'},hp:0.95,atk:1.15,off:1},
+ {n:"검은 별의 사도 「니알라」",g:BOSS_G.shard,po:{B:'#5a7ab0',D:'#2c3e64',E:'#d6f0ff',F:'#7fb4d2',X:'#b9bccb'},hp:0.85,atk:1.2,off:1},
+ {n:"끝없는 굶주림 「가르간」",g:BOSS_G.maw,po:{B:'#8a6a4e',D:'#4e3a28',E:'#ff5f6a',F:'#5a1a20',X:'#e6dcc0'},hp:1.25,atk:0.9,pk:'garg'},
+ {n:"핏빛 응시 「바알」",g:BOSS_G2.baal,po:{B:'#a8626b',D:'#5a2a30',E:'#ffd65f',F:'#a8802a',X:'#2a2d38'},hp:0.95,atk:1.1,off:1},
+ {n:"심해의 왕관 「레비아」",g:BOSS_G2.levia,po:{B:'#4a6a9a',D:'#24385a',E:'#7fe0f0',F:'#2a7a94',X:'#d6d8e0'},hp:1.15,atk:1,pk:'levia'},
+ {n:"뼈의 사제 「모르가스」",g:BOSS_G2.morgas,po:{B:'#d6d0c0',D:'#8a8270',E:'#7dff9b',F:'#2a8a4a',X:'#5a524c'},hp:1,atk:1.05,off:1},
+ {n:"분홍 결정체 「제노스」",g:BOSS_G2.zenos,po:{B:'#c48aa4',D:'#6a3a54',E:'#fff0f6',F:'#e0a0c0',X:'#7a6fa0'},hp:0.9,atk:1.15,pk:'zeno'},
+ {n:"사막의 아가리 「스카라」",g:BOSS_G2.scara,po:{B:'#c8a46a',D:'#7a5a30',E:'#ffe9a8',F:'#a87a2a',X:'#4e3a28'},hp:1.2,atk:0.95,pk:'scara'},
+ {n:"황금 군단의 눈 「옴니스」",g:BOSS_G2.omnis,po:{B:'#bfae80',D:'#6a5a34',E:'#ff5f6a',F:'#7a2028',X:'#3a2a12'},hp:1.05,atk:1.05,off:1},
+ {n:"밤의 사냥꾼 「아비스」",g:BOSS_G2.abyss,po:{B:'#3a3450',D:'#1a1628',E:'#b48ae6',F:'#5a3a8a',X:'#7a6fa0'},hp:1,atk:1.2,off:1},
+ {n:"불꽃의 화신 「이그나」",g:BOSS_G2.igna,po:{B:'#e0904a',D:'#8a3a1a',E:'#ffffaa',F:'#ffb05f',X:'#4a1a10'},hp:0.9,atk:1.3,off:1},
+ {n:"행성핵을 갉아먹는 자 「니드호그」",g:BOSS_G2.nidhogg,po:{B:'#4a6a3a',D:'#243a1c',E:'#d6ff7f',F:'#6a8a2a',X:'#b0906f'},hp:1.35,atk:1,off:1}];
 let BOSS=null,BCHAT=[],bossBusy=false,bossDraft='',bossLast=null;
 const bossRef=()=>db.doc('boss/cur'),bchatRef=()=>db.doc('boss/chat');
 const bossKind=b=>BOSS_KINDS[(b&&b.kind)|0]||BOSS_KINDS[0];
 const bossPct=b=>{if(b.hp<=0)return 0;if(b.hp>=b.max)return 100;return Math.max(.1,Math.floor(b.hp/b.max*1000)/10).toFixed(1)};
 // invader HP = 20 crew of its level each landing 10 typical hits (typical ATK 12 at Lv.1, +5.2/level incl. weapon and gear), never below the old curve
-const typAtk=lv=>12+5.2*(lv-1),bossHpFor=(lv,k)=>Math.round(Math.max(200*typAtk(lv),400*lv+12*lv*lv)*1.5*BOSS_KINDS[k].hp);
+const typAtk=lv=>12+5.2*(lv-1),bossHpFor=(lv,k)=>Math.round(Math.max(200*typAtk(lv),400*lv+12*lv*lv)*1.5*4.8*BOSS_KINDS[k].hp);/* ×4.8: a full crew of 30 fights it for about an hour */
 const bossAlive=b=>!!b&&b.hp>0&&!b.failed&&!b.gone;
 const bossKilled=b=>!!b&&b.hp<=0&&!!b.killer;
 function bossTx(ref,fn){if(ref.tx)return ref.tx(fn);return ref.get().then(sn=>{const nx=fn(sn.exists?JSON.parse(JSON.stringify(sn.data())):null);return nx?ref.set(nx).then(()=>nx):null})}
 // add to counters ("a.b.c" keys reach nested fields) without locking the record; ex sets plain fields alongside. Falls back to a read-modify-write.
 function docInc(ref,m,ex){if(ref.inc)return ref.inc(m,ex);return bossTx(ref,cur=>{cur=cur||{};const at=k=>{const ps=k.split('.');let t=cur;ps.slice(0,-1).forEach(p=>{t=t[p]=t[p]&&typeof t[p]==='object'?t[p]:{}});return[t,ps[ps.length-1]]};
   for(const k in m){const[t,l]=at(k);t[l]=(+t[l]||0)+m[k]}for(const k in ex||{}){const[t,l]=at(k);t[l]=ex[k]}return cur})}
-const bossSum=b=>b?{gen:b.gen,name:b.name,lv:b.lv||0,dmg:b.dmg||{},killer:b.killer||'',failed:!!b.failed,failedAt:b.failedAt||0}:null;
+const bossSum=b=>b?{gen:b.gen,name:b.name,lv:b.lv||0,dmg:b.dmg||{},killer:b.killer||'',failed:!!b.failed,failedAt:b.failedAt||0,boom:!!b.boom}:null;
 // admin: summon a chosen invader at a chosen level (replaces nothing while one is still loose)
 function bossSummon(k,lv){return bossTx(bossRef(),cur=>{if(bossAlive(cur))return null;const K=BOSS_KINDS[k],mx=bossHpFor(lv,k),now=Date.now();
   return{gen:((cur&&cur.gen)||0)+1,kind:k,lv,name:K.n,hp:mx,max:mx,at:now,end:now+BOSS_LIMIT,dmg:{},hits:0,by:P.nick,prev:cur&&(cur.dmg||cur.failed)?bossSum(cur):(cur&&cur.prev)||null}})}
 function bossDismiss(){return bossTx(bossRef(),cur=>{if(!bossAlive(cur))return null;cur.gone=true;cur.goneAt=Date.now();return cur})}
 // when the clock runs out the first client to notice marks the raid failed; everyone then takes the penalty once
-function bossExpire(){const b=BOSS;if(!bossAlive(b)||Date.now()<(b.end||Infinity)||bossBusy)return;bossBusy=true;
-  bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()<cur.end)return null;cur.failed=true;cur.failedAt=Date.now();return cur}).then(nx=>{if(nx)sys(`[공지] 침략자 ${b.name}이(가) 베이스캠프의 에너지를 빼앗고 사라졌습니다… 토벌 실패. 모든 선원의 체력과 에너지가 1이 되었습니다.`,false,'static')}).catch(()=>{}).finally(()=>{bossBusy=false})}
+const bossBoomDue=b=>bossAlive(b)&&bossPK(b)==='scara'&&bossPh(b)===4&&!!bossPhAt(b,4)&&Date.now()>=bossPhAt(b,4)+BOOM_MS;
+function bossExpire(){const b=BOSS;if(!bossAlive(b)||bossBusy)return;const boom=bossBoomDue(b);if(!boom&&Date.now()<(b.end||Infinity))return;bossBusy=true;
+  bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen)return null;const bm=bossBoomDue(cur);if(!bm&&Date.now()<cur.end)return null;cur.failed=true;cur.failedAt=Date.now();if(bm)cur.boom=true;return cur}).then(nx=>{if(nx)sys(nx.boom?`[공지] 침략자 ${b.name}이(가) 대폭발을 일으켰습니다! 토벌 실패. 공격한 선원은 모두 기절했고, 나머지 선원의 체력과 에너지가 1이 되었습니다.`:`[공지] 침략자 ${b.name}이(가) 베이스캠프의 에너지를 빼앗고 사라졌습니다… 토벌 실패. 모든 선원의 체력과 에너지가 1이 되었습니다.`,false,'static')}).catch(()=>{}).finally(()=>{bossBusy=false})}
 function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b.prev&&b.prev.failed?b.prev:null;
   if(!src||(P.bossPen||0)>=src.gen)return;P.bossPen=src.gen;if((P.joined||0)>(src.failedAt||0))return;if(tabGate('adv'))return;   // 탐사 still locked for me: I could not have fought it
-  P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
+  if(src.boom&&(src.dmg||{})[uid]){P.hp=0;log(`${src.name}의 대폭발에 휘말려 기절했다…`,'bad');commit();return}
+  P.hp=Math.min(P.hp,1);P.en=Math.min(P.en,1);log(src.boom?`${src.name}이(가) 대폭발을 일으켰다… 체력과 에너지가 1이 되었다.`:`${src.name}을(를) 2시간 안에 토벌하지 못했다… 침략자의 저주로 모든 선원의 체력과 에너지가 1이 되었다.`,'bad');commit()}
 /* the invader record: live while 탐사 is open or while no invader is out (so a new one shows up at once);
    during a fight, crew on other screens check it every minute instead of receiving every single hit */
 const BOSS_POLL=60e3;let bossUn=null,bossPollT=0;
-function bossOn(sn){BOSS=sn.exists?sn.data():null;bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint();bossSubSync()}
+function bossOn(sn){BOSS=sn.exists?sn.data():null;try{bossPhNote()}catch(e){}bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint();bossSubSync()}
 function bossSubSync(){const w=mode==='online'&&!!db&&(tab==='adv'||!bossAlive(BOSS));if(w&&!bossUn)bossUn=bossRef().onSnapshot(bossOn,()=>{});else if(!w&&bossUn){try{bossUn()}catch(e){}bossUn=null}}
 function bossSubscribe(){
   endSub();memSub();affSub();bondSub();
@@ -4834,7 +4843,7 @@ async function bossSkill(){const b=BOSS,j=OLDJOB[P.job]||P.job,k=BSK[j];if(!k||!
   if(j==='mech')return bossHit(true);
   if(bossBonusK(b,bskKind(j))>=BFX_CAP[bskKind(j)]){toast(`${k.n} 효과가 이미 최대(+${BFX_CAP[bskKind(j)]*100}%)로 겹쳐 있습니다.`);return}
   bossBusy=true;let ok=false;
-  try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end||bossBonusK(cur,bskKind(j))>=BFX_CAP[bskKind(j)])return null;cur.fx=[...bossFx(cur),{k:bskKind(j),by:P.nick,u:uid,until:Date.now()+BFX_MS}];cur.dmg=cur.dmg||{};if(!cur.dmg[uid])cur.dmg[uid]={n:P.nick,d:0};ok=true;return cur})}catch(e){}
+  try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end||bossBonusK(cur,bskKind(j))>=BFX_CAP[bskKind(j)])return null;cur.fx=[...bossFx(cur),{k:bskKind(j),by:P.nick,u:uid,until:Date.now()+BFX_MS}];if(bossPK(cur)==='zeno'&&bossPh(cur)===2)cur.zs=cur.hits||0;cur.dmg=cur.dmg||{};if(!cur.dmg[uid])cur.dmg[uid]={n:P.nick,d:0};ok=true;return cur})}catch(e){}
   bossBusy=false;if(!ok){toast('스킬을 쓰지 못했습니다.');bossPaint();return}
   P.bossSk={gen:b.gen,at:Date.now()};sfxBossHit(false);log(`[${k.n}] ${k.d}`,'good');sys(`${P.nick} 님의 ${k.n}! ${k.d}`);commit()}
 // who a hit's damage is credited to: the share a rally added goes to its casters, half of what a weak spot added goes to its casters, split by effect strength; the rest to the striker
@@ -4845,26 +4854,114 @@ function bossSplit(cur,dealt,d){const out={},fx=bossFx(cur).filter(f=>f.u&&f.k!=
 let bossFin=false;
 function bossFinalize(){const b=BOSS;if(!b||b.hp>0||b.killer||b.failed||b.gone||bossFin)return;bossFin=true;
   bossTx(bossRef(),cur=>{if(!cur||cur.gen!==b.gen||cur.hp>0||cur.killer||cur.failed||cur.gone)return null;cur.hp=0;cur.killedAt=Date.now();cur.killer=cur.last||uid;return cur}).catch(()=>{}).finally(()=>{bossFin=false})}
-async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(two?bossSkReady():bossReady())>0||isFaint()||bossBusy)return;bossBusy=true;if(!(P.bossAoe&&P.bossAoe.gen===b.gen))P.bossAoe={gen:b.gen,n:bossAoeN(b)};
-  const crit=Math.random()*100<critPct(),roll=()=>Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(crit?critMul():1))),d=roll()+(two?roll():0);let dealt=0,kill=false;
+/* ── invader phases: below 70% / 40% / 10% health each invader changes how it fights.
+   Everything is worked out on each device from the invader record (health, the moment each phase began),
+   so phases cost no extra reads; the few shared bits (phase start, water wall, crystal shards) ride on the hit's own write. ── */
+const bossPh=b=>{if(!b||!b.max)return 1;const r=b.hp/b.max;return r>.7?1:r>.4?2:r>.1?3:4};
+const bossPK=b=>bossKind(b).pk||'';
+const bossPhAt=(b,n)=>+(((b&&b.phAt)||{})['n'+n])||0;
+// where we are in a repeating cycle that starts when phase n began
+const bossCyc=(b,n,per)=>{const t0=bossPhAt(b,n)||Date.now(),t=Math.max(0,Date.now()-t0);return{c:Math.floor(t/per),t:t%per,left:per-(t%per)}};
+const BOOM_MS=10*60e3;
+const BPH={
+ aza:{2:['공허의 문','5분마다 1분 동안 공허의 문이 열립니다. 그때 공격하면 반격 대신 무작위로 좋은 일(보너스 피해 2배 · 에너지 회복 · 체력 회복) 또는 나쁜 일(강한 공허 반격, 회피 불가)이 일어납니다.'],3:['환영','반격이 가끔 환영이 되어, 피해 대신 다음 공격이 30초 늦어집니다.'],4:['공허 폭주','1분마다 공격에 참여한 모든 선원에게 시선을 보냅니다(민첩으로 회피). 체력이 1%씩 깎일 때마다 반격이 1.1배씩 커지고, 체력 1%대부터는 2배가 됩니다.']},
+ cthu:{2:['촉수 연타','반격이 약한 두 번으로 나뉘어 들어옵니다. 회피는 한 번씩 따로 판정합니다.'],3:['휘감기','반격에 맞으면 가끔 촉수에 휘감겨 다음 공격이 30초 늦어집니다.'],4:['먹물 장막','일반 공격의 절반이 빗나갑니다. 대신 반격이 약해지고, 직업 스킬은 반드시 맞습니다.']},
+ garg:{2:['포식','반격으로 준 피해만큼 체력을 회복합니다.'],3:['소화','받는 피해가 20% 줄어듭니다.'],4:['허기 폭주','받는 피해가 30% 늘어납니다. 3분마다 20초 동안 「삼키기」 — 그때 공격하면 반격 3배, 회피 불가.']},
+ levia:{2:['물결 장벽','물의 막이 최대 체력의 6%만큼 피해를 흡수합니다. 깨져도 5분마다 다시 생깁니다.'],3:['심해 압력','1분마다 반격이 5%씩 강해집니다(최대 2배). 빨리 밀어붙이십시오.'],4:['소용돌이','2분마다 30초 동안 소용돌이 — 그때 주는 피해 1.5배, 대신 반격은 피할 수 없습니다.']},
+ zeno:{2:['결정 성장','공격받을수록 결정이 자라 받는 피해가 줄어듭니다(최대 50%). 기관사의 연속 타격이나 직업 스킬로 부술 수 있습니다.'],3:['분열','4분마다 결정 조각이 생깁니다. 공격 5번으로 깨지기 전까지 본체가 받는 피해 절반.'],4:['공명 폭발','2분마다 결정 조각이 생깁니다. 공격 4번이면 깨지며, 깨뜨린 선원은 파편에 맞습니다.']},
+ scara:{2:['사구 붕괴','5분마다 1분 동안 모래를 끌어모읍니다 — 그때 공격하면 무너지는 사구에 반격 3배, 회피 불가.'],3:['매복','4분마다 30초 동안 땅속에 숨어 공격할 수 없습니다. 다시 나온 뒤 첫 공격은 반드시 치명타.'],4:['대폭발','10분 안에 쓰러뜨리지 못하면 폭발합니다. 공격한 선원은 모두 기절, 나머지 선원은 토벌 실패 저주.']}};
+const bossPhRule=b=>{const n=bossPh(b);return n>1?(BPH[bossPK(b)]||{})[n]||null:null};
+// the live state of the timed patterns, for the screen and for the hit
+function bossPhNow(b){const k=bossPK(b),n=bossPh(b),o={n,k,warn:'',win:false};if(!bossAlive(b)||n<2)return o;
+  if(k==='aza'&&n===2){const q=bossCyc(b,2,300e3);o.win=q.t>=240e3;o.warn=o.win?`공허의 문이 열렸다! ${Math.ceil(q.left/1000)}초 동안 무엇이 나올지 모릅니다`:`공허의 문이 열리기까지 ${fmtClock(q.left-60e3)}`}
+  if(k==='aza'&&n===4){const q=bossCyc(b,4,60e3),st=Math.max(0,Math.floor(10-b.hp/b.max*100));o.rage=st>=8?2:Math.min(2,Math.pow(1.1,st));o.warn=`${q.c<1?'첫 시선':'다음 시선'}까지 ${Math.ceil(q.left/1000)}초 · 반격 ×${o.rage.toFixed(2)}`}
+  if(k==='garg'&&n===4){const q=bossCyc(b,4,180e3);o.win=q.t>=160e3;o.warn=o.win?`삼키기! ${Math.ceil(q.left/1000)}초 동안 공격하지 마십시오`:`삼키기까지 ${fmtClock(q.left-20e3)}`}
+  if(k==='levia'&&n===2){const q=bossCyc(b,2,300e3),W=Math.round(b.max*.06),u=+((b.ws||{})['c'+q.c])||0;o.c=q.c;o.wall=Math.max(0,W-u);o.warn=o.wall>0?`물결 장벽 ${o.wall.toLocaleString()} / ${W.toLocaleString()}`:`장벽이 깨졌습니다 · 다시 생기기까지 ${fmtClock(q.left)}`}
+  if(k==='levia'&&n===3){const st=Math.min(20,Math.floor((Date.now()-(bossPhAt(b,3)||Date.now()))/60e3));o.mul=1+st*.05;o.warn=`심해 압력 · 반격 ×${o.mul.toFixed(2)}`}
+  if(k==='levia'&&n===4){const q=bossCyc(b,4,120e3);o.win=q.t>=90e3;o.warn=o.win?`소용돌이! ${Math.ceil(q.left/1000)}초 동안 피해 1.5배`:`소용돌이까지 ${fmtClock(q.left-30e3)}`}
+  if(k==='zeno'&&n===2){const base=b.zs!=null?+b.zs:+(((b.phH||{}).n2)||0);o.red=Math.min(.5,Math.max(0,(b.hits||0)-base)*.02);o.warn=`결정 성장 · 받는 피해 -${Math.round(o.red*100)}%`}
+  if(k==='zeno'&&n>=3){const per=n===3?240e3:120e3,need=n===3?5:4,q=bossCyc(b,n,per),hit=+((b.sh||{})['s'+n+'_'+q.c])||0;o.c=q.c;o.need=need;o.shHit=hit;o.shard=hit<need;o.warn=o.shard?`결정 조각 · 공격 ${need-hit}번 더 (그동안 본체 피해 절반)`:`조각을 깨뜨렸습니다 · 다음 조각까지 ${fmtClock(q.left)}`}
+  if(k==='scara'&&n===2){const q=bossCyc(b,2,300e3);o.win=q.t>=240e3;o.warn=o.win?`사구 붕괴 임박! ${Math.ceil(q.left/1000)}초 동안 공격하면 반격 3배`:`모래를 끌어모으기까지 ${fmtClock(q.left-60e3)}`}
+  if(k==='scara'&&n===3){const q=bossCyc(b,3,240e3);o.c=q.c;o.hide=q.t>=210e3;o.amb=q.c>=1;o.warn=o.hide?`땅속에 숨었습니다 · ${Math.ceil(q.left/1000)}초 뒤 나옵니다`:`다음 매복까지 ${fmtClock(q.left-30e3)}`}
+  if(k==='scara'&&n===4){const t0=bossPhAt(b,4);o.boom=t0?t0+BOOM_MS-Date.now():BOOM_MS;o.warn=`대폭발까지 ${fmtClock(Math.max(0,o.boom))}`}
+  return o}
+// a hit that takes the invader into a new phase stamps when (and at how many hits) that phase began
+function bossPhStamp(b,after,set){const n1=bossPh(Object.assign({},b,{hp:after}));for(let n=2;n<=n1;n++)if(!bossPhAt(b,n)){set('phAt.n'+n,Date.now());set('phH.n'+n,(b.hits||0)+1)}}
+// the invader's answer to my hit, shaped by its phase
+function bossBack(b,o){const k=o.k,n=o.n,dp=Math.min(45,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')));let mul=1,sure=false,parts=1;
+  if(k==='cthu'&&n===2){parts=2;mul=.6}if(k==='cthu'&&n===4)mul=.6;
+  if(k==='garg'&&n===4&&o.win){mul=3;sure=true}if(k==='levia'&&n===3)mul=o.mul||1;if(k==='aza'&&n===4)mul=o.rage||1;/* 공허 폭주: 1.1× for every 1% lost below 10%, 2× from 1.x% on */if(k==='levia'&&n===4&&o.win)sure=true;if(k==='scara'&&n===2&&o.win){mul=3;sure=true}
+  let hit=0,sv=0,dg=0;const each=[];for(let i=0;i<parts;i++){if(!sure&&Math.random()*100<dp){dg++;each.push(0);continue}const [h,v]=bossBlow2(b),hh=Math.round(h*mul);hit+=hh;each.push(hh);sv+=Math.round(v*mul)}
+  return{hit,sv,miss:dg===parts,parts,dg,sure,mul,each}}
+async function bossHit(two){const b=BOSS;if(!bossAlive(b)||Date.now()>=b.end||(two?bossSkReady():bossReady())>0||isFaint()||bossBusy)return;
+  const o=bossPhNow(b),ph=o.n,pk=o.k;
+  if(pk==='scara'&&o.hide){toast('스카라가 땅속에 숨어 있습니다. 나올 때까지 기다리십시오.');return}
+  bossBusy=true;if(!(P.bossAoe&&P.bossAoe.gen===b.gen))P.bossAoe={gen:b.gen,n:bossAoeN(b)};
+  const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));
+  // 먹물 장막: half of the ordinary attacks miss outright (skills always land) — nothing is written
+  if(pk==='cthu'&&ph===4&&!two&&Math.random()<.5){bossBusy=false;P.bossAt=Date.now();stat('boss');gainXp(xp);bossLast={t:Date.now(),miss:true,txt:'먹물 장막에 가려 공격이 빗나갔다!'};sfxBossBack(true);log(`${b.name}의 먹물 장막에 가려 공격이 빗나갔다. (경험치 +${xp})`);commit();return}
+  let crit=Math.random()*100<critPct(),amb=false;
+  if(pk==='scara'&&ph===3&&o.amb){const key=b.gen+':'+o.c;if(P.bossAmb!==key){P.bossAmb=key;crit=true;amb=true}}
+  const roll=()=>Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(crit?critMul():1))),d=roll()+(two?roll():0);let dealt=0,kill=false,landed=false,absorbed=0,healed=0,shBreak=false;
+  const mulOf=(cur,q)=>pk==='garg'&&ph===3?.8:pk==='garg'&&ph===4?1.3:pk==='levia'&&ph===4&&q.win?1.5:pk==='zeno'&&ph===2?1-(q.red||0):pk==='zeno'&&ph>=3&&q.shard?.5:1;
+  // 환영 (아자토스 3페이즈): instead of striking back, the invader clouds my next attack
+  const illusion=pk==='aza'&&ph===3&&Math.random()<.35;
+  // 공허의 문 (아자토스 2페이즈): while it is open a hit draws a fortune instead of the usual answer
+  const door=pk==='aza'&&ph===2&&o.win?(r=>r<.25?'dmg':r<.5?'en':r<.65?'hp':'bad')(Math.random()):null;
   // with a full crew striking at once, one locked record would make hits queue and fail: ordinary hits only add to counters,
   // and only a blow that could finish the invader goes through the transaction so the last-hit credit stays exact
-  const est=Math.round(d*(1+bossBonus(b)));
-  if(b.hp-est>Math.max(est*3,b.max*.03)){dealt=est;const m={hp:-dealt,hits:1},ex={last:uid,['dmg.'+uid+'.n']:P.nick};
-    Object.entries(bossSplit(b,dealt,d)).forEach(([u,v])=>{m['dmg.'+u+'.d']=(m['dmg.'+u+'.d']||0)+v});
-    try{await docInc(bossRef(),m,ex)}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}}
-  else try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;dealt=Math.min(cur.hp,Math.round(d*(1+bossBonus(cur))));cur.hp-=dealt;cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};cur.last=uid;
-    Object.entries(bossSplit(cur,dealt,d)).forEach(([u,v])=>{const e=cur.dmg[u]||{n:u===uid?P.nick:'선원',d:0};if(u===uid)e.n=P.nick;e.d=(+e.d||0)+v;cur.dmg[u]=e});
-    if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
-  bossBusy=false;if(!dealt){bossPaint();return}
-  if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');const xp=Math.max(2,Math.round(xpBase(P.lvl)*.006));gainXp(xp);
+  const est=Math.round(d*(1+bossBonus(b))*mulOf(b,o)*(door==='dmg'?2:1));let back=null;
+  if(b.hp-est>Math.max(est*3,b.max*.03)){
+    if(!illusion&&!door)back=bossBack(b,o);
+    if(pk==='levia'&&ph===2&&o.wall>0)absorbed=Math.min(est,o.wall);
+    dealt=est-absorbed;if(pk==='garg'&&ph===2&&back&&back.hit>0)healed=back.hit;
+    const m={hp:-dealt+healed,hits:1},ex={last:uid,['dmg.'+uid+'.n']:P.nick};
+    if(dealt>0)Object.entries(bossSplit(b,dealt,d)).forEach(([u,v])=>{m['dmg.'+u+'.d']=(m['dmg.'+u+'.d']||0)+v});else m['dmg.'+uid+'.d']=0;
+    if(absorbed)m['ws.c'+o.c]=absorbed;
+    if(pk==='zeno'&&ph>=3&&o.shard){m['sh.s'+ph+'_'+o.c]=1;shBreak=ph===4&&o.shHit+1>=o.need}
+    if(pk==='zeno'&&ph===2&&two)ex.zs=(b.hits||0)+1;
+    bossPhStamp(b,b.hp-dealt+healed,(k,v)=>{ex[k]=v});
+    try{await docInc(bossRef(),m,ex);landed=true}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}}
+  else try{await bossTx(bossRef(),cur=>{if(!bossAlive(cur)||cur.gen!==b.gen||Date.now()>=cur.end)return null;const q=bossPhNow(cur);
+    let dd=Math.round(d*(1+bossBonus(cur))*mulOf(cur,q)*(door==='dmg'?2:1));absorbed=0;if(pk==='levia'&&q.n===2&&q.wall>0){absorbed=Math.min(dd,q.wall);cur.ws=cur.ws||{};cur.ws['c'+q.c]=(+cur.ws['c'+q.c]||0)+absorbed;dd-=absorbed}
+    if(pk==='zeno'&&q.n>=3&&q.shard){cur.sh=cur.sh||{};cur.sh['s'+q.n+'_'+q.c]=(+cur.sh['s'+q.n+'_'+q.c]||0)+1}
+    dealt=Math.min(cur.hp,dd);bossPhStamp(cur,cur.hp-dealt,(k,v)=>{const [a,c]=k.split('.');cur[a]=cur[a]||{};cur[a][c]=v});cur.hp-=dealt;cur.hits=(cur.hits||0)+1;cur.dmg=cur.dmg||{};cur.last=uid;
+    Object.entries(bossSplit(cur,dealt,d)).forEach(([u,v])=>{const e=cur.dmg[u]||{n:u===uid?P.nick:'선원',d:0};if(u===uid)e.n=P.nick;e.d=(+e.d||0)+v;cur.dmg[u]=e});if(!cur.dmg[uid])cur.dmg[uid]={n:P.nick,d:0};
+    if(cur.hp<=0){cur.hp=0;cur.killedAt=Date.now();cur.killer=uid;kill=true}landed=true;return cur})}catch(e){bossBusy=false;toast('공격이 닿지 않았습니다. 잠시 뒤 다시 시도하십시오.');return}
+  bossBusy=false;if(!landed){bossPaint();return}
+  if(two)P.bossSk={gen:b.gen,at:Date.now()};else P.bossAt=Date.now();stat('boss');gainXp(xp);
   // the invader strikes back at whoever just hit it (unless that blow finished it); agility gives a chance to dodge
-  let back='';if(!kill){const dodge=Math.random()*100<Math.min(45,Math.max(0,AS('agi')*1.5+BUFF('dodge')+WA('dodge')));if(dodge)back='회피!';else{const [hit,sv]=bossBlow2(b);heal(-hit,0);bossDefCredit(BOSS||b,sv);back=`${hit} 피해`}
-    bossLast={t:Date.now(),miss:dodge,txt:dodge?`${b.name}의 반격을 피했다!`:`${b.name}의 반격! 체력 -${back.split(' ')[0]}`}}else bossLast=null;
+  let bt='',extra=[];
+  if(!kill){
+    if(door){const T={dmg:'공허의 힘이 실려 피해 2배!',en:'',hp:'',bad:''};
+      if(door==='en'){const g=Math.round(maxEn()*.3);P.en=Math.min(maxEn(),P.en+g);T.en=`공허의 기운으로 에너지 +${g}`}
+      if(door==='hp'){const g=Math.round(maxHp()*.3);P.hp=Math.min(maxHp(),P.hp+g);T.hp=`공허의 기운으로 체력 +${g}`}
+      if(door==='bad'){const [h]=bossBlow2(b),hh=Math.round(h*2);heal(-hh,0);T.bad=`문 너머에서 공허가 덮쳤다! 체력 -${hh}`}
+      bt='공허의 문';bossLast={t:Date.now(),miss:door!=='bad',txt:`공허의 문 — ${T[door]}`};extra.push(T[door])}
+    else if(illusion){P.bossAt=Date.now()+30e3;bt='환영';bossLast={t:Date.now(),miss:true,txt:`${b.name}의 환영에 홀렸다! 다음 공격이 30초 늦어진다`}}
+    else{if(!back)back=bossBack(b,o);
+      if(back.miss){bt=back.parts>1?`${back.parts}연타 모두 회피!`:'회피!';bossLast={t:Date.now(),miss:true,txt:back.parts>1?`${b.name}의 촉수 ${back.parts}연타를 모두 피했다!`:`${b.name}의 반격을 피했다!`}}
+      else{heal(-back.hit,0);bossDefCredit(BOSS||b,back.sv);const multi=back.parts>1?back.each.map(x=>x?`-${x}`:'회피').join(' · '):'';bt=`${back.hit} 피해${multi?` (촉수 ${back.parts}연타: ${multi})`:''}${back.sure&&back.mul>1?' · 회피 불가':''}`;
+        let wrap=pk==='cthu'&&ph===3&&Math.random()<.4;if(wrap){P.bossAt=Date.now()+30e3;extra.push('촉수에 휘감겨 다음 공격이 30초 늦어진다')}
+        bossLast={t:Date.now(),miss:false,txt:multi?`${b.name}의 촉수 ${back.parts}연타! ${multi}`:`${b.name}의 ${pk==='garg'&&ph===4&&o.win?'삼키기':pk==='scara'&&ph===2&&o.win?'사구 붕괴':'반격'}! 체력 -${back.hit}${wrap?' · 휘감김!':''}`}}}
+    if(shBreak){const [h]=bossBlow2(b),sh2=Math.round(h*.5);heal(-sh2,0);extra.push(`결정 조각이 터지며 파편에 체력 -${sh2}`)}
+    if(absorbed)extra.push(`물결 장벽이 ${absorbed.toLocaleString()} 흡수`);if(healed)extra.push(`포식으로 체력 ${healed.toLocaleString()} 회복`);if(amb)extra.push('매복을 노린 치명타');
+  }else bossLast=null;
   // one notice for everyone, posted by whoever landed the last blow
   if(kill)sys(`[공지] 침략자 ${b.name}이(가) 물러났습니다! 토벌 성공. 참여한 선원은 탐사 화면에서 보상 상자를 여십시오.`,false,'beacon');
   sfxBossHit(crit);if(kill)sfxBossKill();else sfxBossBack(bossLast&&bossLast.miss);
-  log(`${two?'[연속 타격] ':''}${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${back}`}`,crit||kill?'rare':'');commit()}
+  log(`${two?'[연속 타격] ':''}${b.name}에게 ${crit?'치명타! ':''}${dealt.toLocaleString()} 피해. (경험치 +${xp})${kill?' 마지막 일격!':` · 반격 ${bt}`}${extra.length?' · '+extra.join(' · '):''}`,crit||kill?'rare':'');commit()}
+// 공허 폭주 (아자토스 4페이즈): every minute the eye glares at everyone who has fought it — timed from the phase's start, no writes
+setInterval(()=>{const b=BOSS;if(mode!=='online'||!P||!P.joined||!bossAlive(b)||bossPK(b)!=='aza'||bossPh(b)<4||!bossPhAt(b,4)||!((b.dmg||{})[uid]))return;
+  const q=bossCyc(b,4,60e3),key=b.gen+':'+q.c;if(q.c<1||!P.bossGz||String(P.bossGz).split(':')[0]!==String(b.gen)){P.bossGz=key;return}if(P.bossGz===key)return;P.bossGz=key;if(isFaint())return;
+  const dg=Math.random()*100<Math.min(45,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')));if(dg){toast(`${b.name}의 시선을 피했다!`);log(`${b.name}의 공허 폭주 — 시선을 피했다.`);return}
+  const [h,sv]=bossBlow2(b);heal(-h,0);bossDefCredit(b,sv);bossLast={t:Date.now(),miss:false,txt:`${b.name}의 시선! 체력 -${h}`};toast(`${b.name}의 시선! 체력 -${h}`);log(`${b.name}의 공허 폭주 — 시선에 맞아 체력 -${h}`,'bad');commit()},1000);
+// a phase change is announced once on each device (to those on 탐사 or who have fought it)
+let bossPhSeen='';function bossPhNote(){const b=BOSS;if(!bossAlive(b))return;const n=bossPh(b),key=b.gen+':'+n;if(bossPhSeen===key)return;const first=!bossPhSeen||bossPhSeen.split(':')[0]!==String(b.gen);bossPhSeen=key;if(first||n<2)return;
+  if(tab!=='adv'&&!((b.dmg||{})[uid]))return;const r=bossPhRule(b);if(r){toast(`${b.name} · ${n}페이즈 「${r[0]}」!`);log(`${b.name}이(가) ${n}페이즈에 들어섰다 — ${r[0]}: ${r[1]}`,'rare')}}
+function bossPhHTML(b){const n=bossPh(b),r=bossPhRule(b),o=bossPhNow(b),nx=['','70%','40%','10%'][n],hot=o.win||o.hide||(o.boom!=null&&o.boom<120e3);
+  return`<button type="button" class="bphbadge ph${n}${hot?' hot':''}" data-act="bossphinfo" title="${esc((r?r[0]+': '+r[1]:'평범한 반격만 합니다.')+(nx?` 체력 ${nx} 아래로 떨어지면 다음 페이즈.`:''))}" aria-label="${n}페이즈${r?' '+esc(r[0]):''} · 눌러서 설명 보기"><span class="lbl">Phase ${n}</span><span class="bphd" aria-hidden="true">${[1,2,3,4].map(i=>`<i class="${i<n?'done':i===n?'on':''}"></i>`).join('')}</span><b>${r?esc(r[0]):'탐색'}</b>${o.warn?`<small id="bossPhW">${esc(o.warn)}</small>`:''}</button>`}
+
 /* 교류 lounge: a small live chat for whoever is on the 교류 tab right now, next to the PAD phone (last 40 lines kept) */
 const LOUNGE_MAX=40,loungeRef=()=>db.doc('boss/lounge');let LCHAT=[],loungeDraft='';
 const loungeHere=()=>mode==='online'?[...new Map(PEERS.filter(p=>p.presence&&p.presence.act==='교류').map(p=>[p.presence.uid,p.presence.nick])).set(uid,P.nick).values()]:[P.nick];
@@ -4973,7 +5070,7 @@ function bossMainHTML(){const b=BOSS;
   const alive=true,rk=Object.entries(b.dmg||{}).sort((x,y)=>y[1].d-x[1].d),tot=rk.reduce((a,[,v])=>a+v.d,0)||1,cd=bossReady(),mine=(b.dmg||{})[uid];
   const cb=bossLast&&Date.now()-bossLast.t<4000?bossLast:null,urgent=alive&&(b.end||0)-Date.now()<30*60e3;
   return`<div class="bossstage ${alive?'':'down'} ${cb&&!cb.miss?'hitback':''}">${cb?`<span class="bosscb ${cb.miss?'miss':''}">${esc(cb.txt)}</span>`:''}<div class="bosssprite">${bossSpr(b,10)}</div>
-    <div class="bossinfo"><span class="lbl">Invader from the abyss · 제${b.gen}차 침공</span><b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
+    <div class="bossinfo">${alive?bossPhHTML(b):''}<b class="bossname">${esc(b.name)}</b><span class="hint">Lv.${b.lv} · 누적 공격 ${(b.hits||0).toLocaleString()}회 · 참여 ${rk.length}명</span>
     ${raidBar(b.hp,b.max,'var(--red)')}<span class="bosshp"><b class="bosspct">${bossPct(b)}%</b> · ${b.hp.toLocaleString()} / ${b.max.toLocaleString()}</span>${alive?`<span class="bossclock ${urgent?'urgent':''}" id="bossClock">${bossClock(b)}</span>`:''}</div></div>
    ${alive?`<div class="row bossact"><button class="btn" data-act="bosshit" id="bossBtn" ${cd>0||isFaint()?'disabled':''}>공격</button><span class="hint" id="bossT">${cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.'}</span></div>${bossSkHTML(b)}<p class="hint"><b style="color:var(--red)">2시간 안에 토벌하지 못하면 모든 선원의 체력과 에너지가 1이 됩니다.</b></p>`
     :b.failed?`<div class="card"><b style="color:var(--red)">토벌 실패…</b><p class="hint">${esc(b.name)}이(가) 2시간을 버티고 심연으로 돌아갔습니다. 저주로 모든 선원의 체력과 에너지가 1이 되었습니다. 운영자가 다음 침략자를 소환할 때까지 기다리십시오.</p></div>`
@@ -4992,7 +5089,7 @@ let bossPick=0;
 const endRef=()=>db.doc('boss/ending');
 let endWing=[],endWingK='',END=null,endPend=0,endUnseen=0,endFlushT=0,endAt=0,endSkAt=0,endPrevHp=null,endSeenDone=0,endBusy=false,endHitT=0,endMx=-1,endMy=-1;
 // 오르비스 is a Lv.100 invader made 1.5× tougher: HP from the invaders' own formula (with their toughest kind), and its gaze hits like their blow
-const END_LV=100,END_K=1.5,endHpMax=()=>{let k=0;BOSS_KINDS.forEach((q,i)=>{if(q.hp>BOSS_KINDS[k].hp)k=i});return Math.round(bossHpFor(END_LV,k)*END_K)},endAtkK=()=>Math.max(...BOSS_KINDS.map(q=>q.atk))*END_K;
+const END_LV=100,END_K=1.5,endHpMax=()=>2000000/* 30 crew at Lv.60 take 10 minutes or more */,endAtkK=()=>Math.max(...BOSS_KINDS.map(q=>q.atk))*END_K;
 const END_CD=10000,END_SKCD=30000,END_NAME='하늘을 뒤덮은 눈 「오르비스」';
 // the boss's eyes over the page: [anchor, x, y] — anchors are page parts, or 'L'/'R'/'T' for the empty space around the layout
 const END_EYES=[['L',.45,.09,1.1],['L',.6,.24,.9],['header .logo',.32,.42,.8],['T',.47,.35,1.3],['#ticker',.36,.05,.7],['#netChip',.4,1.4,.9],['R',.5,.36,1.1],['L',.35,.6,.8],['R',.45,.75,.8]];
@@ -5188,7 +5285,7 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const n=Math.floor((sNow()-EN
   if(isFaint())return;
   {const sh=END.shield;if(sh&&sh.k===k&&sh.u!==uid){toast(`${sh.n} 님이 수호의 방패로 시선을 대신 막았습니다!`);log(`${sh.n} 님이 수호의 방패로 오르비스의 시선을 대신 맞았다.`,'good');return}}
   endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
-  const dodge=Math.random()*100<Math.min(40,Math.max(0,AS('agi')*1.2+BUFF('dodge')+WA('dodge')));
+  const dodge=Math.random()*100<Math.min(40,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')));
   if(dodge){toast(`${END_NAME}의 시선을 피했다!`);log(`${END_NAME}의 시선을 피했다.`,'good');return}
   const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=defCut(raw,def());heal(-hit,0);sfxStatic&&sfxStatic();
   toast(`${END_NAME}의 시선! 선원 모두가 체력 -${hit}`);log(`${END_NAME}의 시선이 베이스캠프를 훑었다. 체력 -${hit}`,'bad');checkFaint();commit()},400);
@@ -5220,7 +5317,7 @@ function endAdminHTML0(){const e=END;
 function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30));
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Invader · 탐사 침략자 소환</span>
    ${alive?`<div class="row" style="gap:8px;align-items:center">${bossSpr(b,2)}<span class="hint">지금 <b>${esc(b.name)}</b> Lv.${b.lv} 출현 중 · 체력 ${b.hp.toLocaleString()}/${b.max.toLocaleString()} · ${bossClock(b)}</span><button class="btn sm ghost" data-act="admbossoff">돌려보내기</button></div><span class="hint">돌려보내면 보상도 저주도 없이 사라집니다. 침략자가 있는 동안에는 새로 소환할 수 없습니다.</span>`
-   :`<div class="bosspicks">${BOSS_KINDS.map((K,i)=>`<button type="button" class="qchip bosspick" data-act="admbosspick" data-k="${i}" aria-pressed="${i===bossPick}" title="${esc(K.n)}">${bossSpr({kind:i},2)}<span>${esc(K.n)}</span></button>`).join('')}</div>
+   :`<div class="bosspicks">${BOSS_KINDS.map((K,i)=>K.off?'':`<button type="button" class="qchip bosspick" data-act="admbosspick" data-k="${i}" aria-pressed="${i===bossPick}" title="${esc(K.n)}">${bossSpr({kind:i},2)}<span>${esc(K.n)}</span></button>`).join('')}</div>
     <div class="row" style="gap:6px;align-items:center"><span class="hint">레벨</span><input id="admBossLv" class="sel" type="number" min="1" max="99" value="${lv}" style="width:70px" aria-label="침략자 레벨"><span class="hint" id="admBossHp">체력 ${bossHpFor(lv,bossPick).toLocaleString()}</span><button class="btn sm gold" data-act="admboss">소환</button></div>
     <span class="hint">소환하면 2시간 안에 토벌해야 합니다. 실패하면 모든 선원의 체력과 에너지가 1이 됩니다.</span>`}</div>`}
 function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 선원에게 인사해 보십시오.</li>'}
@@ -5242,7 +5339,7 @@ function bossSkHTML(b){const j=OLDJOB[P.job]||P.job,k=BSK[j],fx=bossFx(b),bn=bos
   return`${k?`<div class="row bossact"><button class="btn gold" data-act="bossskill" id="bossSkBtn" ${sc>0||isFaint()||(j!=='mech'&&bn>=BFX_CAP[bskKind(j)])?'disabled':''}>${k.n}</button><span class="hint" id="bossSkT">${JOBS[j].n} 스킬 · ${k.d} · ${sc>0?`다시 쓰기까지 ${fmtClock(sc)}`:'10분에 한 번 쓸 수 있습니다.'}</span></div>`:''}${fxs}`}
 function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT');{const at=$('#asigT');if(at){const sg=asigState();const k='a'+sg.n+(sg.off?'o':'');if(k!==window.__ak){window.__ak=k;if(window.__akInit)bossPaint();window.__akInit=1}else at.textContent=asigMsg(sg)}}
   {const r=$('#bossRet');if(r){const l=bossRetLeft(b);if(l>0)r.textContent=fmtClock(l);else bossPaint()}}
-  if(bossAlive(b)){const c=$('#bossClock');if(c){c.textContent=bossClock(b);c.classList.toggle('urgent',(b.end||0)-Date.now()<30*60e3)}if(t){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}{const st=$('#bossSkT'),sb=$('#bossSkBtn'),sc=bossSkReady(),j=OLDJOB[P.job]||P.job;if(st&&BSK[j])st.textContent=`${JOBS[j].n} 스킬 · ${BSK[j].d} · ${sc>0?`다시 쓰기까지 ${fmtClock(sc)}`:'10분에 한 번 쓸 수 있습니다.'}`;if(sb)sb.disabled=sc>0||isFaint()||bossBusy||(j!=='mech'&&bossBonusK(b,bskKind(j))>=BFX_CAP[bskKind(j)]);document.querySelectorAll('.bfxt').forEach(e=>e.textContent=fmtClock(+e.dataset.u-Date.now()));const fk=bossFx(b).map(f=>f.until).join();if(fk!==window.__bfk){const had=window.__bfk!==undefined;window.__bfk=fk;if(had)bossPaint()}}}
+  if(bossAlive(b)){{const pk=b.gen+':'+bossPh(b),w=$('#bossPhW'),o=bossPhNow(b);if(window.__bphK!==pk){window.__bphK=pk;if(window.__bphI)bossPaint();window.__bphI=1}else if(w&&o.warn)w.textContent=o.warn}const c=$('#bossClock');if(c){c.textContent=bossClock(b);c.classList.toggle('urgent',(b.end||0)-Date.now()<30*60e3)}if(t){const cd=bossReady(),btn=$('#bossBtn');t.textContent=cd>0?`다음 공격까지 ${Math.ceil(cd/1000)}초`:'공격할 수 있습니다. 1분에 한 번씩 공격할 수 있습니다.';if(btn)btn.disabled=cd>0||isFaint()||bossBusy}{const st=$('#bossSkT'),sb=$('#bossSkBtn'),sc=bossSkReady(),j=OLDJOB[P.job]||P.job;if(st&&BSK[j])st.textContent=`${JOBS[j].n} 스킬 · ${BSK[j].d} · ${sc>0?`다시 쓰기까지 ${fmtClock(sc)}`:'10분에 한 번 쓸 수 있습니다.'}`;if(sb)sb.disabled=sc>0||isFaint()||bossBusy||(j!=='mech'&&bossBonusK(b,bskKind(j))>=BFX_CAP[bskKind(j)]);document.querySelectorAll('.bfxt').forEach(e=>e.textContent=fmtClock(+e.dataset.u-Date.now()));const fk=bossFx(b).map(f=>f.until).join();if(fk!==window.__bfk){const had=window.__bfk!==undefined;window.__bfk=fk;if(had)bossPaint()}}}
   const h=bossHere(),hc=$('#bossHere'),hw=$('#bossWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 setInterval(bossTick,1000);
 document.addEventListener('submit',e=>{if(e.target.id!=='bossForm')return;e.preventDefault();if(tab!=='adv')return;const i=$('#bossIn');const v=i.value;if(!v.trim())return;i.value='';bossDraft='';bossSay(v)});
@@ -7140,7 +7237,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794824304';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794829961';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7841,6 +7938,7 @@ const A={
  roomhome(){visit=null;renderPanel()},
  emote(d){if(!EMOTES[d.k])return;myEmote={k:d.k,at:Date.now()};pushRoomPresence();drawRoomCv()},
  bossskill(){bossSkill()},
+ bossphinfo(){const b=BOSS;if(!bossAlive(b))return;const n=bossPh(b),r=bossPhRule(b),nx=['','70%','40%','10%'][n];toast(`${n}페이즈${r?` 「${r[0]}」 — ${r[1]}`:' — 평범한 반격만 합니다.'}${nx?` (체력 ${nx} 아래로 떨어지면 다음 페이즈)`:''}`)},
  benchtab(d){benchTab=['craft','up','suit','wpn'].includes(d.k)?d.k:'up';renderPanel()},
  chestopen(){openChest()},
  chestok(){chestOpen=null;renderPanel()},
@@ -7986,7 +8084,7 @@ const A={
   else if(k==='farm'){FARM.pods.forEach((pl,i)=>{if(pl&&pl.seed)farmPut(i,Object.assign({},pl,{got:ITEMS[pl.seed].grow}))})}
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
   log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했습니다.')},
- admbosspick(d){if(!isAdmin)return;bossPick=Math.max(0,Math.min(BOSS_KINDS.length-1,+d.k||0));renderAdminAll()},
+ admbosspick(d){if(!isAdmin)return;const k=Math.max(0,Math.min(BOSS_KINDS.length-1,+d.k||0));if(BOSS_KINDS[k].off)return;bossPick=k;renderAdminAll()},
  admboss(){if(!isAdmin)return;const lv=Math.max(1,Math.min(99,Math.round(+$('#admBossLv').value)||30)),K=BOSS_KINDS[bossPick];bossSummon(bossPick,lv).then(nx=>{if(!nx){toast('이미 침략자가 출현 중입니다.');return}toast(`${K.n} Lv.${lv}을(를) 소환했습니다.`);sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`,true,'siren');renderAdminAll()}).catch(()=>toast('소환하지 못했습니다.'))},
  admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
  async seasonreset(){if(!isAdmin||mode!=='online'||seasonBusy)return;const t=($('#seasonTxt')||{}).value||'';if(t.trim()!=='초기화'){toast('확인 칸에 초기화 라고 적어 주십시오.');return}
