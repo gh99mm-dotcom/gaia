@@ -6112,7 +6112,7 @@ function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||'
   if(k==='opening'){OP_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')});add('[조우]','ttl')}
   const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
   return out.join('')}
-var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛']];
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판']];
 const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k];
 // once 생명 유지 장치 is repaired every crew member sees its story one time (the next time they are in the game), then the 마이룸 popup
 function lifeStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
@@ -6124,6 +6124,16 @@ function lifeUnlockPop(){const old=$('#unlockPop');if(old)old.remove();const el=
   document.body.appendChild(el);const close=()=>{el.remove();document.removeEventListener('keydown',kk,true)},kk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.code==='Space'){e.preventDefault();close()}};
   el.querySelector('#unlockOk').addEventListener('click',close);document.addEventListener('keydown',kk,true);try{sfxFanfare(false)}catch(e){}}
 setInterval(()=>{try{lifeStoryCheck()}catch(e){}},8000);
+// once 동력로 is repaired every crew member sees its story one time (after the 생명 유지 장치 one), then the 의뢰판 popup
+function powerStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
+  if(!STORY_ON.power)return;const pt=SHIP.find(x=>x.id==='power');if(!pt||!shipDone(pt)||(P.stSeen||{}).power)return;
+  if($('#story')||$('#opCrawl')||$('#unlockPop')||(typeof raidLocked==='function'&&raidLocked()))return;if(STORY_ON.opening&&(P.opSeen||0)<4)return;if(STORY_ON.life&&!(P.stSeen||{}).life)return;
+  P.stSeen=Object.assign({},P.stSeen,{power:Date.now()});save();playStory('power',reqUnlockPop)}
+function reqUnlockPop(){const old=$('#unlockPop');if(old)old.remove();const el=document.createElement('div');el.id='unlockPop';el.className='modal';el.style.zIndex=230;
+  el.innerHTML=`<div class="px infobox unlockbox" role="dialog" aria-label="의뢰판 해금"><span class="lbl">Unlocked · 해금</span><b class="unlockt">🔓 의뢰판이 해금되었습니다!</b><span class="hint">의뢰 탭에서 마담 로자의 의뢰를 받을 수 있습니다.</span><button class="btn gold" type="button" id="unlockOk">확인</button></div>`;
+  document.body.appendChild(el);const close=()=>{el.remove();document.removeEventListener('keydown',kk,true)},kk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.code==='Space'){e.preventDefault();close()}};
+  el.querySelector('#unlockOk').addEventListener('click',close);document.addEventListener('keydown',kk,true);try{sfxFanfare(false)}catch(e){}}
+setInterval(()=>{try{powerStoryCheck()}catch(e){}},8000);
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
 function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 우주함선이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
 const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
@@ -7242,7 +7252,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794835231';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794839105';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7430,7 +7440,14 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'l_bot',lines:[{v:'맞춰보지. 필요한 게 늘었구나.',who:'녹슨 7호'},{v:'손님의 요구는 말하지 않아도 알 수 있어. 내 경력은 자그마치⋯⋯.',who:'녹슨 7호'},{v:'⋯⋯아무튼, 가구점을 새로 꾸릴 테니 크레딧이나 넉넉히 준비해 달라고.',who:'녹슨 7호'}]},
   {art:'l_lamp',lines:[{t:'다음 할 일 역시 명확하다.'},{t:'이러한 생활이 언제까지 이어질 수 있을지 모르지만⋯⋯.'}]},
   {art:'black',noart:1,lines:[{t:'......',btn:'▶'}]},
-  {art:'black',noart:1,lines:[{t:'동력로를 고치도록 하자.',btn:'▶'}]}]}};
+  {art:'black',noart:1,lines:[{t:'동력로를 고치도록 하자.',btn:'▶'}]}]},
+  // played once for everyone when 동력로 is repaired, then 의뢰판 opens
+  power:{n:'동력로 · 마담의 의뢰판',scenes:[
+  {art:'p_wire',lines:[{t:'인간은 적응의 동물이라 누가 말했을까.',wait:3.4}]},
+  {art:'p_reactor',lines:[{t:'여러 생물과 싸우고, 녹슨 잔해길을 헤치며 농작물을 자급자족하는 것에도 많이 익숙해졌다.'},{t:'확실한 목표 속에서 쉴 틈 없이 몸을 움직인다.'}]},
+  {art:'p_junk',lines:[{t:'행성을 돌아다니다 보면, 익숙한 물건들을 종종 줍는다.'},{t:'또 한 가지, 간혹 하늘에는 거대한 그림자가 드리운다.',art:'p_shadow'},{t:'우리를 이끌어줄 선생도 이에 대해서는 아는 게 없는 듯하다.',art:'p_shadow'}]},
+  {art:'l_bot',lines:[{t:'이제는 익숙한 바퀴소리가 들린다.'},{v:'이봐, 너무 바쁘게 지내는 거 아냐?',who:'녹슨 7호'},{v:'이웃끼리 소음은 조심하자는 말이야.',who:'녹슨 7호'},{v:'깜짝 놀라서 내 연약한 *심장* 이 멎으면 책임질 거야?',who:'녹슨 7호'}]},
+  {art:'p_board',sfx:'rattle',lines:[{t:'드르륵, 드르륵⋯⋯ 그리고 달칵.'},{t:'밝은 불이 들어온다. 익숙한 느낌의 알전구들이 빛난다.'},{t:'다만 우리의 것이 아니다.'},{v:'드디어 밝아졌군. 이제는 내⋯ 아니, 마담의 의뢰판이 잘 보이겠어.',who:'녹슨 7호'},{v:'마담이 누구냐고? 직접 봐. 아주 매력적인 로봇이니까.',who:'녹슨 7호'}]}]}};
 // 녹슨 7호's voice, read out like Animal Crossing's babble but through a cracked speaker: every Hangul syllable becomes a
 // tiny sped-up "syllable" — a buzzy carrier shaped by the vowel's two formants, with a tick or hiss for the consonant
 const VOW=[[800,1300],[520,1850],[800,1300],[520,1850],[620,1050],[480,1900],[620,1050],[480,1900],[460,820],[800,1300],[520,1850],[480,1900],[460,820],[360,760],[620,1050],[480,1900],[300,2250],[360,760],[420,1450],[300,2250],[300,2250]];
@@ -7452,6 +7469,12 @@ function voiceSyl(a,t,ch,out,o={}){const c=ch.charCodeAt(0);let F=[600,1200],con
   return dur}
 function sfxVoice(ch,o){if(!soundOn||!ch)return;const a=ac();if(!a)return;voiceSyl(a,a.currentTime+.005,ch,sfxOut(a),o)}
 // footsteps on the dark deck in the 생명 유지 장치 story (a recorded clip, steps.mp3), at the effects volume (not the raid's sfxSteps)
+// a soft typewriter tick for the story's narration (the robot's lines keep its own voice)
+function sfxType(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,f=1500+Math.random()*500;tone(a,'square',f,f*.6,t,.011,.022);tone(a,'triangle',240+Math.random()*60,120,t,.018,.02)}
+// 녹슨 7호 rolling up (드르륵, 드르륵) and flicking a switch (달칵), for the 동력로 story
+function sfxRattle(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;
+  const roll=at=>{for(let i=0;i<10;i++){const f=120+Math.random()*110;tone(a,'square',f,f*.7,at+i*.042,.024,.055);if(i%3===0)tone(a,'triangle',60+Math.random()*30,40,at+i*.042,.03,.05)}};
+  roll(t+.05);roll(t+.75);tone(a,'square',1400,300,t+1.62,.018,.09);tone(a,'triangle',420,180,t+1.64,.05,.07)}
 let deckSnd=null;function sfxDeckSteps(){if(!soundOn)return;try{if(!deckSnd)deckSnd=new Audio('steps.mp3');deckSnd.volume=Math.min(1,sfxVol/100);deckSnd.currentTime=0;deckSnd.play().catch(()=>{})}catch(e){}}
 function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv';op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
   op.innerHTML=`<canvas class="stv-bg"></canvas><button class="stv-skip" type="button">건너뛰기 ▶▶</button><div class="stv-art"><canvas width="240" height="120"></canvas></div>
@@ -7546,20 +7569,21 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     A.bot=(g2,X,Y,bw)=>{if(BOT)g2.drawImage(BOT,Math.round(X),Math.round(Y),bw,bw)};
     OPA=A;return A}
   // reserve-power lights: mostly on, now and then dropping out for a beat
-  const lampOn=(t,i)=>{const a=Math.sin(t*17+i*3.1)+Math.sin(t*5.3+i*1.7)*.8;return a<-1.2?0:a<-.9?.35:1};
+  // after 동력로 is repaired the ship has real power: in its story the lamps hold steady and the corridor is brightly lit
+  const STEADY=sid==='power';const lampOn=(t,i)=>{if(STEADY)return 1;const a=Math.sin(t*17+i*3.1)+Math.sin(t*5.3+i*1.7)*.8;return a<-1.2?0:a<-.9?.35:1};
   // a corridor seen from its middle: ceiling, floor grating, private-room doors on both walls, weak lamps; vx moves the vanishing point
   // (the camera turning), out opens the far hatch to the night outside
-  function cabin(t,vx,out,lit){R(0,0,W,H,B[0]);const vy=54,bw=44,bh=34,bx=vx-bw/2,by=vy-bh/2,poly=(pts,c)=>{g.fillStyle=c;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.closePath();g.fill()};
-    poly([[0,0],[W,0],[bx+bw,by],[bx,by]],'#08101f');poly([[0,H],[W,H],[bx+bw,by+bh],[bx,by+bh]],'#0c1730');poly([[0,0],[bx,by],[bx,by+bh],[0,H]],'#0a1428');poly([[W,0],[bx+bw,by],[bx+bw,by+bh],[W,H]],'#0a1428');
-    if(out){g.drawImage(SKY||bg,0,0,W,H,bx,by,bw,bh);if(!SKY)R(bx,by,bw,bh,B[1]);R(bx-1,by-1,bw+2,1,B[4]);R(bx-1,by+bh,bw+2,1,B[4])}else{R(bx,by,bw,bh,'#0b1426');R(bx+bw/2-6,by+6,12,bh-6,'#08101e');R(bx+bw/2,by+6,1,bh-6,B[2])}
+  function cabin(t,vx,out,lit){const CC=STEADY?{bg:'#0d1a33',top:'#12234a',bot:'#183062',side:'#142a54',far:'#152a52',door:'#10203f'}:{bg:B[0],top:'#08101f',bot:'#0c1730',side:'#0a1428',far:'#0b1426',door:'#08101e'};R(0,0,W,H,CC.bg);const vy=54,bw=44,bh=34,bx=vx-bw/2,by=vy-bh/2,poly=(pts,c)=>{g.fillStyle=c;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.closePath();g.fill()};
+    poly([[0,0],[W,0],[bx+bw,by],[bx,by]],CC.top);poly([[0,H],[W,H],[bx+bw,by+bh],[bx,by+bh]],CC.bot);poly([[0,0],[bx,by],[bx,by+bh],[0,H]],CC.side);poly([[W,0],[bx+bw,by],[bx+bw,by+bh],[W,H]],CC.side);
+    if(out){g.drawImage(SKY||bg,0,0,W,H,bx,by,bw,bh);if(!SKY)R(bx,by,bw,bh,B[1]);R(bx-1,by-1,bw+2,1,B[4]);R(bx-1,by+bh,bw+2,1,B[4])}else{R(bx,by,bw,bh,CC.far);R(bx+bw/2-6,by+6,12,bh-6,CC.door);R(bx+bw/2,by+6,1,bh-6,B[2])}
     // floor grating lines toward the far end
-    for(let i=1;i<8;i++){const k=i/8,y=by+bh+(H-by-bh)*k*k;g.globalAlpha=.5;R(0,Math.round(y),W,1,B[1]);g.globalAlpha=1}
+    g.save();g.beginPath();g.moveTo(0,H);g.lineTo(W,H);g.lineTo(bx+bw,by+bh);g.lineTo(bx,by+bh);g.closePath();g.clip();for(let i=1;i<8;i++){const k=i/8,y=by+bh+(H-by-bh)*k*k;g.globalAlpha=.5;R(0,Math.round(y),W,1,B[1]);g.globalAlpha=1}g.restore();
     // doors on each wall at three depths
     const lerp=(a,b,k)=>a+(b-a)*k;[.18,.45,.7].forEach((k,i)=>{for(const side of [0,1]){const x0=side?W:0,xe=side?bx+bw:bx,xa=lerp(x0,xe,k),xb=lerp(x0,xe,k+.13),ta=lerp(0,by,k),tb=lerp(0,by,k+.13),ba=lerp(H,by+bh,k),bb=lerp(H,by+bh,k+.13),ins=.18;
-      const T=(x,y0,y1,f)=>[x,lerp(y0,y1,f)];poly([T(xa,ta,ba,ins),T(xb,tb,bb,ins),T(xb,tb,bb,1-.02),T(xa,ta,ba,1-.02)],'#122142');
-      const on=lampOn(t,i*2+side)*(lit?1:.8);if(on){g.globalAlpha=.5*on;poly([T(lerp(xa,xb,.3),ta,ba,.28),T(lerp(xa,xb,.7),tb,bb,.28),T(lerp(xa,xb,.7),tb,bb,.33),T(lerp(xa,xb,.3),ta,ba,.33)],'#7ea6f0');g.globalAlpha=1}}});
+      const T=(x,y0,y1,f)=>[x,lerp(y0,y1,f)];poly([T(xa,ta,ba,ins),T(xb,tb,bb,ins),T(xb,tb,bb,1-.02),T(xa,ta,ba,1-.02)],STEADY?'#1c3468':'#122142');
+      const on=lampOn(t,i*2+side)*(lit?1:.8);if(on&&STEADY){const lx=Math.round(lerp(xa,xb,.5)),ly=Math.round(lerp(lerp(ta,tb,.5),lerp(ba,bb,.5),.3)),lw=Math.max(1,Math.round(Math.abs(xb-xa)*.35));R(lx-(lw>>1),ly,lw,1,B[6])}else if(on){g.globalAlpha=.5*on;poly([T(lerp(xa,xb,.3),ta,ba,.28),T(lerp(xa,xb,.7),tb,bb,.28),T(lerp(xa,xb,.7),tb,bb,.33),T(lerp(xa,xb,.3),ta,ba,.33)],'#7ea6f0');g.globalAlpha=1}}});
     // ceiling lamps down the middle, with a pool of light under each
-    [.12,.42,.68].forEach((k,i)=>{const on=lampOn(t,i+7)*(lit?1:.75),x=lerp(W/2,vx,k),y=lerp(0,by,k)+3,w=lerp(40,8,k);R(x-w/2,y,w,Math.max(1,3-2*k),on?B[6]:B[2]);if(on){g.globalAlpha=.12*on;g.fillStyle=B[5];g.beginPath();g.ellipse(x,lerp(H,by+bh,k)-4,w*1.2,lerp(18,3,k),0,0,7);g.fill();g.globalAlpha=1}})}
+    [.12,.42,.68].forEach((k,i)=>{const on=lampOn(t,i+7)*(lit?1:.75),x=lerp(W/2,vx,k),y=lerp(0,by,k)+3,w=lerp(40,8,k);R(x-w/2,y,w,Math.max(1,3-2*k),on?B[6]:B[2]);if(on&&STEADY){const cy=Math.round(lerp(H,by+bh,k)-4),rx=w*1.2,ry=lerp(18,3,k);for(let yy=Math.floor(cy-ry);yy<=cy+ry;yy++)for(let xx=Math.floor(x-rx);xx<=x+rx;xx++){const d=((xx-x)/rx)**2+((yy-cy)/ry)**2;if(d<1&&(d<.35||((xx+yy)&1)===0))P(xx,yy,'#21407c')}}else if(on){g.globalAlpha=.12*on;g.fillStyle=B[5];g.beginPath();g.ellipse(x,lerp(H,by+bh,k)-4,w*1.2,lerp(18,3,k),0,0,7);g.fill();g.globalAlpha=1}})}
   // a tiny 3×5 pixel font for the console labels, so they stay crisp when the picture is scaled up
   const F35={A:'010101111101101',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',Y:'101101010010010','-':'000000111000000','·':'000000010000000',' ':'000000000000000'};
   const ptext=(str,X,Y,col)=>{let cx=X;for(const ch of str){const f=F35[ch]||F35[' '];for(let i=0;i<15;i++)if(f[i]==='1')R(cx+(i%3),Y+((i/3)|0),1,1,col);cx+=4}};
@@ -7601,7 +7625,49 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
       ptext(ok?'ONLINE':'BOOTING',74,58,ok?'#5cf08a':'#8a6a2a');ptext('AIR',52,78,B[5]);R(70,78,110,5,'#0e1a26');const o2=ok?Math.min(1,(t-3.4)/2.2):Math.max(0,Math.min(.15,(t-1.6)*.08));R(70,78,Math.round(110*o2),5,ok?'#5cf08a':'#a03040');g.globalAlpha=1},
     // the cabin deck in the dark: a corridor of private rooms, weak lights flickering on reserve power
     l_cabin:t=>{if(t<3){R(0,0,W,H,'#000');return}cabin(t,120,false);const f=Math.min(1,(t-3)/1.2);if(f<1){g.globalAlpha=1-f;R(0,0,W,H,'#000');g.globalAlpha=1}},
-    l_out:t=>{const k=Math.min(1,t/2.8),e=.5-.5*Math.cos(k*Math.PI);cabin(t,Math.round(120+e*70),true)},
+         // 동력로: a dark cabin; a cable reaches its socket, sparks, the lamps stutter and then hold
+     p_wire:t=>{cabin(t,120,false,true);const on=t<1.4?0:t<3.2?((((t*11)|0)%3===0)?0:(((t*7)|0)%2?.55:1)):1;g.globalAlpha=1-on*.88;R(0,0,W,H,'#01030a');g.globalAlpha=1;
+       const sx=180,sy=94,k=Math.min(1,t/1.2),ex=100+(sx+4-100)*k,ey=H+(sy+4-H)*k;R(sx,sy,10,9,B[2]);R(sx,sy,10,1,B[4]);R(sx+3,sy+3,4,3,'#000');
+       for(let i=0;i<=40;i++){const q=i/40,x=Math.round(100+(ex-100)*q),y=Math.round(H+(ey-H)*q+Math.sin(q*Math.PI)*6*(1-k*.6));P(x,y,B[4]);P(x,y+1,B[1])}
+       if(t>1.1&&t<1.8)for(let i=0;i<7;i++)P(sx+4+((Math.random()*12-6)|0),sy+4+((Math.random()*8-4)|0),i%2?'#ffffff':B[7])},
+     // the power plant running: a pulsing crystal core, and culture pods where plants climb
+     p_reactor:t=>{R(0,0,W,H,B[1]);for(let y=0;y<H-18;y+=8)R(0,y,W,1,B[2]);R(0,H-18,W,18,B[2]);R(0,H-18,W,1,B[4]);
+       const cx=62,pul=.5+.5*Math.sin(t*4);g.globalAlpha=.16+pul*.14;g.fillStyle=B[6];g.beginPath();g.ellipse(cx,H/2,44,50,0,0,7);g.fill();g.globalAlpha=1;
+       R(cx-18,12,36,H-30,B[0]);R(cx-16,14,32,H-34,B[3]);for(let y=18;y<H-22;y++){const w=10+Math.sin(y*.3+t*6)*2;R(cx-w/2,y,w,1,pul>.5?B[6]:B[5])}R(cx-2,16,4,H-36,B[7]);
+       for(let i=0;i<3;i++){const y=24+i*26,ph=(t*1.6+i*.4)%1;R(cx-21,y,42,2,B[4]);R(cx-21+Math.round(ph*36),y,6,2,B[7])}
+       [130,168,206].forEach((x,i)=>{const top=24,bot=H-20;R(x-13,top-4,26,4,B[4]);R(x-13,bot,26,4,B[4]);R(x-12,top,24,bot-top,B[2]);g.globalAlpha=.22;R(x-12,top,24,bot-top,B[5]);g.globalAlpha=1;R(x-11,top,1,bot-top,B[6]);
+         const gr=Math.min(1,Math.max(0,(t-i*.5)/4)),ph=Math.round(6+gr*(bot-top-14));for(let y=0;y<ph;y++){const yy=bot-2-y,sw=Math.round(Math.sin(y*.35+t*2+i)*2);P(x+sw,yy,'#5cf08a');if(y%6===3){R(x+sw-4,yy,4,2,'#3fc06a');R(x+sw+1,yy-1,4,2,'#7dffa8')}}
+         for(let q=0;q<3;q++){const b=(t*.5+q/3+i*.2)%1;P(x-6+q*6,Math.round(bot-2-b*(bot-top-4)),B[7])}})},
+     // 녹슨 잔해길: a path winding through rusted scrap; something familiar glints on it
+     p_junk:t=>{sky(t);const hz=62,pan=0;R(0,hz,W,H-hz,B[1]);for(let y=hz;y<H;y++)for(let x=0;x<W;x++)if(((x*13+y*7)%11)===0)P(x,y,B[2]);
+       for(let y=hz;y<H;y++){const k=(y-hz)/(H-hz),cx=W*.5+pan+Math.sin(k*3)*30,hw=5+k*30;R(cx-hw,y,hw*2,1,'#1d3670');if(y%4===0)P(cx-hw+((y*7)%(hw*2|1)),y,B[3])}
+       for(let i=0;i<36;i++){P(Math.round(150+pan+i*.45),hz-i,B[4]);P(Math.round(151+pan+i*.45),hz-i,B[3])}R(161+pan,hz-38,9,2,B[4]);R(158+pan,hz-30,6,1,B[3]);
+       [[14,72,28,11],[54,66,18,7],[106,64,14,5],[168,69,30,12],[206,75,24,9],[22,96,36,15],[176,100,44,17]].forEach(([x,y,w,h],i)=>{x+=pan;R(x,y-h,w,h,B[2]);R(x,y-h,w,1,B[4]);R(x,y-h+1,1,h-1,B[3]);R(x+w-2,y-h,2,h,B[1]);R(x,y-1,w,1,B[0]);for(let q=3;q<w-2;q+=5)P(x+q,y-h+2+(q%3),B[3]);if(i%3===0){R(x+3,y-h+3,3,2,B[0]);P(x+4,y-h+3,B[5])}});
+       const gx=126+pan,gy=99,tw=(Math.sin(t*4)+1)/2;R(gx-3,gy-2,7,4,B[4]);R(gx-3,gy-2,7,1,B[6]);R(gx+3,gy-1,1,3,B[2]);if(tw>.45){P(gx,gy-6,B[7]);P(gx-1,gy-5,B[6]);P(gx+1,gy-5,B[6]);P(gx,gy-4,B[7]);P(gx-2,gy-5,B[4]);P(gx+2,gy-5,B[4])}},
+     // over the rusted debris path: something vast slides across the sky and its shadow passes over the ground
+     p_shadow:t=>{ART.p_junk(t);const k=Math.min(1,t/11),sx=W+150-k*(W+300),sh=(x,y,c,a)=>{g.globalAlpha=a;g.fillStyle=c;g.beginPath();g.ellipse(x,y,86,18,0,0,7);g.fill();g.beginPath();g.moveTo(x-70,y);g.lineTo(x-140,y+26);g.lineTo(x-24,y+8);g.fill();g.beginPath();g.moveTo(x+70,y);g.lineTo(x+140,y+26);g.lineTo(x+24,y+8);g.fill()};
+       sh(sx,24,'#05040c',.78);g.globalAlpha=.38;g.fillStyle='#05040c';g.beginPath();g.ellipse(sx-30,H-14,120,12,0,0,7);g.fill();g.globalAlpha=.18;R(0,0,W,H,'#05040c');g.globalAlpha=1},
+     // outside the ship at night: 마담 로자's board, its string of bulbs lighting one by one
+     p_board:t=>{sky(t);R(0,H-22,W,22,B[1]);R(0,H-22,W,1,B[3]);for(let x=0;x<W;x+=3)if((x*7)%5===0)P(x,H-19+((x*3)%9),B[2]);
+       R(0,8,34,H-30,B[2]);R(34,8,2,H-30,B[4]);for(let y=14;y<H-24;y+=10)R(4,y,26,1,B[1]);
+       const bx=118,by=34,bw=94,bh=52,lit=t>1.7+10*.12;const dith=(cx,cy,r,col)=>{for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++){const d=x*x+y*y;if(d<=r*r&&d>2&&((cx+x+cy+y)&1)===0)P(cx+x,cy+y,col)}};
+       // posts, frame and planks, all in the story's blues
+       R(bx+8,by+bh,4,H-22-by-bh,B[3]);R(bx+bw-12,by+bh,4,H-22-by-bh,B[3]);R(bx+8,by+bh,1,H-22-by-bh,B[4]);
+       R(bx-2,by-2,bw+4,bh+4,B[0]);R(bx-1,by-1,bw+2,1,lit?B[4]:B[2]);R(bx,by,bw,bh,lit?B[2]:B[1]);for(let y=by+8;y<by+bh;y+=9)R(bx,y,bw,1,lit?B[1]:B[0]);
+       // notes pinned on the board
+       [[6,8,20,14],[30,10,18,18],[52,6,22,12],[76,12,14,16],[10,28,24,16],[40,32,20,14],[66,30,22,16]].forEach(([x,y,w,h],i)=>{const pc=lit?(i%2?B[6]:B[5]):B[3];R(bx+x,by+y,w,h,pc);R(bx+x,by+y+h,w,1,B[0]);
+         if(lit)for(let r=4;r<h-2;r+=3)R(bx+x+3,by+y+r,w-6,1,i%2?B[4]:B[3]);P(bx+x+(w>>1),by+y+1,lit?'#ffd27a':B[2])});
+       // the string of bulbs, lighting one by one; their light is a dotted halo, not a blur
+       const n=11;for(let x=0;x<=bw+12;x++)P(bx-6+x,by-8+Math.round(Math.sin(x/(bw+12)*Math.PI)*4),B[3]);
+       for(let i=0;i<n;i++){const x=Math.round(bx-6+i*(bw+12)/(n-1)),y=by-8+Math.round(Math.sin(i/(n-1)*Math.PI)*4)+1,on=t>1.7+i*.12&&(t>3.4||((t*13+i)|0)%4);
+         if(on)dith(x,y+1,4,B[5]);R(x-1,y,3,3,on?'#ffd27a':B[2]);if(on){P(x,y,'#fff6d0');P(x+1,y+1,'#ffe6a0')}}
+       // 녹슨 7호 rolls in (two jolting rolls), stops beside the board and reaches for the switch
+       {const k1=Math.min(1,t/.55),k2=Math.min(1,Math.max(0,(t-.7)/.55)),mv=(t<.55||(t>.7&&t<1.25)),x=Math.round(-44+k1*60+k2*60),bw2=40,gy=H-19,jy=mv&&((t*24)|0)%2?1:0;
+         g.fillStyle='rgba(3,6,15,.6)';g.fillRect(x+6,gy-2,bw2-12,3);if(BOT)g.drawImage(BOT,x,gy-bw2-jy,bw2,bw2);if(mv&&((t*16)|0)%3===0){P(x+4,gy-1,B[5]);P(x+bw2-6,gy,B[4])}
+         if(t>1.55&&t<1.9){P(x+bw2-2,gy-bw2*.55|0,B[7]);P(x+bw2-1,gy-bw2*.55-1|0,B[6])}}
+       // the board's light on the ground in front
+       if(lit)for(let y=H-21;y<H-4;y++)for(let x=bx-10;x<bx+bw+10;x++){const d=((x-bx-bw/2)/(bw/2+10))**2+((y-H+12)/9)**2;if(d<1&&((x+y)&1)===0&&(d<.5||(x&2)))P(x,y,B[3])}},
+     l_out:t=>{const k=Math.min(1,t/2.8),e=.5-.5*Math.cos(k*Math.PI);cabin(t,Math.round(120+e*70),true)},
     l_bot:t=>{cabin(t,120,true,true);const bw=56,rx=Math.round(W*.5-bw/2),gy=Math.round(H*.86);g.fillStyle='rgba(3,6,15,.6)';g.fillRect(rx+6,gy-2,bw-12,4);if(BOT)g.drawImage(BOT,rx,gy-bw+Math.round(Math.sin(t*3)*1),bw,bw);
       if(Math.floor(t*1.3)%4===0){P(rx+s16(bw,5),gy-bw+s16(bw,6),B[7]);P(rx+s16(bw,10),gy-bw+s16(bw,6),B[7])}},
     // a ceiling lamp that can barely keep going
@@ -7624,9 +7690,9 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
   function cur(){const L=S.scenes[si].lines[li];return L.v?`“${L.v}”`:L.t}
-  const at=performance.now();let st0=at,artNow='';
-  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
-    const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++)if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;q('.stv-next').classList.add('on')}}
+  const at=performance.now();let st0=at,artNow='',fadeC=null,fadeAt=0;
+  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
+    const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++){if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}else if(!L0.v&&txt[i]!==' '&&now-lastBeep>55){sfxType();lastBeep=now}}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;q('.stv-next').classList.add('on')}}
     raf=requestAnimationFrame(loop)}
   function next(){if(!full){full=true;q('.stv-txt').textContent=cur();q('.stv-next').classList.add('on');return}const sc=S.scenes[si];if(li<sc.lines.length-1){li++}else if(si<S.scenes.length-1){si++;li=0;st0=performance.now();const a=q('.stv-art');a.classList.remove('in');void a.offsetWidth;a.classList.add('in')}else{finish();return}t0=performance.now();setLine()}
   function finish(){if(over)return;over=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done()}
