@@ -7242,7 +7242,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794834423';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794835231';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8949,9 +8949,12 @@ document.addEventListener('click',e=>{if(e.target.closest('#bellBtn')){e.stopPro
 addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener('scroll',()=>{if(!notiPop.hidden)notiPlace()},{passive:true});
 function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'선원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'선원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'선원'} 님이 PAD에서 나를 언급했습니다.`)})}
 // PAD keeps every post: the feed shows 20 at a time behind a 더보기 button, and when the loaded posts run out it asks the server for 150 more
-let padShow=20,padLoad=30,padUnsub=null,padMore=false;
-let padLim=0,padNeed=5;const padTop=()=>POSTS.filter(p=>!(p.rt?(p.rto||{}):p).re).length;let socShutAt=0;const PAD_LINGER=180e3;const padWantLim=()=>padLoad;setInterval(()=>{try{tabSubsSync()}catch(e){}},30e3);function padSync(){if(!padUnsub)return;if(padWantLim()!==padLim)padListen();else if(socOpen&&padMore&&padTop()<padNeed&&padLoad<600){padLoad+=30;padListen()}}
-function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();padUnsub=db.collection('posts').orderBy('at','desc').limit(padLim).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLim&&padLim>1;if(socOpen&&padMore&&padLim===padLoad&&padTop()<padNeed&&padLoad<600){padLoad+=30;padListen()}notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
+/* how many PAD records to keep connected: it grows (to 90 at most on its own) until the timeline has 5 posts that aren't replies,
+   and the size it needed is remembered on this device, so the next visit reads that once instead of growing 30 → 60 → 90 again */
+const PAD_AUTO=90,PAD_LS='nebula-pad-load';let padShow=20,padLoad=(()=>{try{return Math.max(30,Math.min(PAD_AUTO,+localStorage.getItem(PAD_LS)||30))}catch(e){return 30}})(),padUnsub=null,padMore=false;
+const padGrow=()=>{padLoad+=30;if(padLoad<=PAD_AUTO)try{localStorage.setItem(PAD_LS,String(padLoad))}catch(e){}};
+let padLim=0,padNeed=5;const padTop=()=>POSTS.filter(p=>!(p.rt?(p.rto||{}):p).re).length;let socShutAt=0;const PAD_LINGER=180e3;const padWantLim=()=>padLoad;setInterval(()=>{try{tabSubsSync()}catch(e){}},30e3);function padSync(){if(!padUnsub)return;if(padWantLim()!==padLim)padListen();else if(socOpen&&padMore&&padTop()<padNeed&&padLoad<PAD_AUTO){padGrow();padListen()}}
+function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();padUnsub=db.collection('posts').orderBy('at','desc').limit(padLim).onSnapshot(sn=>{POSTS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));padMore=sn.docs.length>=padLim&&padLim>1;if(socOpen&&padMore&&padLim===padLoad&&padTop()<padNeed&&padLoad<PAD_AUTO){padGrow();padListen()}notePosts();renderNav();if(socOpen)renderPanel()},()=>{})}
 function socSubscribe(){
   padListen();setTimeout(nboxBackfill,4000);
   db.collection('guest').where('to','==',uid).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
