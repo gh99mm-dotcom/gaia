@@ -2053,7 +2053,9 @@ const RTDB_URL='https://gaia-d0c35-default-rtdb.asia-southeast1.firebasedatabase
 const rtdb=getDatabase(app,RTDB_URL);window.__fbBridge=1;
 {const subs={};let seq=0;window.__live={send:(tp,d)=>{if(!ME)return;dset(dref(rtdb,'live/'+tp+'/'+ME.uid),{d,s:++seq,t:Date.now()}).catch(()=>{})},
   on:(tp,f)=>{if(subs[tp]||!ME)return;subs[tp]=1;const at=Date.now(),r=dref(rtdb,'live/'+tp),fire=sn=>{const v=sn.val();if(!v||!ME||sn.key===ME.uid)return;try{f(v.d,sn.key)}catch(e){console.error(e)}};
-    onChildAdded(r,sn=>{const v=sn.val();if(v&&+v.t>at-3000)fire(sn)});onChildChanged(r,fire)}}}
+    onChildAdded(r,sn=>{const v=sn.val();if(v&&+v.t>at-3000)fire(sn)});onChildChanged(r,fire)},
+  // every entry, old ones and my own included (for 'who posted last' stamps)
+  all:(tp,f)=>{if(subs['*'+tp]||!ME)return;subs['*'+tp]=1;const r=dref(rtdb,'live/'+tp),g=sn=>{const v=sn.val();if(!v)return;try{f(v.d,sn.key)}catch(e){console.error(e)}};onChildAdded(r,g);onChildChanged(r,g)}}}
 if(EMU){connectDatabaseEmulator(rtdb,'127.0.0.1',9000);connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});connectFirestoreEmulator(fs,'127.0.0.1',8080);if(st)connectStorageEmulator(st,'127.0.0.1',9199)}
 const BUCKET=firebaseConfig.storageBucket;
 const stURL=id=>EMU?`http://127.0.0.1:9199/v0/b/${BUCKET}/o/${encodeURIComponent('pad/'+id)}?alt=media`:`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent('pad/'+id)}?alt=media`;
@@ -4654,7 +4656,7 @@ function raidAnimRun(){if(RAID_POP){const f=RAID_POP;RAID_POP=null;requestAnimat
       if(s&&s.animate)s.animate([{transform:'none',filter:'none'},{transform:`translateX(${dir*9}px)`,filter:'brightness(2.6) saturate(0)'},{transform:`translateX(${-dir*5}px)`,filter:'none'},{transform:`translateX(${dir*2}px)`},{transform:'none'}],{duration:360});
       const n=document.createElement('span');n.className='rbdmg';n.textContent='-'+d;(s||u).appendChild(n);setTimeout(()=>n.remove(),1000)}),460)}))}
 function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='battle'&&b.cur&&b.cur.k==='p'&&b.cur.id===uid,curNick=b&&b.cur?(b.cur.k==='p'?(r.m[b.cur.id]||{}).nick:b.mons[b.cur.id].n):'';
-  const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row rmhead" style="justify-content:space-between;gap:6px"><span class="rmname">${headImg(2,whoP(u))}<b>${esc(m.nick)}${u===uid?' (나)':''}</b></span><span class="rmjr"><span class="rmjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</span><span class="hint">Lv.${m.lvl}</span></span></div>${(()=>{const st=[gone?'이탈':m.hp<=0?'쓰러짐':'',b&&b.def[u]?'방어':'',b&&b.taunt&&b.taunt.u===u?'방패':'',b&&b.mons&&b.mons.some(x=>x.lock===u&&x.hp>0)?'🎯 표적':'',m.frz?'❄ 빙결':'',m.psn?`☠ 중독 ${m.psn.t}턴`:'',b&&b.flee[u]?'도망 찬성':''].filter(Boolean);return st.length?`<div class="row" style="justify-content:flex-end"><span class="hint">${st.join(' · ')}</span></div>`:''})()}${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 민첩 ${m.agi}</span></div>`}).join('');
+  const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row rmhead" style="justify-content:space-between;gap:6px"><span class="rmname">${headImg(2,whoP(u))}<b>${esc(m.nick)}${u===uid?' (나)':''}</b></span><span class="rmjr"><span class="rmjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</span><span class="hint">Lv.${m.lvl}</span></span></div>${(()=>{const st=[gone?'이탈':m.hp<=0?'쓰러짐':'',b&&b.def[u]?'방어':'',b&&b.taunt&&b.taunt.u===u?'방패':'',b&&b.mons&&b.mons.some(x=>x.lock===u&&x.hp>0)?'🎯 표적':'',m.frz?'❄ 빙결':'',m.psn?`☠ 중독 ${m.psn.t}턴`:'',b&&b.flee[u]?'도망 찬성':''].filter(Boolean);return st.length?`<div class="row" style="justify-content:flex-end"><span class="hint">${st.join(' · ')}</span></div>`:''})()}${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 속도 ${m.agi}</span></div>`}).join('');
   let body='';
   if(r.state==='lobby')body=`<div class="card"><b>${esc(z.n)} 원정 대기실</b><p class="hint">파티장이 출발하면 원정이 시작됩니다. 출발한 뒤에는 새로 합류할 수 없습니다. (${r.ids.length}/${RAID_MAX}명)</p><div class="row" style="gap:6px">${r.host===uid?`<button class="btn" data-act="raidgo">출발</button>`:'<span class="hint">파티장을 기다리는 중…</span>'}<button class="btn ghost sm" data-act="raidleave">${r.host===uid?'파티 해산':'나가기'}</button></div></div>`;
   else if(r.phase==='battle'){
@@ -4782,7 +4784,7 @@ const BOSS_POLL=60e3;let bossUn=null,bossPollT=0;
 function bossOn(sn){BOSS=sn.exists?sn.data():null;try{bossPhNote()}catch(e){}bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint();bossSubSync()}
 function bossSubSync(){const w=mode==='online'&&!!db&&(tab==='adv'||!bossAlive(BOSS));if(w&&!bossUn)bossUn=bossRef().onSnapshot(bossOn,()=>{});else if(!w&&bossUn){try{bossUn()}catch(e){}bossUn=null}}
 function bossSubscribe(){
-  endSub();memSub();affSub();bondSub();
+  try{stampSubscribe()}catch(e){}endSub();memSub();affSub();bondSub();
   bossSubSync();if(!bossPollT)document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode==='online'&&db&&!bossUn)bossRef().get().then(bossOn,()=>{})});if(!bossPollT)bossPollT=setInterval(()=>{if(mode==='online'&&db&&!bossUn&&!document.hidden)bossRef().get().then(bossOn,()=>{})},BOSS_POLL);
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
@@ -4972,7 +4974,7 @@ function loungeHTML(){const h=loungeHere();return`<div class="card bosschat loun
   <span class="hint">대화 탭을 연 선원끼리 이야기합니다. 최근 ${LOUNGE_MAX}개만 남습니다.</span></div>`}
 function loungePaint(){const l=$('#lgLog');if(!l)return;const end=l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML=loungeLogHTML();if(end)l.scrollTop=l.scrollHeight;const h=loungeHere(),hc=$('#lgHere'),hw=$('#lgWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 function loungeSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t||mode!=='online')return;const m={uid,n:P.nick,t,at:Date.now()};
-  return bossTx(loungeRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-LOUNGE_MAX)})).catch(()=>toast('메시지를 보내지 못했습니다.'))}
+  return bossTx(loungeRef(),cur=>({msgs:[...((cur&&cur.msgs)||[]),m].slice(-LOUNGE_MAX)})).then(()=>stampSend('c')).catch(()=>toast('메시지를 보내지 못했습니다.'))}
 document.addEventListener('submit',e=>{if(e.target.id!=='lgForm')return;e.preventDefault();const i=$('#lgIn');const v=i.value;if(!v.trim())return;i.value='';loungeDraft='';loungeSay(v)});
 document.addEventListener('input',e=>{if(e.target.id==='lgIn')loungeDraft=e.target.value});
 function bossSay(txt){const t=String(txt||'').trim().slice(0,120);if(!t)return;const m={uid,n:P.nick,t,at:Date.now()};
@@ -7237,7 +7239,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794830850';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794832194';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8484,16 +8486,29 @@ const shortAgo=t=>{const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금'
 const socSeenAt=()=>Math.max(socSeen,+(P&&P.socSeen)||0),dmReadAt=peer=>Math.max(dmRead[peer]||0,+((P&&P.dmRead)||{})[peer]||0);
 function dmUnread(peer){return DMS.filter(d=>d.to===uid&&d.from===peer&&d.at>dmReadAt(peer)).length}
 function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>dmReadAt(d.from)).length}
-function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>p.uid!==uid&&p.at>seen&&!(p.rt?(p.rto||{}):p).re).length}
+// a 'new post' is someone else's own post: replies and reposts don't count
+const padIsPost=p=>!!p&&p.uid!==uid&&!p.rt&&!p.re;
+function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>padIsPost(p)&&p.at>seen).length}
 // first load on a device: whatever this browser had already read is copied onto the character
 function seenSync(){if(!P||!P.nick)return;let ch=false;if(socSeen>(+P.socSeen||0)){P.socSeen=socSeen;ch=true}const r=Object.assign({},P.dmRead);for(const k in dmRead)if((dmRead[k]||0)>(+r[k]||0)){r[k]=dmRead[k];ch=true}if(ch){P.dmRead=r;save()}}
 // a red dot on the PAD / 만남 tabs while there are posts by others I haven't opened that tab since
 const MEMO_LS='nebula-memo-seen';let memoSeen=0;try{memoSeen=+localStorage.getItem(MEMO_LS)||0}catch(e){}
 const memoSeenAt=()=>Math.max(memoSeen,+(P&&P.memoSeen)||0);
-const socNew=k=>mode==='online'&&!!P&&(k==='pad'?POSTS.some(p=>p.uid!==uid&&p.at>socSeenAt()&&!(p.rt?(p.rto||{}):p).re):MEMOS.some(m=>m.uid!==uid&&(+m.at||0)>memoSeenAt()));
+/* 만남 and 대화 dots without reading the boards: whoever posts leaves the time of their latest memo / chat line on the realtime channel
+   (Realtime Database, billed by size rather than per read); everyone keeps those stamps and compares them with what they last saw */
+const STAMP={};let stampSubbed=false,myStamp={m:0,c:0};
+function stampSubscribe(){if(stampSubbed||mode!=='online')return;const L=liveCh();if(!L)return;stampSubbed=true;
+  const f=(d,by)=>{if(!by||!d)return;STAMP[by]={m:+d.m||0,c:+d.c||0};if(by===uid)myStamp={m:Math.max(myStamp.m,+d.m||0),c:Math.max(myStamp.c,+d.c||0)};try{if(socOpen&&socTab==='chat')markChat();if(socOpen&&socTab==='memo')markMemo();socDots()}catch(e){}};
+  if(L.all)L.all('stamp',f);else L.on('stamp',f)}
+function stampSend(k){const L=liveCh();if(!L)return;myStamp[k]=Date.now();L.send('stamp',{m:myStamp.m,c:myStamp.c})}
+const stampMax=k=>{let t=0;for(const u in STAMP)if(u!==uid)t=Math.max(t,STAMP[u][k]||0);return t};
+const CHAT_LS='nebula-chat-seen';let chatSeen=0;try{chatSeen=+localStorage.getItem(CHAT_LS)||0}catch(e){}
+const chatSeenAt=()=>Math.max(chatSeen,+(P&&P.chatSeen)||0);
+function markChat(){const m=Math.max(chatSeenAt(),stampMax('c'),...LCHAT.map(x=>+x.at||0));if(m>chatSeen){chatSeen=m;try{localStorage.setItem(CHAT_LS,String(m))}catch(e){}}if(P&&m>(+P.chatSeen||0)+60e3){P.chatSeen=m;save()}}
+const socNew=k=>mode==='online'&&!!P&&(k==='pad'?POSTS.some(p=>padIsPost(p)&&p.at>socSeenAt()):k==='chat'?stampMax('c')>chatSeenAt():(MEMOS.some(m=>m.uid!==uid&&(+m.at||0)>memoSeenAt())||stampMax('m')>memoSeenAt()));
 const socDot=k=>socNew(k)?'<i class="ndot" aria-label="새 글"></i>':'';
-function socDots(){['pad','memo'].forEach(k=>{const b=document.querySelector(`[data-act="sotab"][data-k="${k}"]`);if(!b)return;const d=b.querySelector('.ndot'),on=socNew(k)&&!(socOpen&&socTab===k);if(on&&!d)b.insertAdjacentHTML('beforeend',socDot(k));else if(!on&&d)d.remove()})}
-function markMemo(){const cur=memoSeenAt(),m=Math.max(cur,...MEMOS.map(x=>+x.at||0));if(m>memoSeen){memoSeen=m;try{localStorage.setItem(MEMO_LS,String(m))}catch(e){}}if(P&&m>(+P.memoSeen||0)){P.memoSeen=m;save()}}
+function socDots(){['pad','memo','chat'].forEach(k=>{const b=document.querySelector(`[data-act="sotab"][data-k="${k}"]`);if(!b)return;const d=b.querySelector('.ndot'),on=socNew(k)&&!(socOpen&&socTab===k);if(on&&!d)b.insertAdjacentHTML('beforeend',socDot(k));else if(!on&&d)d.remove()})}
+function markMemo(){const cur=memoSeenAt(),m=Math.max(cur,stampMax('m'),...MEMOS.map(x=>+x.at||0));if(m>memoSeen){memoSeen=m;try{localStorage.setItem(MEMO_LS,String(m))}catch(e){}}if(P&&m>(+P.memoSeen||0)){P.memoSeen=m;save()}}
 function markSoc(){const cur=socSeenAt(),m=Math.max(cur,...POSTS.map(p=>p.at||0));if(m>cur||m>socSeen||m>(+P.socSeen||0)){socSeen=m;try{localStorage.setItem(SOC_LS,String(m))}catch(e){}if(m>(+P.socSeen||0)){P.socSeen=m;save()}queueMicrotask(renderNav)}}
 function markDm(peer){const last=Math.max(0,...DMS.filter(d=>d.from===peer&&d.to===uid).map(d=>d.at||0));if(last>dmReadAt(peer)||last>(+((P.dmRead||{})[peer])||0)){dmRead[peer]=Math.max(dmRead[peer]||0,last);try{localStorage.setItem(DM_LS,JSON.stringify(dmRead))}catch(e){}if(last>(+((P.dmRead||{})[peer])||0)){P.dmRead=Object.assign({},P.dmRead,{[peer]:last});save()}queueMicrotask(renderNav)}}
 function socWho(id,nick,sc=2){return`<span class="phead">${headImg(sc,whoP(id))}<span class="who" style="color:${colorOf(id)}">${esc(nick||'선원')}</span>${id===uid?'<span class="hint">(나)</span>':''}</span>`}
@@ -8614,7 +8629,7 @@ function memoPager(n){const cur=memoPage,lo=Math.max(0,Math.min(cur-2,n-5)),hi=M
   for(let i=lo;i<hi;i++)h+=`<button class="mpg${i===cur?' on':''}" data-act="memopage" data-k="${i}" aria-current="${i===cur?'page':'false'}">${i+1}</button>`;
   return`<nav class="memopager" aria-label="쪽 이동">${h}<button class="mpg" data-act="memopage" data-k="${cur+1}" ${cur<n-1?'':'disabled'} aria-label="다음 쪽">다음 ›</button></nav>`}
 async function memoPost(){if(mode!=='online'||memoBusy)return;const t=String(($('#memoIn')||{}).value??memoDraft).trim().slice(0,MEMO_MAX);if(!t){toast('메모 내용을 적어 주십시오.');return}
-  const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});memoDraft='';memoPage=0;stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
+  const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});stampSend('m');memoDraft='';memoPage=0;stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
 function memoCmBox(mid,pid,reply){return`<div class="memocmin${reply?' rep':''}"><span class="mav">${headImg(2,P)}</span><textarea id="memoCmIn" class="sel" rows="2" maxlength="${MEMO_CM}" data-k="${esc(mid)}" data-p="${esc(pid)}" placeholder="${reply?'답글':'댓글'}을 남겨 보세요 (${MEMO_CM}자까지 · Enter로 등록, Shift+Enter 줄바꿈)" aria-label="${reply?'답글':'댓글'}">${esc(memoCm[mid+'|'+pid]||'')}</textarea><button class="btn sm" data-act="memocmpost" data-k="${esc(mid)}" data-p="${esc(pid)}">등록</button>${reply?`<button class="mlink" data-act="memoreply" data-k="">취소</button>`:''}</div>`}
 function memoEditBox(mid,cid,text,max){return`<div class="memoedit"><textarea id="memoEdIn" class="sel memota" maxlength="${max}" data-k="${esc(mid)}" data-c="${esc(cid)}" aria-label="수정할 내용">${esc(memoEdTx&&memoEdTx.k===mid+'|'+cid?memoEdTx.v:text)}</textarea><div class="row" style="justify-content:flex-end;gap:5px"><button class="mlink" data-act="memoedit" data-k="">취소</button><button class="btn sm gold" data-act="memosave" data-k="${esc(mid)}" data-c="${esc(cid)}">저장</button></div></div>`}
 // cafe-style thread: top-level comments, and every answer below its top-level comment one step in, tagged with whom it answers
@@ -8867,9 +8882,9 @@ function profHTML(){const id=profId,p=whoP(id),me=id===uid;if(!id||!p||(!me&&!PL
 function renderSocial(){
   if(mode!=='online')return head('social')+`<div class="note">교류 탭은 공유된 게임 페이지에서 다른 선원과 함께 접속해 있을 때 열립니다. 지금은 한마디만 미리 적어 둘 수 있습니다.</div>${bioCard()}`;
   if((socTab==='crew'&&!profId)||socTab==='dm'||socTab==='rank')socTab='pad';
-  if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
+  if(socTab==='pad')markSoc();if(socTab==='memo')markMemo();if(socTab==='chat')markChat();if(socTab==='dm'&&dmPeer)markDm(dmPeer);const dn=dmUnreadAll();
   if(preLock()&&socTab!=='rel')socTab='pad';
-  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],...(preLock()?[['rel','관계도']]:[['chat','대화'],['memo','만남'+socDot('memo')],['rel','관계도']])].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
+  const sub=`<div class="dtabs" role="tablist">${[['pad','PAD'+socDot('pad')],...(preLock()?[['rel','관계도']]:[['chat','대화'+socDot('chat')],['memo','만남'+socDot('memo')],['rel','관계도']])].map(([k,n])=>`<button role="tab" aria-selected="${socTab===k}" data-act="sotab" data-k="${k}">${n}</button>`).join('')}</div>`;
   return head('social')+sub+(socTab==='crew'?socCrew():socTab==='rel'?socRel():socTab==='chat'?loungeHTML():socTab==='dm'?socDm():socTab==='memo'?socMemo():padPhone(socPad()))}
 // PAD lives inside a little handset: black in 우주모드 ON, white when it is OFF
 // PAD: whichever box is actually scrolling (the phone screen, the 교류 drawer, or the page) goes back to the top
