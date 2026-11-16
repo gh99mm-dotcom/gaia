@@ -4654,7 +4654,7 @@ function raidAnimRun(){if(RAID_POP){const f=RAID_POP;RAID_POP=null;requestAnimat
       if(s&&s.animate)s.animate([{transform:'none',filter:'none'},{transform:`translateX(${dir*9}px)`,filter:'brightness(2.6) saturate(0)'},{transform:`translateX(${-dir*5}px)`,filter:'none'},{transform:`translateX(${dir*2}px)`},{transform:'none'}],{duration:360});
       const n=document.createElement('span');n.className='rbdmg';n.textContent='-'+d;(s||u).appendChild(n);setTimeout(()=>n.remove(),1000)}),460)}))}
 function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='battle'&&b.cur&&b.cur.k==='p'&&b.cur.id===uid,curNick=b&&b.cur?(b.cur.k==='p'?(r.m[b.cur.id]||{}).nick:b.mons[b.cur.id].n):'';
-  const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row rmhead" style="justify-content:space-between;gap:6px"><span class="rmname">${headImg(2,whoP(u))}<b>${esc(m.nick)}${u===uid?' (나)':''}</b></span><span class="rmjr"><span class="rmjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</span><span class="hint">Lv.${m.lvl}</span></span></div>${(()=>{const st=[gone?'이탈':m.hp<=0?'쓰러짐':'',b&&b.def[u]?'방어':'',b&&b.taunt&&b.taunt.u===u?'방패':'',b&&b.mons&&b.mons.some(x=>x.lock===u&&x.hp>0)?'🎯 표적':'',m.frz?'❄ 빙결':'',m.psn?`☠ 중독 ${m.psn.t}턴`:'',b&&b.flee[u]?'도망 찬성':''].filter(Boolean);return st.length?`<div class="row" style="justify-content:flex-end"><span class="hint">${st.join(' · ')}</span></div>`:''})()}${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 민첩 ${m.agi}</span></div>`}).join('');
+  const party=r.ids.map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="raidmem ${b&&b.cur&&b.cur.k==='p'&&b.cur.id===u?'turn':''} ${m.hp<=0||gone?'down':''}"><div class="row rmhead" style="justify-content:space-between;gap:6px"><span class="rmname">${headImg(2,whoP(u))}<b>${esc(m.nick)}${u===uid?' (나)':''}</b></span><span class="rmjr"><span class="rmjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</span><span class="hint">Lv.${m.lvl}</span></span></div>${(()=>{const st=[gone?'이탈':m.hp<=0?'쓰러짐':'',b&&b.def[u]?'방어':'',b&&b.taunt&&b.taunt.u===u?'방패':'',b&&b.mons&&b.mons.some(x=>x.lock===u&&x.hp>0)?'🎯 표적':'',m.frz?'❄ 빙결':'',m.psn?`☠ 중독 ${m.psn.t}턴`:'',b&&b.flee[u]?'도망 찬성':''].filter(Boolean);return st.length?`<div class="row" style="justify-content:flex-end"><span class="hint">${st.join(' · ')}</span></div>`:''})()}${raidBar(m.hp,m.maxHp,'var(--green)')}<span class="hint">체력 ${m.hp}/${m.maxHp} · 공격 ${m.atk} · 방어 ${m.def} · 속도 ${m.agi}</span></div>`}).join('');
   let body='';
   if(r.state==='lobby')body=`<div class="card"><b>${esc(z.n)} 원정 대기실</b><p class="hint">파티장이 출발하면 원정이 시작됩니다. 출발한 뒤에는 새로 합류할 수 없습니다. (${r.ids.length}/${RAID_MAX}명)</p><div class="row" style="gap:6px">${r.host===uid?`<button class="btn" data-act="raidgo">출발</button>`:'<span class="hint">파티장을 기다리는 중…</span>'}<button class="btn ghost sm" data-act="raidleave">${r.host===uid?'파티 해산':'나가기'}</button></div></div>`;
   else if(r.phase==='battle'){
@@ -7237,7 +7237,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794833782';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794834032';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8484,13 +8484,15 @@ const shortAgo=t=>{const m=Math.floor((Date.now()-t)/60e3);if(m<1)return'방금'
 const socSeenAt=()=>Math.max(socSeen,+(P&&P.socSeen)||0),dmReadAt=peer=>Math.max(dmRead[peer]||0,+((P&&P.dmRead)||{})[peer]||0);
 function dmUnread(peer){return DMS.filter(d=>d.to===uid&&d.from===peer&&d.at>dmReadAt(peer)).length}
 function dmUnreadAll(){return DMS.filter(d=>d.to===uid&&d.at>dmReadAt(d.from)).length}
-function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>p.uid!==uid&&p.at>seen&&!(p.rt?(p.rto||{}):p).re).length}
+// a 'new post' is someone else's own post: replies and reposts don't count
+const padIsPost=p=>!!p&&p.uid!==uid&&!p.rt&&!p.re;
+function socUnread(){if(mode!=='online')return 0;const seen=socSeenAt();return POSTS.filter(p=>padIsPost(p)&&p.at>seen).length}
 // first load on a device: whatever this browser had already read is copied onto the character
 function seenSync(){if(!P||!P.nick)return;let ch=false;if(socSeen>(+P.socSeen||0)){P.socSeen=socSeen;ch=true}const r=Object.assign({},P.dmRead);for(const k in dmRead)if((dmRead[k]||0)>(+r[k]||0)){r[k]=dmRead[k];ch=true}if(ch){P.dmRead=r;save()}}
 // a red dot on the PAD / 만남 tabs while there are posts by others I haven't opened that tab since
 const MEMO_LS='nebula-memo-seen';let memoSeen=0;try{memoSeen=+localStorage.getItem(MEMO_LS)||0}catch(e){}
 const memoSeenAt=()=>Math.max(memoSeen,+(P&&P.memoSeen)||0);
-const socNew=k=>mode==='online'&&!!P&&(k==='pad'?POSTS.some(p=>p.uid!==uid&&p.at>socSeenAt()&&!(p.rt?(p.rto||{}):p).re):MEMOS.some(m=>m.uid!==uid&&(+m.at||0)>memoSeenAt()));
+const socNew=k=>mode==='online'&&!!P&&(k==='pad'?POSTS.some(p=>padIsPost(p)&&p.at>socSeenAt()):MEMOS.some(m=>m.uid!==uid&&(+m.at||0)>memoSeenAt()));
 const socDot=k=>socNew(k)?'<i class="ndot" aria-label="새 글"></i>':'';
 function socDots(){['pad','memo'].forEach(k=>{const b=document.querySelector(`[data-act="sotab"][data-k="${k}"]`);if(!b)return;const d=b.querySelector('.ndot'),on=socNew(k)&&!(socOpen&&socTab===k);if(on&&!d)b.insertAdjacentHTML('beforeend',socDot(k));else if(!on&&d)d.remove()})}
 function markMemo(){const cur=memoSeenAt(),m=Math.max(cur,...MEMOS.map(x=>+x.at||0));if(m>memoSeen){memoSeen=m;try{localStorage.setItem(MEMO_LS,String(m))}catch(e){}}if(P&&m>(+P.memoSeen||0)){P.memoSeen=m;save()}}
