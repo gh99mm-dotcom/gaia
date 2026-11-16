@@ -3523,7 +3523,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기 (공지 제외)</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
    ${admStaffHTML(others)}${verAdminHTML()}${diagAdminHTML()}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
-const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 +1%'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
+const ABIL=[['str','힘','공격력 +2'],['vit','체력','최대 체력 +8'],['agi','민첩','치명타 확률 +1% · 회피율 ↑'],['end','지구력','최대 에너지 +2 · 방어력 +1'],['luk','행운','희귀 어종 확률 ↑ · 전리품 +1%']];
 const ptsTotal=()=>25+(P.lvl-1)*2;
 const ptsLeft=()=>ptsTotal()-ABIL.reduce((a,[k])=>a+AS(k),0);
 // points are placed first and only applied when 확인 is pressed
@@ -7138,7 +7138,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794821505';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794822686';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
