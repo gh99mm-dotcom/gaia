@@ -1851,7 +1851,30 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .rmode{margin:0}.rmode button{padding:4px 16px}.rmode .rmhard[aria-selected="true"]{color:#ff8a94;box-shadow:inset 0 -2px 0 #ff4a5a}
 .raidz.hardz{border-color:#7a2a34;background:linear-gradient(180deg,rgba(255,74,90,.08),transparent 70%)}.raidz.hardz[aria-checked="true"]{box-shadow:inset 0 0 0 2px #ff4a5a}
 .ichip.hardtag,.hardtxt{color:#ff8a94;border-color:#ff4a5a;font-weight:700;letter-spacing:.06em}.btn.hardbtn{box-shadow:inset 0 0 0 2px #ff4a5a}
-.rmode.egoff{display:none}.rushcard{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;border-color:#7a2a34}.rushcard .hint{display:block}
+.rmode.egoff{display:none}
+/* zone descriptions always take two lines, so the chips under them line up across cards (안개 늪's one-liner included) */
+.raidz>.zd{display:block;line-height:1.5;min-height:3em}
+.rushx{position:relative;margin-top:8px;padding:12px 12px 10px;border:1px solid var(--line);border-left:3px solid var(--red);background:var(--panel);color:var(--text)}
+.rushx .rxhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rushx .rxlbl{font-family:var(--f-pix);font-size:10px;letter-spacing:.2em;color:var(--red)}
+.rushx .rxlv{font-family:var(--f-pix);font-size:10px;color:var(--mute);border:1px solid var(--line);padding:1px 6px}
+.rushx .rxt{display:block;font-family:var(--f-display);font-size:20px;margin:4px 0 2px;color:var(--text);letter-spacing:.02em}
+.rushx .rxd{margin:0 0 8px;font-size:12px;line-height:1.6;color:var(--mute)}.rushx .rxd b{color:var(--gold)}
+.rushx .rxrow{display:grid;grid-template-columns:repeat(9,minmax(0,64px));gap:5px;margin:6px 0}
+.rushx .rxc{position:relative;aspect-ratio:1/1.1;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel2);min-width:0}
+.rushx .rxc .rxs{display:flex;align-items:center;justify-content:center;width:100%;height:100%;overflow:hidden}.rushx .rxc .rxs img{width:82%;height:82%;object-fit:contain;image-rendering:pixelated}
+.rushx .rxc .rxn{position:absolute;left:3px;top:1px;font-family:var(--f-pix);font-size:9px;color:var(--dim);z-index:1}
+.rushx .rxc.hard{border-color:var(--pinkd)}.rushx .rxc.hard .rxn{color:var(--red)}
+.rushx .rxc.wait .rxs img{filter:brightness(0);opacity:.28}
+.rushx .rxc.win{border-color:var(--green)}.rushx .rxc .rxk{position:absolute;right:3px;bottom:1px;font-style:normal;font-size:11px;color:var(--green)}
+.rushx .rxc.now{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);animation:rxNow 1.4s ease-in-out infinite}
+@keyframes rxNow{50%{box-shadow:inset 0 0 0 2px var(--gold)}}
+.rushx .rxfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.rushx .rxrec{font-size:12px;color:var(--mute)}.rushx .rxrec b{font-family:var(--f-pix);font-size:15px;color:var(--gold)}.rushx .rxrec small,.rushx .rxst small{color:var(--dim);font-size:.7em}
+.rushx .rxst{font-family:var(--f-pix);font-size:16px;color:var(--text)}
+.rushx .rxsub{font-size:12px;color:var(--mute);margin-top:2px;min-height:1.4em}.rushx .rxh{font-style:normal;font-family:var(--f-pix);font-size:9px;color:var(--red);border:1px solid var(--red);padding:0 4px;margin-left:4px}
+.rushx .rxbar{height:3px;background:var(--line);margin-top:2px}.rushx .rxbar i{display:block;height:100%;background:var(--gold)}
+@media (prefers-reduced-motion:reduce){.rushx .rxc.now{animation:none}}.rushcard{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;border-color:#7a2a34}.rushcard .hint{display:block}
 .dishfx{font-size:13px;color:var(--gold)}.dishfx b{color:var(--cyan);margin-right:4px}.anpost{cursor:default}.anfeed{margin-top:10px}.anpost.mine{border-color:rgba(214,194,140,.45)!important}
 .sgchat{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto;padding:8px;background:var(--deep);border:1px solid var(--line)}
 .sgmsg{max-width:82%;display:flex;flex-direction:column;gap:2px}.sgmsg.me{align-self:flex-end;align-items:flex-end}.sgmsg.them{align-self:flex-start}
@@ -4688,7 +4711,7 @@ function monDexHardHTML(){const D=P.mdex||{},HZ=raidHardList(),z=HZ.find(x=>x.id
    <div class="dtabs mdxtabs" role="tablist">${HZ.map(z2=>`<button role="tab" aria-selected="${z2.id===z.id}" data-act="mdexz" data-k="${z2.id}" class="${got(z2)>=per(z2)?'full':''}">${esc(z2.n)} <small>${got(z2)}/${per(z2)}</small></button>`).join('')}</div>
    <div class="mdxhead" style="--zc:${z.t}"><b>${esc(z.n)} <span class="ichip hardtag">HARD</span></b><span class="hint">${esc(z.d)}</span></div>
    <div class="mdxgrid">${cards}</div></section>`}
-function raidLobbyHTML(){if(!egOpen())raidMode='normal';const HM=raidMode==='hard';if(HM&&!RAID_HARDZ[raidSel])raidSel='r1';const zones=(HM?raidHardList():RAID_ZONES).map(z=>{const ok=raidFits(z),hop=raidHardOpen(z);return`<button class="site raidz${HM?' hardz':''}" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><span class="zcost" title="입장할 때만 에너지 ${RAID_EN}을 씁니다. 원정 안에서는 에너지를 쓰지 않습니다.">${img(IC.bolt,null,1)}-${RAID_EN}</span><b>${z.n} <span class="lv">${zLvTxt(z)}</span></b><span class="hint">${z.d}</span>${(m=>m?`<span class="ichip zmat">${iicon(m,1)}${ITEMS[m].n} · ${z.hard?'요리 재료':'우주선 자재'}</span>`:'')(z.hard?RAID_HARD_MATS[z.id]:raidZoneMat(z))}${ok?'':`<span class="ichip minus">레벨이 부족합니다</span>`}${HM&&ok&&!hop?`<span class="ichip minus">🔒 ${esc(z.base)} 보스 처치 필요</span>`:''}${HM&&ok&&hop?`<span class="ichip hardtag">HARD</span>`:''}</button>`}).join('');
+function raidLobbyHTML(){if(!egOpen())raidMode='normal';const HM=raidMode==='hard';if(HM&&!RAID_HARDZ[raidSel])raidSel='r1';const zones=(HM?raidHardList():RAID_ZONES).map(z=>{const ok=raidFits(z),hop=raidHardOpen(z);return`<button class="site raidz${HM?' hardz':''}" role="radio" aria-checked="${z.id===raidSel}" data-act="raidzone" data-k="${z.id}"><span class="zcost" title="입장할 때만 에너지 ${RAID_EN}을 씁니다. 원정 안에서는 에너지를 쓰지 않습니다.">${img(IC.bolt,null,1)}-${RAID_EN}</span><b>${z.n} <span class="lv">${zLvTxt(z)}</span></b><span class="hint zd">${z.d}</span>${(m=>m?`<span class="ichip zmat">${iicon(m,1)}${ITEMS[m].n} · ${z.hard?'요리 재료':'우주선 자재'}</span>`:'')(z.hard?RAID_HARD_MATS[z.id]:raidZoneMat(z))}${ok?'':`<span class="ichip minus">레벨이 부족합니다</span>`}${HM&&ok&&!hop?`<span class="ichip minus">🔒 ${esc(z.base)} 보스 처치 필요</span>`:''}${HM&&ok&&hop?`<span class="ichip hardtag">HARD</span>`:''}</button>`}).join('');
   const z0=RAID_ZONES.find(x=>x.id===raidSel)||RAID_ZONES[0],z=HM?hardZ(z0):z0,list=RAIDS.filter(x=>x.ids.length<RAID_MAX&&(egOpen()||!(x.rush||x.hard)));
   return`<p class="lead">혼자 또는 최대 ${RAID_MAX}명의 파티로 원정을 떠납니다. 전투는 민첩이 높은 순서로 턴이 돌아오며, 한 사람의 턴은 ${RAID_TURN/1000}초입니다. 출발한 뒤에는 새로 합류할 수 없습니다.</p>
   <div class="row" style="gap:6px;margin:8px 0"><button class="btn${HM?' hardbtn':''}" data-act="raidnew" data-k="solo" ${raidFits(z,HM)?'':'disabled'}>혼자 출발</button><button class="btn alt${HM?' hardbtn':''}" data-act="raidnew" data-k="party" ${raidFits(z,HM)?'':'disabled'}>파티 모집</button><span class="hint">선택 구역 · ${z.n}${HM?' <b class="hardtxt">HARD</b>':''}</span></div>
@@ -4698,7 +4721,10 @@ function raidLobbyHTML(){if(!egOpen())raidMode='normal';const HM=raidMode==='har
       <div class="pcmem">${Array.from({length:RAID_MAX},(_,k)=>{const u=x.ids[k],m=u&&(x.m[u]||{});return u?`<span class="pcm${u===x.host?' host':''}" title="${esc(m.nick||'')}">${headImg(2,whoP(u))}<em>${esc(m.nick||'선원')}</em><small>Lv.${m.lvl||'?'}</small><small class="pcjob rj-${rJob(m)||'none'}">${(JOBS[rJob(m)]||{}).n||'직업 없음'}</small></span>`:`<span class="pcm empty"><i></i><em>빈 자리</em></span>`}).join('')}</div>
       <div class="pcfoot"><b>${x.ids.length}/${RAID_MAX}명</b><button class="btn sm" data-act="raidjoin" data-k="${esc(x.id)}" ${ok?'':'disabled'}>${ok?'참여하기':'레벨 부족'}</button></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 모집 중인 파티가 없습니다. 직접 파티를 모집해 보십시오.</p>'}</div>
   ${raidRunListHTML()}
-  <div class="zonehead"><span class="lbl">Zone · 원정 구역</span><div class="dtabs rmode${egOpen()?'':' egoff'}" role="tablist" aria-label="난이도"><button role="tab" aria-selected="${!HM}" data-act="raidmode" data-k="normal">일반</button><button role="tab" class="rmhard" aria-selected="${HM}" data-act="raidmode" data-k="hard">하드</button></div></div><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>${egOpen()?`<div class="card rushcard"><div><b>보스 러시</b> <span class="lv">Lv.${RUSH_MIN} 이상</span><span class="hint">먼지 평원부터 붉은 별의 핵, 이어서 하드 보스 셋까지 아홉 보스와 차례로 싸웁니다. 보스 사이에 잠깐 숨을 고릅니다.${+P.rushBest?` · 내 최고 기록 ${P.rushBest}/${RUSH_N}`:''}</span></div><div class="row" style="gap:6px"><button class="btn sm hardbtn" data-act="raidnew" data-k="rsolo" ${P.lvl>=RUSH_MIN?'':'disabled'}>혼자 도전</button><button class="btn sm alt hardbtn" data-act="raidnew" data-k="rparty" ${P.lvl>=RUSH_MIN?'':'disabled'}>파티 모집</button></div></div>`:''}${monDexHTML()}`}
+  <div class="zonehead"><span class="lbl">Zone · 원정 구역</span><div class="dtabs rmode${egOpen()?'':' egoff'}" role="tablist" aria-label="난이도"><button role="tab" aria-selected="${!HM}" data-act="raidmode" data-k="normal">일반</button><button role="tab" class="rmhard" aria-selected="${HM}" data-act="raidmode" data-k="hard">하드</button></div></div><div class="sites" role="radiogroup" aria-label="원정 구역" style="margin-top:6px">${zones}</div>${egOpen()?`<div class="rushx lobby"><div class="rxhead"><span class="rxlbl">BOSS RUSH</span><span class="rxlv">Lv.${RUSH_MIN} 이상</span></div>
+   <b class="rxt">보스 러시</b><p class="rxd">먼지 평원부터 붉은 별의 핵, 이어서 하드 보스 셋까지 <b>아홉 보스</b>와 쉬지 않고 싸웁니다. 보스 사이에 잠깐 숨을 고르고, 체력 20% 아래의 보스는 발악합니다.</p>
+   <div class="rxrow">${rushCellsHTML(Math.min(RUSH_N,+P.rushBest||0),-1,3)}</div>
+   <div class="rxfoot"><span class="rxrec">내 최고 기록 <b>${+P.rushBest||0}</b><small>/${RUSH_N}</small></span><div class="row" style="gap:6px"><button class="btn sm hardbtn" data-act="raidnew" data-k="rsolo" ${P.lvl>=RUSH_MIN?'':'disabled'}>혼자 도전</button><button class="btn sm alt hardbtn" data-act="raidnew" data-k="rparty" ${P.lvl>=RUSH_MIN?'':'disabled'}>파티 모집</button></div></div></div>`:''}${monDexHTML()}`}
 // the battle as a side-view stage: our crew on the left, the enemies on the right, each with name, level and HP above
 function raidStageHTML(r,z){const b=r.b,T=RAID_TERRAIN[z.id]||RAID_TERRAIN.r1,cur=b.cur||{};
   const crew=r.ids.filter(u=>r.m[u]).map(u=>{const m=r.m[u],gone=(r.left||{})[u];return`<div class="rbu rbp ${m.hp<=0||gone?'down':''} ${m.frz?'frz':''} ${cur.k==='p'&&cur.id===u?'turn':''} ${u===uid?'me':''}" data-ru="p${u}"><div class="rbtag"><b>${b.mons.some(x=>x.lock===u&&x.hp>0)?'🎯 ':''}${m.frz?'❄ ':''}${esc(m.nick)}</b><small>Lv.${m.lvl}</small>${raidBar(m.hp,m.maxHp,'var(--green)')}</div><span class="rbspr">${meImg(3,whoP(u))}</span></div>`}).join('');
@@ -4742,7 +4768,7 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
     body=`<div class="card raidev"><b>${esc(ev.n||'')}</b>${ev.t?`<p>${esc(ev.t)}</p>`:''}${ev.res?`<p class="hint">${esc(ev.res)}</p>`:''}${!end?raidEatHTML(r):''}
      ${end?`<div class="card raidpay"><span class="lbl">이번 원정에서 얻은 것</span><b class="rpbig">${img(IC.coin,null,3)}+${(L.cr||0).toLocaleString()} CR</b>${(()=>{const c=L.cb||{};const rows=[['몬스터 처치',c.mon],['보스 처치',c.boss],['이벤트',c.ev],['원정 성공 보너스',c.clear]].filter(([,v])=>v>0);return rows.length?`<ul class="rplist">${rows.map(([n,v])=>`<li><span>${n}</span><b>+${v.toLocaleString()} CR</b></li>`).join('')}</ul>`:''})()}<div class="rpxp">${img(IC.star,null,2)}<span>경험치</span><b>+${(L.xp||0).toLocaleString()}</b></div>${Object.keys(L.it||{}).length?`<div class="rpitems">${Object.entries(L.it).filter(([i])=>ITEMS[i]).map(([i,n])=>`<span class="ichip">${iicon(i,1)}${ITEMS[i].n} ×${n}</span>`).join('')}</div>`:'<span class="hint">얻은 아이템이 없습니다.</span>'}${r.result==='wipe'?'<span class="hint" style="color:var(--red)">전원이 쓰러져 절반만 받았습니다.</span>':''}</div><button class="btn" data-act="raiddone">베이스캠프로 돌아가기</button>`:`<button class="btn" data-act="raidnext">다음으로 →</button>`}</div>`}
   return`<div class="row" style="justify-content:space-between;align-items:center"><b class="dfloor raidzt" data-step="${r.step}">${esc(z.n)}${r.state==='lobby'?' · 대기실':''}</b>${r.state==='run'&&r.phase!=='end'?`<div class="raidtopbtn">${r.phase==='battle'&&b?`<button class="btn alt" data-act="raidfleev" ${me&&me.hp>0?'':'disabled'}>${b.flee[uid]?'도망 취소':'도망 찬성'} <small>${Object.keys(b.flee).filter(u=>b.flee[u]&&raidUp(r).includes(u)).length}/${raidUp(r).length}</small></button>`:''}<button class="btn ghost" data-act="raidleave" title="최대 체력의 50%를 잃고 돌아옵니다(체력 1은 남음). 이번 원정의 보상은 없습니다.">원정 포기</button></div>`:''}</div>
-   ${r.state==='run'?raidMapHTML(r,z):''}
+   ${r.state==='run'?(r.rush?rushTrackHTML(r):raidMapHTML(r,z)):''}
    <div class="raidwrap"><div class="raidparty">${party}${rcHTML(r)}</div><div class="raidmain">${body}</div></div>`}
 // alone on an expedition, between fights (after an event or a won battle) you may eat from your bag; healing goes to the expedition HP
 const raidSoloRest=r=>!!r&&r.state==='run'&&(r.phase==='event'||r.phase==='won')&&raidIn(r).length===1&&raidIn(r)[0]===uid&&(r.m[uid]||{}).hp>0;
@@ -4784,6 +4810,14 @@ function raidMapImg(zid,cur,done,n,narrow,bare){const key=[zid,cur,done?1:0,n,na
     else if(k<=reach||(done&&k<n)){px(x,y-1,'#2a2418');px(x,y-2,'#d6d0c0');px(x,y-3,'#d6d0c0');px(x,y-4,'#d6d0c0');px(x+1,y-4,'#f0c75a');px(x+2,y-4,'#f0c75a');px(x+1,y-3,'#c8a040');px(x+2,y-3,'#f0c75a')}
     else{[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]].forEach(([a,b])=>px(x+a,y+b,k===cur&&!done?'#ffffff':'#8a88a0'));px(x,y,k===cur&&!done?'#f0c75a':'#1d1a28')}});
   return RMAP[key]={src:c.toDataURL(),pts,W,H}}
+// 보스 러시: the nine bosses in a row. Beaten ones are lit with a check, the one being fought glows, the rest wait as dark silhouettes
+const rushZones=()=>Array.from({length:RUSH_N},(_,i)=>rushZoneAt(i+1));
+function rushCellsHTML(done,cur,sc){return rushZones().map((z,i)=>{const st=i<done?'win':i===cur?'now':'wait';
+  return`<div class="rxc ${st}${z.hard?' hard':''}" title="${esc(i<done||i===cur?z.boss:'???')}"><span class="rxn">${i+1}</span><span class="rxs">${monImg({n:z.boss,t:z.t},sc)}</span>${st==='win'?'<i class="rxk">✓</i>':''}</div>`}).join('')}
+function rushTrackHTML(r){const st=rushStage(r),rest=r.step%2===0,end=r.phase==='end',done=end?(r.rushMax||0):rest?st:st-1,cur=end||rest?-1:st-1,nz=rushZoneAt(Math.min(RUSH_N,rest?st+1:st));
+  const sub=end?(r.result==='clear'?'아홉 보스를 모두 쓰러뜨렸다':`기록 ${done}/${RUSH_N}`):rest?`숨 고르기 · 다음 상대 ${esc(nz.boss)}`:`${esc(nz.boss)}${nz.hard?' <em class="rxh">HARD</em>':''}`;
+  return`<div class="rushx run"><div class="rxhead"><span class="rxlbl">BOSS RUSH</span><b class="rxst">${end?'종료':`STAGE ${Math.min(RUSH_N,rest?st+1:st)}<small>/${RUSH_N}</small>`}</b></div><div class="rxsub">${sub}</div>
+   <div class="rxrow">${rushCellsHTML(done,cur,3)}</div><div class="rxbar"><i style="width:${done/RUSH_N*100}%"></i></div></div>`}
 function raidMapHTML(r,z){const n=raidStepsOf(r),cur=Math.min(r.step,n),done=r.phase==='end',narrow=innerWidth<560,m=raidMapImg(z.id,cur,done,n,narrow),[mx,my]=m.pts[Math.max(0,cur-1)];
   return`<div class="raidmap"><img class="pix" src="${m.src}" alt="${esc(z.n)} 원정 지도">${done?'':`<span class="rmme" style="left:${(mx+.5)/m.W*100}%;top:${(my-6)/m.H*100}%">${headImg(2,P)}</span>`}<span class="rmlbl">${done?'원정 종료':`${cur}/${n} 지점${cur===n?' · 보스':''}`}</span></div>`}
 // while someone types in the party chat, redraw everything around it but leave the chat card (and its input) untouched:
@@ -6146,7 +6180,7 @@ function shipRepLabel(pt){const f=shipFin(pt);if(!f)return'20:00 오픈';const o
 let shipFinPend={},shipDoneSig='';
 function shipFinMark(){if(mode!=='online'||!db)return;SHIP.forEach(pt=>{if(!shipLegacy(pt)&&shipFull(pt)&&!shipFin(pt)&&!shipFinPend[pt.id]){shipFinPend[pt.id]=1;shipTRef().update({fin:{[pt.id]:sNow()}}).catch(()=>{shipFinPend[pt.id]=0})}})}
 // at 20:00 the repaired part opens by itself: watch for the change and redraw
-setInterval(()=>{if(mode!=='online')return;const sg=SHIP.map(x=>shipDone(x)?1:0).join('');if(sg!==shipDoneSig){const first=!shipDoneSig;shipDoneSig=sg;if(!first){renderNav();if(tab==='ship')renderPanel()}}},20e3);
+setInterval(()=>{if(mode!=='online')return;const sg=SHIP.map(x=>shipDone(x)?1:0).join('');if(sg!==shipDoneSig){const first=!shipDoneSig;shipDoneSig=sg;syncBgm();if(!first){renderNav();if(tab==='ship')renderPanel()}}},20e3);
 /* 기억모듈: one of each exists in the whole game. Once the ship has 2 / 4 / 6 parts repaired, 6호 / 2호 / 1호 can turn up in 조사 (5% a search);
    the first crew member to find one claims it on the server, and after that it never drops again for anyone */
 const MEMS=[['mem6','engine'],['mem3','nav'],['mem1','hull']],MEM_ALL=['mem1','mem2','mem3','mem5','mem6'],memOpen=pid=>{const q=SHIP.find(x=>x.id===pid);return!!q&&shipDone(q)},memRef=()=>db.doc('boss/memmods');let MEMC={},memBusy=false;
@@ -7332,7 +7366,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794888057';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794905275';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -9262,22 +9296,36 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
 
 /* ───────── bgm ───────── */
 const bgm=new Audio('bgm.mp3?v=storm');bgm.loop=true;bgm.preload='auto';
+// once 통신 장치 is repaired (and 주 엔진 opens) the main theme becomes "Fireflies All Over the Sky", crossfading over 3 s; the bar and 원정 keep theirs
+const bgm2=new Audio('fireflies.mp3');bgm2.loop=true;bgm2.preload='none';
+const bgmNewWant=()=>{try{const c=SHIP.find(x=>x.id==='comm');return mode==='online'&&!!c&&shipDone(c)}catch(e){return false}};
+let bgmFade=0;const bgmMain=()=>bgmNewWant()?bgm2:bgm;
+function bgmPauseAll(){clearInterval(bgmFade);bgmFade=0;bgm.pause();bgm2.pause()}
+// play m; if its pair o is still playing, fade o out while m comes up (3 s). F holds the running fade's timer
+function bgmXfade(m,o,F){const v=bgmVol/100,go=a=>{const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{})};
+  if(F.t)return;if(o.paused){m.volume=v;if(m.paused)go(m);return}
+  m.volume=0;go(m);const t0=Date.now(),D=3000;F.t=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/D),w=bgmVol/100;m.volume=w*k;o.volume=w*(1-k);if(k>=1){clearInterval(F.t);F.t=0;o.pause();o.volume=w}},60)}
+const BGF={get t(){return bgmFade},set t(x){bgmFade=x}};
+function bgmPlayMain(){const m=bgmMain();bgmXfade(m,m===bgm?bgm2:bgm,BGF)}
 // the secret bar has its own record on (Tony Balluff - Block Party); loaded only when someone walks in
 let barBgm=null;const barMusic=()=>{if(!barBgm){barBgm=new Audio('bar.mp3');barBgm.loop=true}return barBgm};
 // 원정 battle music (battle_intro): plays while I'm out on a running expedition
 let raidBgm=null,raidBgmOn=false;const raidMusic=()=>{if(!raidBgm){raidBgm=new Audio('raid.mp3');raidBgm.loop=true;raidBgm.preload='auto'}return raidBgm};
+// after 통신 장치 the 원정 battle music changes too ("Hella Bumps"), at the same moment as the main theme
+let raidBgm2=null;const raidMusic2=()=>{if(!raidBgm2){raidBgm2=new Audio('hellabumps.mp3');raidBgm2.loop=true;raidBgm2.preload='auto'}return raidBgm2};
+const RBF={t:0};function raidPauseAll(){clearInterval(RBF.t);RBF.t=0;if(raidBgm)raidBgm.pause();if(raidBgm2)raidBgm2.pause()}
 const raidBgmWant=()=>!secretView&&bgmOn&&bgmVol>0&&raidLocked();
 let bgmOn=true,bgmVol=35;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off';const v=localStorage.getItem('nebula-bgmv');if(v!=null)bgmVol=Math.max(0,Math.min(100,+v||0))}catch(e){}
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-// the final raid has its own battle theme (CleytonRX - Battle RPG Theme), above every other track while it lasts
-let finBgm=null;const finMusic=()=>{if(!finBgm){finBgm=new Audio('final.mp3');finBgm.loop=true}return finBgm};
-function syncBgm(){bgm.volume=bgmVol/100;
-  if(typeof endOn==='function'&&endOn()&&bgmOn&&bgmVol>0){bossBgmStop();bgm.pause();if(barBgm)barBgm.pause();if(raidBgm)raidBgm.pause();const m=finMusic();m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}
+// the final raid (Orbis) has its own battle theme, above every other track while it lasts
+let finBgm=null;const finMusic=()=>{if(!finBgm){finBgm=new Audio('orbis.mp3');finBgm.loop=true}return finBgm};// Orbis theme: "Cyphermix" (from the operator's .ogg, as mp3 so iPhones play it too)
+function syncBgm(){if(!bgmFade){bgm.volume=bgmVol/100;bgm2.volume=bgmVol/100}
+  if(typeof endOn==='function'&&endOn()&&bgmOn&&bgmVol>0){bossBgmStop();bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll();const m=finMusic();m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}
   if(finBgm)finBgm.pause();
   const bar=secretView&&bgmOn&&bgmVol>0,boss=!bar&&bossBgmWant();if(boss)bossBgmStart();else bossBgmStop();
-  if(bar){const m=barMusic();m.volume=bgmVol/100;bgm.pause();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(barBgm)barBgm.pause();
-  raidBgmOn=raidBgmWant();if(raidBgmOn){const m=raidMusic();m.volume=bgmVol/100;bgm.pause();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(raidBgm)raidBgm.pause();
-  if(bgmOn&&bgmVol>0&&!boss){const pr=bgm.play();if(pr&&pr.catch)pr.catch(()=>{})}else bgm.pause()}
+  if(bar){const m=barMusic();m.volume=bgmVol/100;bgmPauseAll();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(barBgm)barBgm.pause();
+  raidBgmOn=raidBgmWant();if(raidBgmOn){bgmPauseAll();const nw=bgmNewWant(),m=nw?raidMusic2():raidMusic(),o=(nw?raidBgm:raidBgm2)||{paused:true};bgmXfade(m,o,RBF);return}raidPauseAll();
+  if(bgmOn&&bgmVol>0&&!boss)bgmPlayMain();else bgmPauseAll()}
 /* invader theme: a flat, droning loop made on the fly while an invader is up */
 let BBGM=null;
 // while an invader is up its theme is the music everywhere (the 원정 battle music and the secret bar still take over in their own places)
@@ -9316,7 +9364,7 @@ sndPop.addEventListener('input',e=>{const k=e.target.dataset.snd;if(!k)return;co
 sndPop.addEventListener('change',e=>{if(e.target.dataset.snd==='sfx'&&soundOn){ac();sfxCoin()}});
 document.addEventListener('click',e=>{if(!sndPop.hidden&&!e.target.closest('#sndPop,#bgmBtn'))sndToggle(false)});
 addEventListener('resize',()=>{if(!sndPop.hidden)sndPlace()});addEventListener('scroll',()=>{if(!sndPop.hidden)sndPlace()},{passive:true});
-document.addEventListener('pointerdown',function first(e){if(e.target.closest('#bgmBtn,#sndPop'))return;document.removeEventListener('pointerdown',first,true);if(bgmOn&&bgm.paused)syncBgm()},true);
+document.addEventListener('pointerdown',function first(e){if(e.target.closest('#bgmBtn,#sndPop'))return;document.removeEventListener('pointerdown',first,true);if(bgmOn&&bgm.paused&&bgm2.paused)syncBgm()},true);
 bgm.volume=bgmVol/100;
 /* skin: 우주모드 ON is the dark starfield station, OFF turns the whole station white */
 let spaceOn=true;try{spaceOn=localStorage.getItem('nebula-skin')!=='light'}catch(e){}
