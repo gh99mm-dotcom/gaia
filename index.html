@@ -7114,8 +7114,10 @@ const kstDay=()=>new Date(Date.now()+9*3600e3).toISOString().slice(0,10),bdlKey=
 // unit prices: hard-run materials are precious (1,500 CR each), gathering finds 15x their buying price, seeds 20x, crops 6x
 const bdlUnit=id=>{const it=ITEMS[id],v=+sellPrice0(id)||1;return it.eg?1500:it.type==='seed'?Math.max(60,v*20):it.type==='food'?Math.max(40,v*6):Math.max(40,v*15)};
 function bdlStock(){const eg=egOpen(),k=bdlKey()+(eg?'':'~');if(window.__bdlK===k&&window.__bdl)return window.__bdl;let h=97;for(const c of k+'bdl')h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+5),pick=a=>a.splice(Math.floor(rnd()*a.length),1)[0];
-  const gat=[...new Set(Object.values(GX).flatMap(g=>g.mats.map(m=>m[0])))].filter(id=>ITEMS[id]),hard=eg?Object.values(RAID_HARD_MATS).filter(id=>ITEMS[id]):[...new Set(Object.values(GX).flatMap(g=>g.mats.map(m=>m[0])))].filter(id=>ITEMS[id]&&!isEgItem(id)),seeds=GX_SEEDS().filter(id=>ITEMS[id]),crops=GX_CROPS().filter(id=>ITEMS[id]);
-  const out=[[pick(hard),1,2],[pick(gat),3,6],rnd()<.5?[pick(seeds),2,4]:[pick(crops),3,6]].filter(x=>x[0]).slice(0,BDL_N).map(([id,a,b])=>{const n=ITEMS[id].eg?Math.min(2,a+Math.floor(rnd()*2)):a+Math.floor(rnd()*(b-a+1));return{id,n,cr:Math.round(bdlUnit(id)*n/10)*10}});
+  const gat=[...new Set(Object.values(GX).flatMap(g=>g.mats.map(m=>m[0])))].filter(id=>ITEMS[id]),hard=eg?Object.values(RAID_HARD_MATS).filter(id=>ITEMS[id]):[],seeds=GX_SEEDS().filter(id=>ITEMS[id]),crops=GX_CROPS().filter(id=>ITEMS[id]);
+  // slot 1 is a cooking ingredient: a hard-run material (only for crew with hard mode) or one of the rare local vegetables
+  const cook=hard.length&&rnd()<.5?[pick(hard),1,2]:[pick(crops),3,6];
+  const out=[cook,[pick(gat),3,6],rnd()<.5?[pick(seeds),2,4]:[pick(crops),3,6]].filter(x=>x[0]).slice(0,BDL_N).map(([id,a,b])=>{const n=ITEMS[id].eg?Math.min(2,a+Math.floor(rnd()*2)):a+Math.floor(rnd()*(b-a+1));return{id,n,cr:Math.round(bdlUnit(id)*n/10)*10}});
   // the 4th bundle: one of the peddler's own room or wardrobe pieces (only sold here), one per person
   const sp=bdlSpecials(),s0=sp[Math.floor(rnd()*sp.length)];if(s0)out.push(Object.assign({sp:1},s0));
   window.__bdlK=k;return window.__bdl=out}
@@ -7440,7 +7442,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794927163';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794927540';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
