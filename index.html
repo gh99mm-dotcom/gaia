@@ -1850,8 +1850,23 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .zonehead{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}.zonehead .lbl{margin:0}
 .rmode{margin:0}.rmode button{padding:4px 16px}.rmode .rmhard[aria-selected="true"]{color:#ff8a94;box-shadow:inset 0 -2px 0 #ff4a5a}
 .raidz.hardz{border-color:#7a2a34;background:linear-gradient(180deg,rgba(255,74,90,.08),transparent 70%)}.raidz.hardz[aria-checked="true"]{box-shadow:inset 0 0 0 2px #ff4a5a}
+/* the zone I picked stands out clearly (both station themes): a thick gold frame, a lifted tint and a ✓ 선택 tag; the others step back a little */
+.raidz{position:relative}
+.sites .raidz[aria-checked="true"]{outline:3px solid var(--gold);outline-offset:-3px;box-shadow:0 0 0 1px var(--gold),0 3px 10px rgba(0,0,0,.25)!important;background:color-mix(in srgb,var(--gold) 14%,var(--panel))}
+.sites .raidz.hardz[aria-checked="true"]{outline-color:#e0505e;box-shadow:0 0 0 1px #e0505e,0 3px 10px rgba(0,0,0,.25)!important;background:color-mix(in srgb,#e0505e 14%,var(--panel))}
+.sites .raidz[aria-checked="true"]::after{content:'✓ 선택';position:absolute;right:6px;bottom:6px;font:700 11px/1 var(--f-body);padding:3px 6px;background:var(--gold);color:var(--panel);letter-spacing:.02em}
+.sites .raidz.hardz[aria-checked="true"]::after{background:#e0505e;color:#fff}
+.sites:has(.raidz[aria-checked="true"]) .raidz[aria-checked="false"]{opacity:.72}
+.sites .raidz[aria-checked="false"]:hover{opacity:1}
 .ichip.hardtag,.hardtxt{color:#ff8a94;border-color:#ff4a5a;font-weight:700;letter-spacing:.06em}.btn.hardbtn{box-shadow:inset 0 0 0 2px #ff4a5a}
 .rmode.egoff{display:none}
+.mailitem.read{position:relative}.mailitem .mbfav{all:unset;cursor:pointer;position:absolute;left:6px;top:4px;z-index:1;font-size:19px;line-height:1;color:var(--mute);padding:2px}
+.mailitem .mbfav:hover{color:var(--gold)}.mailitem.fav .mbfav{color:var(--gold);text-shadow:0 0 6px color-mix(in srgb,var(--gold) 60%,transparent)}
+.mailitem.read.fav{border-color:color-mix(in srgb,var(--gold) 55%,var(--line));background:color-mix(in srgb,var(--gold) 7%,var(--panel))}
+.mcat.mt-fav[aria-pressed="true"]{color:var(--gold)}
+.menpick{position:fixed;z-index:520;display:flex;flex-direction:column;min-width:160px;max-width:220px;padding:4px;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.menpick button{all:unset;cursor:pointer;padding:6px 8px;font:13px var(--f-body);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menpick button[aria-selected="true"],.menpick button:hover{background:var(--violetd);color:var(--cyan)}
 /* zone descriptions always take two lines, so the chips under them line up across cards (안개 늪's one-liner included) */
 .raidz>.zd{display:block;line-height:1.5;min-height:3em}
 .rushx{position:relative;margin-top:8px;padding:12px 12px 10px;border:1px solid var(--line);border-left:3px solid var(--red);background:var(--panel);color:var(--text)}
@@ -5284,30 +5299,33 @@ const ORB_BATTLE=120e3;   // how long the first fight lasts before 오르비스 
 // P.orbis: 1 = saw the intro (fighting), 2 = knocked out and saw it leave
 function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||!$('#joinModal').hidden)return;const q=SHIP.find(x=>x.id==='comm');if(!q||!shipDone(q))return;
   const st=(+P.orbis||0);if(st>=2)return;
-  if(END&&!endFirst()){P.orbis=2;save();return}                          // the final raid is already on the board: the first encounter is long past
+  if(END&&!endFirst()){P.orbis=2;save();syncBgm();return}                          // the final raid is already on the board: the first encounter is long past
   const over=endFirst()&&sNow()>=(+END.until||0);
   if(over){orbisBusy=true;orbisLeave();return}
   if(!st){orbisBusy=true;orbisPlay(ORB_INTRO,()=>{orbisBusy=false;P.orbis=1;save();orbisStart()})}}
 // whoever finishes the intro first opens the fight on the server; everyone else just joins it
 function orbisStart(){if(END)return;const t0=sNow();bossTx(endRef(),cur=>{if(cur)return null;const hp=endHpMax();return{on:true,done:false,mode:'first',gen:t0,startAt:t0,until:t0+ORB_BATTLE,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0}})
-  .then(nx=>{if(nx)sys(`[공지] ${END_NAME}이(가) 베이스캠프 위에 나타났습니다! 모두 맞서 싸우십시오!`,true,'siren')}).catch(()=>{})}
+  .then(nx=>{if(nx)sys(`[공지] ${END_NAME}이(가) 베이스캠프 위에 나타났습니다! 모두 맞서 싸우십시오!`,true,'static')}).catch(()=>{})}
 const ORB_INTRO=['통신 장치에 불이 들어왔다. 첫 신호가 하늘 너머로 뻗어 나간다…','…그리고 무언가가 대답했다.','하늘이 갈라지고, 거대한 눈 「오르비스」가 베이스캠프를 내려다본다.','선원들이여, 무기를 들어라!'];
 const ORB_LEAVE=['「오르비스」의 모든 눈이 한꺼번에 베이스캠프를 바라본다.','그 시선을 마주친 순간, 선원들이 하나둘 쓰러졌다…','쓰러진 선원들을 내려다보던 거대한 눈은, 천천히 하늘 너머로 사라졌다.'];
 function orbisPlay(LINES,done,leave){const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
-  const t0=performance.now(),STEP=2.4,TOTAL=LINES.length*STEP+.6;let li=-1;try{sfxStatic()}catch(e){}
+  const t0=performance.now(),STEP=leave?2.4:3,TOTAL=LINES.length*STEP+.6;let li=-1;try{sfxStatic()}catch(e){}
   const draw=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000,W=Math.ceil(innerWidth/EPX),H=Math.ceil(innerHeight/EPX);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
     const x=cv.getContext('2d');x.fillStyle='#05030a';x.fillRect(0,0,W,H);
     const cx=W/2,cy=H*.38,r=Math.min(W*.09,H*.16);
     // intro: a crack of light, then the eye opens; leave: the eye stares, then closes and shrinks away into the sky
     let open,sc=1;if(leave){open=t<TOTAL-2.2?1:Math.max(0,1-(t-(TOTAL-2.2))/1.4);sc=t<TOTAL-2.2?1:Math.max(.2,1-(t-(TOTAL-2.2))/2)}
-    else{open=Math.max(0,Math.min(1,(t-2.2)/1.6));if(t>1){const crack=Math.min(1,(t-1)/1.2);for(let i=-W*.4*crack;i<=W*.4*crack;i++){const y=cy+Math.round(Math.sin(i*.31)*1.5);x.fillStyle=Math.abs(i)%7<2?'#ffd0e0':'#c88aff';x.fillRect(cx+i,y,1,1)}}}
-    if(open>0)endEye(x,cx,cy-(1-sc)*H*.3,r*sc,open,[Math.sin(t*.8)*.3,.3],leave&&t<STEP*2&&Math.floor(t*6)%2===0,t);
+    else{// intro (slower): the sky cracks, then 오르비스 hangs there with every eye shut; on the third line the great eye opens, then the small ones one by one
+      open=Math.max(0,Math.min(1,(t-STEP*2)/1.8));if(t>1){const crack=Math.min(1,(t-1)/1.6);for(let i=-W*.4*crack;i<=W*.4*crack;i++){const y=cy+Math.round(Math.sin(i*.31)*1.5);x.fillStyle=Math.abs(i)%7<2?'#ffd0e0':'#c88aff';x.fillRect(cx+i,y,1,1)}}
+      if(t>STEP*.8){const n=10,er=Math.max(1.8,r*.2);for(let i=0;i<n;i++){const a=i/n*Math.PI*2+t*.05,ex=cx+Math.cos(a)*r*3.1,ey=cy+Math.sin(a)*r*1.55,o=Math.max(0,Math.min(1,(t-STEP*2-1.8-i*.16)/.5));
+        endEye(x,ex,ey,er,o,[Math.cos(a+Math.PI)*.4,.2],false,t)}}}
+    if(open>0||(!leave&&t>STEP*.8))endEye(x,cx,cy-(1-sc)*H*.3,r*sc,open,[Math.sin(t*.8)*.3,.3],leave&&t<STEP*2&&Math.floor(t*6)%2===0,t);
     const k=Math.min(LINES.length-1,Math.floor(t/STEP));if(k!==li){li=k;tx.textContent=LINES[k];if(leave&&k===1){M.classList.add('red');try{sfxStatic()}catch(e){}}}
     if(t<TOTAL)requestAnimationFrame(draw);else{M.remove();done&&done()}};
   requestAnimationFrame(draw)}
 // the fight is over: everyone still standing is struck down, and 오르비스 leaves the sky
 function orbisLeave(){if(END&&endFirst()&&END.on){const g=END.gen;bossTx(endRef(),cur=>cur&&cur.mode==='first'&&cur.gen===g&&cur.on?Object.assign(cur,{on:false,left:true,leftAt:Date.now()}):null).then(nx=>{if(nx)sys(`[공지] ${END_NAME}의 시선에 선원 모두가 쓰러졌습니다. 거대한 눈은 하늘 너머로 사라졌습니다…`,true,'static')}).catch(()=>{})}
-  endRender();orbisPlay(ORB_LEAVE,()=>{orbisBusy=false;P.orbis=2;if(!isFaint()){P.hp=0;checkFaint()}log(`「오르비스」의 시선에 쓰러졌다. 거대한 눈은 하늘 너머로 사라졌다.`,'bad');toast('「오르비스」의 시선에 쓰러졌습니다. 동료가 구조하거나 시간이 지나면 깨어납니다.');commit();syncBgm()},true)}
+  endRender();orbisPlay(ORB_LEAVE,()=>{orbisBusy=false;P.orbis=2;setTimeout(syncBgm,0);if(!isFaint()){P.hp=0;checkFaint()}log(`「오르비스」의 시선에 쓰러졌다. 거대한 눈은 하늘 너머로 사라졌다.`,'bad');toast('「오르비스」의 시선에 쓰러졌습니다. 동료가 구조하거나 시간이 지나면 깨어납니다.');commit();syncBgm()},true)}
 setInterval(orbisCheck,1500);
 function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYES.length)],[X,Y]=endSpotXY(s),n=document.createElement('span');
   n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(X+(Math.random()*30-15))+'px';n.style.top=(Y-10)+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),900);endHitT=performance.now()}
@@ -5400,7 +5418,7 @@ const EA={
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok)endSkAt=Date.now()},
  async endstart(){if(!isAdmin||mode!=='online')return;const hp=endHpMax();
   const e={on:true,done:false,gen:sNow(),startAt:sNow(),by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0};
-  try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'siren');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
+  try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'static');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
  async rankreset(){if(!isAdmin||mode!=='online')return;try{await bossTx(shipTRef(),cur=>cur?Object.assign({},cur,{v:1,u:{}}):{v:1,p:{},u:{},at:Date.now()});toast('기여도 랭킹을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async memreset(){if(!isAdmin||mode!=='online')return;try{await memRef().delete();toast('기억모듈 발견 기록을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async endreset(){if(!isAdmin||mode!=='online')return;try{await endRef().delete();toast('최종 레이드를 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
@@ -6131,9 +6149,10 @@ const SHIP=[
  {id:'life',n:'생명 유지 장치',d:'산소와 물을 만드는 장치. 이끼 필터와 냉각 결정이 필요합니다.',need:[['moss',2000],['geyserSalt',100],['frostCrystal',140],['marshReed',100],['plainSpore',1000],['pot',500],['mistLotus',200]]},
  {id:'power',n:'동력로',d:'빛을 잃은 결정 동력로. 빛나는 결정을 다시 채워 넣어야 합니다.',need:[['crystal',1500],['mazeCore',1000],['plainSpore',1000],['glowStal',450],['echoQuartz',200],['pot',500],['berry',500],['crystalBean',500],['pump',500]]},
  {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',1000],['mazeCore',1000],['bogResin',1000],['oldBoard',350],['iceShell',400],['marshFossil',400],['carrot',500],['rationBean',500],['melon',500],['frostBerry',500]]},
- {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',230],['crystal',2000],['volcAsh',120],['dark',440],['bogResin',1000],['wreckNozzle',1000],['corn',400],['canyonPepper',240]]},
- {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',190],['brokenLens',150],['impactGlass',250],['abyssPrism',2500],['pump',300],['frozenTomato',240]]},
- {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',2120],['craterIron',150],['rustBolt',110],['sandSlate',110],['starHeart',3000],['carrot',400],['dustPot',300]]},
+// from 주 엔진 on, every dungeon material (원정 재료) is asked 10,000 at a time
+ {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',230],['crystal',2000],['volcAsh',120],['dark',440],['bogResin',10000],['wreckNozzle',10000],['corn',400],['canyonPepper',240]]},
+ {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',190],['brokenLens',150],['impactGlass',250],['abyssPrism',10000],['pump',300],['frozenTomato',240]]},
+ {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',2120],['craterIron',150],['rustBolt',110],['sandSlate',110],['starHeart',10000],['carrot',400],['dustPot',300]]},
 ];
 let SHIPDON=[],shipSel=null;
 /* repair totals live in one shared record (boss/ship: p = part → material → count, u = member → {n, nick}) kept with counters,
@@ -7366,7 +7385,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794905275';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794922423';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8021,7 +8040,7 @@ const A={
  padtop(d,e){padTopGo(e&&e.target)},
  sentcat(d){sentCat=MAILCAT[d.k]?d.k:'';mailPg.sent=0;renderPanel()},
  mailpg(d){if(!(d.k in mailPg))return;mailPg[d.k]=Math.max(0,+d.p||0);renderPanel();const st=$('#stage');if(st)window.scrollTo({top:st.getBoundingClientRect().top+scrollY-12,behavior:'smooth'})},
- mailcat(d){mailCat=MAILCAT[d.k]?d.k:'';mailPg.in=0;mailPg.rd=0;renderPanel()},
+ mailcat(d){mailCat=MAILCAT[d.k]||d.k==='fav'?d.k:'';mailPg.in=0;mailPg.rd=0;renderPanel()},
  anonclose(){anonView=false;anThread=null;anBadge();renderPanel()},
  antab(d){anTab=d.k==='mine'?'mine':'all';anShow=30;renderPanel()},
  anmore(){anShow+=30;renderPanel()},
@@ -8395,6 +8414,7 @@ const A={
  // from someone's profile: open the mailbox on the write tab with them as the recipient
  mailto(d){if(preLock()){toast('오픈 준비 중에는 인사·우편·선물을 쓸 수 없습니다.');return}if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}if(!PLAYERS[d.k]||d.k===uid){toast('지금은 편지를 보낼 수 없는 선원입니다.');return}const im=$('#infoModal');if(im)im.hidden=true;mailTab='write';mlTo=d.k;A.mailopen();setTimeout(()=>{const t=$('#mlMsg');if(t)t.focus({preventScroll:true})},50)},
  mlreply(d){if(!PLAYERS[d.k]){toast('지금은 답장할 수 없는 선원입니다.');return}mailTab='write';mlTo=d.k;renderPanel();setTimeout(()=>{const t=$('#mlMsg');if(t)t.focus()},0)},
+ mbfav(d){const m=(P.mbox||[]).find(x=>x.id===d.k);if(!m)return;P.mbox=(P.mbox||[]).map(x=>x.id===d.k?Object.assign({},x,{fav:x.fav?0:1}):x);toast(m.fav?'즐겨찾기를 해제했습니다.':'즐겨찾기에 넣었습니다.');save();renderPanel()},
  mbdel(d){if(!d.k){mbDelArm=null;renderPanel();return}if(d.x!=='1'){mbDelArm=d.k;renderPanel();return}P.mbox=(P.mbox||[]).filter(x=>x.id!==d.k);mbDelArm=null;toast('우편을 삭제했습니다.');save();renderPanel()},
  mailone(d){if(mailOpenOne(d.k)){commit();mailRefresh();renderPanel()}},
  mailall(){const ids=mailList().filter(m=>m.kind!=='trade').map(m=>m.id);let n=0;ids.forEach(id=>{if(mailOpenOne(id))n++});if(n){toast(`우편 ${n}통을 모두 받았습니다.`);commit();mailRefresh();renderPanel()}},
@@ -8516,7 +8536,7 @@ function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
 const MBOX_MAX=300;let mbDelArm=null;
 const MAIL_PG=10;let mailPg={in:0,rd:0,sent:0};
 const mbRef=()=>db.doc('mailbox/'+uid);let mbReady=false,mbSig='';
-const mbUnion=(a,b)=>{const m=new Map();[...(a||[]),...(b||[])].forEach(x=>{if(x&&x.id&&!m.has(x.id))m.set(x.id,x)});return[...m.values()].sort((x,y)=>(+y.got||+y.at||0)-(+x.got||+x.at||0)).slice(0,MBOX_MAX)};
+const mbUnion=(a,b)=>{const m=new Map();[...(a||[]),...(b||[])].forEach(x=>{if(x&&x.id&&!m.has(x.id))m.set(x.id,x)});const L=[...m.values()].sort((x,y)=>(+y.got||+y.at||0)-(+x.got||+x.at||0)),F=L.filter(x=>x.fav);return[...F,...L.filter(x=>!x.fav).slice(0,Math.max(0,MBOX_MAX-F.length))].sort((x,y)=>(+y.got||+y.at||0)-(+x.got||+x.at||0))};
 // on login: read the private record (moving the lists out of the old save the first time), then keep it in step on every save
 async function mbLoad(){if(mode!=='online'||!db||!uid||mbReady)return;try{const s=await mbRef().get(),d=s.exists?(s.data()||{}):{};
     P.mbox=mbUnion(d.mbox,P.mbox);P.sent=mbUnion(d.sent,P.sent);mbReady=true;mbSig='';mbWrite();save();if(mailView)renderPanel()}catch(e){setTimeout(mbLoad,15e3)}}
@@ -8560,13 +8580,13 @@ function attPicker(sel,act,qact){const ids=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i]&
    ${ids.length?`<div class="bag mlbag">${ids.map(i=>`<button class="slot" data-act="${act}" data-id="${i}" aria-pressed="${!!sel[i]}" title="${esc(ITEMS[i].n)}" aria-label="${esc(ITEMS[i].n)} ${P.inv[i]}개">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>`:'<p class="hint">가방이 비어 있습니다.</p>'}`}
 function toSel(id,cur){const L=Object.entries(PLAYERS).filter(([k,p])=>k!==uid&&p&&p.nick).sort((a,b)=>a[1].nick.localeCompare(b[1].nick,'ko'));return L.length?`<select id="${id}" class="sel" aria-label="받는 사람"><option value="">받는 사람 고르기</option>${L.map(([k,p])=>`<option value="${esc(k)}" ${cur===k?'selected':''}>${esc(p.nick)} · Lv.${p.lvl||1}</option>`).join('')}</select>`:'<span class="hint">다른 선원이 아직 없습니다.</span>'}
 // letters already opened: kept until deleted, with a quick reply
-function mboxHTML(R){if(!R.length)return'';return`<div class="row" style="justify-content:space-between;margin:16px 0 6px"><span class="lbl">읽은 우편 · ${R.length}통</span><span class="hint">직접 삭제하기 전까지 남아 있습니다 (최근 ${MBOX_MAX}통)</span></div>
+function mboxHTML(R){if(!R.length)return'';return`<div class="row" style="justify-content:space-between;margin:16px 0 6px"><span class="lbl">읽은 우편 · ${R.length}통</span><span class="hint">직접 삭제하기 전까지 남아 있습니다 (최근 ${MBOX_MAX}통 · ★ 즐겨찾기는 위에 고정되고 계속 남습니다)</span></div>
   <div class="maillist mbox">${pgSlice('rd',R).map(m=>{const who=m.sys?'운영자':(m.nick||'선원'),kind=m.kind==='grant'?'운영자 선물':mailKind(m),chips=m.kind==='grant'?grantChips(m):mlChips(m.items||[],+m.cr||0),arm=mbDelArm===m.id;
-    return`<div class="mailitem read mk-${mailCatOf(m)} ${m.sys?'sys':''}"><div class="mailfrom">${m.sys?`<span class="mailsys">운영자</span>`:mailWho(m,headImg(3,whoP(m.from)))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${mailTagHTML(m)} ${m.sys?esc(who):mailWho(m,esc(who))}${/^trade./.test(m.kind||'')?` <span class="hint">· ${kind}</span>`:''}</b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(m.msg)}”</p>`:''}${chips?`<div class="chips">${chips}<span class="hint">받음</span></div>`:''}</div>
+    return`<div class="mailitem read mk-${mailCatOf(m)} ${m.sys?'sys':''}${m.fav?' fav':''}"><button type="button" class="mbfav" data-act="mbfav" data-k="${esc(m.id)}" aria-pressed="${!!m.fav}" title="${m.fav?'즐겨찾기 해제':'즐겨찾기'}">${m.fav?'★':'☆'}</button><div class="mailfrom">${m.sys?`<span class="mailsys">운영자</span>`:mailWho(m,headImg(3,whoP(m.from)))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${mailTagHTML(m)} ${m.sys?esc(who):mailWho(m,esc(who))}${/^trade./.test(m.kind||'')?` <span class="hint">· ${kind}</span>`:''}</b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(m.msg)}”</p>`:''}${chips?`<div class="chips">${chips}<span class="hint">받음</span></div>`:''}</div>
      <div class="sbtns" style="flex-direction:column">${canReply(m)?`<button class="btn sm" data-act="mlreply" data-k="${esc(m.from)}">답장</button>`:''}${arm?`<button class="btn sm alt" data-act="mbdel" data-k="${esc(m.id)}" data-x="1">정말 삭제</button><button class="btn sm ghost" data-act="mbdel" data-k="">취소</button>`:`<button class="btn sm ghost" data-act="mbdel" data-k="${esc(m.id)}">삭제</button>`}</div></div>`}).join('')}</div>${pgNav('rd',R.length)}`}
 const mailWho=(m,inner)=>m.from&&!m.sys&&!m.grant&&PLAYERS[m.from]?`<button type="button" class="mlwho" data-act="profopen" data-k="${esc(m.from)}" title="프로필 보기">${inner}</button>`:inner;
-function mailInHTML(){const L0=mailList(),R0=P.mbox||[],L=L0.filter(m=>!mailCat||mailCatOf(m)===mailCat),R=R0.filter(m=>!mailCat||mailCatOf(m)===mailCat);
-  const cnt=c=>L0.filter(m=>mailCatOf(m)===c).length,fil=(L0.length||R0.length)?`<div class="mcats" role="group" aria-label="우편 종류">${[['','전체'],...Object.entries(MAILCAT).map(([k,[ic,n]])=>[k,ic+' '+n])].map(([k,n])=>`<button class="mcat ${k?'mt-'+k:''}" data-act="mailcat" data-k="${k}" aria-pressed="${mailCat===k}">${n}${k&&cnt(k)?` <em>${cnt(k)}</em>`:!k&&L0.length?` <em>${L0.length}</em>`:''}</button>`).join('')}</div>`:'';
+function mailInHTML(){const L0=mailList(),R0=P.mbox||[],FV=mailCat==='fav',L=FV?[]:L0.filter(m=>!mailCat||mailCatOf(m)===mailCat),R=R0.filter(m=>FV?m.fav:!mailCat||mailCatOf(m)===mailCat).sort((a,b)=>(!!b.fav-!!a.fav));const nFav=R0.filter(m=>m.fav).length;
+  const cnt=c=>L0.filter(m=>mailCatOf(m)===c).length,fil=(L0.length||R0.length)?`<div class="mcats" role="group" aria-label="우편 종류">${[['','전체'],...Object.entries(MAILCAT).map(([k,[ic,n]])=>[k,ic+' '+n])].map(([k,n])=>`<button class="mcat ${k?'mt-'+k:''}" data-act="mailcat" data-k="${k}" aria-pressed="${mailCat===k}">${n}${k&&cnt(k)?` <em>${cnt(k)}</em>`:!k&&L0.length?` <em>${L0.length}</em>`:''}</button>`).join('')}<button class="mcat mt-fav" data-act="mailcat" data-k="fav" aria-pressed="${FV}">★ 즐겨찾기${nFav?` <em>${nFav}</em>`:''}</button></div>`:'';
   return fil+_mailInHTML(L,R)}
 function _mailInHTML(L,R){
   return (L.length?`<div class="row" style="justify-content:space-between;margin:10px 0 6px"><span class="hint">선물·편지는 받기를 눌러야 가방에 들어옵니다. 거래 제안은 수락하거나 거절하십시오.</span><button class="btn sm gold" data-act="mailall">모두 받기</button></div>
@@ -8576,7 +8596,7 @@ function _mailInHTML(L,R){
     const ok=tr&&haveAll(m.want||[],+m.wantCr||0);
     const btn=tr?`<div class="sbtns" style="flex-direction:column"><button class="btn sm gold" data-act="tracc" data-k="${esc(m.id)}" ${ok?'':'disabled'} title="${ok?'':'줄 물건이 모자랍니다'}">수락</button><button class="btn sm ghost" data-act="trno" data-k="${esc(m.id)}">거절</button></div>`:`<div class="sbtns" style="flex-direction:column"><button class="btn sm ${gift?'gold':'ghost'}" data-act="mailone" data-k="${esc(m.id)}">${gift?'받기':'확인'}</button>${canReply(m)?`<button class="btn sm ghost" data-act="mlreply" data-k="${esc(m.from)}">답장</button>`:''}</div>`;
     return`<div class="mailitem mk-${mailCatOf(m)} ${sysm?'sys':''} ${tr?'trade':''}"><div class="mailfrom">${sysm?`<span class="mailsys">운영자</span>`:mailWho(m,headImg(3,whoP(m.from)))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b>${mailTagHTML(m)} ${sysm?esc(who):mailWho(m,esc(who))}${/^trade./.test(m.kind||'')?` <span class="hint">· ${mailKind(m)}</span>`:''}</b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(String(m.msg).slice(0,200))}”</p>`:''}${chips?`<div class="chips">${chips}</div>`:''}${trBody}${tr&&!ok?'<span class="hint" style="color:var(--red)">줄 물건이나 크레딧이 모자라 아직 수락할 수 없습니다.</span>':''}</div>${btn}</div>`}).join('')}</div>${pgNav('in',L.length)}`
-  :(R.length?'':mailCat?`<p class="empty" style="padding:24px 0">${MAILCAT[mailCat][1]} 우편이 없습니다.</p>`:'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 선원이나 운영자가 보낸 선물, 편지, 거래 제안이 여기에 도착합니다.</p>'))+mboxHTML(R)}
+  :(R.length?'':mailCat==='fav'?`<p class="empty" style="padding:24px 0">즐겨찾기한 우편이 없습니다. 읽은 우편의 ☆를 누르면 여기에 모입니다.</p>`:mailCat?`<p class="empty" style="padding:24px 0">${MAILCAT[mailCat][1]} 우편이 없습니다.</p>`:'<p class="empty" style="padding:24px 0">우편함이 비어 있습니다. 선원이나 운영자가 보낸 선물, 편지, 거래 제안이 여기에 도착합니다.</p>'))+mboxHTML(R)}
 function mailWriteHTML(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">편지는 온라인에 접속했을 때 보낼 수 있습니다.</p>';
   return`<div class="card mlform"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="lbl">받는 사람</span>${toSel('mlTo',mlTo)}</div>
    <textarea id="mlMsg" class="sel mltext" maxlength="200" placeholder="편지 내용 (200자까지)" aria-label="편지 내용">${esc(mlMsg)}</textarea>
@@ -8715,7 +8735,34 @@ function imgPrev(ctx){const L=imgList(ctx);return L.length?`<div class="padprev"
 function imgsHTML(ids){const v=(ids||[]).filter(id=>ASSET_ID.test(String(id))).slice(0,IMG_MAX);if(!v.length)return'';return`<div class="twimgs n${v.length}">${v.map(id=>`<img src="${window.__blobURL(id)}" loading="lazy" alt="이미지를 불러올 수 없습니다" data-act="imgview" data-k="${id}">`).join('')}</div>`}
 /* ---- PAD ---- */
 const TAG_RE=/#([0-9A-Za-z가-힣_]{1,20})/g;
-function richText(s){return esc(s).replace(/(^|[\s(])#([0-9A-Za-z가-힣_]{1,20})/g,(m,a,t)=>`${a}<button class="tag" data-act="padtag" data-k="${t}">#${t}</button>`).replace(/(^|[\s(])@([^\s@#<&]{1,12})/g,(m,a,n)=>`${a}<span class="men">@${n}</span>`)}
+// @mentions: crew names may contain spaces, so a mention is "@" + a real crew name (the longest one that fits), not just the next word
+const menNicks=()=>{const k=Object.values(PLAYERS||{}).map(p=>p&&p.nick).concat(P&&P.nick?[P.nick]:[]).filter(n=>n&&n!=='새 선원');return[...new Set(k)].sort((a,b)=>b.length-a.length)};
+// the names mentioned in a text (each @ taken by the longest crew name that starts right after it)
+function mentionsOf(text){const t=String(text||''),L=menNicks(),out=new Set();let i=-1;while((i=t.indexOf('@',i+1))>=0){const rest=t.slice(i+1),n=L.find(x=>rest.startsWith(x)&&!/[^\s@#.,!?~)\]]/.test(rest.charAt(x.length)||' '));if(n)out.add(n)}return out}
+const mentionsMe=text=>!!(P&&P.nick)&&mentionsOf(text).has(P.nick);
+// typing @ in a PAD box opens a crew picker; choosing a name puts the whole name in (spaces and all)
+const MEN_BOX=['padIn','padReply','peditIn','memoIn','memoCmIn','memoEdIn'];let menPick=null;
+function menClose(){if(menPick){menPick.el.remove();menPick=null}}
+function menOpen(ta){const v=ta.value,c=ta.selectionStart||0,m=v.slice(0,c).match(/@([^@\n]{0,12})$/);if(!m){menClose();return}
+  const q=m[1].toLowerCase(),L=menNicks().filter(n=>n!==P.nick).filter(n=>!q||n.toLowerCase().includes(q)).sort((a,b)=>(b.toLowerCase().startsWith(q)-a.toLowerCase().startsWith(q))||a.localeCompare(b)).slice(0,6);
+  if(!L.length){menClose();return}if(!menPick){const el=document.createElement('div');el.className='menpick px';el.setAttribute('role','listbox');document.body.appendChild(el);menPick={el}}
+  menPick.ta=ta;menPick.at=c-m[0].length;menPick.c=c;menPick.L=L;menPick.i=Math.min(menPick.i||0,L.length-1);
+  menPick.el.innerHTML=L.map((n,i)=>`<button type="button" role="option" aria-selected="${i===menPick.i}" data-men="${i}">@${esc(n)}</button>`).join('');
+  const r=ta.getBoundingClientRect();menPick.el.style.left=Math.round(Math.max(8,Math.min(innerWidth-228,r.left)))+'px';menPick.el.style.top=Math.round(r.bottom+4)+'px'}
+function menPut(i){const p=menPick;if(!p)return;const n=p.L[i];if(!n)return;const ta=p.ta,v=ta.value,ins='@'+n+' ';ta.value=v.slice(0,p.at)+ins+v.slice(p.c);const k=p.at+ins.length;menClose();ta.focus();ta.setSelectionRange(k,k);ta.dispatchEvent(new Event('input',{bubbles:true}))}
+document.addEventListener('input',e=>{const t=e.target;if(t&&MEN_BOX.includes(t.id))menOpen(t)});
+document.addEventListener('keydown',e=>{if(!menPick||e.target!==menPick.ta)return;const n=menPick.L.length;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();menPick.i=(menPick.i+(e.key==='ArrowDown'?1:n-1))%n;menOpen(menPick.ta)}
+  else if((e.key==='Enter'||e.key==='Tab')&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopPropagation();menPut(menPick.i)}else if(e.key==='Escape')menClose()},true);
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('[data-men]');if(b&&menPick){e.preventDefault();menPut(+b.dataset.men);return}if(menPick&&!e.target.closest('.menpick')&&e.target!==menPick.ta)menClose()},true);
+addEventListener('scroll',()=>{if(menPick)menOpen(menPick.ta)},{passive:true});
+function richText(s){return menHTML(esc(s).replace(/(^|[\s(])#([0-9A-Za-z가-힣_]{1,20})/g,(m,a,t)=>`${a}<button class="tag" data-act="padtag" data-k="${t}">#${t}</button>`)
+)}
+// @names in already-escaped text become highlighted mentions
+function menHTML(h){const L=menNicks().map(esc);
+  let o='',i=0;for(;;){const j=h.indexOf('@',i);if(j<0){o+=h.slice(i);break}o+=h.slice(i,j);const pv=j?h.charAt(j-1):' ';if(!/[\s(]/.test(pv)){o+='@';i=j+1;continue}
+    const rest=h.slice(j+1),n=L.find(x=>rest.startsWith(x)&&!/[^\s@#.,!?~)\]&<]/.test(rest.charAt(x.length)||' ')),w=n||(rest.match(/^[^\s@#&<]{1,12}/)||[])[0];
+    if(w){o+=`<span class="men">@${w}</span>`;i=j+1+w.length}else{o+='@';i=j+1}}return o}
 const replies=id=>{const m={};[...POSTS,...THR].forEach(p=>{if(p.re===id)m[p.id]=p});return Object.values(m)};
 const myRt=id=>POSTS.find(x=>x.rt===id&&x.uid===uid);
 // a caught fish as a card on PAD: picture, name and grade, size against its range, and how it was caught
@@ -8768,8 +8815,7 @@ function socPad(){
     return`<div class="row padthrhead"><button class="btn sm ghost" data-act="padback">← 타임라인</button><span class="hint">스레드</span><button class="qchip padtopq" data-act="padtop">▲ 맨 위로</button></div><div class="twfeed">${THRA.length?`<div class="twanc">${THRA.map(a=>a.gone?'<p class="hint twgone">지워진 글입니다.</p>':twHTML(a)).join('')}</div>`:''}${main?twHTML(main,true):'<p class="empty" style="padding:14px">지워졌거나 불러오는 중인 글입니다.</p>'}
      ${rs.length?`<span class="lbl twrlbl">답글 ${rs.length}개</span>`:''}${rs.map(r=>twHTML(r)).join('')||(main?'<p class="hint" style="padding:10px 14px">아직 답글이 없습니다.</p>':'')}
      ${main?`<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="padReply" class="suggta socta" maxlength="${PAD_MAX}" placeholder="@${esc(main.nick||'선원')} 님에게 답글 달기" aria-label="답글">${esc(replyDraft)}</textarea>${imgPrev('reply')}<div class="row" style="justify-content:space-between;gap:8px">${imgPicker('reply')||'<span></span>'}<span class="row" style="gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" data-act="padreply" ${padBusy?'disabled':''}>${padBusy?'올리는 중…':'답글'}</button></span></div></div></div>`:''}</div>`}
-  const me=new RegExp('@'+P.nick.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![^\\s@#])');
-  const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&me.test(s.text||'');return true});
+  const list=POSTS.filter(p=>{const s=p.rt?(p.rto||{}):p;if(s.re)return false;if(padTag)return!p.rt&&String(s.text||'').includes('#'+padTag);if(padView==='mine')return p.uid===uid;if(padView==='ment')return p.uid!==uid&&!p.rt&&mentionsMe(s.text);return true});
   return padCompose()+`<div class="dtabs padtabs" role="tablist">${[['all','타임라인'],['mine','내 PAD'],['ment','나를 언급']].map(([k,n])=>`<button role="tab" aria-selected="${!padTag&&padView===k}" data-act="padview" data-k="${k}">${n}</button>`).join('')}${padTag?`<button role="tab" aria-selected="true" data-act="padtag" data-k="">#${esc(padTag)} ✕</button>`:''}</div>
   <div class="twfeed">${list.length?list.slice(0,padShow).map(p=>twHTML(p)).join('')+(list.length>padShow||padMore?`<button class="btn sm alt padmore" data-act="padmore">더보기</button>`:''):`<p class="empty" style="padding:18px">${padTag?'이 태그로 쓴 글이 아직 없습니다.':padView==='ment'?'아직 나를 언급한 글이 없습니다.':padView==='mine'?'아직 내가 쓴 글이 없습니다.':'PAD가 조용합니다. 첫 글을 남겨 보십시오.'}</p>`}</div>`}
 // a reply opened as a thread shows the conversation above it: walk up the re chain (from the feed, else from the server)
@@ -8808,7 +8854,7 @@ function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px
   <div class="memolist">${L.length?L.map(m=>{const mine=m.uid===uid,cms=memoCms(m),live=cms.filter(c=>c.text&&!c.del).length,op=memoOpen===m.id,arm=memoDelArm===m.id,ed=memoEdit===m.id+'|';
     return`<article class="memo${mine?' mine':''}"><div class="memohd"><span class="mav lgnm" data-act="lgmenu" data-k="${esc(m.uid)}" data-at="m${esc(m.id)}" role="button" tabindex="0" title="${esc(m.nick||'선원')}">${headImg(2,whoP(m.uid))}</span><b class="lgnm memonm" style="color:${colorOf(m.uid)}" data-act="lgmenu" data-k="${esc(m.uid)}" data-at="n${esc(m.id)}" role="button" tabindex="0">${esc(m.nick||'선원')}</b>
       ${mine||isAdmin?`<span class="memomod">${mine?`<button class="mlink" data-act="memoedit" data-k="${esc(m.id)}" data-c="">수정</button><i>|</i>`:''}${arm?`<button class="mlink red" data-act="memodel" data-k="${esc(m.id)}" data-x="1">정말 삭제</button><i>|</i><button class="mlink" data-act="memodel" data-k="">취소</button>`:`<button class="mlink" data-act="memodel" data-k="${esc(m.id)}">삭제</button>`}</span>`:''}<time class="hint memodate">${memoStamp(m.at)}</time></div>
-      ${ed?memoEditBox(m.id,'',m.text,MEMO_MAX):`<p class="memotx">${esc(m.text)}</p>`}
+      ${ed?memoEditBox(m.id,'',m.text,MEMO_MAX):`<p class="memotx">${menHTML(esc(m.text))}</p>`}
       <div class="memobar"><button class="mlink memocmbtn${op?' on':''}" data-act="memocm" data-k="${esc(m.id)}" aria-expanded="${op}">${op?'⌃':'⌄'} 댓글 <b>${live}</b></button>${op?`<i>|</i><button class="mlink" data-act="memosort">${memoSort==='new'?'최신순':'등록순'} ▾</button>`:''}</div>
       ${op?`<div class="memocms">${memoThread(m,cms)}${memoReply===null||!cms.some(c=>c.id===memoReply)?memoCmBox(m.id,'',false):''}</div>`:''}
     </article>`}).join(''):'<p class="empty" style="padding:18px">아직 글이 없습니다. 첫 글을 남겨 보십시오.</p>'}</div>${pages>1?memoPager(pages):''}`}
@@ -8816,8 +8862,11 @@ function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px
 function memoPager(n){const cur=memoPage,lo=Math.max(0,Math.min(cur-2,n-5)),hi=Math.min(n,lo+5);let h=`<button class="mpg" data-act="memopage" data-k="${cur-1}" ${cur>0?'':'disabled'} aria-label="이전 쪽">‹ 이전</button>`;
   for(let i=lo;i<hi;i++)h+=`<button class="mpg${i===cur?' on':''}" data-act="memopage" data-k="${i}" aria-current="${i===cur?'page':'false'}">${i+1}</button>`;
   return`<nav class="memopager" aria-label="쪽 이동">${h}<button class="mpg" data-act="memopage" data-k="${cur+1}" ${cur<n-1?'':'disabled'} aria-label="다음 쪽">다음 ›</button></nav>`}
+// tagging someone in 만남 drops a small note in their guest inbox (the same one greetings use); their bell keeps it like other 만남 alerts
+function memoMention(text,mid,cid){if(mode!=='online')return;const by=new Map(Object.entries(PLAYERS||{}).filter(([,p])=>p&&p.nick).map(([u,p])=>[p.nick,u]));
+  [...mentionsOf(text)].map(n=>by.get(n)).filter(u=>u&&u!==uid).slice(0,5).forEach(to=>db.collection('guest').add({to,from:uid,nick:P.nick,kind:'ment',mid,cid:cid||'',text:String(text).slice(0,110),at:Date.now()}).catch(()=>{}))}
 async function memoPost(){if(mode!=='online'||memoBusy)return;const t=String(($('#memoIn')||{}).value??memoDraft).trim().slice(0,MEMO_MAX);if(!t){toast('메모 내용을 적어 주십시오.');return}
-  const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});memoDraft='';memoPage=0;stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
+  const ip=$('#memoIn');if(ip)ip.blur();memoBusy=true;try{const ref=await memoRef().add({uid,nick:P.nick,text:t,at:Date.now(),cm:[]});memoMention(t,ref&&ref.id,'');memoDraft='';memoPage=0;stat('memo')}catch(e){toast('메모를 남기지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')}memoBusy=false;renderPanel()}
 function memoCmBox(mid,pid,reply){return`<div class="memocmin${reply?' rep':''}"><span class="mav">${headImg(2,P)}</span><textarea id="memoCmIn" class="sel" rows="2" maxlength="${MEMO_CM}" data-k="${esc(mid)}" data-p="${esc(pid)}" placeholder="${reply?'답글':'댓글'}을 남겨 보세요 (${MEMO_CM}자까지 · Enter로 등록, Shift+Enter 줄바꿈)" aria-label="${reply?'답글':'댓글'}">${esc(memoCm[mid+'|'+pid]||'')}</textarea><button class="btn sm" data-act="memocmpost" data-k="${esc(mid)}" data-p="${esc(pid)}">등록</button>${reply?`<button class="mlink" data-act="memoreply" data-k="">취소</button>`:''}</div>`}
 function memoEditBox(mid,cid,text,max){return`<div class="memoedit"><textarea id="memoEdIn" class="sel memota" maxlength="${max}" data-k="${esc(mid)}" data-c="${esc(cid)}" aria-label="수정할 내용">${esc(memoEdTx&&memoEdTx.k===mid+'|'+cid?memoEdTx.v:text)}</textarea><div class="row" style="justify-content:flex-end;gap:5px"><button class="mlink" data-act="memoedit" data-k="">취소</button><button class="btn sm gold" data-act="memosave" data-k="${esc(mid)}" data-c="${esc(cid)}">저장</button></div></div>`}
 // cafe-style thread: top-level comments, and every answer below its top-level comment one step in, tagged with whom it answers
@@ -8829,7 +8878,7 @@ function memoThread(m,cms){const by=Object.fromEntries(cms.map(c=>[c.id,c])),roo
 function memoCmRow(m,c,to,rep){const mine=c.uid===uid,gone=c.del||!c.text,arm=memoCmDel===m.id+'|'+c.id,ed=memoEdit===m.id+'|'+c.id;
   return`<div class="mcm${rep?' rep':''}" data-cid="${esc(c.id)}">${rep?'<span class="mcmarr">ㄴ</span>':''}${gone?'':`<span class="mav lgnm" data-act="lgmenu" data-k="${esc(c.uid)}" data-at="c${esc(c.id)}" role="button" tabindex="0">${headImg(2,whoP(c.uid))}</span>`}<div class="mcmb">${gone?'<span class="hint">삭제된 댓글입니다.</span>':`<div class="mcmh"><b class="lgnm memonm" style="color:${colorOf(c.uid)}" data-act="lgmenu" data-k="${esc(c.uid)}" data-at="d${esc(c.id)}" role="button" tabindex="0">${esc(c.nick||'선원')}</b>${c.uid===m.uid?'<span class="mcmauth">작성자</span>':''}<time class="hint">${memoStamp(c.at)}</time><button class="mlink" data-act="memoreply" data-k="${esc(c.id)}">↪ 답글</button>
     ${mine||isAdmin?`<span class="memomod">${mine?`<button class="mlink" data-act="memoedit" data-k="${esc(m.id)}" data-c="${esc(c.id)}">수정</button><i>|</i>`:''}${arm?`<button class="mlink red" data-act="memocmdel" data-k="${esc(m.id)}" data-c="${esc(c.id)}" data-x="1">정말 삭제</button><i>|</i><button class="mlink" data-act="memocmdel" data-k="">취소</button>`:`<button class="mlink" data-act="memocmdel" data-k="${esc(m.id)}" data-c="${esc(c.id)}">삭제</button>`}</span>`:''}</div>
-    ${ed?memoEditBox(m.id,c.id,c.text,MEMO_CM):`<p class="mcmt">${to&&!(to.del||!to.text)?`<span class="mcmto">${esc(to.nick||'선원')}</span> `:''}${esc(c.text)}</p>`}`}</div></div>`}
+    ${ed?memoEditBox(m.id,c.id,c.text,MEMO_CM):`<p class="mcmt">${to&&!(to.del||!to.text)?`<span class="mcmto">${esc(to.nick||'선원')}</span> `:''}${menHTML(esc(c.text))}</p>`}`}</div></div>`}
 async function memoSave(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)return;const i=$('#memoEdIn'),t=String(i&&i.value||'').trim();if(!t){toast('내용을 적어 주십시오.');return}if(i)i.blur();
   try{if(!cid){if(m.uid!==uid)return;await memoRef().doc(mid).update({text:t.slice(0,MEMO_MAX),ed:Date.now()})}
    else{const cms=memoCms(m),c=cms.find(x=>x.id===cid);if(!c||c.uid!==uid)return;await memoRef().doc(mid).update({cm:cms.map(x=>x.id===cid?Object.assign({},x,{text:t.slice(0,MEMO_CM),ed:Date.now()}):x)})}
@@ -8839,7 +8888,7 @@ async function memoCmDelete(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)ret
   const kids=cms.some(x=>x.pid===cid);const out=kids?cms.map(x=>x.id===cid?Object.assign({},x,{text:'',del:1}):x):cms.filter(x=>x.id!==cid);
   try{await memoRef().doc(mid).update({cm:out})}catch(e){toast('댓글을 지우지 못했습니다.')}renderPanel()}
 async function memoCmPost(id,pid=''){const m=MEMOS.find(x=>x.id===id);if(!m)return;const key=id+'|'+pid,i=$('#memoCmIn'),t=String((i&&i.value)||memoCm[key]||'').trim().slice(0,MEMO_CM);if(!t){toast('댓글을 적어 주십시오.');return}
-  const cm=[...memoCms(m),{id:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),pid,uid,nick:P.nick,text:t,at:Date.now()}].slice(-300);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();if(!pid)setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus({preventScroll:true})},30)}
+  const cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cm=[...memoCms(m),{id:cid,pid,uid,nick:P.nick,text:t,at:Date.now()}].slice(-300);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoMention(t,id,cid);memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();if(!pid)setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus({preventScroll:true})},30)}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoEdIn')memoEdTx={k:t.dataset.k+'|'+(t.dataset.c||''),v:t.value};else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k,t.dataset.p||'')}});
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
@@ -9085,12 +9134,14 @@ function afterSocialRender(lg){lg=lg||{};const put=id=>{const l=document.getElem
 const guestDel=new Map();const guestWait=id=>Date.now()-(guestDel.get(id)||0)<15e3;
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
+    if(g.kind==='ment'&&g.mid&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];const x={memo:1,why:'만남에서 나를 언급했습니다',mid:g.mid,cid:g.cid||'m'+g.id,uid:g.from,nick:g.nick||'선원',text:g.text||'',at:+g.at||Date.now()};
+      P.nbox=[...(P.nbox||[]).filter(y=>nbKey(y)!==nbKey(x)),x].sort((a,b)=>b.at-a.at).slice(0,NBOX_MAX);if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 만남에서 나를 언급했습니다.`);ch=true;bellRefresh()}
     if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];P.hnoti=[...(P.hnoti||[]).slice(-19),{hi:1,from:g.from,nick:g.nick||'선원',at:+g.at||Date.now()}];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,AFF.hi,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit();
   // once counted (or too old to count), a greeting is removed so this list never grows
   const done=GUEST.filter(g=>g.to===uid&&!guestWait(g.id)&&(P.gotHi.includes(g.id)||g.at<(P.joined||0)||g.kind!=='hi'));if(done.length&&mode==='online'){const go=()=>done.forEach(g=>{if(guestWait(g.id))return;guestDel.set(g.id,Date.now());db.doc('guest/'+g.id).delete().catch(()=>{})});ch?Promise.resolve(flushNow()).then(go,go):go()}}
 /* PAD alerts: replies to my posts, reposts of my posts and mentions of me, newest first; the bell shows what came in since I last opened it */
-function padLive(){if(mode!=='online'||!P)return[];const me='@'+P.nick;return POSTS.filter(p=>p.uid!==uid&&(p.reUid===uid||(p.rt&&p.rto&&p.rto.uid===uid)||(!p.rt&&String(p.text||'').includes(me)))).sort((a,b)=>b.at-a.at).slice(0,30)}
+function padLive(){if(mode!=='online'||!P)return[];const me='@'+P.nick;return POSTS.filter(p=>p.uid!==uid&&(p.reUid===uid||(p.rt&&p.rto&&p.rto.uid===uid)||(!p.rt&&mentionsMe(p.text)))).sort((a,b)=>b.at-a.at).slice(0,30)}
 /* alerts kept on the character: whatever the bell has once seen stays there (newest 40), so it doesn't empty when PAD or 만남
    aren't being read live, and it follows you to other devices */
 const NBOX_MAX=40;let MEMOS_MINE=[];
@@ -9143,7 +9194,7 @@ function notiChime(){const t=Math.max(0,...padNotis().map(p=>+p.at||0),...memoNo
 function bellRefresh(keep){try{nboxCapture();notiPrune()}catch(e){}socDots();const b=$('#bellBtn');if(!b)return;notiChime();const n=notiUnread();b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n);if(!keep&&!notiPop.hidden)notiPop.innerHTML=notiHTML()}
 document.addEventListener('click',e=>{if(e.target.closest('#bellBtn')){e.stopPropagation();notiToggle(notiPop.hidden);return}if(!notiPop.hidden&&!e.target.closest('#notiPop'))notiToggle(false)},true);
 addEventListener('resize',()=>{if(!notiPop.hidden)notiPlace()});addEventListener('scroll',()=>{if(!notiPop.hidden)notiPlace()},{passive:true});
-function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'선원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'선원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&String(p.text||'').includes(me))toast(`${p.nick||'선원'} 님이 PAD에서 나를 언급했습니다.`)})}
+function notePosts(){bellRefresh();const me='@'+P.nick;POSTS.forEach(p=>{if(p.uid===uid||p.at<=socBoot||socNoted.has(p.id))return;socNoted.add(p.id);if(p.reUid===uid)toast(`${p.nick||'선원'} 님이 내 PAD 글에 답글을 달았습니다.`);else if(p.rt&&p.rto&&p.rto.uid===uid)toast(`${p.nick||'선원'} 님이 내 글을 재전송했습니다.`);else if(!p.rt&&mentionsMe(p.text))toast(`${p.nick||'선원'} 님이 PAD에서 나를 언급했습니다.`)})}
 // PAD keeps every post: the feed shows 20 at a time behind a 더보기 button, and when the loaded posts run out it asks the server for 150 more
 /* how many PAD records to keep connected: it grows (to 90 at most on its own) until the timeline has 5 posts that aren't replies,
    and the size it needed is remembered on this device, so the next visit reads that once instead of growing 30 → 60 → 90 again */
@@ -9296,9 +9347,10 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
 
 /* ───────── bgm ───────── */
 const bgm=new Audio('bgm.mp3?v=storm');bgm.loop=true;bgm.preload='auto';
-// once 통신 장치 is repaired (and 주 엔진 opens) the main theme becomes "Fireflies All Over the Sky", crossfading over 3 s; the bar and 원정 keep theirs
+// once 통신 장치 is repaired (and 주 엔진 opens) and 오르비스's first visit is over, the main theme becomes "Fireflies All Over the Sky", crossfading over 3 s; the bar and 원정 keep theirs
 const bgm2=new Audio('fireflies.mp3');bgm2.loop=true;bgm2.preload='none';
-const bgmNewWant=()=>{try{const c=SHIP.find(x=>x.id==='comm');return mode==='online'&&!!c&&shipDone(c)}catch(e){return false}};
+// …and only once I've lived through 오르비스's first visit (P.orbis 2: it looked down, everyone fell, it left)
+const bgmNewWant=()=>{try{const c=SHIP.find(x=>x.id==='comm');return mode==='online'&&!!c&&shipDone(c)&&(+(P&&P.orbis)||0)>=2}catch(e){return false}};
 let bgmFade=0;const bgmMain=()=>bgmNewWant()?bgm2:bgm;
 function bgmPauseAll(){clearInterval(bgmFade);bgmFade=0;bgm.pause();bgm2.pause()}
 // play m; if its pair o is still playing, fade o out while m comes up (3 s). F holds the running fade's timer
