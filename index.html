@@ -1134,6 +1134,7 @@ b.suwib{cursor:default;flex:0 0 120px}
 :root[data-skin="light"] .pside{background:#fffaf0;color:#2a2418;border-color:#2a2418}:root[data-skin="light"] .pside-why{color:#2a2418}:root[data-skin="light"] .pside .hint{color:#6a6050}:root[data-skin="light"] .pside .ichip{background:#fff}
 @media (max-width:760px){.profwrap{grid-template-columns:minmax(0,1fr)}.pside-col{grid-template-rows:auto}.pside h4{font-size:12px;white-space:nowrap;gap:4px}.pside h4 span{width:16px;height:16px;font-size:10px}}
 
+.stv.auto .stv-skip,.stv.auto .stv-next{display:none!important}
 .stv{position:fixed;inset:0;z-index:210;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 16px 4vh;box-sizing:border-box;background:#000;color:#eef3ff;animation:opnIn .5s steps(5) both}
 .stv.out{opacity:0;transition:opacity .4s}.stv-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 .stv-skip{position:absolute;top:12px;right:14px;z-index:3;font:inherit;font-family:"Galmuri11",var(--f-pix);font-size:12px;color:#aab8e8;background:rgba(11,16,48,.85);border:2px solid #2a3a80;padding:3px 9px;cursor:pointer}
@@ -5300,20 +5301,23 @@ addEventListener('pointermove',e=>{endMx=e.clientX;endMy=e.clientY},{passive:tru
 /* 통신 장치 repaired: the signal reaches something. For every crew member, once, the sky splits and the great eye 「오르비스」 looks down
    on the base camp — everyone who meets its gaze collapses (the usual faint: rescue by a crewmate, or wake after the timer) */
 let orbisBusy=false;
-const ORB_BATTLE=120e3;   // how long the first fight lasts before 오르비스 ends it
+const ORB_BATTLE=90e3;   // how long the first fight lasts before 오르비스 ends it
 // P.orbis: 1 = saw the intro (fighting), 2 = knocked out and saw it leave
 function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||!$('#joinModal').hidden)return;const q=SHIP.find(x=>x.id==='comm');if(!q||!shipDone(q))return;
   const st=(+P.orbis||0);if(st>=2)return;
   if(END&&!endFirst()){P.orbis=2;save();syncBgm();return}                          // the final raid is already on the board: the first encounter is long past
   const over=endFirst()&&sNow()>=(+END.until||0);
   if(over){orbisBusy=true;orbisLeave();return}
-  if(!st){orbisBusy=true;orbisPlay(ORB_INTRO,()=>{orbisBusy=false;P.orbis=1;save();orbisStart()})}}
+  if(!st){if($('#story')||$('#orbisFx'))return;orbisBusy=true;/* the 통신 장치 story first; the eye scene starts only once the story has fully faded away */const go=()=>{orbisBgmIn();/* plain black between the story and the eye: the game never shows through the fade */const bk=document.createElement('div');bk.id='orbBlack';bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{if(!$('#orbisFx'))orbisPlay(ORB_INTRO,()=>{orbisBusy=false;P.orbis=1;save();orbisStart()});setTimeout(()=>bk.remove(),900)},450)};if(STORIES.comm)playStory('comm',go);else go()}}
 // whoever finishes the intro first opens the fight on the server; everyone else just joins it
 function orbisStart(){if(END)return;const t0=sNow();bossTx(endRef(),cur=>{if(cur)return null;const hp=endHpMax();return{on:true,done:false,mode:'first',gen:t0,startAt:t0,until:t0+ORB_BATTLE,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0}})
   .then(nx=>{if(nx)sys(`[공지] ${END_NAME}이(가) 베이스캠프 위에 나타났습니다! 모두 맞서 싸우십시오!`,true,'static')}).catch(()=>{})}
-const ORB_INTRO=['통신 장치에 불이 들어왔다. 첫 신호가 하늘 너머로 뻗어 나간다…','…그리고 무언가가 대답했다.','하늘이 갈라지고, 거대한 눈 「오르비스」가 베이스캠프를 내려다본다.','선원들이여, 무기를 들어라!'];
+const ORB_INTRO=['하늘에 금이 간다…','그 너머에서, 감겨 있던 수많은 눈이 모습을 드러낸다.','거대한 눈 「오르비스」가 눈을 뜨고 베이스캠프를 내려다본다.','선원들이여, 무기를 들어라!'];
 const ORB_LEAVE=['「오르비스」의 모든 눈이 한꺼번에 베이스캠프를 바라본다.','그 시선을 마주친 순간, 선원들이 하나둘 쓰러졌다…','쓰러진 선원들을 내려다보던 거대한 눈은, 천천히 하늘 너머로 사라졌다.'];
-function orbisPlay(LINES,done,leave){const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
+// a plain black curtain over the joins: fades in, swaps what's underneath, then fades back out (the game never peeks through)
+function orbCurtain(op){const k=document.createElement('div');k.className='orbcur';k.style.cssText=`position:fixed;inset:0;background:#000;z-index:215;opacity:${op};transition:opacity .6s linear;pointer-events:none`;document.body.appendChild(k);return k}
+function orbBlackOut(swap){const k=orbCurtain(0);requestAnimationFrame(()=>requestAnimationFrame(()=>{k.style.opacity='1'}));setTimeout(()=>{try{swap()}catch(e){}setTimeout(()=>{k.style.transition='opacity .9s linear';k.style.opacity='0';setTimeout(()=>k.remove(),950)},250)},650)}
+function orbisPlay(LINES,done,leave){if(leave){const k=orbCurtain(1);setTimeout(()=>{k.style.transition='opacity .6s linear';k.style.opacity='0';setTimeout(()=>k.remove(),650)},900)}const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
   const t0=performance.now(),STEP=leave?2.4:3,TOTAL=LINES.length*STEP+.6;let li=-1;try{sfxStatic()}catch(e){}
   const draw=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000,W=Math.ceil(innerWidth/EPX),H=Math.ceil(innerHeight/EPX);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
     const x=cv.getContext('2d');x.fillStyle='#05030a';x.fillRect(0,0,W,H);
@@ -5326,7 +5330,7 @@ function orbisPlay(LINES,done,leave){const M=document.createElement('div');M.id=
         endEye(x,ex,ey,er,o,[Math.cos(a+Math.PI)*.4,.2],false,t)}}}
     if(open>0||(!leave&&t>STEP*.8))endEye(x,cx,cy-(1-sc)*H*.3,r*sc,open,[Math.sin(t*.8)*.3,.3],leave&&t<STEP*2&&Math.floor(t*6)%2===0,t);
     const k=Math.min(LINES.length-1,Math.floor(t/STEP));if(k!==li){li=k;tx.textContent=LINES[k];if(leave&&k===1){M.classList.add('red');try{sfxStatic()}catch(e){}}}
-    if(t<TOTAL)requestAnimationFrame(draw);else{M.remove();done&&done()}};
+    if(t<TOTAL)requestAnimationFrame(draw);else orbBlackOut(()=>{M.remove();done&&done()})};
   requestAnimationFrame(draw)}
 // the fight is over: everyone still standing is struck down, and 오르비스 leaves the sky
 function orbisLeave(){if(END&&endFirst()&&END.on){const g=END.gen;bossTx(endRef(),cur=>cur&&cur.mode==='first'&&cur.gen===g&&cur.on?Object.assign(cur,{on:false,left:true,leftAt:Date.now()}):null).then(nx=>{if(nx)sys(`[공지] ${END_NAME}의 시선에 선원 모두가 쓰러졌습니다. 거대한 눈은 하늘 너머로 사라졌습니다…`,true,'static')}).catch(()=>{})}
@@ -6187,7 +6191,9 @@ const shipLeft=(pt,id)=>Math.max(0,(pt.need.find(x=>x[0]===id)||[,0])[1]-(shipGo
 // sections already repaired before crops joined the list stay repaired: the first client to see the totals after that change records
 // which ones had all their other materials (fuel.pre); until that record exists, a section counts as done on its other materials alone
 const shipOldDone=(pt,p)=>pt.need.filter(([id])=>!isCropId(id)).every(([id,n])=>((p||{})[pt.id]||{})[id]>=n);
-const shipKept=pt=>SHIPT&&SHIPT.v?(SHIPT.fuel?!!(SHIPT.fuel.pre||{})[pt.id]:shipOldDone(pt,SHIPT.p)):false;
+// only the two parts finished under the old rules may skip 수리중; 통신 장치 and everything after it always waits for the next 20:00
+const SHIP_KEEP_PARTS=new Set(['life','power']);
+const shipKept=pt=>SHIP_KEEP_PARTS.has(pt.id)&&SHIPT&&SHIPT.v?(SHIPT.fuel?!!(SHIPT.fuel.pre||{})[pt.id]:shipOldDone(pt,SHIPT.p)):false;
 // 원정 재료 needs were raised to 2000: a part the crew had already finished under the old amounts stays finished
 const SHIP_OLD_NEED={mazeCore:120,starHeart:200,wreckNozzle:160,abyssPrism:180,bogResin:140};
 // the old-amount shortcut let 동력로 count as full with 120 미궁 결정핵 (instead of 1000) and it opened at once. That already happened,
@@ -7442,7 +7448,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794931576';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794934470';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7632,6 +7638,12 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'black',noart:1,lines:[{t:'......',btn:'▶'}]},
   {art:'black',noart:1,lines:[{t:'동력로를 고치도록 하자.',btn:'▶'}]}]},
   // played once for everyone when 동력로 is repaired, then 의뢰판 opens
+  // 통신 장치 repaired: the lead-in to 오르비스's first visit (it plays right before the great eye opens)
+  comm:{n:'통신 장치 · 첫 신호',auto:1,scenes:[
+  {art:'l_wreck',lines:[{t:'우주선을 수리하는 과정은 생각보다 순조롭다.'},{t:'웬 어중이 떠중이들만 모아 프로젝트를 꾸린 건 아니었던 모양인지….'}]},
+  {art:'l_cabin',lines:[{t:'통신 장치를 연결해보기 전 우리는 함선에 모였다.'},{t:'함께 들 축배는 없지만, 모두가 조마조마하게 지켜본다.'}]},
+  {art:'c_antenna',sfx:'beep',lines:[{t:'… 뚜. 뚜. 뚜.',wait:3.6},{t:'…마침내 첫 구조 신호가 울린다.'},{t:'부디 우리처럼 길을 잃지 않기를 바라며 하늘을 올려다보는 순간.'}]},
+  {art:'c_presence',lines:[{t:'거대한 기척이 느껴진다…….',wait:3.4},{t:'그리고, 무언가가 대답했다.',bgm:'orbis'}]}]},
   power:{n:'동력로 · 마담의 의뢰판',scenes:[
   {art:'p_wire',lines:[{t:'인간은 적응의 동물이라 누가 말했을까.',wait:3.4}]},
   {art:'p_reactor',lines:[{t:'여러 생물과 싸우고, 녹슨 잔해길을 헤치며 농작물을 자급자족하는 것에도 많이 익숙해졌다.'},{t:'확실한 목표 속에서 쉴 틈 없이 몸을 움직인다.'}]},
@@ -7662,11 +7674,13 @@ function sfxVoice(ch,o){if(!soundOn||!ch)return;const a=ac();if(!a)return;voiceS
 // a soft typewriter tick for the story's narration (the robot's lines keep its own voice)
 function sfxType(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime,f=1500+Math.random()*500;tone(a,'square',f,f*.6,t,.011,.022);tone(a,'triangle',240+Math.random()*60,120,t,.018,.02)}
 // 녹슨 7호 rolling up (드르륵, 드르륵) and flicking a switch (달칵), for the 동력로 story
+// the first distress call: three short beeps (뚜 뚜 뚜), a pause, and three more
+function sfxSigBeep(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.1;for(const g0 of [0,1.6])for(let i=0;i<3;i++)tone(a,'sine',880,880,t+g0+i*.38,.2,.07)}
 function sfxRattle(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;
   const roll=at=>{for(let i=0;i<10;i++){const f=120+Math.random()*110;tone(a,'square',f,f*.7,at+i*.042,.024,.055);if(i%3===0)tone(a,'triangle',60+Math.random()*30,40,at+i*.042,.03,.05)}};
   roll(t+.05);roll(t+.75);tone(a,'square',1400,300,t+1.62,.018,.09);tone(a,'triangle',420,180,t+1.64,.05,.07)}
 let deckSnd=null;function sfxDeckSteps(){if(!soundOn)return;try{if(!deckSnd)deckSnd=new Audio('steps.mp3');deckSnd.volume=Math.min(1,sfxVol/100);deckSnd.currentTime=0;deckSnd.play().catch(()=>{})}catch(e){}}
-function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv';op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
+function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv'+(S.auto?' auto':'');let fullAt=0,autoCall=false;op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
   op.innerHTML=`<canvas class="stv-bg"></canvas><button class="stv-skip" type="button">건너뛰기 ▶▶</button><div class="stv-art"><canvas width="240" height="120"></canvas></div>
    <div class="stv-box"><b class="stv-who" hidden></b><p class="stv-txt"></p><button class="stv-next" type="button">▶ 다음</button></div>`;
   document.body.appendChild(op);
@@ -7803,6 +7817,16 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
     face:t=>{sky(t);const k=Math.min(1,t/2.6),e=.5-.5*Math.cos(k*Math.PI),bw=216,rx=Math.round(W*.5-bw/2),ry=Math.round(-bw*.62+e*bw*.5+Math.sin(t*2)*1);if(BOT)g.drawImage(BOT,rx,ry,bw,bw)},
     // ── 생명 유지 장치 story ──
     black:()=>R(0,0,W,H,'#000'),
+    // 통신 장치: the crew around the hull at night, the antenna sending its first call (rings rising, a red light blinking)
+    c_antenna:t=>{sky(t);R(0,H-20,W,20,B[1]);R(0,H-20,W,1,B[3]);for(let x=0;x<W;x+=3)if((x*7)%5===0)R(x,H-18+(x%4),1,1,B[2]);
+      R(26,H-46,160,26,B[2]);R(26,H-46,160,1,B[3]);for(let x=34;x<180;x+=12)R(x,H-40,6,3,B[1]);R(186,H-40,14,20,B[2]);R(186,H-40,14,1,B[3]);
+      for(const [cx,cy] of [[60,H-20],[78,H-20],[100,H-20],[118,H-20]]){R(cx-2,cy-10,5,10,B[1]);R(cx-2,cy-13,5,4,B[2]);R(cx-1,cy-12,3,1,B[4])}
+      R(150,H-84,2,38,B[3]);R(141,H-87,20,3,B[4]);R(146,H-91,10,4,B[3]);
+      for(let k=0;k<3;k++){const r=(t*30+k*24)%72;g.globalAlpha=Math.max(0,1-r/72)*.9;g.strokeStyle='#9fe0ff';g.lineWidth=1;g.beginPath();g.arc(151,H-89,r+2,Math.PI*1.08,Math.PI*1.92);g.stroke()}g.globalAlpha=1;
+      if(Math.floor(t*2.2)%2===0){R(150,H-94,2,2,'#ff5a6a');g.globalAlpha=.35;R(148,H-96,6,6,'#ff5a6a');g.globalAlpha=1}},
+    // the sky answers: everything darkens, a vast shape slides over the stars, and a faint line of something closed glows high above
+    c_presence:t=>{sky(t);const k=Math.min(1,t/5);g.globalAlpha=.55*k;R(0,0,W,H,'#05040c');g.globalAlpha=.85*k;g.fillStyle='#05040c';g.beginPath();g.ellipse(W/2,-10+k*14,170,58,0,0,7);g.fill();g.globalAlpha=1;
+      R(0,H-20,W,20,B[0]);R(0,H-20,W,1,B[2]);if(t>2.5){const a=Math.min(1,(t-2.5)/2)*(.6+.4*Math.sin(t*1.7));g.globalAlpha=a;for(let i=-40;i<=40;i++)R(W/2+i,30+Math.round(Math.sin(i*.25)),1,1,Math.abs(i)%6<2?'#ffd0e0':'#c88aff');g.globalAlpha=1}},
     // the wreck, closer than before, the camera drifting along it
     l_wreck:t=>{R(0,0,W,H,B[0]);if(SCN0||SCN){const S0=SCN||SCN0,s=1.7,w=S0.width*s,h=S0.height*s,k=Math.min(1,t/12),x=-(w-W)*(.5-.5*Math.cos(k*Math.PI));g.drawImage(S0,Math.round(x),Math.round(H-h+8),Math.round(w),Math.round(h))}else sky(t);smoke(t,.55)},
     // the planet outside, wide: no robot this time
@@ -7878,16 +7902,17 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
       ptext('SYSTEM DAMAGE - REPAIR REQUIRED',58,98,red);ptext('GAIA - SHIP STATUS',24,14,B[5]);g.globalAlpha=1}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
-  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
+  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis')orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
   function cur(){const L=S.scenes[si].lines[li];return L.v?`“${L.v}”`:L.t}
   const at=performance.now();let st0=at,artNow='',fadeC=null,fadeAt=0;
-  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
-    const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++){if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}else if(!L0.v&&txt[i]!==' '&&now-lastBeep>55){sfxType();lastBeep=now}}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;q('.stv-next').classList.add('on')}}
+  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
+    const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++){if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}else if(!L0.v&&txt[i]!==' '&&now-lastBeep>55){sfxType();lastBeep=now}}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;fullAt=now;q('.stv-next').classList.add('on')}}
+    /* auto stories turn their own pages: each line stays a little while once it is fully shown */if(S.auto&&full&&fullAt&&now-fullAt>1800+cur().length*45){fullAt=0;autoCall=true;next();autoCall=false}
     raf=requestAnimationFrame(loop)}
-  function next(){if(!full){full=true;q('.stv-txt').textContent=cur();q('.stv-next').classList.add('on');return}const sc=S.scenes[si];if(li<sc.lines.length-1){li++}else if(si<S.scenes.length-1){si++;li=0;st0=performance.now();const a=q('.stv-art');a.classList.remove('in');void a.offsetWidth;a.classList.add('in')}else{finish();return}t0=performance.now();setLine()}
+  function next(){if(S.auto&&!autoCall)return;if(!full){full=true;q('.stv-txt').textContent=cur();q('.stv-next').classList.add('on');return}const sc=S.scenes[si];if(li<sc.lines.length-1){li++}else if(si<S.scenes.length-1){si++;li=0;st0=performance.now();const a=q('.stv-art');a.classList.remove('in');void a.offsetWidth;a.classList.add('in')}else{finish();return}t0=performance.now();setLine()}
   function finish(){if(over)return;over=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done()}
-  const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'){e.preventDefault();finish()}};
-  op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.stv-skip')){finish();return}next()});document.addEventListener('keydown',key,true);
+  const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'&&!S.auto){e.preventDefault();finish()}};
+  op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.stv-skip')&&!S.auto){finish();return}next()});document.addEventListener('keydown',key,true);
   q('.stv-art').classList.add('in');setLine();raf=requestAnimationFrame(loop)}
 /* 게임 시작 인트로 (오프닝) 1: 글이 한 줄씩 타자로 찍히며 위로 흘러 올라가는 동안, 화면 아래 거친 행성 표면을 녹슨 7호가 굴러간다.
    가운데에서 잠깐 멈추면 큰 별똥별이 떨어지고, 다시 굴러간다. 글이 끝나면 큰 제목 [조우]가 커서와 함께 찍히고 '확인'으로 다음 장면 */
@@ -9433,9 +9458,21 @@ let bgmOn=true,bgmVol=35;try{bgmOn=localStorage.getItem('nebula-bgm')!=='off';co
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 // the final raid (Orbis) has its own battle theme, above every other track while it lasts
 let finBgm=null;const finMusic=()=>{if(!finBgm){finBgm=new Audio('orbis.mp3');finBgm.loop=true}return finBgm};// Orbis theme: "Cyphermix" (from the operator's .ogg, as mp3 so iPhones play it too)
-function syncBgm(){if(!bgmFade){bgm.volume=bgmVol/100;bgm2.volume=bgmVol/100}
-  if(typeof endOn==='function'&&endOn()&&bgmOn&&bgmVol>0){bossBgmStop();bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll();const m=finMusic();m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}
-  if(finBgm)finBgm.pause();
+// "그리고, 무언가가 대답했다.": the usual music fades out over 2 s and 오르비스's theme fades in, staying on until its fight takes over
+let ORB_PRE=0,ORB_FADE=0;
+function orbisBgmIn(){if(ORB_PRE)return;ORB_PRE=Date.now();if(!(bgmOn&&bgmVol>0))return;const outs=[bgm,bgm2,barBgm,raidBgm,raidBgm2].filter(a=>a&&!a.paused),m=finMusic(),v0=outs.map(a=>a.volume),t0=Date.now();
+  clearInterval(bgmFade);bgmFade=0;m.volume=0;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});clearInterval(ORB_FADE);
+  ORB_FADE=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/2500);outs.forEach((a,i)=>a.volume=v0[i]*Math.max(0,1-k/0.8));m.volume=bgmVol/100*k;if(k>=1){clearInterval(ORB_FADE);ORB_FADE=0;outs.forEach(a=>{a.pause()})}},60)}
+const orbPre=()=>!!ORB_PRE&&!END&&Date.now()-ORB_PRE<180e3;
+// when 오르비스 leaves (or its fight ends) its theme plays on a moment, then fades out while the usual music fades back in
+let FIN_OUT=0;
+function finToMain(){if(FIN_OUT)return;const f=finBgm,t0=Date.now()+1500;let m=null;FIN_OUT=setInterval(()=>{const now=Date.now();if(now<t0)return;
+    if(!m){m=bgmMain();m.volume=0;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{})}const k=Math.min(1,(now-t0)/3000),w=bgmVol/100;f.volume=w*(1-k);m.volume=w*k;
+    if(k>=1){clearInterval(FIN_OUT);FIN_OUT=0;f.pause();f.volume=w;syncBgm()}},60)}
+function syncBgm(){if(!bgmFade&&!FIN_OUT){bgm.volume=bgmVol/100;bgm2.volume=bgmVol/100}
+  if(typeof endOn==='function'&&(endOn()||orbPre())&&bgmOn&&bgmVol>0){bossBgmStop();if(!ORB_FADE){bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll()}const m=finMusic();if(!ORB_FADE)m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}
+  if(FIN_OUT){if(!secretView&&!raidBgmWant()&&bgmOn&&bgmVol>0)return;clearInterval(FIN_OUT);FIN_OUT=0}
+  if(finBgm&&!finBgm.paused){if(!secretView&&!raidBgmWant()&&!bossBgmWant()&&bgmOn&&bgmVol>0){finToMain();return}finBgm.pause()}
   const bar=secretView&&bgmOn&&bgmVol>0,boss=!bar&&bossBgmWant();if(boss)bossBgmStart();else bossBgmStop();
   if(bar){const m=barMusic();m.volume=bgmVol/100;bgmPauseAll();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}if(barBgm)barBgm.pause();
   raidBgmOn=raidBgmWant();if(raidBgmOn){bgmPauseAll();const nw=bgmNewWant(),m=nw?raidMusic2():raidMusic(),o=(nw?raidBgm:raidBgm2)||{paused:true};bgmXfade(m,o,RBF);return}raidPauseAll();
