@@ -1274,7 +1274,7 @@ b.suwib{cursor:default;flex:0 0 120px}
 .poster:hover{transform:rotate(0) translateY(-2px)}.poster .pin{position:absolute;top:-6px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#c8343c;box-shadow:inset -2px -2px 0 #8a2028,0 2px 0 rgba(0,0,0,.4)}
 .poster .pt{font-family:var(--f-display);font-size:18px;letter-spacing:.06em;color:#8a2a22;border-bottom:2px solid #8a2a22;padding-bottom:2px}
 .poster .pimg{background:#f6efdc;border:2px dashed #a08a62;padding:6px;line-height:0}.poster .pname{font-size:14px}.poster .pwho{font-size:11px;color:#6a5a44}
-.poster .preward{display:flex;align-items:center;gap:5px;font-family:var(--f-pix);font-size:16px;color:#6a4a10}.poster .phave{font-size:11px;color:#9a4a3a}.poster .phave.ok{color:#3a6a3a}
+.poster .preward{display:flex;align-items:center;gap:5px;font-family:var(--f-pix);font-size:16px;color:#6a4a10}.poster .phave{font-size:11px;color:#9a4a3a}.poster .phave.ok{color:#3a6a3a}.poster .ptasty,.spreq .ptasty{font-size:10.5px;color:#7a5a20;line-height:1.3}.ptasty .tastytag{font-size:10px}
 .poster .btn{margin-top:2px}.poster.done{filter:saturate(.5) brightness(.92)}.poster .pstamp{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);font-family:var(--f-display);font-size:26px;color:rgba(178,40,40,.8);border:3px solid rgba(178,40,40,.8);padding:2px 10px;letter-spacing:.1em}
 .keeper.broker .say{color:var(--pink)}
 @media (max-width:560px){.posters{grid-template-columns:repeat(2,minmax(0,165px))}}
@@ -7134,13 +7134,14 @@ function reqRng(seed){let x=seed%2147483647||1;return()=>(x=(x*16807)%2147483647
 // posters change twice a day, at 08:00 and 20:00 Korea time (UTC+9): one 12-hour window per key
 const REQ_WIN=12*3600e3,reqKey=()=>'r'+Math.floor((Date.now()+3600e3)/REQ_WIN),reqLeft=()=>REQ_WIN-((Date.now()+3600e3)%REQ_WIN);
 // request pay is a fixed multiple of what the shop pays for the same goods, at any level: posters 2.5×, the special request 4×
-const REQ_X=5,REQ_SP_X=4;
+// a poster pays 5x the shop's buying price per item; the special job asks for 2x a poster's count at the same rate, so it pays 2x a poster
+const REQ_X=5,REQ_SP_X=5,REQ_SP_N=2;
 const reqUnit=id=>id.startsWith('fish:')?crs(FSELL[id.slice(5)]||1):ITEMS[id]?sellPrice(id):1;
 const reqPay=(id,n,x)=>Math.max(1,Math.round(reqUnit(id)*n*x));
-function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list)){reqDropCrops();if(P.req.v!==3){P.req.v=3;P.req.list.forEach(q=>q.cr=reqPay(q.id,q.n,REQ_X));if(P.req.sp)P.req.sp.cr=reqPay(P.req.sp.id,P.req.sp.n,REQ_SP_X);save()}return P.req}
+function reqList(){const day=reqKey();if(P.req&&P.req.day===day&&Array.isArray(P.req.list)){reqDropCrops();if(P.req.v!==6){P.req.v=6;if(P.req.sp&&!P.req.spDone&&P.req.sp.n0==null){const n0=P.req.sp.n;P.req.sp.n=Math.max(1,Math.round(n0/2.5)*REQ_SP_N);P.req.sp.n0=n0}P.req.list.forEach(q=>q.cr=reqPay(q.id,q.n,REQ_X));if(P.req.sp)P.req.sp.cr=reqPay(P.req.sp.id,P.req.sp.n,REQ_SP_X);save()}return P.req}
   let h=0;for(const c of day+uid)h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+7),pool=REQ_POOL.slice(),list=[];
   for(let k=0;k<5&&pool.length;k++){const [id,a,b,per,who]=pool.splice(Math.floor(rnd()*pool.length),1)[0],n=a+Math.floor(rnd()*(b-a+1));list.push({id,n,cr:reqPay(id,n,REQ_X),who})}
-  P.req={day,list,done:[],v:3};save();return P.req}
+  P.req={day,list,done:[],v:6};save();return P.req}
 const reqName=id=>id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id);
 const reqIcon=(id,sc)=>id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],sc):iicon(id,sc);
 let brokerLine=0,brokerSeen=false;
@@ -7151,11 +7152,14 @@ const NOIRBOT=['......kkkkkkkk......','.....kHHHHHHHHk.....','.....kHHHHHHHHk...
 const NOIRLINE=['도시는 비를 맞고 있었다. 그리고 나는 요리를 찾고 있었지.','고물상? 모르는 이름이군. 난 그저 지나가는 탐정일 뿐이야.','질문은 짧게, 대답은 더 짧게. 물건을 가져와.','이 의뢰엔 이름이 없어. 보수만 있을 뿐.','녹슨 7호? …그 녀석은 오늘 비번이야. 아마도.','배고픈 자는 거짓말을 하지 않지. 접시는 더더욱.','코트 깃을 세운 건 추워서가 아니야. 이 바닥이 원래 그래.','비가 그친 줄 알았지. 하지만 이 도시엔 늘 무언가가 떨어지고 있어. 오늘은 내 배터리였지.','코트 주머니엔 사진 한 장뿐이야. 맛있게 구운 생선 사진.','누구냐고? 그냥 이름 없는 남자야. 고물상이랑은 아무 상관 없는.','정보원은 늘 배가 고파. 그래서 나는 늘 요리를 찾지.','이 바닥에서 믿을 건 두 가지뿐이야. 크레딧, 그리고 갓 만든 요리.','모자를 눌러쓴 이유? 네모난 눈을 들키면 곤란하거든. 아니, 피곤해 보여서지.','오늘 밤도 베이스캠프는 조용해. 너무 조용해. 마치 누가 상점 셔터를 일찍 내린 것처럼.','의뢰인은 얼굴을 보여 주지 않았어. 남긴 건 쪽지 하나. 「배고프다」.','난 질문하지 않아. 질문은 대답을 부르고, 대답은 문제를 부르니까.','마담 로자? 들어 본 적은 있지. 우아한 여자라더군. …더는 묻지 마.','차가운 바람이 코트 깃을 파고들어. 따뜻한 요리가 필요한 밤이야.','이 일을 오래 하다 보면 알게 돼. 모든 사건 뒤엔 배고픈 누군가가 있다는 걸.','내 과거? 녹이 좀 슬었을 뿐이야. 다들 그렇잖아.','약속 장소는 여기, 시간은 지금. 접시는 따뜻하게.','이 의뢰를 끝내면 넌 아무것도 보지 못한 거야. 나도, 이 코트도.','도시의 불빛이 하나둘 꺼질 때, 나는 일을 시작하지.','증거는 단 하나. 접시에 남은 소금 한 톨이었어.','누군가 내 뒤를 밟고 있어. 아마 고물상 단골이겠지. 신경 쓰지 마.','돈은 거짓말을 하지 않아. 하지만 요리는 가끔 거짓말을 하지. 덜 익었을 때.','내 이름을 부르지 마. 정확히는, 녹슨 7호라고 부르지 마.','이 동네에선 말이 적은 놈이 오래 살아. 그리고 밥을 잘 먹는 놈이.','오늘 밤 거래는 단 한 번. 놓치면 다음 사이렌까지 기다려야 할 거야.','레인코트는 비를 막아 주지만, 허기는 못 막지. 그래서 네가 필요해.'];
 const SP_POOL=[['d_potRoast',2,4,60],['d_hoe',1,3,90],['d_grill',1,2,110],['d_sushi',1,3,95],['d_braise',1,2,120],['d_rice',1,2,130]];
 function reqSpecial(R){if(R.sp)return R.sp;let h=7;for(const c of R.day+uid+'sp')h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+11);
-  const [id,a,b,per]=SP_POOL[Math.floor(rnd()*SP_POOL.length)],nb=a+Math.floor(rnd()*(b-a+1));R.sp={id,n:Math.ceil(nb*2.5),cr:reqPay(id,Math.ceil(nb*2.5),REQ_SP_X),line:Math.floor(rnd()*NOIRLINE.length)};save();return R.sp}
+  const [id,a,b,per]=SP_POOL[Math.floor(rnd()*SP_POOL.length)],nb=a+Math.floor(rnd()*(b-a+1));R.sp={id,n:nb*REQ_SP_N,cr:reqPay(id,nb*REQ_SP_N,REQ_SP_X),line:Math.floor(rnd()*NOIRLINE.length)};save();return R.sp}
 /* admin-booked special requests: for a set window the trench-coat broker sells ship materials for credits instead of asking for food */
 const SPRES_MAX=20,spresRef=()=>db.doc('boss/spres');let SPRES=[];
 const shipMatIds=()=>[...new Set(SHIP.flatMap(pt=>pt.need.map(([id])=>id)))].filter(id=>ITEMS[id]&&ITEMS[id].type!=='relic');
-const spresNow=()=>mode==='online'?SPRES.filter(e=>e.start<=Date.now()&&Date.now()<e.end).sort((a,b)=>a.start-b.start)[0]||null:null;
+// sales set in code for one poster window (12 h from 08:00 / 20:00 KST): they replace whatever is booked for that window
+const SPRES_FIX={41548:{mat:'rationBean',n:3,cr:1000,lim:1}};// 11/17 08:00~20:00 KST: 1000 CR → 배급용 콩 ×3
+const spresNow=()=>{if(mode!=='online')return null;const now=Date.now(),b=SPRES.filter(e=>e.start<=now&&now<e.end).sort((a,c)=>a.start-c.start)[0]||null,w=Math.floor((now+3600e3)/REQ_WIN),fx=SPRES_FIX[w];
+  return fx?Object.assign({},b||{},{id:'fix'+w,start:w*REQ_WIN-3600e3,end:(w+1)*REQ_WIN-3600e3},fx):b};
 const spresUsed=e=>((P.spRes||{})[e.id])||0;
 const SPRES_LINE=['물건이 필요하다고? 이 도시에선 뭐든 값이 있지. 크레딧만 있다면.','어디서 났냐고 묻지 마. 나는 묻지 않는 손님을 좋아하거든.','부두 창고에서 떨어진 상자야. 주인은… 이제 없어.','오늘 밤만 파는 물건이다. 내일이면 나도, 이 상자도 사라져.','싸게 주는 거야. 내가 싸게 준다고 말하는 건 일 년에 한 번뿐이지.'];
 function spresHTML(e){const used=spresUsed(e),left=Math.max(0,e.lim-used),ok=left>0&&(P.cr||0)>=e.cr,it=ITEMS[e.mat]||{n:e.mat};
@@ -7175,16 +7179,22 @@ function spresAdminHTML(){if(mode!=='online')return'';const now=Date.now(),pad=n
    <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><span class="hint">시작</span><input id="spDay" class="sel" type="date" value="${dv}" aria-label="시작 날짜"><select id="spHour" class="sel" aria-label="시작 시각"><option value="8" ${hv===8?'selected':''}>오전 8시</option><option value="20" ${hv===20?'selected':''}>오후 8시</option></select><span class="hint">기간</span><select id="spDur" class="sel" aria-label="기간">${[12,24,36,48,72].map(h=>`<option value="${h}" ${h===12?'selected':''}>${h}시간</option>`).join('')}</select></div>
    <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><span class="hint">자재</span><select id="spMat" class="sel" aria-label="우주선 자재">${shipMatIds().map(id=>`<option value="${id}">${esc(ITEMS[id].n)}</option>`).join('')}</select><span class="hint">수량</span><input id="spN" class="sel" type="number" min="1" max="99" value="3" style="width:64px" aria-label="수량"><span class="hint">가격</span><input id="spCr" class="sel" type="number" min="1" max="999999" value="500" style="width:90px" aria-label="가격 CR"><span class="hint">CR · 1인</span><input id="spLim" class="sel" type="number" min="1" max="99" value="1" style="width:56px" aria-label="1인 거래 횟수"><span class="hint">회</span><button class="btn sm gold" data-act="spresadd">예약하기</button></div>
    ${list.length?`<div class="fblist">${list.map(e=>`<div class="fbitem"><div class="row" style="justify-content:space-between;gap:6px"><span>${iicon(e.mat,1)} <b>${esc((ITEMS[e.mat]||{n:e.mat}).n)} ×${e.n}</b> · ${e.cr.toLocaleString()} CR · 1인 ${e.lim}회</span><span class="hint">${e.start<=now?'<b style="color:var(--green)">진행 중</b>':'예약됨'} · ${fmt(e.start)} ~ ${fmt(e.end)}</span><button class="btn sm ghost" data-act="spresdel" data-k="${esc(e.id)}">취소</button></div></div>`).join('')}</div>`:'<span class="hint">예약된 특별의뢰가 없습니다.</span>'}</div>`}
-function reqSpecialHTML(R){{const e=spresNow();if(e)return spresHTML(e)}const q=reqSpecial(R),done=!!R.spDone,have=ingHave(q.id),ok=have>=q.n;
+// [맛있는!] dishes count for a request too and are paid 1.5x their share: plain ones go first, the tasty ones only fill what's missing
+const reqTid=id=>!id.startsWith('fish:')&&ITEMS[TASTY+id]?TASTY+id:null,reqHave=id=>ingHave(id)+(reqTid(id)?ingHave(reqTid(id)):0),
+ reqTastyUse=q=>{const t=reqTid(q.id);return t?Math.max(0,Math.min(ingHave(t),q.n-ingHave(q.id))):0},
+ reqPayT=(q,k)=>q.cr+Math.round(q.cr/q.n*k*(TASTY_X-1)),
+ reqPayHTML=q=>{const k=reqTastyUse(q);return`<span class="preward">${img(IC.coin,null,2)}${reqPayT(q,k).toLocaleString()} CR</span>${k?`<span class="hint ptasty"><span class="tastytag">[맛있는!]</span> ${k}개 포함 · +${(reqPayT(q,k)-q.cr).toLocaleString()} CR</span>`:''}`};
+function reqGive(q){const k=reqTastyUse(q),pl=q.n-k;if(pl>0&&!ingTake(q.id,pl))return null;if(k>0&&!ingTake(reqTid(q.id),k))return null;return{k,cr:reqPayT(q,k)}}
+function reqSpecialHTML(R){{const e=spresNow();if(e)return spresHTML(e)}const q=reqSpecial(R),done=!!R.spDone,have=reqHave(q.id),ok=have>=q.n;
   return`<div class="spreq ${done?'done':''}"><i class="pin"></i><div class="sp-art">${img(NOIRBOT,null,3,'',NOIRPO)}</div><b class="sp-t">특별의뢰</b>
    <p class="sp-say">“${NOIRLINE[q.line%NOIRLINE.length]}”</p>
    <div class="sp-need">${reqIcon(q.id,2)}<b>${esc(reqName(q.id))} ×${q.n}</b></div>
-   <span class="preward">${img(IC.coin,null,2)}${q.cr.toLocaleString()} CR</span><span class="phave ${ok?'ok':''}">가진 것 ${Math.min(have,999)}/${q.n}</span>
+   ${done?`<span class="preward">${img(IC.coin,null,2)}${q.cr.toLocaleString()} CR</span>`:reqPayHTML(q)}<span class="phave ${ok?'ok':''}">가진 것 ${Math.min(have,999)}/${q.n}</span>
    ${done?'<span class="pstamp">완료</span>':`<button class="btn sm ${ok?'gold':''}" data-act="reqsp" ${ok?'':'disabled'}>건네주기</button>`}</div>`}
-function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q,i)=>{const done=R.done.includes(i),have=ingHave(q.id),ok=have>=q.n;
+function reqHTML(){const R=reqList();return`<div class="posters">${R.list.map((q,i)=>{const done=R.done.includes(i),have=reqHave(q.id),ok=have>=q.n;
   return`<div class="poster ${done?'done':''}" style="--tilt:${[-2,1.5,-1,2,-1.5][i]}deg"><i class="pin"></i><span class="pt">구합니다!</span>
    <div class="pimg">${reqIcon(q.id,3)}</div><b class="pname">${esc(reqName(q.id))} ×${q.n}</b><span class="pwho">의뢰인 · ${esc(q.who)}</span>
-   <span class="preward">${img(IC.coin,null,2)}${q.cr.toLocaleString()} CR</span><span class="phave ${ok?'ok':''}">가진 것 ${Math.min(have,999)}/${q.n}</span>
+   ${done?`<span class="preward">${img(IC.coin,null,2)}${q.cr.toLocaleString()} CR</span>`:reqPayHTML(q)}<span class="phave ${ok?'ok':''}">가진 것 ${Math.min(have,999)}/${q.n}</span>
    ${done?'<span class="pstamp">완료</span>':`<button class="btn sm ${ok?'gold':''}" data-act="reqgo" data-k="${i}" ${ok?'':'disabled'}>납품하기</button>`}</div>`}).join('')}${reqSpecialHTML(R)}</div>
   <p class="hint">포스터는 매일 오전 8시와 오후 8시에 새로 붙습니다. 다음 교체까지 <b id="reqT">${fmtClock(reqLeft())}</b> · 남은 의뢰 ${R.list.length-R.done.length}개.</p>`}
 function upCost(n){const c=[['ore',2+n],['crystal',1+(n>>1)]];if(n>=2)c.push(['dark',Math.ceil((n-1)/2)]);return P.job==='mech'?c.map(([id,k])=>[id,Math.max(1,Math.ceil(k*.7))]):c}
@@ -7322,7 +7332,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794872491';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794888057';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8381,8 +8391,8 @@ const A={
  spresdel(d){if(!isAdmin||mode!=='online')return;bossTx(spresRef(),cur=>({list:((cur&&cur.list)||[]).filter(x=>x.id!==d.k&&x.end>Date.now())})).then(()=>toast('예약을 취소했습니다.')).catch(()=>toast('취소하지 못했습니다.'))},
  spresbuy(){const e=spresNow();if(!e){renderPanel();return}if(spresUsed(e)>=e.lim){toast('이번 거래는 이미 다 했습니다.');return}if((P.cr||0)<e.cr){toast('크레딧이 모자랍니다.');return}
   P.cr-=e.cr;add(e.mat,e.n);P.spRes=Object.assign({},P.spRes,{[e.id]:spresUsed(e)+1});stat('reqsp');sfxFanfare(true);log(`특별의뢰 거래 · 코트를 입은 수상한 탐정에게 ${e.cr.toLocaleString()} CR을 주고 ${ITEMS[e.mat].n} ×${e.n}을(를) 받았다.`,'rare');commit()},
- reqsp(){const R=reqList(),q=reqSpecial(R);if(R.spDone)return;if(ingHave(q.id)<q.n){toast('물건이 모자랍니다.');return}ingTake(q.id,q.n);R.spDone=1;P.cr=(P.cr||0)+q.cr;stat('reqsp');sfxFanfare(true);log(`특별의뢰 완료 · 코트를 입은 수상한 탐정에게 ${reqName(q.id)} ${q.n}개를 건넸다. (+${q.cr.toLocaleString()} CR)`,'rare');commit()},
- reqgo(d){const R=reqList(),i=+d.k,q=R.list[i];if(!q||R.done.includes(i))return;if(ingHave(q.id)<q.n){toast('물건이 모자랍니다.');return}ingTake(q.id,q.n);R.done=[...R.done,i];P.cr=(P.cr||0)+q.cr;stat('req');sfxFanfare(false);log(`의뢰 완료 · ${q.who}에게 ${reqName(q.id)} ${q.n}개를 납품했다. (+${q.cr.toLocaleString()} CR)`,'rare');commit()},
+ reqsp(){const R=reqList(),q=reqSpecial(R);if(R.spDone)return;if(reqHave(q.id)<q.n){toast('물건이 모자랍니다.');return}const g=reqGive(q);if(!g){toast('물건이 모자랍니다.');commit();return}R.spDone=1;P.cr=(P.cr||0)+g.cr;stat('reqsp');sfxFanfare(true);log(`특별의뢰 완료 · 코트를 입은 수상한 탐정에게 ${reqName(q.id)} ${q.n}개를 건넸다.${g.k?` ([맛있는!] ${g.k}개 포함)`:''} (+${g.cr.toLocaleString()} CR)`,'rare');commit()},
+ reqgo(d){const R=reqList(),i=+d.k,q=R.list[i];if(!q||R.done.includes(i))return;if(reqHave(q.id)<q.n){toast('물건이 모자랍니다.');return}const g=reqGive(q);if(!g){toast('물건이 모자랍니다.');commit();return}R.done=[...R.done,i];P.cr=(P.cr||0)+g.cr;stat('req');sfxFanfare(false);log(`의뢰 완료 · ${q.who}에게 ${reqName(q.id)} ${q.n}개를 납품했다.${g.k?` ([맛있는!] ${g.k}개 포함)`:''} (+${g.cr.toLocaleString()} CR)`,'rare');commit()},
  sellsel(d){sellArm=false;sellSel=sellSel===d.id?null:d.id;sellN=1;renderPanel()},
  sellq(d){const have=P.inv[sellSel]||0;sellN=d.k==='max'?have:Math.max(1,Math.min(have,sellN+(+d.k)));renderPanel()},
  sell(d){const have=P.inv[d.id]||0;if(!have||isBound(d.id))return;if(isLocked(d.id)){lockMsg();return}const n=d.n==='all'?have:d.n?1:Math.max(1,Math.min(have,sellN)),gain=sellPrice(d.id)*n;take(d.id,n);sellN=1;P.cr=(P.cr||0)+gain;sfxSell(n>1);log(`${ITEMS[d.id].n} ${n}개를 팔았다. (+${gain} CR)`,'good');commit()},
