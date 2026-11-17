@@ -7442,7 +7442,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794927540';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794927769';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -9198,7 +9198,7 @@ function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
     if(g.kind==='ment'&&g.mid&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];const x={memo:1,why:'만남에서 나를 언급했습니다',mid:g.mid,cid:g.cid||'m'+g.id,uid:g.from,nick:g.nick||'선원',text:g.text||'',at:+g.at||Date.now()};
       P.nbox=[...(P.nbox||[]).filter(y=>nbKey(y)!==nbKey(x)),x].sort((a,b)=>b.at-a.at).slice(0,NBOX_MAX);if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 만남에서 나를 언급했습니다.`);ch=true;bellRefresh()}
-    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];P.hnoti=[...(P.hnoti||[]).slice(-19),{hi:1,from:g.from,nick:g.nick||'선원',at:+g.at||Date.now()}];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,AFF.hi,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
+    if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];P.hnoti=[...(P.hnoti||[]).slice(-39),{hi:1,from:g.from,nick:g.nick||'선원',at:+g.at||Date.now()}];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,AFF.hi,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit();
   // once counted (or too old to count), a greeting is removed so this list never grows
   const done=GUEST.filter(g=>g.to===uid&&!guestWait(g.id)&&(P.gotHi.includes(g.id)||g.at<(P.joined||0)||g.kind!=='hi'));if(done.length&&mode==='online'){const go=()=>done.forEach(g=>{if(guestWait(g.id))return;guestDel.set(g.id,Date.now());db.doc('guest/'+g.id).delete().catch(()=>{})});ch?Promise.resolve(flushNow()).then(go,go):go()}}
@@ -9206,7 +9206,7 @@ function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
 function padLive(){if(mode!=='online'||!P)return[];const me='@'+P.nick;return POSTS.filter(p=>p.uid!==uid&&(p.reUid===uid||(p.rt&&p.rto&&p.rto.uid===uid)||(!p.rt&&mentionsMe(p.text)))).sort((a,b)=>b.at-a.at).slice(0,30)}
 /* alerts kept on the character: whatever the bell has once seen stays there (newest 40), so it doesn't empty when PAD or 만남
    aren't being read live, and it follows you to other devices */
-const NBOX_MAX=40;let MEMOS_MINE=[];
+const NBOX_MAX=100;let MEMOS_MINE=[];
 const nbKey=x=>x.memo?'m'+x.mid+':'+x.cid:'p'+x.id;
 const nbPad=p=>({id:p.id,uid:p.uid||'',nick:p.nick||'',text:String(p.text||'').slice(0,120),at:+p.at||0,reUid:p.reUid||'',rt:p.rt||'',rto:p.rto?{uid:p.rto.uid||'',text:String(p.rto.text||'').slice(0,120)}:null});
 const nbMemo=n=>({memo:1,why:n.why,mid:n.mid,cid:n.cid,uid:n.uid||'',nick:n.nick||'',text:String(n.text||'').slice(0,120),at:+n.at||0});
@@ -9236,7 +9236,7 @@ const nKey=p=>p.hi?`h:${p.from}:${p.at}`:p.bond?`b:${p.o}:${p.at}`:p.memo?`m:${p
 const notiIsNew=p=>p.at>(P&&P.notiSeen||0)&&!((P&&P.notiRd)||{})[nKey(p)];
 function notiUnread(){if(!P)return 0;return notiAll().filter(notiIsNew).length}
 /* read alerts: only the newest 10 stay; older read ones are removed for good (their keys are remembered so they don't come back) */
-const NOTI_READ_KEEP=10;
+const NOTI_READ_KEEP=30;
 function notiAll(){const g=new Set((P&&P.nbGone)||[]);return[...padNotis(),...rescueNotis().map(n=>Object.assign({resc:1},n)),...memoNotis(),...bondNotis(),...hiNotis()].filter(x=>!g.has(nKey(x)))}
 const notiGrp=p=>p.memo?'memo':(p.bond||p.resc||p.hi)?'etc':'pad';let notiTab='';
 function notiPrune(){if(mode!=='online'||!P||P._fresh)return;const read=notiAll().filter(x=>!notiIsNew(x)).sort((a,b)=>b.at-a.at),cnt={},old=read.filter(x=>{const g=notiGrp(x);cnt[g]=(cnt[g]||0)+1;return cnt[g]>NOTI_READ_KEEP});if(!old.length)return;
