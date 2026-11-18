@@ -3483,7 +3483,7 @@ const TITLES=[
  ['fish6','중력파를 던지는 자','중력파 낚싯대 보유',()=>(P.rod||0)>=2],
  ['fish2','전설을 낚은 자','레전더리 1종류 낚기',()=>FISHES.l.filter(id=>(P.dex||{})[id]).length>=1],
  ['fish7','전설의 레전드','레전더리 5종류 모두 낚기',()=>FISHES.l.filter(id=>(P.dex||{})[id]).length>=5],
- ['fish8','낚시의 어버이','어류 도감 '+FISH_DB.filter(S=>!S.eg).reduce((a,S)=>a+S.c.length+S.r.length+S.u.length+S.l.length,0)+'종 완성',()=>FISH_DB.filter(S=>!S.eg).every(S=>['c','r','u','l'].every(t=>S[t].every(id=>(P.dex||{})[id])))],
+ ['fish8','낚시의 어버이','어류 도감 115종 완성',()=>Object.keys(P.dex||{}).length>=115],
  ['scan1','길 위의 개척자','주변 지점 30곳 조사',()=>(P.st?.scan||0)>=30],
  ['scan2','지도 밖으로','주변 지점 100곳 조사',()=>st('scan')>=100],
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
@@ -7515,7 +7515,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795010411';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795010539';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
