@@ -6269,7 +6269,8 @@ function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||'
   const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
   return out.join('')}
 var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호']];
-const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k]||(k==='comm'&&(+(P&&P.orbis)||0)>=1);
+// 통신 장치 · 첫 신호 opens for each crew member right after they first meet 오르비스 in the real (operator-started) visit
+const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k]||(k==='comm'&&!!ORB_GO&&(+(P&&P.orbis)||0)>=1&&(+(P&&P.orbisAt)||0)>=ORB_GO);
 // once 생명 유지 장치 is repaired every crew member sees its story one time (the next time they are in the game), then the 마이룸 popup
 function lifeStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
   if(!STORY_ON.life)return;// held back (운영진 included) until 이야기 공개 releases it
@@ -7464,7 +7465,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794989817';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794990794';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7696,7 +7697,7 @@ function sfxRattle(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curr
   const roll=at=>{for(let i=0;i<10;i++){const f=120+Math.random()*110;tone(a,'square',f,f*.7,at+i*.042,.024,.055);if(i%3===0)tone(a,'triangle',60+Math.random()*30,40,at+i*.042,.03,.05)}};
   roll(t+.05);roll(t+.75);tone(a,'square',1400,300,t+1.62,.018,.09);tone(a,'triangle',420,180,t+1.64,.05,.07)}
 let deckSnd=null;function sfxDeckSteps(){if(!soundOn)return;try{if(!deckSnd)deckSnd=new Audio('steps.mp3');deckSnd.volume=Math.min(1,sfxVol/100);deckSnd.currentTime=0;deckSnd.play().catch(()=>{})}catch(e){}}
-function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv'+(S.auto?' auto':'');let fullAt=0,autoCall=false;op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
+function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&&opt.manual);if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv'+(AUTO?' auto':'');let fullAt=0,autoCall=false;op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
   op.innerHTML=`<canvas class="stv-bg"></canvas><button class="stv-skip" type="button">건너뛰기 ▶▶</button><div class="stv-art"><canvas width="240" height="120"></canvas></div>
    <div class="stv-box"><b class="stv-who" hidden></b><p class="stv-txt"></p><button class="stv-next" type="button">▶ 다음</button></div>`;
   document.body.appendChild(op);
@@ -7923,12 +7924,12 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
   const at=performance.now();let st0=at,artNow='',fadeC=null,fadeAt=0;
   function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
     const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++){if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}else if(!L0.v&&txt[i]!==' '&&now-lastBeep>55){sfxType();lastBeep=now}}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;fullAt=now;q('.stv-next').classList.add('on')}}
-    /* auto stories turn their own pages: each line stays a little while once it is fully shown */if(S.auto&&full&&fullAt&&now-fullAt>1800+cur().length*45){fullAt=0;autoCall=true;next();autoCall=false}
+    /* auto stories turn their own pages: each line stays a little while once it is fully shown */if(AUTO&&full&&fullAt&&now-fullAt>1800+cur().length*45){fullAt=0;autoCall=true;next();autoCall=false}
     raf=requestAnimationFrame(loop)}
-  function next(){if(S.auto&&!autoCall)return;if(!full){full=true;q('.stv-txt').textContent=cur();q('.stv-next').classList.add('on');return}const sc=S.scenes[si];if(li<sc.lines.length-1){li++}else if(si<S.scenes.length-1){si++;li=0;st0=performance.now();const a=q('.stv-art');a.classList.remove('in');void a.offsetWidth;a.classList.add('in')}else{finish();return}t0=performance.now();setLine()}
-  function finish(){if(over)return;over=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done()}
-  const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'&&!S.auto){e.preventDefault();finish()}};
-  op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.stv-skip')&&!S.auto){finish();return}next()});document.addEventListener('keydown',key,true);
+  function next(){if(AUTO&&!autoCall)return;if(!full){full=true;q('.stv-txt').textContent=cur();q('.stv-next').classList.add('on');return}const sc=S.scenes[si];if(li<sc.lines.length-1){li++}else if(si<S.scenes.length-1){si++;li=0;st0=performance.now();const a=q('.stv-art');a.classList.remove('in');void a.offsetWidth;a.classList.add('in')}else{finish();return}t0=performance.now();setLine()}
+  function finish(sk){if(over)return;over=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done(!!sk)}
+  const key=e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'&&!AUTO){e.preventDefault();finish(true)}};
+  op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.stv-skip')&&!AUTO){finish(true);return}next()});document.addEventListener('keydown',key,true);
   q('.stv-art').classList.add('in');setLine();raf=requestAnimationFrame(loop)}
 /* 게임 시작 인트로 (오프닝) 1: 글이 한 줄씩 타자로 찍히며 위로 흘러 올라가는 동안, 화면 아래 거친 행성 표면을 녹슨 7호가 굴러간다.
    가운데에서 잠깐 멈추면 큰 별똥별이 떨어지고, 다시 굴러간다. 글이 끝나면 큰 제목 [조우]가 커서와 함께 찍히고 '확인'으로 다음 장면 */
@@ -8348,7 +8349,7 @@ const A={
  opreplay(){if(preLock()||!storyOpen('opening')){toast('아직 공개되지 않은 이야기입니다.');return}storyCrawl(()=>playStory('opening'))},
  storyplay(d){if(preLock()||!storyOpen(d.k)){toast('아직 공개되지 않은 이야기입니다.');return}
   // 통신 장치 replays the whole visit except the fight: story → the eye opens → it looks down, everyone falls, it leaves (nothing happens to the game)
-  if(d.k==='comm'){if($('#story')||$('#orbisFx'))return;playStory('comm',()=>{const bk=document.createElement('div');bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{orbisPlay(ORB_INTRO,()=>orbisPlay(ORB_LEAVE,null,true));setTimeout(()=>bk.remove(),900)},450)});return}
+  if(d.k==='comm'){if($('#story')||$('#orbisFx'))return;playStory('comm',sk=>{if(sk)return;const bk=document.createElement('div');bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{orbisPlay(ORB_INTRO,()=>orbisPlay(ORB_LEAVE,null,true));setTimeout(()=>bk.remove(),900)},450)},{manual:1});return}
   playStory(d.k)},
  admstory(d){if(!isAdmin||mode!=='online'||!STORY_LIST.some(x=>x[0]===d.k))return;const on=!STORY_ON[d.k],nm=STORY_LIST.find(x=>x[0]===d.k)[1];bossTx(staffRef(),cur=>{const c=Object.assign({ids:[]},cur);c.stories=Object.assign({},c.stories,{[d.k]:on});return c}).then(()=>{toast(on?`「${nm}」을(를) 공개했습니다.`:`「${nm}」을(를) 다시 숨겼습니다.`);if(on)sys(`[공지] 새 이야기 「${nm}」이(가) 공개되었습니다. 내 정보 › 이야기에서 볼 수 있습니다.`,true)}).catch(()=>toast('바꾸지 못했습니다.'))},
  padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
