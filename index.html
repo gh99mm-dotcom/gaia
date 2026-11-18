@@ -3452,7 +3452,7 @@ const TTL_FX={rookie:['plain',{hp:10}],farm1:['soil',{farm:.5}],farm2:['leaf',{f
  lv20:['orbit',{xp:3}],lv40:['orbit',{xp:5,hp:30}],lv60:['star',{atk:20,def:20,hp:60}],soc1:['heart',{hp:15,en:3}],soc2:['heart',{xp:2}],adv1:['blood',{atk:10,crit:1}],adv2:['abyss',{atkP:3,critD:8}],
  all5:['prism',{farm:1,gather:1,fish:1,scan:1}],farmmax:['bloom',{farm:3,hpP:3}],gathermax:['gold',{gather:3,atkP:2}],fishmax:['abyss',{fish:3,luck:2}],scanmax:['star',{scan:3,crit:2}],
  rcp15:['warm',{cook:1}],rcp30:['warm',{cook:2,en:5}],rcp45:['flame',{cook:3,hpP:3}],cook10:['oops',{cook:.5}],cook100:['warm',{cook:1,sell:2}],cook500:['warm',{cook:2,hp:30}],cook1000:['cosmic',{cook:4,hpP:5,en:10}],
- gold:['gold',{sell:5}],dex_r1:['dust',{atk:5,hp:20}],dex_r2:['glitch',{crit:1,en:3}],dex_r3:['leaf',{dodge:2,hp:20}],dex_r4:['steel',{def:15,atk:5}],dex_r5:['deep',{def:20,hpP:2}],dex_r6:['flame',{atkP:3,critD:5}],dex_all:['cosmic',{atkP:3,defP:3,xp:5}],dex_s6:['star',{luck:2,fish:2,en:5}],dex_s7:['glitch',{luck:1,fish:1.5,crit:1}],dex_s8:['flame',{fish:1.5,luck:1,atk:5}],dex_fall:['cosmic',{luck:3,fish:3,en:10,xp:3}]};
+ gold:['gold',{sell:5}],dex_r1:['dust',{atk:5,hp:20}],dex_r2:['glitch',{crit:1,en:3}],dex_r3:['leaf',{dodge:2,hp:20}],dex_r4:['steel',{def:15,atk:5}],dex_r5:['deep',{def:20,hpP:2}],dex_r6:['flame',{atkP:3,critD:5}],dex_all:['cosmic',{atkP:3,defP:3,xp:5}],dex_s6:['star',{luck:2,fish:2,en:5}],dex_s7:['glitch',{luck:1,fish:1.5,crit:1}],dex_s8:['flame',{fish:1.5,luck:1,atk:5}],dex_fall:['cosmic',{luck:3,fish:3,en:10,xp:3}],cookgod:['cosmic',{cook:5,hpP:5,en:10,sell:3}]};
 const TF_N={atk:['공격',''],def:['방어',''],hp:['최대 체력',''],en:['최대 에너지',''],crit:['치명타','%'],critD:['치명타 피해','%'],dodge:['회피','%'],atkP:['공격력','%'],defP:['방어력','%'],hpP:['최대 체력','%'],
  luck:['희귀 어종 보너스',''],xp:['경험치','%'],sell:['판매가','%'],farm:['농사 보너스','%p'],gather:['채집 보너스','%p'],fish:['낚시 보너스','%p'],scan:['조사 보너스','%p'],cook:['맛있는 요리','%p']};
 const ttlFx=id=>TTL_FX[id]||TTL_FX.rookie,TF=k=>(P&&ttlFx(P.title||'rookie')[1][k])||0;
@@ -3493,6 +3493,7 @@ const TITLES=[
  ['cook1000','GOD MOTHER','요리 1000번 만들기',()=>st('cook')>=1000],
  ['rcp15','행성급 요리사','요리 레시피 15개 해금',()=>(P.rcp||[]).length>=15],
  ['rcp30','항성급 요리사','요리 레시피 30개 해금',()=>(P.rcp||[]).length>=30],
+ ['cookgod','신이 된 요리사','고급 요리 12종 모두 완성',()=>{const L=COOK.filter(c=>c.eg).map(c=>c.id);return L.length>=12&&L.every(id=>(P.rcp||[]).includes(id))}],
  ['rcp45','초신성급 요리사','요리 레시피 45개 해금',()=>(P.rcp||[]).length>=45],
  ['rich2','녹슨 7호의 단골','크레딧 10,000 보유',()=>(P.cr||0)>=10000],
  ['rich','가이아의 부호','크레딧 100,000 보유',()=>(P.cr||0)>=100000],
@@ -3517,7 +3518,7 @@ const TITLES=[
 ];
 // titles the operator gave back (P.ttlGrant) count as earned whatever the record says
 TITLES.forEach(t=>{const f=t[3];t[3]=()=>!!(P&&((P.ttlGrant||[]).includes(t[0])||(P.ttlHave||[]).includes(t[0])))||f()});// a title once earned is kept even when its condition stops holding (e.g. 크레딧 보유)
-const TTL_EG=new Set(['dex_s6','dex_fall']),ttlVis=()=>TITLES.filter(t=>!TTL_EG.has(t[0])||egOpen()||t[3]());
+const TTL_EG=new Set(['dex_s6','dex_fall','cookgod']),ttlVis=()=>TITLES.filter(t=>!TTL_EG.has(t[0])||egOpen()||t[3]());
 const st=k=>(P.st&&P.st[k])||0;
 const dexDone=id=>{const z=RAID_ZONES.find(x=>x.id===id),D=P.mdex||{};return!!z&&[...z.mons,z.mid,z.boss].every(n=>D[n]>0)};
 // isOwnerAcct: the 운영자 account itself. isAdmin: anyone with admin powers — the 운영자 and the 관리자 it appoints
@@ -7510,7 +7511,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795002112';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795004996';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
