@@ -4344,7 +4344,8 @@ const RSK={medic:[{n:'응급 처치',d:'동료 한 명의 체력을 최대 체�
 const RSK_H={mech:{n:'오버드라이브',d:'다음 2턴 동안 내 공격력 +100%',cd:4},
   nav:{n:'중장 강타',d:'내 방어력에 비례한 육중한 일격 · 맞은 적의 방어력을 이 전투 동안 30% 깎음',cd:4},
   medic:{n:'생명 흡수탄',d:'강한 공격(공격력 150%) 후 준 피해의 절반만큼 내 체력 회복',cd:4}};
-const rskList=(r,j)=>{const L=RSK[j]||[];return r&&raidZone(r).hard&&RSK_H[j]?[...L,RSK_H[j]]:L};
+// the third (hard-mode) job skill is there in hard runs and in the boss rush alike
+const rskList=(r,j)=>{const L=RSK[j]||[];return r&&(raidZone(r).hard||r.rush)&&RSK_H[j]?[...L,RSK_H[j]]:L};
 const rJob=m=>m?(OLDJOB[m.job]||m.job||''):'';
 const rskLeft=(b,u,i)=>((b.cd||{})[u]||{})['s'+i]||0;
 // log line colours: skills gold, crew hitting monsters cyan, monsters hitting crew red, healing green
@@ -5505,7 +5506,7 @@ function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(
 function bresAdminHTML(){const now=sNow(),k=new Date(now+9*3600e3),pad=n=>String(n).padStart(2,'0'),dv=`${k.getUTCFullYear()}-${pad(k.getUTCMonth()+1)}-${pad(k.getUTCDate())}`,fmt=t=>{const x=new Date(t+9*3600e3);return`${x.getUTCMonth()+1}/${x.getUTCDate()} ${pad(x.getUTCHours())}:${pad(x.getUTCMinutes())}`};
   const L=[...BRES].sort((a,b)=>a.at-b.at).filter(r=>!r.done&&now-r.at<30*60e3||r.done&&now-(r.doneAt||r.at)<6*3600e3);
   return`<div class="bresbox"><span class="lbl">Booking · 침략자 예약</span><span class="hint">위에서 고른 침략자와 레벨로, 정한 시각(한국 시간)에 자동으로 나타납니다. 그 시각에 접속한 선원이 한 명이라도 있으면 나타나고, 이미 침략자가 있으면 사라진 뒤(30분 안) 나타납니다.</span>
-   <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><input id="bresDay" class="sel" type="date" value="${dv}" aria-label="예약 날짜"><input id="bresTime" class="sel" type="time" value="20:00" aria-label="예약 시각"><span class="hint">${esc((BOSS_KINDS[bossPick]||{}).n||'')} · Lv.<b>${Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30))}</b></span><button class="btn sm gold" data-act="bresadd">예약하기</button></div>
+   <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><input id="bresDay" class="sel" type="date" value="${dv}" aria-label="예약 날짜"><input id="bresTime" class="sel" type="time" value="20:00" aria-label="예약 시각"><span class="hint">${esc((BOSS_KINDS[bossPick]||{}).n||'')} · Lv.<b id="bresLv">${Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30))}</b></span><button class="btn sm gold" data-act="bresadd">예약하기</button></div>
    ${L.length?`<div class="fblist">${L.map(r=>`<div class="fbitem"><div class="row" style="justify-content:space-between;gap:6px"><span>${bossSpr({kind:r.k},1)} <b>${esc((BOSS_KINDS[r.k]||{}).n||'')}</b> Lv.${r.lv} · ${fmt(r.at)}</span><span class="hint">${r.done?'<b style="color:var(--green)">소환됨</b>':r.at<=now?'곧 소환':'예약됨'}</span>${r.done?'':`<button class="btn sm ghost" data-act="bresdel" data-k="${esc(r.id)}">취소</button>`}</div></div>`).join('')}</div>`:'<span class="hint">예약된 침략자가 없습니다.</span>'}</div>`}
 function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 선원에게 인사해 보십시오.</li>'}
 // damage ranking split by job: each column ranks its own crew, with the job's share of all damage in the header
@@ -5530,7 +5531,7 @@ function bossTick(){bossExpire();if(tab!=='adv')return;const b=BOSS,t=$('#bossT'
   const h=bossHere(),hc=$('#bossHere'),hw=$('#bossWho');if(hc)hc.textContent=h.length+'명';if(hw)hw.textContent=h.join(', ')}
 setInterval(bossTick,1000);
 document.addEventListener('submit',e=>{if(e.target.id!=='bossForm')return;e.preventDefault();if(tab!=='adv')return;const i=$('#bossIn');const v=i.value;if(!v.trim())return;i.value='';bossDraft='';bossSay(v)});
-document.addEventListener('input',e=>{if(e.target.id==='bossIn')bossDraft=e.target.value;if(e.target.id==='admBossLv'){const h=$('#admBossHp'),lv=Math.max(1,Math.min(99,+e.target.value||1));if(h)h.textContent='체력 '+bossHpFor(lv,bossPick).toLocaleString()}});
+document.addEventListener('input',e=>{if(e.target.id==='bossIn')bossDraft=e.target.value;if(e.target.id==='admBossLv'){const h=$('#admBossHp'),lv=Math.max(1,Math.min(99,+e.target.value||1));{const bl=$('#bresLv');if(bl)bl.textContent=lv}if(h)h.textContent='체력 '+bossHpFor(lv,bossPick).toLocaleString()}});
 
 /* gather scene: the collector robot trundling across the chosen site; each site has its own landscape and a little life of its own */
 const GW=240,GH=84,GBG={};let gTimer=0;
@@ -7511,7 +7512,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795004996';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795005528';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
