@@ -4236,7 +4236,7 @@ const hardZ=z=>{if(HARDZ[z.id])return HARDZ[z.id];const h=RAID_HARDZ[z.id]||[z.n
 const raidHardList=()=>RAID_ZONES.filter(z=>RAID_HARDZ[z.id]).map(hardZ);
 const zLvTxt=z=>`Lv.${z.min}~${z.open||z.id==='r6'&&!z.hard?' 이상':z.max}`;
 let EG_OPEN=false;
-const egCond=()=>mode==='online'&&!!SHIP.find(x=>x.id==='comm')&&shipDone(SHIP.find(x=>x.id==='comm'))&&!!END&&(!!END.on||!!END.done);
+const egCond=()=>mode==='online'&&!!SHIP.find(x=>x.id==='comm')&&shipDone(SHIP.find(x=>x.id==='comm'))&&!!END&&!endStale()&&(!!END.on||!!END.done);
 const egOpen=()=>mode==='online'&&(isStaff()||(EG_OPEN&&egCond()));
 const egPublic=()=>mode==='online'&&EG_OPEN&&egCond();
 const isEgItem=id=>!!(ITEMS[id]&&ITEMS[id].eg);
@@ -4909,7 +4909,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);EG_OPEN=!!(sn.exists&&sn.data().eg);VER_ANN=String((sn.exists&&sn.data().ver)||'');verApply();{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);EG_OPEN=!!(sn.exists&&sn.data().eg);ORB_GO=+((sn.exists&&sn.data().orbisGo)||0);VER_ANN=String((sn.exists&&sn.data().ver)||'');verApply();{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -5219,7 +5219,14 @@ const END_EYES=[['L',.45,.09,1.1],['L',.6,.24,.9],['header .logo',.32,.42,.8],['
 // raid timing runs on the server's clock (the bridge learns each device's offset), so a phone whose clock is off still sees the same fight
 const sNow=()=>Date.now()+(+window.__clockOff||0);
 const endFirst=()=>!!END&&END.mode==='first';
-const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&(!endFirst()||sNow()<(+END.until||0));
+// 오르비스's first visit belongs to the 20:00 when 통신 장치 opens. A first-visit record made before that (e.g. by an old,
+// un-refreshed page) is stale: it is ignored everywhere and replaced by the real one at 20:00
+// 오르비스's first visit starts ONLY when the operator presses 「오르비스 첫 등장 시작」 (staff doc orbisGo = that moment);
+// any first-visit record from before that press is stale and ignored everywhere
+var ORB_GO=0,orbGoArm=false;
+const commOpenAt=()=>{try{const c=SHIP.find(x=>x.id==='comm'),f=c&&shipFin(c);return c&&f&&shipDone(c)?shipOpenAt(f):0}catch(e){return 0}};
+const endStale=()=>!!END&&END.mode==='first'&&(!ORB_GO||(+END.gen||0)<ORB_GO);
+const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&!endStale()&&(!endFirst()||sNow()<(+END.until||0));
 const endHpS=()=>END?Math.max(0,+END.hp||0):0;
 /* live hits from the others, not yet in the raid record: shown at once (numbers and HP bar), taken off when the record catches up */
 let liveO={},liveAt={},liveSubbed=false;
@@ -5303,14 +5310,19 @@ addEventListener('pointermove',e=>{endMx=e.clientX;endMy=e.clientY},{passive:tru
 let orbisBusy=false;
 const ORB_BATTLE=90e3;   // how long the first fight lasts before 오르비스 ends it
 // P.orbis: 1 = saw the intro (fighting), 2 = knocked out and saw it leave
-function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||!$('#joinModal').hidden)return;const q=SHIP.find(x=>x.id==='comm');if(!q||!shipDone(q))return;
-  const st=(+P.orbis||0);if(st>=2)return;
-  if(END&&!endFirst()){P.orbis=2;save();syncBgm();return}                          // the final raid is already on the board: the first encounter is long past
-  const over=endFirst()&&sNow()>=(+END.until||0);
-  if(over){orbisBusy=true;orbisLeave();return}
-  if(!st){if($('#story')||$('#orbisFx'))return;orbisBusy=true;/* the 통신 장치 story first; the eye scene starts only once the story has fully faded away */const go=()=>{orbisBgmIn();/* plain black between the story and the eye: the game never shows through the fade */const bk=document.createElement('div');bk.id='orbBlack';bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{if(!$('#orbisFx'))orbisPlay(ORB_INTRO,()=>{orbisBusy=false;P.orbis=1;save();orbisStart()});setTimeout(()=>bk.remove(),900)},450)};if(STORIES.comm)playStory('comm',go);else go()}}
+function orbisCheck(){if(orbisBusy||mode!=='online'||!P||!P.joined||P.nick==='새 선원'||!$('#joinModal').hidden)return;if(!ORB_GO)return;
+  let st=(+P.orbis||0);const oa=ORB_GO;if(st>0&&oa&&!((+P.orbisAt||0)>=oa)){P.orbis=0;st=0;save()}/* seen before the real opening: it didn't count */if(st>=2)return;
+  const E=endStale()?null:END;
+  if(E&&E.mode!=='first'){P.orbis=2;P.orbisAt=sNow();save();syncBgm();return}                          // the final raid is already on the board: the first encounter is long past
+  const over=!!E&&E.mode==='first'&&sNow()>=(+E.until||0);
+  if($('#story')||$('#orbisFx'))return;
+  // missed the first fight entirely: still the story and the eye opening, then straight on to it leaving (no fight)
+  if(over){orbisBusy=true;if(!st)orbisSeq(()=>orbisLeave());else orbisLeave();return}
+  if(!st){orbisBusy=true;orbisSeq(()=>{orbisBusy=false;P.orbis=1;P.orbisAt=sNow();save();orbisStart()})}}
+// the 통신 장치 story first; the eye scene starts only once the story has fully faded away, over plain black (the game never shows through)
+function orbisSeq(after){window.__orbEvt=1;const go=()=>{window.__orbEvt=0;orbisBgmIn();const bk=document.createElement('div');bk.id='orbBlack';bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{if(!$('#orbisFx'))orbisPlay(ORB_INTRO,after);setTimeout(()=>bk.remove(),900)},450)};if(STORIES.comm)playStory('comm',go);else go()}
 // whoever finishes the intro first opens the fight on the server; everyone else just joins it
-function orbisStart(){if(END)return;const t0=sNow();bossTx(endRef(),cur=>{if(cur)return null;const hp=endHpMax();return{on:true,done:false,mode:'first',gen:t0,startAt:t0,until:t0+ORB_BATTLE,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0}})
+function orbisStart(){if(END&&!endStale())return;const t0=sNow(),oa=ORB_GO;if(!oa)return;bossTx(endRef(),cur=>{if(cur&&!(cur.mode==='first'&&(+cur.gen||0)<oa))return null;const hp=endHpMax();return{on:true,done:false,mode:'first',gen:t0,startAt:t0,until:t0+ORB_BATTLE,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0}})
   .then(nx=>{if(nx)sys(`[공지] ${END_NAME}이(가) 베이스캠프 위에 나타났습니다! 모두 맞서 싸우십시오!`,true,'static')}).catch(()=>{})}
 const ORB_INTRO=['하늘에 금이 간다…','그 너머에서, 감겨 있던 수많은 눈이 모습을 드러낸다.','거대한 눈 「오르비스」가 눈을 뜨고 베이스캠프를 내려다본다.','선원들이여, 무기를 들어라!'];
 const ORB_LEAVE=['「오르비스」의 모든 눈이 한꺼번에 베이스캠프를 바라본다.','그 시선을 마주친 순간, 선원들이 하나둘 쓰러졌다…','쓰러진 선원들을 내려다보던 거대한 눈은, 천천히 하늘 너머로 사라졌다.'];
@@ -5334,7 +5346,7 @@ function orbisPlay(LINES,done,leave){if(leave){const k=orbCurtain(1);setTimeout(
   requestAnimationFrame(draw)}
 // the fight is over: everyone still standing is struck down, and 오르비스 leaves the sky
 function orbisLeave(){if(END&&endFirst()&&END.on){const g=END.gen;bossTx(endRef(),cur=>cur&&cur.mode==='first'&&cur.gen===g&&cur.on?Object.assign(cur,{on:false,left:true,leftAt:Date.now()}):null).then(nx=>{if(nx)sys(`[공지] ${END_NAME}의 시선에 선원 모두가 쓰러졌습니다. 거대한 눈은 하늘 너머로 사라졌습니다…`,true,'static')}).catch(()=>{})}
-  endRender();orbisPlay(ORB_LEAVE,()=>{orbisBusy=false;P.orbis=2;setTimeout(syncBgm,0);if(!isFaint()){P.hp=0;checkFaint()}log(`「오르비스」의 시선에 쓰러졌다. 거대한 눈은 하늘 너머로 사라졌다.`,'bad');toast('「오르비스」의 시선에 쓰러졌습니다. 동료가 구조하거나 시간이 지나면 깨어납니다.');commit();syncBgm()},true)}
+  endRender();orbisPlay(ORB_LEAVE,()=>{orbisBusy=false;P.orbis=2;P.orbisAt=sNow();setTimeout(syncBgm,0);if(!isFaint()){P.hp=0;checkFaint()}log(`「오르비스」의 시선에 쓰러졌다. 거대한 눈은 하늘 너머로 사라졌다.`,'bad');toast('「오르비스」의 시선에 쓰러졌습니다. 동료가 구조하거나 시간이 지나면 깨어납니다.');commit();syncBgm()},true)}
 setInterval(orbisCheck,1500);
 function endFloat(d,mine,crit){const s=END_EYES[Math.floor(Math.random()*END_EYES.length)],[X,Y]=endSpotXY(s),n=document.createElement('span');
   n.className='endnum'+(mine?' me':'')+(crit?' crit':'');n.textContent=(crit?'치명! ':'')+Math.round(d).toLocaleString();n.style.left=(X+(Math.random()*30-15))+'px';n.style.top=(Y-10)+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),900);endHitT=performance.now()}
@@ -5425,6 +5437,8 @@ const EA={
   if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:sNow()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}!`)}},
  endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1))endAt=Date.now()},
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok)endSkAt=Date.now()},
+ orbisgo(d){if(!isAdmin||mode!=='online')return;if(d.x!=='1'){orbGoArm=!!d.k;renderAdminAll();return}orbGoArm=false;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{orbisGo:sNow()})).then(()=>toast('오르비스 첫 등장을 시작했습니다.')).catch(()=>toast('시작하지 못했습니다.'))},
+ orbisoff(){if(!isAdmin||mode!=='online')return;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{orbisGo:0})).then(()=>{toast('오르비스 시작을 되돌렸습니다.');return endRef().delete()}).catch(()=>{})},
  async endstart(){if(!isAdmin||mode!=='online')return;const hp=endHpMax();
   const e={on:true,done:false,gen:sNow(),startAt:sNow(),by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0};
   try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'static');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
@@ -5436,7 +5450,9 @@ function endAdminHTML(){if(mode!=='online')return'';return endAdminHTML0()+memAd
 function rankAdminHTML(){const n=Object.keys(shipTotals().u||{}).length;return`<div class="info-sec" data-adm="boss"><span class="lbl">Ranking · 랭킹 초기화</span><span class="hint">기여도 랭킹(우주선 수리에 넣은 재료 수)을 0부터 다시 셉니다. 수리 진행률은 그대로 둡니다. 레벨·생활레벨 랭킹은 선원의 실제 레벨이라 따로 지울 것이 없습니다. 랭킹에는 LV.${RANK_MIN_LV} 이상 선원만 오릅니다.</span>
    <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="rankreset" ${n?'':'disabled'}>기여도 랭킹 초기화</button><span class="hint">지금 기여 기록 ${n}명</span></div></div>`}
 function endAdminHTML0(){const e=END;
-  return`<div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
+  return`<div class="info-sec" data-adm="boss"><span class="lbl">Orbis · 오르비스 첫 등장 (수동)</span><span class="hint">오르비스 첫 등장은 이 버튼을 눌러야만 시작됩니다. 누르는 순간 접속 중인 모든 선원에게 통신 장치 스토리 → 오르비스 등장 → 첫 전투(1분 30초)가 시작되고, 나중에 들어온 선원은 전투 없이 장면만 봅니다. 그 전에 생긴 오르비스 기록은 모두 무시됩니다.</span>
+   <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><b>${ORB_GO?`시작됨 · ${new Date(ORB_GO).toLocaleString()}`:'아직 시작 안 함'}</b>${orbGoArm?`<button class="btn sm alt" data-act="orbisgo" data-x="1">정말 시작</button><button class="btn sm ghost" data-act="orbisgo" data-k="">취소</button>`:`<button class="btn sm gold" data-act="orbisgo" data-k="1">오르비스 첫 등장 시작</button>`}${ORB_GO?'<button class="btn sm ghost" data-act="orbisoff">시작 취소 (되돌리기)</button>':''}</div></div>
+  <div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
    <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 숨겨진 엔딩 칭호가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.mode==='first'?(e.on&&sNow()<(+e.until||0)?'첫 등장 전투 진행 중':'첫 등장 끝남 (오르비스 퇴장) · 최종 레이드를 시작할 수 있습니다'):e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="hint">Lv.${END_LV} · 체력 ${endHpMax().toLocaleString()} · 시선 피해 약 ${Math.round((20+END_LV*6.5)*endAtkK()).toLocaleString()} (침략자 Lv.${END_LV}의 1.5배)</span>
@@ -6252,8 +6268,8 @@ function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||'
   if(k==='opening'){OP_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')});add('[조우]','ttl')}
   const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
   return out.join('')}
-var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판']];
-const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k];
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호']];
+const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k]||(k==='comm'&&(+(P&&P.orbis)||0)>=1);
 // once 생명 유지 장치 is repaired every crew member sees its story one time (the next time they are in the game), then the 마이룸 popup
 function lifeStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
   if(!STORY_ON.life)return;// held back (운영진 included) until 이야기 공개 releases it
@@ -7448,7 +7464,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794934470';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1794989817';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7902,7 +7918,7 @@ function playStory(sid,done){const S=STORIES[sid];if(!S||$('#story'))return;cons
       ptext('SYSTEM DAMAGE - REPAIR REQUIRED',58,98,red);ptext('GAIA - SHIP STATUS',24,14,B[5]);g.globalAlpha=1}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
-  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis')orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
+  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
   function cur(){const L=S.scenes[si].lines[li];return L.v?`“${L.v}”`:L.t}
   const at=performance.now();let st0=at,artNow='',fadeC=null,fadeAt=0;
   function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
@@ -8330,7 +8346,10 @@ const A={
   let M=$('#storyPop');if(!M){M=document.createElement('div');M.id='storyPop';M.className='modal';M.addEventListener('click',e=>{if(e.target===M||e.target.closest('.stpop-x'))M.hidden=true});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!M.hidden)M.hidden=true});document.body.appendChild(M)}
   M.innerHTML=`<div class="px infobox stpop" role="dialog" aria-label="${esc(nm)}"><div class="stpop-h"><span class="lbl">Story · 이야기</span><b>${esc(nm)}</b><button type="button" class="stpop-x" aria-label="닫기">✕</button></div><div class="sttext">${storyScript(d.k)}</div><div class="row" style="justify-content:flex-end;gap:6px"><button type="button" class="btn sm ghost stpop-x">닫기</button><button type="button" class="btn sm" data-act="${d.k==='opening'?'opreplay':'storyplay'}" data-k="${d.k}" onclick="document.getElementById('storyPop').hidden=true">재생 ▶</button></div></div>`;M.hidden=false;M.querySelector('.sttext').scrollTop=0},
  opreplay(){if(preLock()||!storyOpen('opening')){toast('아직 공개되지 않은 이야기입니다.');return}storyCrawl(()=>playStory('opening'))},
- storyplay(d){if(preLock()||!storyOpen(d.k)){toast('아직 공개되지 않은 이야기입니다.');return}playStory(d.k)},
+ storyplay(d){if(preLock()||!storyOpen(d.k)){toast('아직 공개되지 않은 이야기입니다.');return}
+  // 통신 장치 replays the whole visit except the fight: story → the eye opens → it looks down, everyone falls, it leaves (nothing happens to the game)
+  if(d.k==='comm'){if($('#story')||$('#orbisFx'))return;playStory('comm',()=>{const bk=document.createElement('div');bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{orbisPlay(ORB_INTRO,()=>orbisPlay(ORB_LEAVE,null,true));setTimeout(()=>bk.remove(),900)},450)});return}
+  playStory(d.k)},
  admstory(d){if(!isAdmin||mode!=='online'||!STORY_LIST.some(x=>x[0]===d.k))return;const on=!STORY_ON[d.k],nm=STORY_LIST.find(x=>x[0]===d.k)[1];bossTx(staffRef(),cur=>{const c=Object.assign({ids:[]},cur);c.stories=Object.assign({},c.stories,{[d.k]:on});return c}).then(()=>{toast(on?`「${nm}」을(를) 공개했습니다.`:`「${nm}」을(를) 다시 숨겼습니다.`);if(on)sys(`[공지] 새 이야기 「${nm}」이(가) 공개되었습니다. 내 정보 › 이야기에서 볼 수 있습니다.`,true)}).catch(()=>toast('바꾸지 못했습니다.'))},
  padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
  pfpdel(){const old=P.pfp;if(!old)return;P.pfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();renderInfo()},
@@ -9429,7 +9448,7 @@ $('#joinForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#call
   if(J&&!J.job){toast('직업을 골라 주십시오.');jGo(3);return}
   if(P.joined&&P.nick!=='새 선원'&&mode==='solo'){P.nick=v}else{P=Object.assign(newPlayer(v),mode==='solo'?{sb:P.sb}:{})}applyJoin();
   if(mode==='online'&&isOwnerAcct)P.owner=1;
-  {const q=SHIP.find(x=>x.id==='comm');if(q&&mode==='online'&&shipDone(q))P.orbis=2}
+  {if(mode==='online'&&ORB_GO){P.orbis=2;P.orbisAt=sNow()}}
   $('#joinModal').hidden=true;log(`선원 「${v}」${jo(v,'이','가')} 승선했다.`,'rare');sys(`새 선원 ${v} 님이 베이스캠프에 도착했습니다. 환영해 주십시오!`);save();flushNow();/* a new member shows up for everyone at once */renderAll();setPresence();setTimeout(openingOnce,300)});
 
 /* ───────── bgm ───────── */
@@ -9463,7 +9482,7 @@ let ORB_PRE=0,ORB_FADE=0;
 function orbisBgmIn(){if(ORB_PRE)return;ORB_PRE=Date.now();if(!(bgmOn&&bgmVol>0))return;const outs=[bgm,bgm2,barBgm,raidBgm,raidBgm2].filter(a=>a&&!a.paused),m=finMusic(),v0=outs.map(a=>a.volume),t0=Date.now();
   clearInterval(bgmFade);bgmFade=0;m.volume=0;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});clearInterval(ORB_FADE);
   ORB_FADE=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/2500);outs.forEach((a,i)=>a.volume=v0[i]*Math.max(0,1-k/0.8));m.volume=bgmVol/100*k;if(k>=1){clearInterval(ORB_FADE);ORB_FADE=0;outs.forEach(a=>{a.pause()})}},60)}
-const orbPre=()=>!!ORB_PRE&&!END&&Date.now()-ORB_PRE<180e3;
+const orbPre=()=>!!ORB_PRE&&(!END||endStale()||(endFirst()&&(+(P&&P.orbis)||0)<2))&&Date.now()-ORB_PRE<180e3;
 // when 오르비스 leaves (or its fight ends) its theme plays on a moment, then fades out while the usual music fades back in
 let FIN_OUT=0;
 function finToMain(){if(FIN_OUT)return;const f=finBgm,t0=Date.now()+1500;let m=null;FIN_OUT=setInterval(()=>{const now=Date.now();if(now<t0)return;
