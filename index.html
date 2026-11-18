@@ -1861,6 +1861,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .sites .raidz[aria-checked="false"]:hover{opacity:1}
 .ichip.hardtag,.hardtxt{color:#ff8a94;border-color:#ff4a5a;font-weight:700;letter-spacing:.06em}.btn.hardbtn{box-shadow:inset 0 0 0 2px #ff4a5a}
 .rmode.egoff{display:none}
+.bresbox{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:6px}
 .bdlsp{border-color:var(--gold)!important;background:color-mix(in srgb,var(--gold) 8%,var(--panel))}.bdlfurn{font-size:22px;line-height:1;display:inline-flex;width:48px;justify-content:center}
 .bdlhead .bdlrr{margin-left:auto;white-space:nowrap}
 .bdlhead{display:flex;gap:10px;align-items:center;margin:0 0 6px;padding:8px 10px;border:1px dashed var(--line);background:var(--panel2)}.bdlhead .sinfo{display:flex;flex-direction:column;gap:2px}.bdlhead .hint b{color:var(--gold)}
@@ -3429,7 +3430,7 @@ const TTL_FX={rookie:['plain',{hp:10}],farm1:['soil',{farm:.5}],farm2:['leaf',{f
  lv20:['orbit',{xp:3}],lv40:['orbit',{xp:5,hp:30}],lv60:['star',{atk:20,def:20,hp:60}],soc1:['heart',{hp:15,en:3}],soc2:['heart',{xp:2}],adv1:['blood',{atk:10,crit:1}],adv2:['abyss',{atkP:3,critD:8}],
  all5:['prism',{farm:1,gather:1,fish:1,scan:1}],farmmax:['bloom',{farm:3,hpP:3}],gathermax:['gold',{gather:3,atkP:2}],fishmax:['abyss',{fish:3,luck:2}],scanmax:['star',{scan:3,crit:2}],
  rcp15:['warm',{cook:1}],rcp30:['warm',{cook:2,en:5}],rcp45:['flame',{cook:3,hpP:3}],cook10:['oops',{cook:.5}],cook100:['warm',{cook:1,sell:2}],cook500:['warm',{cook:2,hp:30}],cook1000:['cosmic',{cook:4,hpP:5,en:10}],
- gold:['gold',{sell:5}],dex_r1:['dust',{atk:5,hp:20}],dex_r2:['glitch',{crit:1,en:3}],dex_r3:['leaf',{dodge:2,hp:20}],dex_r4:['steel',{def:15,atk:5}],dex_r5:['deep',{def:20,hpP:2}],dex_r6:['flame',{atkP:3,critD:5}],dex_all:['cosmic',{atkP:3,defP:3,xp:5}]};
+ gold:['gold',{sell:5}],dex_r1:['dust',{atk:5,hp:20}],dex_r2:['glitch',{crit:1,en:3}],dex_r3:['leaf',{dodge:2,hp:20}],dex_r4:['steel',{def:15,atk:5}],dex_r5:['deep',{def:20,hpP:2}],dex_r6:['flame',{atkP:3,critD:5}],dex_all:['cosmic',{atkP:3,defP:3,xp:5}],dex_s6:['star',{luck:2,fish:2,en:5}]};
 const TF_N={atk:['공격',''],def:['방어',''],hp:['최대 체력',''],en:['최대 에너지',''],crit:['치명타','%'],critD:['치명타 피해','%'],dodge:['회피','%'],atkP:['공격력','%'],defP:['방어력','%'],hpP:['최대 체력','%'],
  luck:['희귀 어종 보너스',''],xp:['경험치','%'],sell:['판매가','%'],farm:['농사 보너스','%p'],gather:['채집 보너스','%p'],fish:['낚시 보너스','%p'],scan:['조사 보너스','%p'],cook:['맛있는 요리','%p']};
 const ttlFx=id=>TTL_FX[id]||TTL_FX.rookie,TF=k=>(P&&ttlFx(P.title||'rookie')[1][k])||0;
@@ -3484,12 +3485,14 @@ const TITLES=[
  ['dex_r5','서리를 견딘 자','몬스터 도감 · 얼어붙은 심연 완성',()=>dexDone('r5')],
  ['dex_r6','붉은 별을 꺼뜨린 자','몬스터 도감 · 붉은 별의 핵 완성',()=>dexDone('r6')],
  ['dex_all','가이아의 박물학자','몬스터 도감 42종 모두 완성',()=>RAID_ZONES.every(z=>dexDone(z.id))],
+ ['dex_s6','별눈물을 건져 올린 자','어류 도감 · 별눈물 호수 완성',()=>{const S=FISH_DB.find(x=>x.id==='s6');return!!S&&['c','r','u','l'].every(t=>S[t].every(id=>(P.dex||{})[id]))}],
  ['soc1','다정한 이웃','선원에게 인사 10번 건네기',()=>st('hi')>=10],
  ['soc2','광장의 이야기꾼','PAD에 글 10개 쓰기',()=>st('post')>=10],
  ['ending','테라의 마지막 수호자','',()=>(P.st?.ending||0)>=1],
 ];
 // titles the operator gave back (P.ttlGrant) count as earned whatever the record says
 TITLES.forEach(t=>{const f=t[3];t[3]=()=>!!(P&&((P.ttlGrant||[]).includes(t[0])||(P.ttlHave||[]).includes(t[0])))||f()});// a title once earned is kept even when its condition stops holding (e.g. 크레딧 보유)
+const TTL_EG=new Set(['dex_s6']),ttlVis=()=>TITLES.filter(t=>!TTL_EG.has(t[0])||egOpen()||t[3]());
 const st=k=>(P.st&&P.st[k])||0;
 const dexDone=id=>{const z=RAID_ZONES.find(x=>x.id===id),D=P.mdex||{};return!!z&&[...z.mons,z.mid,z.boss].every(n=>D[n]>0)};
 // isOwnerAcct: the 운영자 account itself. isAdmin: anyone with admin powers — the 운영자 and the 관리자 it appoints
@@ -3614,10 +3617,10 @@ function renderInfo0(){if(meTab==='look'){$('#infoBox').innerHTML=myLookHTML();r
    <div class="mecol">
     <section class="mecard"><span class="lbl">Gear · 장비</span>${rows([['무기',{h:`${wNmH()} +${P.wlv}`}],['우주복',`${SUITS[P.suit||0].n} +${P.suit||0}`],['낚싯대',RODS[P.rod||0].n],['제작 장비',gearN]])}</section>
     <section class="mecard"><span class="lbl">Story · 이야기</span>${STORY_LIST.some(([k])=>storyOpen(k))?STORY_LIST.filter(([k])=>storyOpen(k)).map(([k,n])=>`<div class="strow${storyTxt===k?' on':''}"><button type="button" class="strow-t" data-act="storytxt" data-k="${k}">▶ ${esc(n)}</button><button type="button" class="strow-play" data-act="${k==='opening'?'opreplay':'storyplay'}" data-k="${k}">재생 ▶</button></div>`).join(''):'<span class="hint">아직 공개된 이야기가 없습니다.</span>'}</section>
-    <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${dexN(P)} / ${egOpen()?FISHES.c.length+FISHES.r.length+FISHES.u.length+FISHES.l.length:115}`],['칭호',`${got.length} / ${TITLES.length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
+    <section class="mecard"><span class="lbl">Records · 기록</span>${rows([['어류 도감',`${dexN(P)} / ${egOpen()?FISHES.c.length+FISHES.r.length+FISHES.u.length+FISHES.l.length:115}`],['칭호',`${got.length} / ${ttlVis().length}`],['침략자 공격',`${st('boss').toLocaleString()}회`],['침략자 토벌 참여',`${st('bosskill')}회`]])}</section>
     ${tasteHTML(P).replace('class="info-sec"','class="mecard"')}</div></div>
    <section class="mecard"><span class="lbl">Job · 직업 · ${jobLocked()?'한 번 정한 직업은 바꿀 수 없습니다':'아직 직업이 없습니다 · 한 번 정하면 바꿀 수 없습니다'}</span><div class="jobcards">${Object.entries(JOBS).map(([k,j])=>{const on=(OLDJOB[P.job]||P.job)===k;return`<button class="jobcard jc-${k}" data-act="setjob" data-k="${k}" aria-pressed="${on}" ${jobLocked()&&!on?'disabled':''}><div class="jcart"><i class="jcglow"></i>${img(JOB_IC[k],null,4,'',JOB_PO[k])}${on?'<span class="jcnow">현재 직업</span>':''}</div><div class="jcbody"><b class="jcn">${j.n}</b><span class="jcr">${j.r.split(' · ').map(t=>`<em>${t}</em>`).join('')}</span><ul class="jcfx">${jobFx(j.d).map(t=>`<li>${t}</li>`).join('')}</ul></div></button>`}).join('')}</div></section>
-   <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${TITLES.length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${TITLES.map(t=>{const ok=t[3](),bt=`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?ttlHTML(t[0],t[1]):'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:t[2]?'잠김 · '+t[2]:'잠김'}</span><span class="ttlfx">${ttlFxTxt(t[0])}</span></button>`,br=(P.ttlBrag||{})[t[0]];
+   <section class="mecard"><button class="dex-head sec-head" data-act="ttltoggle" aria-expanded="${ttlOpen}"><span class="lbl">Title · 칭호</span><b>${got.length}/${ttlVis().length}</b><span class="hint" style="margin-left:6px">${esc(titleName())}</span><span class="caret">${ttlOpen?'▾':'▸'}</span></button>${ttlOpen?`<div class="titles">${ttlVis().map(t=>{const ok=t[3](),bt=`<button class="ttl" data-act="settitle" data-k="${t[0]}" aria-pressed="${(P.title||'rookie')===t[0]}" ${ok?'':'disabled'} title="${t[2]}"><b>${ok?ttlHTML(t[0],t[1]):'<span class="ttlq">???</span>'}</b><span>${ok?t[2]:t[2]?'잠김 · '+t[2]:'잠김'}</span><span class="ttlfx">${ttlFxTxt(t[0])}</span></button>`,br=(P.ttlBrag||{})[t[0]];
       return ok&&mode==='online'?`<div class="ttlbox">${bt}<button class="ttlbrag" data-act="ttlbrag" data-k="${t[0]}" ${br?'disabled':''}>${br?'PAD에 자랑함':'PAD에 자랑하기'}</button></div>`:bt}).join('')}</div>`:''}</section>`;
 }
 const LOG=[];
@@ -4903,8 +4906,16 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
 const BOSS_POLL=60e3;let bossUn=null,bossPollT=0;
 function bossOn(sn){BOSS=sn.exists?sn.data():null;try{bossPhNote()}catch(e){}bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint();bossSubSync()}
 function bossSubSync(){const w=mode==='online'&&!!db&&(tab==='adv'||!bossAlive(BOSS));if(w&&!bossUn)bossUn=bossRef().onSnapshot(bossOn,()=>{});else if(!w&&bossUn){try{bossUn()}catch(e){}bossUn=null}}
+/* 침략자 예약: the operator books invaders ahead (boss/bossres list of {id,at,k,lv}). Whoever is online when one is due claims it
+   in a transaction and summons it, so it appears on time even with no operator around; a booking more than 30 min overdue is dropped */
+const bossResRef=()=>db.doc('boss/bossres');let BRES=[],bresBusy=false;
+function bresSub(){bossResRef().onSnapshot(sn=>{BRES=((sn.exists&&sn.data().list)||[]).filter(r=>r&&r.id);if(typeof adminShown==='function'&&adminShown())renderAdminAll()},()=>{})}
+function bresTick(){if(mode!=='online'||!db||bresBusy||!P||!P.joined)return;const now=sNow(),r=BRES.find(x=>!x.done&&x.at<=now&&now-x.at<30*60e3);if(!r||bossAlive(BOSS))return;bresBusy=true;
+  bossTx(bossResRef(),cur=>{const L=((cur&&cur.list)||[]).map(x=>Object.assign({},x)),me=L.find(x=>x.id===r.id);if(!me||me.done)return null;me.done=uid;me.doneAt=Date.now();return{list:L}})
+   .then(nx=>{if(!nx)return;const K=BOSS_KINDS[r.k];return bossSummon(r.k,r.lv).then(x=>{if(x&&K)sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${r.lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`,true,'siren')})}).catch(()=>{}).finally(()=>{bresBusy=false})}
+setInterval(bresTick,20e3);
 function bossSubscribe(){
-  endSub();memSub();affSub();bondSub();
+  endSub();memSub();affSub();bondSub();bresSub();
   bossSubSync();if(!bossPollT)document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode==='online'&&db&&!bossUn)bossRef().get().then(bossOn,()=>{})});if(!bossPollT)bossPollT=setInterval(()=>{if(mode==='online'&&db&&!bossUn&&!document.hidden)bossRef().get().then(bossOn,()=>{})},BOSS_POLL);
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
@@ -5463,7 +5474,13 @@ function bossAdminHTML(){const b=BOSS,alive=bossAlive(b),lv=Math.max(1,Math.min(
    ${alive?`<div class="row" style="gap:8px;align-items:center">${bossSpr(b,2)}<span class="hint">지금 <b>${esc(b.name)}</b> Lv.${b.lv} 출현 중 · 체력 ${b.hp.toLocaleString()}/${b.max.toLocaleString()} · ${bossClock(b)}</span><button class="btn sm ghost" data-act="admbossoff">돌려보내기</button></div><span class="hint">돌려보내면 보상도 저주도 없이 사라집니다. 침략자가 있는 동안에는 새로 소환할 수 없습니다.</span>`
    :`<div class="bosspicks">${BOSS_KINDS.map((K,i)=>K.off?'':`<button type="button" class="qchip bosspick" data-act="admbosspick" data-k="${i}" aria-pressed="${i===bossPick}" title="${esc(K.n)}">${bossSpr({kind:i},2)}<span>${esc(K.n)}</span></button>`).join('')}</div>
     <div class="row" style="gap:6px;align-items:center"><span class="hint">레벨</span><input id="admBossLv" class="sel" type="number" min="1" max="99" value="${lv}" style="width:70px" aria-label="침략자 레벨"><span class="hint" id="admBossHp">체력 ${bossHpFor(lv,bossPick).toLocaleString()}</span><button class="btn sm gold" data-act="admboss">소환</button></div>
-    <span class="hint">소환하면 2시간 안에 토벌해야 합니다. 실패하면 모든 선원의 체력과 에너지가 1이 됩니다.</span>`}</div>`}
+    <span class="hint">소환하면 2시간 안에 토벌해야 합니다. 실패하면 모든 선원의 체력과 에너지가 1이 됩니다.</span>`}${bresAdminHTML()}</div>`}
+// booking: the kind picked above and the level box, at a chosen date and time (KST)
+function bresAdminHTML(){const now=sNow(),k=new Date(now+9*3600e3),pad=n=>String(n).padStart(2,'0'),dv=`${k.getUTCFullYear()}-${pad(k.getUTCMonth()+1)}-${pad(k.getUTCDate())}`,fmt=t=>{const x=new Date(t+9*3600e3);return`${x.getUTCMonth()+1}/${x.getUTCDate()} ${pad(x.getUTCHours())}:${pad(x.getUTCMinutes())}`};
+  const L=[...BRES].sort((a,b)=>a.at-b.at).filter(r=>!r.done&&now-r.at<30*60e3||r.done&&now-(r.doneAt||r.at)<6*3600e3);
+  return`<div class="bresbox"><span class="lbl">Booking · 침략자 예약</span><span class="hint">위에서 고른 침략자와 레벨로, 정한 시각(한국 시간)에 자동으로 나타납니다. 그 시각에 접속한 선원이 한 명이라도 있으면 나타나고, 이미 침략자가 있으면 사라진 뒤(30분 안) 나타납니다.</span>
+   <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><input id="bresDay" class="sel" type="date" value="${dv}" aria-label="예약 날짜"><input id="bresTime" class="sel" type="time" value="20:00" aria-label="예약 시각"><span class="hint">${esc((BOSS_KINDS[bossPick]||{}).n||'')} · Lv.<b>${Math.max(1,Math.min(99,+((document.getElementById('admBossLv')||{}).value)||30))}</b></span><button class="btn sm gold" data-act="bresadd">예약하기</button></div>
+   ${L.length?`<div class="fblist">${L.map(r=>`<div class="fbitem"><div class="row" style="justify-content:space-between;gap:6px"><span>${bossSpr({kind:r.k},1)} <b>${esc((BOSS_KINDS[r.k]||{}).n||'')}</b> Lv.${r.lv} · ${fmt(r.at)}</span><span class="hint">${r.done?'<b style="color:var(--green)">소환됨</b>':r.at<=now?'곧 소환':'예약됨'}</span>${r.done?'':`<button class="btn sm ghost" data-act="bresdel" data-k="${esc(r.id)}">취소</button>`}</div></div>`).join('')}</div>`:'<span class="hint">예약된 침략자가 없습니다.</span>'}</div>`}
 function bossChatLogHTML(){return BCHAT.length?BCHAT.map(m=>`<li class="${m.uid===uid?'me':''}"><b>${headImg(2,whoP(m.uid))}${esc(m.n||'선원')}</b><span>${esc(m.t)}</span><time>${hhmm(m.at)}</time></li>`).join(''):'<li class="hint">아직 대화가 없습니다. 함께 싸우는 선원에게 인사해 보십시오.</li>'}
 // damage ranking split by job: each column ranks its own crew, with the job's share of all damage in the header
 function bossJobRank(rk,tot){const jobOf=u=>{const j=u===uid?P.job:(PLAYERS[u]||{}).job;return OLDJOB[j]||j||''},G=['mech','nav','medic'].map(j=>[j,rk.filter(([u])=>jobOf(u)===j)]),etc=rk.filter(([u])=>!JOBS[jobOf(u)]);if(etc.length)G.push(['',etc]);
@@ -7465,7 +7482,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1794990794';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795000379';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8401,6 +8418,10 @@ const A={
   else if(k==='farm'){FARM.pods.forEach((pl,i)=>{if(pl&&pl.seed)farmPut(i,Object.assign({},pl,{got:ITEMS[pl.seed].grow}))})}
   else if(k==='cr1')P.cr=(P.cr||0)+1000;else if(k==='cr10')P.cr=(P.cr||0)+10000;else if(k==='lvl'){P.xp=0;P.lvl=Math.min(MAX_LV,P.lvl+1);P.hp=maxHp();P.en=maxEn()}
   log(`[운영자] ${d.k} 실행`);commit();renderAdminAll();toast('적용했습니다.')},
+ bresadd(){if(!isAdmin||mode!=='online')return;const d=($('#bresDay')||{}).value,t=($('#bresTime')||{}).value,lv=Math.max(1,Math.min(99,Math.round(+(($('#admBossLv')||{}).value)||30)));if(!d||!t){toast('날짜와 시각을 골라 주십시오.');return}
+  const [Y,M,D]=d.split('-').map(Number),[h,m]=t.split(':').map(Number),at=Date.UTC(Y,M-1,D,h,m,0)-9*3600e3;if(!(at>sNow())){toast('지금보다 뒤의 시각을 골라 주십시오.');return}
+  const r={id:'r'+Date.now().toString(36),at,k:bossPick,lv,by:P.nick};bossTx(bossResRef(),cur=>({list:[...(((cur&&cur.list)||[]).filter(x=>x&&(!x.done?sNow()-x.at<30*60e3:sNow()-(x.doneAt||x.at)<86400e3))),r].slice(-30)})).then(()=>toast(`${BOSS_KINDS[bossPick].n} Lv.${lv}을(를) ${d} ${t}에 예약했습니다.`)).catch(()=>toast('예약하지 못했습니다.'))},
+ bresdel(d){if(!isAdmin||mode!=='online')return;bossTx(bossResRef(),cur=>({list:((cur&&cur.list)||[]).filter(x=>x.id!==d.k)})).then(()=>toast('예약을 취소했습니다.')).catch(()=>toast('취소하지 못했습니다.'))},
  admbosspick(d){if(!isAdmin)return;const k=Math.max(0,Math.min(BOSS_KINDS.length-1,+d.k||0));if(BOSS_KINDS[k].off)return;bossPick=k;renderAdminAll()},
  admboss(){if(!isAdmin)return;const lv=Math.max(1,Math.min(99,Math.round(+$('#admBossLv').value)||30)),K=BOSS_KINDS[bossPick];bossSummon(bossPick,lv).then(nx=>{if(!nx){toast('이미 침략자가 출현 중입니다.');return}toast(`${K.n} Lv.${lv}을(를) 소환했습니다.`);sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`,true,'siren');renderAdminAll()}).catch(()=>toast('소환하지 못했습니다.'))},
  admbossoff(){if(!isAdmin)return;bossDismiss().then(()=>{toast('침략자를 돌려보냈습니다.');renderAdminAll()}).catch(()=>toast('돌려보내지 못했습니다.'))},
