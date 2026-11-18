@@ -3219,8 +3219,11 @@ const FTIERS={c:['c','r','u','l'],r:['r','u','l'],u:['u','l'],l:['l']};
 const FNAME={c:'아무 물고기',r:'레어 이상 물고기',u:'유니크 이상 물고기',l:'레전더리 물고기'};
 function ingHave(id){if(id.startsWith('fish:'))return FTIERS[id.slice(5)].reduce((s2,tr)=>s2+FISHES[tr].reduce((a,f)=>a+(isLocked(f)?0:(P.inv[f]||0)),0),0);return isLocked(id)?0:(P.inv[id]||0)}
 function ingTake(id,n){if(!id.startsWith('fish:'))return isLocked(id)?false:take(id,n);for(let k=0;k<n;k++){let got=false;for(const tr of FTIERS[id.slice(5)]){const f=FISHES[tr].filter(f2=>P.inv[f2]&&!isLocked(f2)).sort((a,b)=>P.inv[b]-P.inv[a])[0];if(f){take(f);got=true;break}}if(!got)return false}return true}
-function ingChip(id,n){const h=ingHave(id),ok=h>=n,nm=id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id),ic=id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],1):iicon(id,1);return`<span class="ichip ${ok?'':'miss'}">${ic}${nm} <b>${Math.min(h,99)}/${n}</b></span>`}
-const canCook=c=>c.need.every(([id,n])=>ingHave(id)>=n);
+// cooking: a dish used as an ingredient can be its [맛있는!] version too (plain ones are used first)
+const cookTid=id=>!id.startsWith('fish:')&&ITEMS[TASTY+id]?TASTY+id:null,cookHave=id=>ingHave(id)+(cookTid(id)?ingHave(cookTid(id)):0);
+function cookTake(id,n){const pl=Math.min(n,ingHave(id));if(pl>0&&!ingTake(id,pl))return false;return n-pl<=0||(!!cookTid(id)&&ingTake(cookTid(id),n-pl))}
+function ingChip(id,n){const h=cookHave(id),ok=h>=n,nm=id.startsWith('fish:')?FNAME[id.slice(5)]:(ITEMS[id]?ITEMS[id].n:id),ic=id.startsWith('fish:')?iicon(FISHES[id.slice(5)][0],1):iicon(id,1);return`<span class="ichip ${ok?'':'miss'}">${ic}${nm} <b>${Math.min(h,99)}/${n}</b></span>`}
+const canCook=c=>c.need.every(([id,n])=>cookHave(id)>=n);
 function BUFF(k){const b=P.buff;if(!b||Date.now()>=b.until)return 0;return(b.fx&&b.fx[k])||0}
 // what a dish does beyond 체력/에너지, shown in the bag before eating
 function dishFxHTML(id){const c0=COOK.find(x=>x.id===dishBase(id));if(!c0)return'';const c=id===c0.id?c0:Object.assign({},c0,tastyOf(c0));const L=[];if(c.xp)L.push(`경험치 +${c.xp}`);
@@ -3233,7 +3236,7 @@ function rcpPop(id){const c=COOK.find(x=>x.id===id),it=ITEMS[id];if(!c||!it)retu
   const d=document.createElement('div');d.id='rcPop';d.className='rcpop';d.setAttribute('role','dialog');d.setAttribute('aria-label','레시피 해금');
   d.innerHTML=`<div class="rcbox"><i class="rcsp s1"></i><i class="rcsp s2"></i><i class="rcsp s3"></i><i class="rcsp s4"></i><b class="rct">축하합니다!</b><span class="rcs">레시피를 해금했습니다!</span><div class="rcpic">${iicon(id,5)}</div><b class="rcn">${esc(it.n)}</b><span class="rch">${c.hp>=999?'체력·에너지 완전 회복':`체력 +${c.hp} · 에너지 +${c.en}`}${c.buff?` · ${Object.entries(c.buff).map(([k,v])=>`${buffTxt(k,v)}`).join(' ')} ${c.bmin}분`:''}</span><button class="btn gold sm" data-rcok>확인</button></div>`;
   const close=()=>{d.classList.add('out');setTimeout(()=>d.remove(),200)};d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-rcok]'))close()});document.body.appendChild(d);sfxFanfare(false);d.querySelector('[data-rcok]').focus({preventScroll:true})}
-const cookMax=c=>Math.max(0,Math.min(20,...c.need.map(([id,n])=>Math.floor(ingHave(id)/n))));
+const cookMax=c=>Math.max(0,Math.min(20,...c.need.map(([id,n])=>Math.floor(cookHave(id)/n))));
 function sfxSizzle(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;noiseBurst(a,t,.9,'highpass',2600,4200,.035);noiseBurst(a,t+.15,.6,'bandpass',5200,3400,.02);tone(a,'triangle',220,180,t,.12,.03)}
 function sfxDing(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;tone(a,'sine',1318,0,t,.5,.07);tone(a,'sine',1760,0,t+.12,.6,.06);tone(a,'triangle',2637,0,t+.12,.25,.02)}
 let cookTab='normal';
@@ -3480,7 +3483,7 @@ const TITLES=[
  ['fish6','중력파를 던지는 자','중력파 낚싯대 보유',()=>(P.rod||0)>=2],
  ['fish2','전설을 낚은 자','레전더리 1종류 낚기',()=>FISHES.l.filter(id=>(P.dex||{})[id]).length>=1],
  ['fish7','전설의 레전드','레전더리 5종류 모두 낚기',()=>FISHES.l.filter(id=>(P.dex||{})[id]).length>=5],
- ['fish8','낚시의 어버이','어류 도감 115종 완성',()=>Object.keys(P.dex||{}).length>=115],
+ ['fish8','낚시의 어버이','어류 도감 '+FISH_DB.filter(S=>!S.eg).reduce((a,S)=>a+S.c.length+S.r.length+S.u.length+S.l.length,0)+'종 완성',()=>FISH_DB.filter(S=>!S.eg).every(S=>['c','r','u','l'].every(t=>S[t].every(id=>(P.dex||{})[id])))],
  ['scan1','길 위의 개척자','주변 지점 30곳 조사',()=>(P.st?.scan||0)>=30],
  ['scan2','지도 밖으로','주변 지점 100곳 조사',()=>st('scan')>=100],
  ['scan3','침묵을 해독하는 자','조사 생활 레벨 10',()=>lifeLv(P.lx?.scan)>=10],
@@ -5925,7 +5928,7 @@ function drawLake(){const cv=$('#lakeCv');if(!cv)return;const w=Math.max(80,Math
     for(let k=0;k<4;k++){const fx=Math.round(w*(.6+k*.09)+Math.sin(ph*.4+k)*2),fy=hz+5+((k*6)%Math.max(4,h-hz-9));R(fx,fy,3,2,K.rust);R(fx,fy,3,1,mix(K.rust,'#ffffff',.25))}}
   L.motes.forEach(m=>{const yy=Math.round(m.y-((ph*m.s*6)%(h-hz-4)));const yv=yy<hz+3?yy+(h-hz-4):yy;R(Math.round(m.x+Math.sin(ph+m.x)*2),yv,1,1,K.mote)})}
 let dexOpen=false,dexTab='';
-function dexHTML(){const all=[...FISHES.c,...FISHES.r,...FISHES.u,...FISHES.l],got=all.filter(id=>P.dex[id]).length;
+function dexHTML(){const all=fspotsVis().flatMap(S=>[...S.c,...S.r,...S.u,...S.l]),got=all.filter(id=>P.dex[id]).length;
   const sp=fspotsVis().find(x=>x.id===dexTab)||fspot(),cnt=x=>['c','r','u','l'].reduce((a,t)=>a+x[t].filter(id=>P.dex[id]).length,0);
   const cell=(id,t)=>`<div class="dx-${t}" title="${P.dex[id]?esc(ITEMS[id].n):'아직 낚지 못한 물고기'}">${iicon(id,3).replace('class="pix ','class="pix '+(P.dex[id]?'':'no ')+'')}<span>${P.dex[id]?ITEMS[id].n:'???'}</span><span class="hint">${P.dex[id]?P.dex[id]+'마리':'미발견'}</span>${P.dex[id]&&(P.fsz||{})[id]?`<span class="hint dexlen">최대 ${fmtLen(P.fsz[id])}</span>`:''}</div>`;
   return`<div class="card dexbox"><button class="dex-head" data-act="dextoggle" aria-expanded="${dexOpen}"><span class="lbl">Fish log · 어류 도감</span><b>${got}/${all.length}</b><span class="caret">${dexOpen?'▾':'▸'}</span></button>
@@ -7512,7 +7515,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795005528';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795010411';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8227,7 +8230,7 @@ const A={
  cooksel(d){cookN=1;cookSel=d.k;renderCook()},
  cooktab(d){cookTab=d.k==='adv'?'adv':'normal';const L=COOK.filter(x=>cookTab==='adv'?x.eg:!x.eg);if(L.length&&!L.some(x=>x.id===cookSel))cookSel=L[0].id;cookN=1;renderCook()},
  cookq(d){const c=COOK.find(x=>x.id===cookSel);if(!c)return;const mx=cookMax(c);cookN=d.k==='max'?mx:Math.max(1,Math.min(mx,cookN+(+d.k)));renderCook()},
- cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel&&(!x.eg||egOpen()));const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)ingTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
+ cook(){if(P.cook)return;const c=COOK.find(x=>x.id===cookSel&&(!x.eg||egOpen()));const n=c?Math.max(1,Math.min(cookN,cookMax(c))):0;if(!c||!cookMax(c)){toast('재료가 부족합니다.');return}for(const [id,k] of c.need)cookTake(id,k*n);P.cook={id:c.id,n,end:Date.now()+c.sec*n*1e3};cookN=1;sfxSizzle();log(`${c.n} ${n}개를 불에 올렸다.`);commit()},
  cookdone(){const ck=P.cook;if(!ck||Date.now()<ck.end)return;const n=ck.n||1,c=COOK.find(x=>x.id===ck.id);let t=0;for(let i=0;i<n;i++)if(Math.random()*100<tastyPct())t++;
   const fresh=!rcpKnown(ck.id);if(fresh)P.rcp=[...(P.rcp||[]),ck.id];if(n-t)add(ck.id,n-t);if(t){add(TASTY+ck.id,t);tmkAdd(TASTY+ck.id,[{k:P.nick,n:t}])}P.cook=null;if(c)lxp('cook',(c.xp||6)*n);stat('cook',n);sfxCoin();
   log(`${ITEMS[ck.id].n} ${n}개를 가방에 넣었다.${t?` 그중 ${t}개는 [맛있는!] 요리가 됐다!`:''}`,t?'rare':'good');if(t){sfxDing();toast(`[맛있는!] ${ITEMS[ck.id].n}${t>1?' ×'+t:''} · 효과 1.5배`)}commit();if(fresh)rcpPop(ck.id)},
