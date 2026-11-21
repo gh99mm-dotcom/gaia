@@ -3251,7 +3251,7 @@ const byField=id=>TAKEN[id]&&TAKEN[id].length&&ITEMS[id]&&ITEMS[id].tasty?{by:TA
 // level 60 about two weeks (~30.8k XP). The first few levels ramp up quickly so new crew still feel progress.
 // everything that comes with 주 엔진 (Lv.80, the new hard dungeons and their gear, 궁극 요리, the 부서장 vote, 12-boss rush, titles) waits for
 // two things: 주 엔진 repaired and open, AND the operator releasing 「주 엔진 · 6호의 기억」 in 이야기 공개 (staff can still preview)
-let MAX_LV=60;const engDone=()=>{try{const e=SHIP.find(x=>x.id==='engine');return mode==='online'&&!!e&&shipDone(e)&&!!(typeof STORY_ON!=='undefined'&&STORY_ON&&STORY_ON.engine)}catch(err){return false}},lvCapSync=()=>{MAX_LV=engDone()?80:60;try{rushSync()}catch(e){}if(window.__capS&&window.__capT&&P&&+P.xpq>0){const q=+P.xpq;P.xpq=0;gainXp(q,1);save()}};
+let MAX_LV=60;const engDone=()=>{try{const e=SHIP.find(x=>x.id==='engine');return mode==='online'&&!!e&&shipDone(e)&&!!(typeof STORY_ON!=='undefined'&&STORY_ON&&STORY_ON.engine)}catch(err){return false}},lvCapSync=()=>{const was=MAX_LV;MAX_LV=engDone()?80:60;if(was!==MAX_LV&&typeof renderPilot==='function'&&P&&P.nick){try{renderPilot();if(!document.getElementById('story'))renderPanel()}catch(e){}}try{rushSync()}catch(e){}if(window.__capS&&window.__capT&&P&&+P.xpq>0){const q=+P.xpq;P.xpq=0;gainXp(q,1);save()}};
 // is the level cap known yet? (both the story flags and the ship record have arrived) — until then a Lv.60+ crew member's XP is held, never lost
 const capKnown=()=>mode!=='online'||(!!window.__capS&&!!window.__capT);
 /* level curve: Lv.1-4 keep the quick old pace (xpBase). From Lv.10 a level costs RAIDS_PER(L) raids at your level
@@ -3666,7 +3666,7 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">${admMailIt.map(([i,n],k)=>ITEMS[i]?`<span class="ichip">${iicon(i,1)}${esc(ITEMS[i].n)} ×${n}<button type="button" class="qchip" data-act="admmailitx" data-k="${k}" aria-label="빼기" style="margin-left:4px;padding:0 5px">×</button></span>`:'').join('')}<button class="btn sm ghost" data-act="admmailitadd" ${admPick&&ITEMS[admPick]?'':'disabled'}>${admPick&&ITEMS[admPick]?`+ ${esc(ITEMS[admPick].n)} 넣기`:'+ 아이템 넣기 (아래에서 고르기)'}</button></div><div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><select id="admMailTo" class="sel"><option value="*">모든 선원에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'선원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admmail">우편 보내기</button></div></div>`:''}
    ${mode==='online'?`<div class="admpick admrest"><div class="fspick">${img(IC.star,null,3)}<div><b>선원 복구 · 레벨·경험치·칭호 보내기</b><span class="hint">받는 선원의 우편함에 '운영자 선물'로 도착하고, 받는 순간 적용됩니다. 레벨은 지금보다 낮으면 그 레벨로 올리고, 높으면 그대로 둡니다.</span></div></div>
    <div class="row" style="gap:6px;flex-wrap:wrap"><select id="admRsTo" class="sel"><option value="">— 받을 선원 —</option>${others.map(([id,p])=>`<option value="${id}" ${admRsTo===id?'selected':''}>${esc(p.nick||'선원')} (Lv.${p.lvl||1})</option>`).join('')}</select>
-    <label class="hint">레벨 <input id="admRsLv" class="sel" type="number" min="0" max="60" placeholder="0" style="width:60px"></label><label class="hint">경험치 <input id="admRsXp" class="sel" type="number" min="0" placeholder="0" style="width:90px"></label><label class="hint">크레딧 <input id="admRsCr" class="sel" type="number" min="0" placeholder="0" style="width:90px"></label></div>
+    <label class="hint">레벨 <input id="admRsLv" class="sel" type="number" min="0" max="80" placeholder="0" style="width:60px"></label><label class="hint">경험치 <input id="admRsXp" class="sel" type="number" min="0" placeholder="0" style="width:90px"></label><label class="hint">크레딧 <input id="admRsCr" class="sel" type="number" min="0" placeholder="0" style="width:90px"></label></div>
    <input id="admRsMsg" class="sel" maxlength="80" placeholder="한마디 (예: 기록 복구 보상입니다)" style="width:100%">
    <details class="uptable" id="admRsTtlBox" ${admRsOpen?'open':''}><summary>칭호 고르기 (${admRsTtl.size}개 선택)</summary><div class="admttl">${TITLES.filter(t=>t[0]!=='rookie').map(t=>`<button type="button" class="qchip" data-act="admrsttl" data-k="${t[0]}" aria-pressed="${admRsTtl.has(t[0])}">${ttlHTML(t[0],t[1])}</button>`).join('')}</div></details>
    <div class="row" style="justify-content:flex-end;gap:6px"><button class="btn sm" data-act="admbak">이 선원 백업 보기</button><button class="btn sm gold" data-act="admrs">복구 보상 보내기</button></div>
@@ -7657,7 +7657,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795262319';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795262519';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8772,7 +8772,7 @@ const A={
   toast(ok===ids.length?(to==='*'?`모든 선원 ${ok}명에게 우편을 보냈습니다.`:`${PLAYERS[to]?.nick||'선원'} 님에게 우편을 보냈습니다.`):`${ids.length}명 중 ${ok}명에게만 보냈습니다.`)},
  admrsttl(d){if(!isAdmin)return;if(admRsTtl.has(d.k))admRsTtl.delete(d.k);else admRsTtl.add(d.k);renderAdminAll();const el=document.querySelector('.admrest details');if(el)el.open=true},
  async admrs(){if(!isAdmin||mode!=='online')return;const to=($('#admRsTo')||{}).value;admRsTo=to||'';const n=id=>Math.max(0,Math.floor(+(($('#'+id)||{}).value)||0));
-  const lv=Math.min(MAX_LV,n('admRsLv')),xp=n('admRsXp'),cr=Math.min(1000000,n('admRsCr')),ttl=[...admRsTtl],msg=String(($('#admRsMsg')||{}).value||'').trim().slice(0,80)||'운영자 복구 보상';
+  const lv=Math.min(80,n('admRsLv')),xp=n('admRsXp'),cr=Math.min(1000000,n('admRsCr')),ttl=[...admRsTtl],msg=String(($('#admRsMsg')||{}).value||'').trim().slice(0,80)||'운영자 복구 보상';
   if(!to||!PLAYERS[to]){toast('받을 선원을 골라 주십시오.');return}if(!lv&&!xp&&!cr&&!ttl.length){toast('보낼 레벨·경험치·크레딧·칭호 중 하나는 정해 주십시오.');return}
   try{await db.collection('grants').add({to,lv,xp,cr,ttl,msg,at:Date.now(),by:P.nick})}catch(e){toast('보내지 못했습니다. ('+((e&&e.code)||'오류')+')');return}
   admRsTtl.clear();['admRsLv','admRsXp','admRsCr','admRsMsg'].forEach(id=>{const e=$('#'+id);if(e)e.value=''});toast(`${PLAYERS[to].nick||'선원'} 님에게 복구 보상을 보냈습니다.`);log(`[운영자] ${PLAYERS[to].nick||'선원'} 님에게 복구 보상 (${[lv?'레벨 '+lv:'',xp?'경험치 '+xp:'',cr?cr+' CR':'',ttl.length?'칭호 '+ttl.length+'개':''].filter(Boolean).join(' · ')})`);renderAdminAll()},
@@ -8953,7 +8953,7 @@ const mailTagHTML=m=>{const c=mailCatOf(m),[ic,n]=MAILCAT[c];return`<span class=
 const mailList=()=>[...MAILA,...MAILG].sort((a,b)=>(+b.at||0)-(+a.at||0));
 function mailRefresh(){const b=$('#mailBtn');if(b){const n=mailList().length;b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n)}if(mailView)renderPanel()}
 function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
-  if(a){const cr=Math.min(1000000,Math.floor(+a.cr||0)),lv=Math.min(MAX_LV,Math.floor(+a.lv||0)),xp=Math.min(5e6,Math.floor(+a.xp||0)),tt=(a.ttl||[]).filter(t=>TITLES.some(x=>x[0]===t));P.gr=[...(P.gr||[]),id].slice(-80);
+  if(a){const cr=Math.min(1000000,Math.floor(+a.cr||0)),lv=Math.min(80,Math.floor(+a.lv||0)),xp=Math.min(5e6,Math.floor(+a.xp||0)),tt=(a.ttl||[]).filter(t=>TITLES.some(x=>x[0]===t));P.gr=[...(P.gr||[]),id].slice(-80);
     if(cr)P.cr=(P.cr||0)+cr;if(lv&&P.lvl<lv){P.lvl=lv;P.xp=0;P.hp=maxHp();P.en=maxEn()}if(xp)gainXp(Math.round(xp/(1+TF('xp')/100)));if(tt.length)P.ttlGrant=[...new Set([...(P.ttlGrant||[]),...tt])];const gi=giftItems(a).filter(([i,n])=>ITEMS[i]&&n>0).map(([i,n])=>[i,Math.min(999,Math.floor(n))]);gi.forEach(([i,n])=>add(i,n));
     MAILA=MAILA.filter(x=>x.id!==id);mboxKeep({id,sys:1,kind:'grant',msg:a.msg,at:a.at,cr,lv,xp,ttl:tt,items:gi.map(([i,n])=>({id:i,n}))});const got=[cr?`+${cr.toLocaleString()} CR`:'',...gi.map(([i,n])=>`${ITEMS[i].n} ×${n}`),lv?`레벨 ${lv}`:'',xp?`경험치 +${xp.toLocaleString()}`:'',tt.length?`칭호 ${tt.length}개`:''].filter(Boolean).join(' · ');
     log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (${got})`,'rare');sfxCoin();return true}
