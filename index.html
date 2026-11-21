@@ -4192,7 +4192,7 @@ const RZR={r6:{lava:.03,rage:.5,boom:3,forks:[4,8],rule:'용암 지대 · 분노
  r2:{armor:.4,summon:'결정 하수인',forks:[4,8],rule:'결정 갑옷 — 💎 표시가 있는 적은 직업 스킬로 갑옷을 깨기 전까지 받는 피해가 절반입니다. 보스 「셀레네」는 결정 하수인을 불러내고, 하수인이 살아 있는 동안 피해를 절반만 받습니다.'}};
 // hard zones add their own patterns on top of the base zone's (stronger monsters alone are not the point)
 const RZR_H={r1:{rage:.5,boom:3,lava:.03,lavaT:'🌪 모래폭풍이 파티를 휩쓸었다.',rule:'모래폭풍 · 분노 · 대폭발'},
- r2:{armor:.65,shield:.12,shieldP:.5,focus:.45,rule:'단단한 결정 갑옷 · 보호막 · 표적 고정'},
+ r2:{armor:.4,shield:.08,shieldP:.4,shRegen:.5,focus:.45,sumEvery:5,sumArm:0,rule:'단단한 결정 갑옷 · 보호막 · 표적 고정'},/* eased 11/22: fewer armoured, thinner half-refilling shields, minions every 5 rounds and unarmoured */
  r3:{fog:.22,poison:.5,focus:.6,rule:'짙은 안개 · 맹독 · 주시(표적 고정)'},
  r5:{freeze:.1,breathFrz:.22}};/* 숨죽인 심연 freezes less than its base zone */
 const zrOf=z=>z&&z.hard&&RZR_H[z.id]?Object.assign({},RZR[z.id],RZR_H[z.id]):RZR[z&&z.id];
@@ -4313,7 +4313,7 @@ const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mi
 const RAID_HPF=[0,.36,.57,.79,1],RAID_ATKF=[0,.77,.85,.92,1];
 const RAID_HARD={r4:[1.6,1.4],r5:[1.6,1.4],r6:[1.9,1.5]};/* 얼어붙은 심연 eased 11/22 (was 1.9 / 1.55) *//* 붉은 별의 핵 eased 11/21 (was 2.2 / 1.7) */
 // hard zones on top of the shared hard factors: [hp, attack] — every hard zone outhits 붉은 별의 핵 (r6), and each step is harder than the last
-const HARD_ZX={r1:[1.15,1.25],r2:[1.2,1.25],r3:[1.3,1.35],r4:[.85,.9],r5:[.75,.85],r6:[.65,.8]};/* every hard zone eased again 11/22 (r1-r3 were 1.3-1.5) *//* 숨죽인 심연 · 포효하는 붉은 별의 핵 hard eased 11/22: these zones sit above most crews' levels */
+const HARD_ZX={r1:[1.15,1.25],r2:[1.05,1.2],r3:[1.3,1.35],r4:[.85,.9],r5:[.75,.85],r6:[.65,.8]};/* every hard zone eased again 11/22 (r1-r3 were 1.3-1.5) *//* 숨죽인 심연 · 포효하는 붉은 별의 핵 hard eased 11/22: these zones sit above most crews' levels */
 // 붉은 별의 핵 alone: only half of the zone's extra strength applies (×1.45 health, ×1.25 attack instead of ×1.9 / ×1.5), so a solo run can be cleared
 const raidSoloEase=(zone,pn,hx)=>pn===1&&zone&&(zone.id==='r6'||zone.id==='r5')?[1+(hx[0]-1)*.5,1+(hx[1]-1)*.5]:hx;
 function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx0=raidSoloEase(zone,pn,RAID_HARD[zone&&zone.id]||[1,1]),hzx=zone&&zone.hard?(HARD_ZX[zone.id]||[1,1]):[1,1],hx=zone&&zone.hard?[hx0[0]*RAID_HARDN.hp[pn-1]*hzx[0],hx0[1]*RAID_HARDN.atk[pn-1]*hzx[1]]:hx0,def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
@@ -4497,8 +4497,8 @@ function raidMonTurn(r){const b=r.b,a=b.cur;raidLastStand(r,b,b.mons[a.id]);cons
       if(m.hide){m.hide=0;raidLog(b,`${m.n}${jo(m.n,'이','가')} 안개 속에서 모습을 드러냈다!`)}
       {const zr=zrOf(raidZone(r));if(zr&&zr.hide&&m.kind==='boss'&&!m.chg&&((b.round>1&&b.round%3===0&&m.hr!==b.round)||(!m.h1&&m.hp<m.max*.5))){m.h1=1;m.hr=b.round;m.hide=1;const h=Math.round(m.max*.08);m.hp=Math.min(m.max,m.hp+h);
         raidLog(b,`⚠ ${m.n}${jo(m.n,'이','가')} 짙은 안개 속으로 숨었다! 다음 차례까지 피해를 받지 않는다. (체력 +${h})`);b.skfx={n:'안개 은신',j:'warn',by:`${m.n} · 다음 차례까지 무적`,id:((b.skfx&&b.skfx.id)||0)+1};return raidSettle(r)}}
-      {const zr=zrOf(raidZone(r));if(zr&&zr.summon&&m.kind==='boss'&&!m.chg&&!b.mons.some(x=>x.minion&&x.hp>0)&&((b.round>1&&b.round%3===1)||(!m.sum1&&m.hp<m.max*.6))){m.sum1=1;
-        const n=raidIn(r).length,slots=b.mons.map((x,i)=>x.minion&&x.hp<=0?i:-1).filter(i=>i>=0);for(let k=0;k<2;k++){const mn=raidMon(raidZone(r),Math.max(1,m.L-4),'',zr.summon,n);mn.arm=1;mn.minion=1;if(slots.length)b.mons[slots.shift()]=mn;else b.mons.push(mn)}
+      {const zr=zrOf(raidZone(r));if(zr&&zr.summon&&m.kind==='boss'&&!m.chg&&!b.mons.some(x=>x.minion&&x.hp>0)&&((b.round>1&&b.round%(zr.sumEvery||3)===1)||(!m.sum1&&m.hp<m.max*.6))){m.sum1=1;
+        const n=raidIn(r).length,slots=b.mons.map((x,i)=>x.minion&&x.hp<=0?i:-1).filter(i=>i>=0);for(let k=0;k<2;k++){const mn=raidMon(raidZone(r),Math.max(1,m.L-4),'',zr.summon,n);if(zr.sumArm!==0)mn.arm=1;mn.minion=1;if(slots.length)b.mons[slots.shift()]=mn;else b.mons.push(mn)}
         raidLog(b,`⚠ ${m.n}${jo(m.n,'이','가')} ${zr.summon} 2마리를 불러냈다! 하수인이 살아 있는 동안 보스가 받는 피해가 절반이 된다.`);b.skfx={n:'하수인 소환',j:'warn',by:`${m.n} · 하수인을 먼저 쓰러뜨리십시오`,id:((b.skfx&&b.skfx.id)||0)+1};return raidSettle(r)}}
       if(raidZone(r).hard&&!m.chg&&!m.lock&&hardMove(r,b,m,tg))return raidSettle(r);
       // area attacks are telegraphed: the turn before, a boss or elite announces the move (and still hits one target), so the party can brace
@@ -7666,7 +7666,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795274416';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795274866';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
