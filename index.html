@@ -4186,7 +4186,7 @@ const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
    forks: on these steps the party picks one of two paths
    ev: events that only happen in this dungeon (mixed in with the common ones) */
 const RZR={r6:{lava:.03,rage:.5,boom:3,forks:[4,8],rule:'용암 지대 · 분노 · 대폭발'},
- r5:{freeze:.16,breath:'서리 숨결',breathFrz:.35,forks:[4,8],rule:'빙결 · 서리 숨결'},
+ r5:{freeze:.12,breath:'서리 숨결',breathFrz:.25,forks:[4,8],rule:'빙결 · 서리 숨결'},
  r4:{shield:.1,shieldP:.7,shRegen:.5,focus:.5,forks:[4,8],rule:'보호막 · 집중 포격'},
  r3:{fog:.15,poison:.35,hide:1,forks:[4,8],rule:'안개 · 독 — 안개 때문에 일반 공격이 15% 확률로 빗나갑니다(직업 스킬은 빗나가지 않음). 몬스터에게 맞으면 35% 확률로 3턴 동안 독(턴마다 최대 체력 4%)에 걸리며, 의무원 스킬이나 회복 아이템으로 풉니다. 보스 「모르가」는 안개 속에 숨어 한 턴 동안 피해를 받지 않고 체력을 회복합니다.'},
  r2:{armor:.4,summon:'결정 하수인',forks:[4,8],rule:'결정 갑옷 — 💎 표시가 있는 적은 직업 스킬로 갑옷을 깨기 전까지 받는 피해가 절반입니다. 보스 「셀레네」는 결정 하수인을 불러내고, 하수인이 살아 있는 동안 피해를 절반만 받습니다.'}};
@@ -4311,11 +4311,11 @@ const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.042*({elite:1.5,mid:3,boss:6}[ki
 const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mid:[22,3.5,1.15],boss:[34,2.5,1.2]};
 // monsters are tuned for a full party of 4; smaller parties meet weaker ones (HP and attack) so the fight stays about as long
 const RAID_HPF=[0,.36,.57,.79,1],RAID_ATKF=[0,.77,.85,.92,1];
-const RAID_HARD={r4:[1.6,1.4],r5:[1.9,1.55],r6:[1.9,1.5]};/* 붉은 별의 핵 eased 11/21 (was 2.2 / 1.7) */
+const RAID_HARD={r4:[1.6,1.4],r5:[1.6,1.4],r6:[1.9,1.5]};/* 얼어붙은 심연 eased 11/22 (was 1.9 / 1.55) *//* 붉은 별의 핵 eased 11/21 (was 2.2 / 1.7) */
 // hard zones on top of the shared hard factors: [hp, attack] — every hard zone outhits 붉은 별의 핵 (r6), and each step is harder than the last
-const HARD_ZX={r1:[1.3,1.4],r2:[1.35,1.4],r3:[1.5,1.5]};
+const HARD_ZX={r1:[1.15,1.25],r2:[1.2,1.25],r3:[1.3,1.35],r4:[.85,.9],r5:[.75,.85],r6:[.65,.8]};/* every hard zone eased again 11/22 (r1-r3 were 1.3-1.5) *//* 숨죽인 심연 · 포효하는 붉은 별의 핵 hard eased 11/22: these zones sit above most crews' levels */
 // 붉은 별의 핵 alone: only half of the zone's extra strength applies (×1.45 health, ×1.25 attack instead of ×1.9 / ×1.5), so a solo run can be cleared
-const raidSoloEase=(zone,pn,hx)=>pn===1&&zone&&zone.id==='r6'?[1+(hx[0]-1)*.5,1+(hx[1]-1)*.5]:hx;
+const raidSoloEase=(zone,pn,hx)=>pn===1&&zone&&(zone.id==='r6'||zone.id==='r5')?[1+(hx[0]-1)*.5,1+(hx[1]-1)*.5]:hx;
 function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx0=raidSoloEase(zone,pn,RAID_HARD[zone&&zone.id]||[1,1]),hzx=zone&&zone.hard?(HARD_ZX[zone.id]||[1,1]):[1,1],hx=zone&&zone.hard?[hx0[0]*RAID_HARDN.hp[pn-1]*hzx[0],hx0[1]*RAID_HARDN.atk[pn-1]*hzx[1]]:hx0,def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
   return{n:name,L,kind:kind||'',hp,max:hp,atk,def,agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 // the zone (and normal/hard) I picked last is remembered on this device
@@ -4450,7 +4450,9 @@ function raidSettle(r){const b=r.b,z=raidZone(r);
     // bigger parties earn more each: solo is the base, +10% per extra member (x1.3 for four)
     const pm=raidPartyX(r)*(b.bx||1)*(z.hard?RAID_HARDX.rw:1);xp=Math.round(xp*pm);const crB=crs(Math.round(b.mons.filter(m=>m.kind==='boss').reduce((a,m)=>a+m.L*16,0)*pm));cr=crs(Math.round(cr*pm));const crM=Math.max(0,cr-crB);
     const mL=b.mons.reduce((a,m)=>a+m.L,0)/Math.max(1,b.mons.length),lx=u=>raidLvX(r.m[u].lvl,mL);
-    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});const k=lx(u),cu=Math.round(cr*k),cmu=Math.min(cu,Math.round(crM*k));L.xp+=Math.round(xp*k);L.cr+=cu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=cmu;L.cb.boss+=cu-cmu;L.k=L.k||{};b.mons.forEach(m=>{const nm=String(m.n).replace(/^흉포한 /,'');L.k[nm]=(L.k[nm]||0)+1});if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')&&Math.random()<k){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(z.hard&&HARD_GEAR[z.id]&&b.mons.some(m=>m.kind==='boss'))HARD_GEAR[z.id].forEach(id=>{if(Math.random()<HARD_GEAR_P)L.gear=[...(L.gear||[]),id]});if(Math.random()<.35*k)L.it.crystal=(L.it.crystal||0)+1;{const zm=z.hard?(RAID_HARD_MATS[z.id]||raidZoneMat(z)):raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n1=n0&&r.m[u].job==='mech'?n0+1:n0,n=Math.floor(n1*(k<1?.5:1)*RAID_MAT_X*(z.hard?RAID_HARDX.mat:1)+Math.random());/* 우주선 수리 재료: 60% of the old drop (RAID_MAT_X), and half of that once the dungeon is too easy; random rounding keeps the average exact */if(zm&&n)L.it[zm]=(L.it[zm]||0)+n}
+    raidIn(r).forEach(u=>{const L=r.loot[u]||(r.loot[u]={xp:0,cr:0,it:{}});const k=lx(u),cu=Math.round(cr*k),cmu=Math.min(cu,Math.round(crM*k));L.xp+=Math.round(xp*k);L.cr+=cu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.mon+=cmu;L.cb.boss+=cu-cmu;L.k=L.k||{};b.mons.forEach(m=>{const nm=String(m.n).replace(/^흉포한 /,'');L.k[nm]=(L.k[nm]||0)+1});if(b.mons.some(m=>m.kind==='boss'||m.kind==='mid')&&Math.random()<k){const rl=relicRoll(r.m[u].lvl);if(rl)L.it[rl]=(L.it[rl]||0)+1}if(z.hard&&HARD_GEAR[z.id]&&b.mons.some(m=>m.kind==='boss'))HARD_GEAR[z.id].forEach(id=>{if(Math.random()<HARD_GEAR_P)L.gear=[...(L.gear||[]),id]});if(Math.random()<.35*k)L.it.crystal=(L.it.crystal||0)+1;{const zm=z.hard?(RAID_HARD_MATS[z.id]||raidZoneMat(z)):raidZoneMat(z),big=b.mons.some(m=>m.kind==='boss'||m.kind==='mid'),n0=big?2+Math.floor(Math.random()*2):(Math.random()<.6?1:0),n1=n0&&r.m[u].job==='mech'?n0+1:n0,n=Math.floor(n1*(k<1?.5:1)*RAID_MAT_X*(z.hard?RAID_HARDX.mat:1)+Math.random());/* 우주선 수리 재료: 60% of the old drop (RAID_MAT_X), and half of that once the dungeon is too easy; random rounding keeps the average exact */if(zm&&n)L.it[zm]=(L.it[zm]||0)+n;
+      /* hard runs also turn up the normal dungeon's ship material now and then, at most 5 a run (not listed on the hard card) */
+      if(z.hard){const nm=raidZoneMat(z);if(nm&&nm!==zm&&ITEMS[nm]){const have=L.it[nm]||0,add=Math.min(5-have,big?1+(Math.random()<.5?1:0):(Math.random()<.35?1:0));if(add>0)L.it[nm]=have+add}}}
       const me=r.m[u];if(me.hp<=0)me.hp=Math.max(1,Math.round(me.maxHp*.2))});
     const boss0=b.mons.some(m=>m.kind==='boss'),rushOn=boss0&&r.rush&&rushStage(r)<RUSH_N,boss=boss0&&!rushOn;if(boss0&&r.rush)r.rushMax=Math.max(r.rushMax||0,rushStage(r));r.phase=boss?'end':'won';r.result=boss?'clear':r.result;r.ev={n:rushOn?`${z.boss} 격파! 보스 러시 ${rushStage(r)}/${RUSH_N}`:boss?(r.rush?`보스 러시 완주! 아홉 보스를 모두 쓰러뜨렸다!`:`${z.boss}을(를) 쓰러뜨렸다! 원정 성공!`):'전투 승리!',res:`모두 경험치 +${xp.toLocaleString()} · 크레딧 +${cr}${raidIn(r).some(u=>lx(u)<1)?' (몬스터보다 레벨이 많이 높은 선원은 경험치와 보상이 줄어듭니다)':''}`};
     if(boss){const cb=crs(Math.round((r.rush?600:200)*raidPartyX(r)*(z.hard?RAID_HARDX.rw:1)));raidIn(r).forEach(u=>{const L=r.loot[u];const cbu=Math.round(cb*lx(u));L.xp+=Math.round(xp*.5*lx(u));L.cr+=cbu;L.cb=Object.assign({mon:0,boss:0,ev:0,clear:0},L.cb);L.cb.clear+=cbu})}return r}
@@ -7664,7 +7666,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795272098';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795273090';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
