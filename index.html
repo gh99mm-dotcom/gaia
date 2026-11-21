@@ -4004,7 +4004,7 @@ function miniDome(kind,H=20){const key=kind+H+(isLight()?'l':'');if(MD[key])retu
     if(kind==='ready'){px(15,gap+2,'#ffe27a');px(14,gap+2,'rgba(255,226,122,.6)');px(16,gap+2,'rgba(255,226,122,.6)');px(15,gap+1,'rgba(255,226,122,.6)');px(15,gap+3,'rgba(255,226,122,.6)')}
   }
   return MD[key]=c.toDataURL()}
-function migrate(){if(P&&P.title==='dm1'){P.title='rookie'}/* 속삭이는 별 was removed */if(P&&P.feat){P.note=[P.feat,P.note].filter(Boolean).join('\n');delete P.feat}if(P&&P.sv2!==1){const old=Math.max(P.suitMax||0,P.suit||0);P.suit=[0,5,10,15][Math.min(3,old)]||0;P.suitMax=P.suit;P.sv2=1}if(P.lvl>MAX_LV){P.lvl=MAX_LV;P.xp=0}if(P.lxv!==2){P.lx=lxOf(P);P.lxv=2}
+function migrate(){if(P&&P.title==='dm1'){P.title='rookie'}/* 속삭이는 별 was removed */if(P&&P.feat){P.note=[P.feat,P.note].filter(Boolean).join('\n');delete P.feat}if(P&&P.sv2!==1){const old=Math.max(P.suitMax||0,P.suit||0);P.suit=[0,5,10,15][Math.min(3,old)]||0;P.suitMax=P.suit;P.sv2=1}if(P.lvl>80){P.lvl=80}/* never pull a level down to the cap read before the server data arrives (it reads 60 for the first moments) */if(P.lxv!==2){P.lx=lxOf(P);P.lxv=2}
   // recipes start hidden; players from before this keep the dishes they have in the bag as already known
   if(!Array.isArray(P.rcp))P.rcp=COOK.filter(c=>(P.inv||{})[c.id]>0||(P.inv||{})[TASTY+c.id]>0).map(c=>c.id);
   // 머리·팔·발 장비 were retired for the two 장신구 slots: give back what each crafted piece cost, once
@@ -7657,7 +7657,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795261773';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795261902';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
