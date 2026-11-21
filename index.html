@@ -3580,6 +3580,7 @@ function admStaffHTML(others){const list=STAFF.filter(id=>PLAYERS[id]),rest=othe
    ${list.length?`<div class="admfaint">${list.map(id=>{const p=PLAYERS[id];return`<div class="admfrow">${headImg(3,p)}<div class="admfn"><b>${esc(p.nick||'선원')}</b><span class="hint">Lv.${p.lvl||1} · 관리자</span></div><button class="btn sm ghost" data-act="admstaff" data-k="${esc(id)}">해제</button></div>`}).join('')}</div>`:'<span class="hint">아직 임명한 관리자가 없습니다.</span>'}
    ${rest.length?`<div class="row" style="gap:6px;flex-wrap:wrap"><select id="admStaffPick" class="sel" aria-label="관리자로 임명할 선원">${rest.map(([id,p])=>`<option value="${esc(id)}">${esc(p.nick||'선원')} · Lv.${p.lvl||1}</option>`).join('')}</select><button class="btn sm gold" data-act="admstaff">관리자 임명</button></div>`:''}</div>`}
 // every item laid out like the shared store, grouped by kind
+let admGrantIt=[],admNoticeDraft='',admGrantCrDraft=500;
 let ADMBAK=null,admRsTo='',admRsTtl=new Set(),admMailBusy=false,admPick=null,admRsOpen=false;
 // the title list stays open across the admin panel's redraws
 document.addEventListener('toggle',e=>{if(e.target&&e.target.id==='admRsTtlBox')admRsOpen=e.target.open},true);
@@ -3606,8 +3607,10 @@ function renderAdmin(){const others=Object.entries(PLAYERS).filter(([id])=>id!==
    ${ADMBAK&&ADMBAK.uid===admRsTo?`<div class="admbak"><span class="lbl">자동 백업 · 최근 7일 (하루 한 번)</span>${ADMBAK.list.length?ADMBAK.list.map(x=>`<div class="row admbakrow"><span>${esc(x.day)}</span><b>Lv.${x.lvl}</b><span class="hint">${(+x.cr||0).toLocaleString()} CR · ${fbTime(+x.at||0)} 저장</span><button class="btn sm ${ADMBAK.arm===x.id?'gold':'ghost'}" data-act="admbakgo" data-k="${esc(x.id)}">${ADMBAK.arm===x.id?'정말 되돌리기':'이 시점으로 되돌리기'}</button></div>`).join(''):'<p class="hint">아직 백업이 없습니다. 이 선원이 접속해 저장하면 그날의 백업이 생깁니다.</p>'}<span class="hint">되돌리면 그 선원의 캐릭터 기록이 백업 시점으로 바뀌고, 접속 중이면 새로고침 안내가 뜹니다. 지금 기록은 되돌리기 직전에 따로 보관됩니다.</span></div>`:''}</div>`:''}
   <div class="admpick admcr"><div class="fspick">${img(IC.coin,null,3)}<div><b>크레딧</b><span class="hint">내 잔액 ${(P.cr||0).toLocaleString()} CR</span></div></div><div class="row" style="gap:6px;flex-wrap:wrap"><input id="admCr" class="sel" type="number" min="1" max="1000000" value="1000" style="width:100px" aria-label="지급할 크레딧"><span class="hint">CR</span><select id="admCrTo" class="sel"><option value="">나에게</option>${others.map(([id,p])=>`<option value="${id}" ${adminTo===id?'selected':''}>${esc(p.nick||'선원')}에게</option>`).join('')}</select><button class="btn sm gold" data-act="admgivecr">크레딧 지급</button></div></div>
    ${admGroups()}</div>
-  ${mode==='online'?`<div class="info-sec"><span class="lbl">Server · 서버</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
-   <div class="row" style="gap:6px"><input id="admGrantCr" class="sel" type="number" min="1" max="100000" value="500" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div><span class="hint">위 공지 내용과 함께 모든 선원에게 크레딧을 보냅니다. 지금 접속하지 않은 선원도 다음에 들어오면 받습니다.</span>
+  ${mode==='online'?`<div class="info-sec" data-adm="give"><span class="lbl">Server · 서버 공지</span><div class="row" style="gap:6px"><input id="admNotice" class="sel" maxlength="80" placeholder="공지 내용" value="${esc(admNoticeDraft)}" style="flex:1;min-width:160px"><button class="btn sm" data-act="admnotice">공지 보내기</button></div>
+   <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><input id="admGrantCr" class="sel" type="number" min="0" max="100000" value="${admGrantCrDraft}" style="width:96px" aria-label="선물할 크레딧"><span class="hint">CR</span>${admGrantIt.map(([i,n],k)=>ITEMS[i]?`<span class="ichip">${iicon(i,1)}${esc(ITEMS[i].n)} ×${n}<button type="button" class="qchip" data-act="admgrantitx" data-k="${k}" aria-label="빼기" style="margin-left:4px;padding:0 5px">×</button></span>`:'').join('')}
+    <button class="btn sm ghost" data-act="admgrantitadd" ${admPick&&ITEMS[admPick]?'':'disabled'}>${admPick&&ITEMS[admPick]?`+ ${esc(ITEMS[admPick].n)} 넣기`:'+ 아이템 넣기 (아래에서 고르기)'}</button><button class="btn sm gold" data-act="admgrant">공지와 함께 전체에게 선물</button></div>
+   <span class="hint">공지 내용과 함께 모든 선원에게 크레딧과 아이템을 보냅니다. 아이템은 아래 목록에서 고른 뒤 개수 칸(지급 개수)을 정하고 「넣기」를 누르십시오. 여러 종류를 넣을 수 있고, 크레딧은 0으로 두어도 됩니다. 지금 접속하지 않은 선원도 다음에 들어오면 우편함에서 받습니다.</span>
    <button class="btn alt admbig" data-act="admchat">최근 알림 지우기 (공지 제외)</button></div>
    <div class="info-sec"><span class="lbl">Wake · 기절 해제</span>${admFaintHTML(others)}</div>
    ${admStaffHTML(others)}${verAdminHTML()}${diagAdminHTML()}${preopenAdminHTML()}${egAdminHTML()}`:''}`}
@@ -7531,7 +7534,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795010546';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795010547';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8232,10 +8235,12 @@ function wake(by,med){P.faint=0;P.faintAt=0;const k=med?.7:by?.4:.25;P.hp=Math.m
 function commit(){checkFaint();save();renderPilot();renderNav();renderPanel();renderCrew()}
 let sellCart={};
 const A={
- async admgrant(){if(!isAdmin)return;const msg=($('#admNotice').value||'').trim().slice(0,80),cr=Math.floor(+$('#admGrantCr').value||0);if(!msg){toast('공지 내용을 먼저 적어 주십시오.');return}if(cr<1||cr>100000){toast('크레딧은 1~100,000 사이로 적어 주십시오.');return}
-  const g={cr,msg,at:Date.now(),by:P.nick},id='g'+g.at.toString(36);
+ admgrantitadd(){if(!isAdmin||!admPick||!ITEMS[admPick])return;admNoticeDraft=($('#admNotice')||{}).value||'';admGrantCrDraft=Math.max(0,Math.floor(+(($('#admGrantCr')||{}).value)||0));const n=Math.max(1,Math.min(999,+(($('#admQty')||{}).value)||1)),k=admGrantIt.findIndex(([i])=>i===admPick);if(k>=0)admGrantIt[k]=[admPick,Math.min(999,admGrantIt[k][1]+n)];else if(admGrantIt.length<10)admGrantIt.push([admPick,n]);else{toast('아이템은 10종류까지 넣을 수 있습니다.');return}renderAdminAll()},
+ admgrantitx(d){if(!isAdmin)return;admNoticeDraft=($('#admNotice')||{}).value||'';admGrantCrDraft=Math.max(0,Math.floor(+(($('#admGrantCr')||{}).value)||0));admGrantIt.splice(+d.k,1);renderAdminAll()},
+ async admgrant(){if(!isAdmin)return;const msg=($('#admNotice').value||'').trim().slice(0,80),cr=Math.floor(+$('#admGrantCr').value||0),items=admGrantIt.filter(([i,n])=>ITEMS[i]&&n>0).map(([id,n])=>({id,n}));if(!msg){toast('공지 내용을 먼저 적어 주십시오.');return}if(cr<0||cr>100000){toast('크레딧은 0~100,000 사이로 적어 주십시오.');return}if(!cr&&!items.length){toast('크레딧이나 아이템을 넣어 주십시오.');return}
+  const g={cr,msg,at:Date.now(),by:P.nick},id='g'+g.at.toString(36);if(items.length)g.items=items;const what=[cr?`${cr.toLocaleString()} CR`:'',...items.map(x=>`${ITEMS[x.id].n} ×${x.n}`)].filter(Boolean).join(', ');
   if(mode!=='online'){MAILA.push(Object.assign({id,grant:1},g));mailRefresh();return}
-  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 선원에게 ${cr.toLocaleString()} CR 선물!`,at:Date.now(),sys:true,adm:true});$('#admNotice').value='';toast(`모든 선원에게 ${cr.toLocaleString()} CR을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
+  try{await db.doc('grants/'+id).set(g);await db.collection('chat').add({uid,nick:P.nick,text:`[공지] ${msg} · 모든 선원에게 ${what} 선물!`.slice(0,200),at:Date.now(),sys:true,adm:true});$('#admNotice').value='';admNoticeDraft='';admGrantIt=[];admGrantCrDraft=500;renderAdminAll();toast(`모든 선원에게 ${what}을 보냈습니다.`)}catch(e){toast('선물을 보내지 못했습니다.')}},
  admdel(d){if(!isAdmin)return;admDel=d.k;renderAdminAll()},
  mdexz(d){mdexZ=RAID_ZONES.some(z=>z.id===d.k)?d.k:'r1';renderPanel()},
  mdexh(d){mdexH=d.k==='hard';renderPanel()},
@@ -8586,7 +8591,7 @@ const A={
   bossTx(affQRef(),cur=>Object.assign({},cur,{[key]:{a,b,v,at:Date.now(),by:P.nick}})).then(()=>{const na=(a===uid?P:PLAYERS[a]||{}).nick||'선원',nb=(b===uid?P:PLAYERS[b]||{}).nick||'선원';toast(`${na} → ${nb} 호감도를 ${v}(으)로 바꿨습니다.`);renderAdminAll();if(!$('#rbModal').hidden)renderRb()}).catch(()=>toast('바꾸지 못했습니다.'))},
  admroomlink(){if(!isAdmin||mode!=='online')return;const next=!ROOM_LINK;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{roomLink:next})).then(()=>toast(next?'마이룸을 우주선 수리와 다시 연동했습니다.':'마이룸을 모든 선원에게 공개했습니다.')).catch(()=>toast('바꾸지 못했습니다.'))},
  admstaff(d){if(!isOwnerAcct||mode!=='online'){toast('관리자 임명은 운영자만 할 수 있습니다.');return}const id=d.k||($('#admStaffPick')||{}).value;if(!id||!PLAYERS[id])return;const on=STAFF.includes(id),nick=PLAYERS[id].nick||'선원';bossTx(staffRef(),cur=>{const l=((cur&&cur.ids)||[]).filter(x=>x!==id);return Object.assign({},cur,{ids:on?l:[...l,id]})}).then(()=>toast(on?`${nick} 님을 관리자 명단에서 뺐습니다.`:`${nick} 님을 관리자로 임명했습니다. 생명 유지 장치 수리 전에도 마이룸을 볼 수 있습니다.`)).catch(()=>toast('바꾸지 못했습니다.'))},
- admpick(d){if(!isAdmin)return;admPick=admPick===d.id?null:d.id;renderAdminAll()},
+ admpick(d){if(!isAdmin)return;{const nt=$('#admNotice'),gc=$('#admGrantCr');if(nt)admNoticeDraft=nt.value;if(gc)admGrantCrDraft=Math.max(0,Math.floor(+gc.value||0))}admPick=admPick===d.id?null:d.id;renderAdminAll()},
  admgive(){if(!isAdmin)return;const id=admPick,n=Math.max(1,Math.min(999,+$('#admQty').value||1)),to=$('#admTo').value;adminTo=to;if(!ITEMS[id])return;
   if(!to){add(id,n);log(`[운영자] ${ITEMS[id].n}×${n} 지급`);commit();toast('지급했습니다.');return}
   if(mode!=='online')return;db.collection('gifts').add({to,from:uid,nick:'운영자',items:[{id,n}],cr:0,msg:'운영자 지급',sys:1,at:Date.now()}).then(()=>toast(`${PLAYERS[to]?.nick||'선원'} 님에게 보냈습니다.`)).catch(()=>toast('보내지 못했습니다.'))},
@@ -8765,7 +8770,7 @@ function giftAff(g){if(!g||!g.from||g.sys||g.kind||g.from===uid||!mailHasGift(g)
   const [dv,why]=giftAffDelta(giftItems(g),P.likes,P.hates);addAff(g.from,dv,why);return true}
 function receiveGifts(sn){const got=P.gotG||[];MAILG=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>!got.includes(g.id));if(MAILG.map(giftAff).some(Boolean)){save();renderPilot()}
   MAILG.forEach(g=>{if(mailNoted.has(g.id))return;mailNoted.add(g.id);if((+g.at||0)>socBoot)toast(`${g.sys?'운영자':(g.nick||'누군가')} 님에게서 ${mailKind(g)}이(가) 왔습니다. 우편함을 확인하십시오.`)});mailRefresh()}
-function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0||+g.xp>0||+g.lv>0||(g.ttl||[]).length)||got.includes(d.id))return;if(g.to&&g.to!==uid)return;
+function receiveGrants(sn){const got=P.gr||[];let ch=false;MAILA=[];sn.docs.forEach(d=>{const g=d.data();if(!g||!(+g.cr>0||+g.xp>0||+g.lv>0||(g.ttl||[]).length||(g.items||[]).length)||got.includes(d.id))return;if(g.to&&g.to!==uid)return;
   if(!g.to&&(+g.at||0)<(P.joined||0)){P.gr=[...(P.gr||[]),d.id].slice(-80);ch=true;return}MAILA.push(Object.assign({id:d.id,grant:1},g))});
   {const pend=MAILA.map(g=>+g.at||0),all=sn.docs.map(d=>+(d.data()||{}).at||0),nx=pend.length?Math.min(...pend):(all.length?Math.max(...all):0);if(nx>(+P.grSince||0)){P.grSince=nx;ch=true}}
   if(ch)save();mailRefresh()}
@@ -8780,8 +8785,8 @@ const mailList=()=>[...MAILA,...MAILG].sort((a,b)=>(+b.at||0)-(+a.at||0));
 function mailRefresh(){const b=$('#mailBtn');if(b){const n=mailList().length;b.querySelector('em').textContent=n?String(Math.min(n,99)):'';b.classList.toggle('has',!!n)}if(mailView)renderPanel()}
 function mailOpenOne(id){const a=MAILA.find(x=>x.id===id);
   if(a){const cr=Math.min(1000000,Math.floor(+a.cr||0)),lv=Math.min(MAX_LV,Math.floor(+a.lv||0)),xp=Math.min(5e6,Math.floor(+a.xp||0)),tt=(a.ttl||[]).filter(t=>TITLES.some(x=>x[0]===t));P.gr=[...(P.gr||[]),id].slice(-80);
-    if(cr)P.cr=(P.cr||0)+cr;if(lv&&P.lvl<lv){P.lvl=lv;P.xp=0;P.hp=maxHp();P.en=maxEn()}if(xp)gainXp(Math.round(xp/(1+TF('xp')/100)));if(tt.length)P.ttlGrant=[...new Set([...(P.ttlGrant||[]),...tt])];
-    MAILA=MAILA.filter(x=>x.id!==id);mboxKeep({id,sys:1,kind:'grant',msg:a.msg,at:a.at,cr,lv,xp,ttl:tt});const got=[cr?`+${cr.toLocaleString()} CR`:'',lv?`레벨 ${lv}`:'',xp?`경험치 +${xp.toLocaleString()}`:'',tt.length?`칭호 ${tt.length}개`:''].filter(Boolean).join(' · ');
+    if(cr)P.cr=(P.cr||0)+cr;if(lv&&P.lvl<lv){P.lvl=lv;P.xp=0;P.hp=maxHp();P.en=maxEn()}if(xp)gainXp(Math.round(xp/(1+TF('xp')/100)));if(tt.length)P.ttlGrant=[...new Set([...(P.ttlGrant||[]),...tt])];const gi=giftItems(a).filter(([i,n])=>ITEMS[i]&&n>0).map(([i,n])=>[i,Math.min(999,Math.floor(n))]);gi.forEach(([i,n])=>add(i,n));
+    MAILA=MAILA.filter(x=>x.id!==id);mboxKeep({id,sys:1,kind:'grant',msg:a.msg,at:a.at,cr,lv,xp,ttl:tt,items:gi.map(([i,n])=>({id:i,n}))});const got=[cr?`+${cr.toLocaleString()} CR`:'',...gi.map(([i,n])=>`${ITEMS[i].n} ×${n}`),lv?`레벨 ${lv}`:'',xp?`경험치 +${xp.toLocaleString()}`:'',tt.length?`칭호 ${tt.length}개`:''].filter(Boolean).join(' · ');
     log(`운영자 선물 · ${String(a.msg||'').slice(0,80)} (${got})`,'rare');sfxCoin();return true}
   const g=MAILG.find(x=>x.id===id);if(!g||g.kind==='trade')return false;P.gotG=[...(P.gotG||[]).slice(-60),id];MAILG=MAILG.filter(x=>x.id!==id);
   const parts=[];giftItems(g).forEach(([i,n,by])=>{if(ITEMS[i]&&n>0){add(i,Math.min(n,999));tmkAdd(i,by);parts.push(ITEMS[i].n+'×'+n)}});const c=Math.max(0,Math.min(+g.cr||0,1e6));if(c){P.cr=(P.cr||0)+c;parts.push(c.toLocaleString()+' CR')}
@@ -8816,7 +8821,7 @@ function mailSentHTML(){const S0=P.sent||[];if(!S0.length)return'<p class="empty
   <div class="maillist">${pgSlice('sent',S).map(m=>{const rd=!!m.rd,wait=!MYOUT&&!rd,chips=mlChips(m.items||[],+m.cr||0),arm=sentDelArm===m.id,who=(PLAYERS[m.to]||{}).nick||m.nick||'선원';
     const sc=sentCatOf(m),[sic,snm]=MAILCAT[sc];return`<div class="mailitem mk-${sc} ${rd?'read':''}"><div class="mailfrom">${headImg(3,whoP(m.to))}</div><div class="mailbody"><div class="row" style="justify-content:space-between;gap:6px"><b><span class="mtag mt-${sc}">${sic} ${snm}</span> ${esc(who)} <span class="hint">님에게</span> <span class="rdb ${rd?'ok':'no'}">${wait?'확인 중':rd?'읽음':'안 읽음'}</span></b><time class="hint">${fbTime(+m.at||0)}</time></div>${m.msg?`<p class="mailmsg">“${esc(m.msg)}”</p>`:''}${chips?`<div class="chips">${chips}<span class="hint">첨부</span></div>`:''}${rd?`<span class="hint">${fbTime(m.rd)} 무렵 읽음</span>`:''}</div>
      <div class="sbtns" style="flex-direction:column">${arm?`<button class="btn sm alt" data-act="sentdel" data-k="${esc(m.id)}" data-x="1">정말 지우기</button><button class="btn sm ghost" data-act="sentdel" data-k="">취소</button>`:`<button class="btn sm ghost" data-act="sentdel" data-k="${esc(m.id)}" title="내 목록에서만 지웁니다">지우기</button>`}</div></div>`}).join('')}</div>${pgNav('sent',S.length)}`}
-const grantChips=m=>[+m.cr>0?`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`:'',+m.lv>0?`<span class="ichip">레벨 ${+m.lv}로</span>`:'',+m.xp>0?`<span class="ichip">${img(IC.star,null,1)}경험치 +${(+m.xp).toLocaleString()}</span>`:'',...(m.ttl||[]).map(t=>{const x=TITLES.find(y=>y[0]===t);return x?`<span class="ichip">칭호 ${ttlHTML(x[0],x[1])}</span>`:''})].join('');
+const grantChips=m=>[+m.cr>0?`<span class="ichip">${img(IC.coin,null,1)}${(+m.cr).toLocaleString()} CR</span>`:'',...giftItems(m).filter(([i,n])=>ITEMS[i]&&n>0).map(([i,n])=>`<span class="ichip">${iicon(i,1)}${esc(ITEMS[i].n)} ×${n}</span>`),+m.lv>0?`<span class="ichip">레벨 ${+m.lv}로</span>`:'',+m.xp>0?`<span class="ichip">${img(IC.star,null,1)}경험치 +${(+m.xp).toLocaleString()}</span>`:'',...(m.ttl||[]).map(t=>{const x=TITLES.find(y=>y[0]===t);return x?`<span class="ichip">칭호 ${ttlHTML(x[0],x[1])}</span>`:''})].join('');
 const canReply=m=>!m.sys&&!m.grant&&m.from&&m.from!==uid&&!!PLAYERS[m.from];
 /* ---- 우편: letters with attachments and item trades between members (both ride on the gifts collection) ---- */
 const ML_TYPES=3,ML_EACH=10;
