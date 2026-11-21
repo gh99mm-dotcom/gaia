@@ -7657,7 +7657,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795261902';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795262319';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7679,7 +7679,9 @@ function verAdminHTML(){if(mode!=='online')return'';if(Date.now()-verLatestAt>30
   const fresh=!verLatest||+verLatest>+(VER_ANN||0);
   return`<div class="info-sec"><span class="lbl">Update · 업데이트 알림</span><span class="hint">누르면 접속 중인 선원 화면 위에 「새 버전이 나왔습니다 · 새로고침」이 뜹니다. 누르기 전에는 새 버전이 배포돼도 알림이 뜨지 않습니다.</span><div class="row" style="gap:8px;align-items:center;flex-wrap:wrap"><span class="hint">배포된 버전 <b>${verTime(verLatest)}</b> · 마지막 알림 <b>${verTime(VER_ANN)}</b>${GAIA_VER.startsWith('__')?'':' · 내 화면 '+verTime(GAIA_VER)}</span><button class="btn sm ${fresh?'gold':'ghost'}" data-act="admver" ${fresh?'':'disabled'}>${fresh?'업데이트 알림 보내기':'알릴 새 버전 없음'}</button></div></div>`}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){verHidAt=Date.now();return}
-  const away=verHidAt&&Date.now()-verHidAt>10*60e3;verHidAt=0;verCheck().then(()=>{if(away&&verNew&&!(typeof raidLocked==='function'&&raidLocked()))verReload()})});
+  const away=verHidAt&&Date.now()-verHidAt>10*60e3;verHidAt=0;verCheck().then(()=>{if(!away||!verNew||(typeof raidLocked==='function'&&raidLocked()))return;
+    /* reload by itself only once per new version: if the browser still hands back the old page, leave it to the bar instead of reloading again and again */
+    let done='';try{done=sessionStorage.getItem('gaia-autov')||''}catch(e){}if(done===verNew)return;try{sessionStorage.setItem('gaia-autov',verNew)}catch(e){}verReload()})});
 // tidy the address after a version reload
 try{const u=new URL(location.href);if(u.searchParams.has('v')){u.searchParams.delete('v');history.replaceState(null,'',u.toString())}}catch(e){}
 
