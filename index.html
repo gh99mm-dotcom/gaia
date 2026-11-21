@@ -3251,7 +3251,9 @@ const byField=id=>TAKEN[id]&&TAKEN[id].length&&ITEMS[id]&&ITEMS[id].tasty?{by:TA
 // level 60 about two weeks (~30.8k XP). The first few levels ramp up quickly so new crew still feel progress.
 // everything that comes with 주 엔진 (Lv.80, the new hard dungeons and their gear, 궁극 요리, the 부서장 vote, 12-boss rush, titles) waits for
 // two things: 주 엔진 repaired and open, AND the operator releasing 「주 엔진 · 6호의 기억」 in 이야기 공개 (staff can still preview)
-let MAX_LV=60;const engDone=()=>{try{const e=SHIP.find(x=>x.id==='engine');return mode==='online'&&!!e&&shipDone(e)&&!!(typeof STORY_ON!=='undefined'&&STORY_ON&&STORY_ON.engine)}catch(err){return false}},lvCapSync=()=>{MAX_LV=engDone()?80:60;try{rushSync()}catch(e){}};
+let MAX_LV=60;const engDone=()=>{try{const e=SHIP.find(x=>x.id==='engine');return mode==='online'&&!!e&&shipDone(e)&&!!(typeof STORY_ON!=='undefined'&&STORY_ON&&STORY_ON.engine)}catch(err){return false}},lvCapSync=()=>{MAX_LV=engDone()?80:60;try{rushSync()}catch(e){}if(window.__capS&&window.__capT&&P&&+P.xpq>0){const q=+P.xpq;P.xpq=0;gainXp(q,1);save()}};
+// is the level cap known yet? (both the story flags and the ship record have arrived) — until then a Lv.60+ crew member's XP is held, never lost
+const capKnown=()=>mode!=='online'||(!!window.__capS&&!!window.__capT);
 /* level curve: Lv.1-4 keep the quick old pace (xpBase). From Lv.10 a level costs RAIDS_PER(L) raids at your level
    (boss one above), interpolated between the anchors below, plus the ~50 XP of fishing/farming/scanning etc. you pick up
    alongside each raid. Lv.5-9 ramp geometrically into Lv.10. Raid rewards are scaled off xpBase, not need. */
@@ -3264,7 +3266,7 @@ const RAIDS_PER=L=>{for(let i=1;i<RAIDS_AT.length;i++){const[a,x]=RAIDS_AT[i-1],
 // of need (scouting, invader chests) divide by it so they slow down too
 const XP_PACE=1.5,RAID_PACE=2.12,lvCost=L=>RAIDS_PER(L)*RAID_PACE*(raidXpAt(L)+SIDE_XP);
 const NEED=Array.from({length:81},(_,l)=>{if(!l)return 0;if(l<5)return xpBase(l);if(l>=10)return Math.round(lvCost(l)*XP_PACE/10)*10;return Math.round(xpBase(4)*Math.pow(lvCost(10)*XP_PACE/xpBase(4),(l-4)/6)/10)*10}),need=l=>NEED[Math.max(1,Math.min(80,l))];
-function gainXp(x){lvCapSync();if(P.lvl>=MAX_LV){if(P.lvl===MAX_LV)P.xp=0;return}x=Math.round(x*(1+TF('xp')/100));P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
+function gainXp(x,raw){lvCapSync();if(!capKnown()&&P.lvl>=60){P.xpq=(+P.xpq||0)+x;return}if(P.lvl>=MAX_LV)return;x=Math.round(x*(1+TF('xp')/100));P.xp+=x;while(P.lvl<MAX_LV&&P.xp>=need(P.lvl)){P.xp-=need(P.lvl);P.lvl++;P.hp=maxHp();P.en=maxEn();log(`레벨 업! Lv.${P.lvl} — 체력과 에너지가 가득 찼다.`,'rare');sys(`${P.nick} 님이 Lv.${P.lvl}에 도달했습니다.`)}if(P.lvl>=MAX_LV){P.lvl=MAX_LV;P.xp=0}}
 function heal(hp,en){P.hp=Math.min(maxHp(),Math.max(0,P.hp+(hp||0)));P.en=Math.min(maxEn(),Math.max(0,P.en+(en||0)))}
 
 /* cooking logic */
@@ -5076,7 +5078,7 @@ function bossSubscribe(){
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
   rescuedRef().onSnapshot(sn=>{RESCUED=sn.exists?Object.assign({},sn.data()):{};renderCrew()},()=>{});
-  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);EG_OPEN=!!(sn.exists&&sn.data().eg);ORB_GO=+((sn.exists&&sn.data().orbisGo)||0);VER_ANN=String((sn.exists&&sn.data().ver)||'');verApply();{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
+  staffRef().onSnapshot(sn=>{STAFF=sn.exists?(sn.data().ids||[]):[];{const was=isAdmin;isAdmin=isOwnerAcct||STAFF.includes(uid);$('#adminBtn').hidden=!isAdmin;if(isAdmin&&window.__invSub)window.__invSub();if(was&&!isAdmin&&adminView){adminView=false;renderPanel()}}ROOM_LINK=!(sn.exists&&sn.data().roomLink===false);EG_OPEN=!!(sn.exists&&sn.data().eg);ORB_GO=+((sn.exists&&sn.data().orbisGo)||0);VER_ANN=String((sn.exists&&sn.data().ver)||'');verApply();{const sw=STORY_ON;STORY_ON=Object.assign({},(sn.exists&&sn.data().stories)||{});window.__capS=1;try{lvCapSync()}catch(e){}if(!sw.opening&&STORY_ON.opening)setTimeout(openingOnce,800);}{const was=PREOPEN;PREOPEN=!!(sn.exists&&sn.data().preopen);if(was!==PREOPEN){if(PREOPEN&&!isStaff()){socTab='pad'}renderNav();renderPanel();setPresence();if(socOpen)renderSoc();if(!PREOPEN)setTimeout(openingOnce,800)}}tabSubsSync();if(!isStaff()){FB=[];fbLoaded=false;updFbBadge()}if(tab==='ship')renderPanel();adminRefresh()},()=>{});
   spresRef().onSnapshot(sn=>{SPRES=sn.exists?(sn.data().list||[]):[];if(tab==='req')renderPanel();adminRefresh()},()=>{})}
 // rewards: once per killed invader for everyone who landed a hit; a share of the damage adds to it
 function bossClaim(){const b=BOSS;if(!b)return;const src=bossKilled(b)&&b.dmg&&b.dmg[uid]?bossSum(b):b.prev&&b.prev.killer&&!b.prev.failed&&b.prev.dmg&&b.prev.dmg[uid]?b.prev:null;
@@ -6370,7 +6372,7 @@ const shipTRef=()=>db.doc('boss/ship');
 function shipTotals(){if(SHIPT&&SHIPT.v)return{p:SHIPT.p||{},u:SHIPT.u||{}};if(shipTC)return shipTC;const p={},u={};
   SHIPDON.forEach(d=>{const n=+d.n||0;if(d.part){const q=p[d.part]=p[d.part]||{};q[d.id]=(q[d.id]||0)+n}if(d.uid&&!isCropId(d.id)){const r=u[d.uid]=u[d.uid]||{n:0,nick:d.nick};r.n+=n;if(d.nick)r.nick=d.nick}});return shipTC={p,u}}
 function shipSubscribe(){const redraw=()=>{if(tab==='ship'||rankView)renderPanel()};
-  shipTRef().onSnapshot(sn=>{SHIPT=sn.exists?sn.data():null;shipTC=null;shipFuelMark();shipFinMark();
+  shipTRef().onSnapshot(sn=>{SHIPT=sn.exists?sn.data():null;shipTC=null;window.__capT=1;try{lvCapSync()}catch(e){}shipFuelMark();shipFinMark();
     if(SHIPT&&SHIPT.v){if(shipSlipsUn){shipSlipsUn();shipSlipsUn=null;SHIPDON=[]}}
     else if(!shipSlipsUn)shipSlipsUn=db.collection('shipdon').onSnapshot(s=>{SHIPDON=s.docs.map(d=>d.data());shipTC=null;shipMigrate();redraw()},()=>{})||(()=>{});
     redraw()},()=>{})}
@@ -7655,7 +7657,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795259840';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795260010';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
