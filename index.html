@@ -6366,7 +6366,7 @@ const SHIP=[
  {id:'comm',n:'통신 장치',d:'모항과 연락할 유일한 방법. 공명하는 껍데기로 안테나를 만들고 철판으로 받침대를 세웁니다.',need:[['ore',1000],['mazeCore',1000],['bogResin',1000],['oldBoard',350],['iceShell',400],['marshFossil',400],['carrot',500],['rationBean',500],['melon',500],['frostBerry',500]]},
 // from 주 엔진 on, every dungeon material (원정 재료) is asked 10,000 at a time
  {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',500],['crystal',15000],['volcAsh',500],['dark',3000],['bogResin',10000],['wreckNozzle',10000],['corn',1000],['canyonPepper',500],['pot',1000],['pump',1000]]},
- {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',500],['brokenLens',500],['impactGlass',500],['abyssPrism',10000],['pump',1000],['berry',1000],['frozenTomato',500],['shadeShroom',500]]},
+ {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',500],['brokenLens',500],['impactGlass',500],['abyssPrism',5000],['pump',1000],['berry',1000],['frozenTomato',500],['shadeShroom',500]]},
  {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',2120],['craterIron',150],['rustBolt',110],['sandSlate',110],['starHeart',10000],['carrot',400],['dustPot',300]]},
 ];
 let SHIPDON=[],shipSel=null;
@@ -7663,7 +7663,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795265217';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795270000';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -9114,8 +9114,8 @@ function lgClose(){const m=document.getElementById('lgMenu');if(m)m.remove()}
 function lgPlace(m,r){const mw=m.offsetWidth,mh=m.offsetHeight;let x=Math.min(r.left,innerWidth-mw-6),y=r.bottom+4;if(y+mh>innerHeight-6)y=Math.max(6,r.top-mh-4);m.style.left=Math.max(6,x)+'px';m.style.top=y+'px'}
 // the chat redraws when a line arrives: keep the menu on the same name (found again by its message), close it once that name is gone or scrolled out
 let lgRaf=0;function lgFollow(){cancelAnimationFrame(lgRaf);const step=()=>{const m=document.getElementById('lgMenu');if(!m)return;
-  const el=document.querySelector(`.lgnm[data-k="${CSS.escape(m.dataset.k)}"][data-at="${CSS.escape(m.dataset.at)}"]`),log=el&&(el.closest('#lgLog')||el.closest('#socStage')||document.documentElement);
-  if(!el||!log){lgClose();return}const r=el.getBoundingClientRect(),lr=log.getBoundingClientRect();if(r.bottom<lr.top||r.top>lr.bottom){lgClose();return}
+  const el=document.querySelector(`.lgnm[data-k="${CSS.escape(m.dataset.k)}"][data-at="${CSS.escape(m.dataset.at)}"]`),log=el&&(el.closest('#lgLog')||el.closest('#socStage'));
+  if(!el){lgClose();return}const r=el.getBoundingClientRect(),lr=log?log.getBoundingClientRect():{top:0,bottom:innerHeight};/* outside a scrolling box (e.g. 우주선 › 휴게실) the window itself is the frame */if(r.bottom<lr.top||r.top>lr.bottom){lgClose();return}
   lgPlace(m,r);lgRaf=requestAnimationFrame(step)};lgRaf=requestAnimationFrame(step)}
 document.addEventListener('pointerdown',e=>{const m=document.getElementById('lgMenu');if(m&&!m.contains(e.target)&&!(e.target.closest&&e.target.closest('.lgnm')))lgClose()},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('lgMenu')){e.stopPropagation();lgClose()}},true);
