@@ -4193,7 +4193,8 @@ const RZR={r6:{lava:.03,rage:.5,boom:3,forks:[4,8],rule:'용암 지대 · 분노
 // hard zones add their own patterns on top of the base zone's (stronger monsters alone are not the point)
 const RZR_H={r1:{rage:.5,boom:3,lava:.03,lavaT:'🌪 모래폭풍이 파티를 휩쓸었다.',rule:'모래폭풍 · 분노 · 대폭발'},
  r2:{armor:.65,shield:.12,shieldP:.5,focus:.45,rule:'단단한 결정 갑옷 · 보호막 · 표적 고정'},
- r3:{fog:.22,poison:.5,focus:.6,rule:'짙은 안개 · 맹독 · 주시(표적 고정)'}};
+ r3:{fog:.22,poison:.5,focus:.6,rule:'짙은 안개 · 맹독 · 주시(표적 고정)'},
+ r5:{freeze:.1,breathFrz:.22}};/* 숨죽인 심연 freezes less than its base zone */
 const zrOf=z=>z&&z.hard&&RZR_H[z.id]?Object.assign({},RZR[z.id],RZR_H[z.id]):RZR[z&&z.id];
 const RAID_ZEV={r6:[
  {k:'eruption',n:'용암 분출',t:'발밑에서 용암이 솟구쳤다!',dmg:.15},
@@ -7663,7 +7664,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795270000';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795272098';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
