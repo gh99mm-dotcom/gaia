@@ -1153,6 +1153,8 @@ b.suwib{cursor:default;flex:0 0 120px}
 .stv-txt{margin:0;font-family:"Galmuri11",var(--f-pix),monospace;font-size:clamp(17px,2.3vw,25px);line-height:1.75;letter-spacing:.06em;color:#c9d3ea;white-space:pre-wrap;-webkit-font-smoothing:none;padding-left:1.6em;text-indent:-1.6em}
 .stv-txt::before{content:"▶";display:inline-block;width:1.6em;text-indent:0;color:#aebbd8}
 .stv-txt.say{color:#eef3ff}
+/* 주 엔진 story: 6호's system alerts, slanted and red like a broken readout */
+.stv-txt.sys{color:#ff8e9a;transform:skewX(-12deg) rotate(-1.2deg);transform-origin:left top;text-shadow:2px 0 #5a0a18,-1px 0 rgba(120,230,255,.45);letter-spacing:.1em}.stv-txt.sys::before{content:"!";color:#ff4a5a}
 .stv-next{position:absolute;right:clamp(18px,3vw,40px);bottom:18px;font:inherit;font-family:"Galmuri11",var(--f-pix);font-size:clamp(14px,1.5vw,17px);letter-spacing:.06em;color:#dfe6f5;background:#0b0e1a;border:2px solid #8a98b8;outline:1px solid #4a5672;outline-offset:-6px;padding:6px 18px;opacity:.3;cursor:pointer}
 .stv-next.on{opacity:1}
 .opn{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#000;padding:16px;box-sizing:border-box;color:#e8eeff;animation:opnIn .5s steps(5) both}
@@ -4826,8 +4828,20 @@ function raidRunHTML(r){const z=raidZone(r),b=r.b,me=r.m[uid],myTurn=r.phase==='
    <div class="raidwrap"><div class="raidparty">${party}${rcHTML(r)}</div><div class="raidmain">${body}</div></div>`}
 // alone on an expedition, between fights (after an event or a won battle) you may eat from your bag; healing goes to the expedition HP
 const raidSoloRest=r=>!!r&&r.state==='run'&&(r.phase==='event'||r.phase==='won')&&raidIn(r).length===1&&raidIn(r)[0]===uid&&(r.m[uid]||{}).hp>0;
-function raidEatHTML(r){if(!raidSoloRest(r))return'';const me=r.m[uid],foods=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i].type==='food'&&((ITEMS[i].hp||0)>0||(ITEMS[i].en||0)>0));
-  return`<div class="raideat"><div class="stat-row"><span>음식 먹기 · 몬스터가 없을 때</span><b>체력 ${me.hp}/${me.maxHp}</b></div>${foods.length?`<div class="bag">${foods.map(i=>`<button class="slot" data-act="raideat" data-id="${i}" ${me.hp>=me.maxHp&&!(ITEMS[i].en>0)?'disabled':''} title="${esc(ITEMS[i].n)} · 체력 +${ITEMS[i].hp>=999?'전부':ITEMS[i].hp}" aria-label="${esc(ITEMS[i].n)} 먹기 ${P.inv[i]}개">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div><span class="hint">누르면 바로 먹습니다. 혼자 원정할 때만 쉬면서 먹을 수 있습니다.</span>`:'<p class="hint">가방에 먹을 음식이 없습니다.</p>'}</div>`}
+/* resting on a solo expedition: the food list folds away (closed by default, remembered), splits into 일반 요리 / 고급 요리 / 그 외,
+   and a tap only picks a food; it is eaten with the 먹기 button, so a stray click never eats a precious dish */
+let raidEatOpen=(()=>{try{return localStorage.getItem('nebula-raideat')==='1'}catch(e){return false}})(),raidEatTab='dish',raidEatPick=null;
+const rfCat=i=>{const c=COOK.find(x=>x.id===dishBase(i));return c?(c.eg?'adv':'dish'):'etc'};
+function raidEatHTML(r){if(!raidSoloRest(r))return'';const me=r.m[uid],all=ORDER.filter(i=>P.inv[i]>0&&ITEMS[i].type==='food'&&((ITEMS[i].hp||0)>0||(ITEMS[i].en||0)>0)&&(rfCat(i)!=='adv'||egOpen()));
+  const T=[['dish','일반 요리'],...(egOpen()?[['adv','고급 요리']]:[]),['etc','그 외']],cnt=k=>all.filter(i=>rfCat(i)===k).length;
+  if(!T.some(([k])=>k===raidEatTab)||(!cnt(raidEatTab)&&all.length)){const f=T.find(([k])=>cnt(k));raidEatTab=f?f[0]:'dish'}
+  const foods=all.filter(i=>rfCat(i)===raidEatTab);if(raidEatPick&&!all.includes(raidEatPick))raidEatPick=null;const pk=raidEatPick&&ITEMS[raidEatPick],mk=P.job==='medic'?1.5:1;
+  const full=i=>me.hp>=me.maxHp&&!(ITEMS[i].en>0);
+  return`<div class="raideat"><div class="stat-row"><span>음식 먹기 · 몬스터가 없을 때</span><b>체력 ${me.hp}/${me.maxHp}</b></div>
+   <button class="btn sm ${raidEatOpen?'ghost':''}" type="button" data-act="raideatopen" aria-expanded="${raidEatOpen}">${raidEatOpen?'가방 닫기 ▲':`가방 열기 ▼ <small>${all.length}종</small>`}</button>
+   ${!raidEatOpen?'':all.length?`<div class="dtabs" role="tablist">${T.map(([k,n])=>`<button role="tab" aria-selected="${raidEatTab===k}" data-act="raideattab" data-k="${k}" ${cnt(k)?'':'disabled'}>${n} <small>${cnt(k)}</small></button>`).join('')}</div>
+    <div class="bag">${foods.map(i=>`<button class="slot" data-act="raideatpick" data-id="${i}" aria-pressed="${i===raidEatPick}" title="${esc(ITEMS[i].n)}" aria-label="${esc(ITEMS[i].n)} ${P.inv[i]}개">${iicon(i,2)}<em>${P.inv[i]}</em></button>`).join('')}</div>
+    ${pk?`<div class="fspick">${iicon(raidEatPick,2)}<div><b>${pk.n}</b><span class="hint">체력 +${pk.hp>=999?'전부':Math.round((pk.hp||0)*mk)}${pk.en?` · 에너지 +${pk.en>=999?'전부':Math.round(pk.en*mk)}`:''} · ${P.inv[raidEatPick]}개</span></div></div><button class="btn" data-act="raideat" data-id="${raidEatPick}" ${full(raidEatPick)?'disabled':''}>${full(raidEatPick)?'체력이 가득 찼습니다':'먹기'}</button>`:'<span class="hint">먹을 음식을 누른 뒤 먹기 버튼을 누르십시오. 혼자 원정할 때만 쉬면서 먹을 수 있습니다.</span>'}`:'<p class="hint">가방에 먹을 음식이 없습니다.</p>'}</div>`}
 /* the expedition route as a pixel-art map: dithered terrain in the zone's palette, a dirt trail that turns gold where the party has been,
    flags on cleared stops, a skull gate at the boss and fog over the ground not yet explored */
 const RAID_TERRAIN={r1:{g:['#3c3550','#4c4462'],p:['#7a6c5c','#a08c74'],d:['#6e6886','#9690ae'],k:'rock'},r2:{g:['#16283a','#203a52'],p:['#4e6c7c','#7096a8'],d:['#4fc8f0','#c0f4ff'],k:'crystal'},
@@ -7515,7 +7529,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795010543';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795010544';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7743,6 +7757,12 @@ function sfxType(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curren
 // 녹슨 7호 rolling up (드르륵, 드르륵) and flicking a switch (달칵), for the 동력로 story
 // the first distress call: three short beeps (뚜 뚜 뚜), a pause, and three more
 function sfxSigBeep(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.1;for(const g0 of [0,1.6])for(let i=0;i<3;i++)tone(a,'sine',880,880,t+g0+i*.38,.2,.07)}
+// 주 엔진 story: the blast in 6호's memory, the wall screen clicking on / off, and the engine spinning up into a hull-wide hum
+function sfxBoom(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.02;noiseBurst(a,t,1,'lowpass',2600,80,.6,1.4);tone(a,'sine',150,30,t,1,.35);tone(a,'sawtooth',95,28,t+.01,.8,.12);tone(a,'square',1400,200,t,.12,.05)}
+function sfxMon(off){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.02;if(off){tone(a,'sine',1800,90,t,.45,.06);noiseBurst(a,t,.12,'highpass',4000,2000,.06,2)}else{noiseBurst(a,t,.25,'bandpass',3000,1200,.08,1.5);tone(a,'sine',15600,0,t+.05,.9,.012);tone(a,'square',60,0,t+.05,.3,.03)}}
+function sfxEngHum(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.05,o=a.createOscillator(),o2=a.createOscillator(),f=a.createBiquadFilter(),gn=a.createGain();o.type='sawtooth';o2.type='square';
+  o.frequency.setValueAtTime(28,t);o.frequency.linearRampToValueAtTime(46,t+5);o2.frequency.setValueAtTime(28.6,t);o2.frequency.linearRampToValueAtTime(46.8,t+5);f.type='lowpass';f.frequency.setValueAtTime(110,t);f.frequency.linearRampToValueAtTime(380,t+5);
+  gn.gain.setValueAtTime(.0001,t);gn.gain.exponentialRampToValueAtTime(.04,t+1.5);gn.gain.linearRampToValueAtTime(.15,t+5);gn.gain.linearRampToValueAtTime(.0001,t+9);o.connect(f);o2.connect(f);f.connect(gn).connect(sfxOut(a));o.start(t);o2.start(t);o.stop(t+9.1);o2.stop(t+9.1)}
 function sfxRattle(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;
   const roll=at=>{for(let i=0;i<10;i++){const f=120+Math.random()*110;tone(a,'square',f,f*.7,at+i*.042,.024,.055);if(i%3===0)tone(a,'triangle',60+Math.random()*30,40,at+i*.042,.03,.05)}};
   roll(t+.05);roll(t+.75);tone(a,'square',1400,300,t+1.62,.018,.09);tone(a,'triangle',420,180,t+1.64,.05,.07)}
@@ -7858,6 +7878,50 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
   // a tiny 3×5 pixel font for the console labels, so they stay crisp when the picture is scaled up
   const F35={A:'010101111101101',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',Y:'101101010010010','-':'000000111000000','·':'000000010000000',' ':'000000000000000'};
   const ptext=(str,X,Y,col)=>{let cx=X;for(const ch of str){const f=F35[ch]||F35[' '];for(let i=0;i<15;i++)if(f[i]==='1')R(cx+(i%3),Y+((i/3)|0),1,1,col);cx+=4}};
+  // ── 주 엔진 story: the engine room, and 6호's memory played back on its wall screen (in its own green, like old footage) ──
+  // the engine room: the engine's round housing, pipes, a grated floor; lit (0..1) turns the blue lamps on one by one, sh shakes the room
+  function engRoom(t,lit,sh){const L=lit||0,dx=sh?Math.round((Math.random()-.5)*sh*2):0,dy=sh?Math.round((Math.random()-.5)*sh):0,c=(a,b)=>L>.5?b:a;g.save();g.translate(dx,dy);
+    R(-6,-6,W+12,H+12,L>.5?'#071229':'#02040a');for(let x=0;x<W;x+=30)R(x,0,1,H-26,c('#050a16','#122650'));
+    for(const [y,h] of [[14,4],[22,3]]){R(-6,y,W+12,h,c('#0a1326','#1d3a74'));R(-6,y,W+12,1,c('#16264a','#3e6cc4'))}
+    for(const x of [16,214]){R(x,0,6,H-26,c('#0a1326','#1d3a74'));R(x,0,1,H-26,c('#16264a','#3e6cc4'));for(let y=30;y<H-26;y+=18)R(x-1,y,8,2,c('#0d1830','#25458c'))}
+    R(-6,H-26,W+12,32,c('#04070f','#0c1a38'));for(let x=-6;x<W+6;x+=6)R(x,H-26,1,26,c('#02040a','#08122a'));R(-6,H-26,W+12,1,c('#0a1428','#25458c'));
+    const ex=W/2,ey=58;for(let y=-34;y<=34;y++)for(let x=-52;x<=52;x++){const d=x*x/2704+y*y/1156;if(d>1)continue;let v=d>.86?1:Math.abs(x)%12<2?2:3;if(d<.3)v=0;if(L&&d>=.3)v+=Math.round(L*2);if(L&&d<.3)v=d<.12?7:d<.2?6:5;P(ex+x,ey+y,B[Math.min(7,v)])}
+    for(let i=0;i<8;i++){const a=i/8*Math.PI*2;P(ex+Math.round(Math.cos(a)*44),ey+Math.round(Math.sin(a)*29),L>i/8?B[7]:B[2])}
+    if(L){g.globalAlpha=L*(.25+.15*Math.sin(t*3));g.fillStyle=B[5];g.beginPath();g.ellipse(ex,ey,40,26,0,0,7);g.fill();g.globalAlpha=1}
+    for(let i=0;i<7;i++){const x=22+i*32,on=L>i/7+.02;R(x,8,10,3,on?B[6]:'#0a1326');if(on){g.globalAlpha=.12*L;g.fillStyle=B[5];g.beginPath();g.moveTo(x,11);g.lineTo(x+10,11);g.lineTo(x+22,H-26);g.lineTo(x-12,H-26);g.fill();g.globalAlpha=1}}
+    R(160,64,40,28,'#03060c');R(159,63,42,1,c('#16264a','#3e6cc4'));R(159,92,42,1,c('#0a1428','#25458c'));
+    if(!L){g.globalAlpha=.08;g.fillStyle=B[5];g.beginPath();g.moveTo(W*.42,H);g.lineTo(W*.58,H);g.lineTo(ex+46,ey-12);g.lineTo(ex-46,ey-12);g.fill();g.globalAlpha=1}
+    g.restore()}
+  // 녹슨 7호 standing in the engine room (looking at the wall screen on the right); mod: the memory chip in its hand
+  function engBot(t,chip,nod){const bw=54,rx=96,gy=H-14,ny=nod?Math.round(Math.abs(Math.sin(nod*4.5))*2):0;g.fillStyle='rgba(3,6,15,.6)';g.fillRect(rx+6,gy-2,bw-12,4);if(BOT)g.drawImage(BOT,rx,gy-bw+ny+Math.round(Math.sin(t*2)*.6),bw,bw);
+    if(chip){const cx=rx+bw-6,cy=gy-Math.round(bw*.4)+ny;R(cx-5,cy-3,10,7,'#1e3a2c');R(cx-5,cy-3,10,1,'#5a9a76');for(let i=0;i<5;i++)P(cx-4+i*2,cy+4,'#e0b860');R(cx-1,cy-1,3,2,'#0c1a14');P(cx+3,cy-1,((t*3)|0)%2?'#ffe08a':'#7a5a20')}}
+  // the memory: a hall of towering machines seen through 6호's eyes, a great ring-shaped gate at the far end; reach = its arm going out
+  const MG=['#010604','#04120d','#08241a','#0f3a2c','#1a5a44','#2f8a6a','#6ccfa8','#d8fff0'];
+  function memHall(t,reach,surge){const vx=W/2,vy=48;R(0,0,W,H,MG[0]);
+    const poly=(pts,col)=>{g.fillStyle=col;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.closePath();g.fill()};
+    poly([[0,0],[W,0],[vx+24,vy-18],[vx-24,vy-18]],MG[1]);poly([[0,H],[W,H],[vx+24,vy+18],[vx-24,vy+18]],MG[2]);
+    for(let i=1;i<9;i++){const k=i/9,y=Math.round(vy+18+(H-vy-18)*k*k);R(0,y,W,1,MG[1])}g.strokeStyle=MG[1];g.lineWidth=1;for(let i=-6;i<=6;i++){g.beginPath();g.moveTo(vx+i*4,vy+18);g.lineTo(vx+i*42,H);g.stroke()}
+    for(let k=4;k>=0;k--){const off=34+k*20,w=8+k*5,top=vy-22-k*7,bot=vy+20+k*9;for(const sd of [-1,1]){const x=sd<0?Math.round(vx-off-w):Math.round(vx+off);R(x,top,w,bot-top,MG[2]);R(sd<0?x+w-1:x,top,1,bot-top,MG[4]);R(x,top,w,1,MG[4]);
+      for(let y=top+4;y<bot-2;y+=6){R(x+2,y,w-4,1,MG[1]);if(((t*2+k*3+y)|0)%5===0)P(x+2+((y*7)%Math.max(1,w-4)),y+2,MG[6])}}}
+    // the gate: a thick segmented ring, its inside slowly swirling; a surge fills it white and throws a column of light upward
+    const gx=vx,gy=vy+2,rx=24,ry=30,sw=surge||0;
+    for(let y=-ry-6;y<=ry+6;y++)for(let x=-rx-6;x<=rx+6;x++){const d=Math.sqrt(x*x/((rx+5)*(rx+5))+y*y/((ry+5)*(ry+5))),din=Math.sqrt(x*x/(rx*rx)+y*y/(ry*ry));if(d>1)continue;
+      if(din>=1){const a=Math.atan2(y,x),seg=((a+Math.PI)/(Math.PI*2)*12|0)%2;P(gx+x,gy+y,seg?MG[4]:MG[3]);continue}
+      const a=Math.atan2(y,x)+t*.8+din*4,v=(Math.sin(a*3)+1)/2;let k=1+Math.round(v*2+din);if(sw)k=Math.min(7,k+Math.round(sw*6));P(gx+x,gy+y,MG[Math.min(7,k)])}
+    for(let i=0;i<12;i++){const a=i/12*Math.PI*2;P(gx+Math.round(Math.cos(a)*(rx+3)),gy+Math.round(Math.sin(a)*(ry+3)),((t*4+i)|0)%3?MG[5]:MG[7])}
+    if(sw){const bw2=Math.round(6+sw*16);g.globalAlpha=Math.min(1,sw*1.3);R(gx-bw2/2,0,bw2,gy,MG[6]);R(gx-bw2/4,0,bw2/2,gy,MG[7]);g.globalAlpha=sw*.35;R(0,0,W,H,MG[6]);g.globalAlpha=1;
+      for(let i=0;i<14;i++){const ph=(t*3+i/14)%1;P(gx+Math.round(Math.sin(i*2.3)*bw2),Math.round(gy-ph*gy),MG[7])}}
+    // 6호's own arm reaching in from the bottom right, segmented and worn, three-fingered at the end
+    if(reach>0){const x0=W*.86,y0=H+8,x1=gx+16,y1=gy+18,k=.3+.7*Math.min(1,reach),xe=x0+(x1-x0)*k,ye=y0+(y1-y0)*k,n=14;
+      for(let i=0;i<=n;i++){const u=i/n,x=Math.round(x0+(xe-x0)*u),y=Math.round(y0+(ye-y0)*u),r=Math.round(7-u*3);R(x-r,y-r,r*2,r*2,i%3===0?MG[2]:MG[3]);R(x-r,y-r,r*2,1,MG[5])}
+      for(const [fx,fy] of [[-5,-4],[-6,1],[-2,-7]]){R(Math.round(xe+fx),Math.round(ye+fy),3,2,MG[4]);P(Math.round(xe+fx),Math.round(ye+fy),MG[6])}}}
+  // the wall screen's own look on top of the memory: scanlines, dark corners and a small playback label
+  function crt(t,lbl){for(let y=0;y<H;y+=2){g.globalAlpha=.22;R(0,y,W,1,'#000')}g.globalAlpha=.5;for(let i=0;i<10;i++){R(0,i,W,1,'#000');R(0,H-1-i,W,1,'#000')}g.globalAlpha=1;
+    if(lbl!==false){ptext(lbl||'MEMORY  PLAY',6,6,MG[5]);if(((t*2)|0)%2===0){R(W-12,6,4,4,'#ff4a5a')}}}
+  // tear the picture into sideways-slipping bands, with snow on top
+  let offSnap=null;
+  function tear(k){for(let i=0;i<6;i++){if(Math.random()>k)continue;const y=(Math.random()*H)|0,h=2+((Math.random()*10)|0),sx=Math.round((Math.random()-.5)*30*k);g.drawImage(cv,0,y,W,h,sx,y,W,h)}
+    for(let i=0;i<220*k;i++)P((Math.random()*W)|0,(Math.random()*H)|0,Math.random()<.5?MG[6]:'#000')}
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
     // ── the opening's own pictures, drawn fresh: a dusk-purple desert seen from afar, a small crashed ship, a small 녹슨 7호 ──
@@ -7966,13 +8030,38 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
       const sys=[['LIFE SUPPORT',100,56],['HULL INTEGRITY',130,40],['PROPULSION',48,60],['NAVIGATION',176,60]];
       
       sys.forEach(([n,x,y],i)=>{const blink=(Math.floor(t*2.4+i*.5)%2===0);R(x-3,y-1,6,6,blink?'#ff4a5a':'#5a1018');const tx=[x-24,x-28,24,x-36][i];ptext(n,tx,i===1?y-10:i===3?y+16:y+8,blink?'#ff8a94':'#8a2a34')});
-      ptext('SYSTEM DAMAGE - REPAIR REQUIRED',58,98,red);ptext('GAIA - SHIP STATUS',24,14,B[5]);g.globalAlpha=1}};
+      ptext('SYSTEM DAMAGE - REPAIR REQUIRED',58,98,red);ptext('GAIA - SHIP STATUS',24,14,B[5]);g.globalAlpha=1},
+    // ── 주 엔진 story ──
+    e_dark:t=>{engRoom(t,0)},
+    e_give:t=>{engRoom(t,0);engBot(t,1,t>1&&t<2.4?t-1:0)},
+    e_room:t=>{engRoom(t,0);engBot(t,0,0)},
+    // the wall screen flickers on and 6호's memory fills the picture
+    e_mem:t=>{memHall(t,Math.max(0,(t-1.4)/7)*.55,0);if(t<1.2){g.globalAlpha=1-t/1.2;R(0,0,W,H,'#000');g.globalAlpha=1;if(((t*12)|0)%2)tear(.6)}crt(t)},
+    e_surge:t=>{const sw=Math.max(0,Math.min(1,(t-1)/1.6));g.save();if(sw)g.translate(Math.round((Math.random()-.5)*sw*4),Math.round((Math.random()-.5)*sw*3));memHall(t+9,.55+Math.min(1,t/1)*.45,sw);g.restore();crt(t)},
+    // 쾅: a white flash, then the view flung backward and spinning, the light still burning in the middle
+    e_blast:t=>{if(t<.22){R(0,0,W,H,MG[7]);return}const k=Math.min(1,(t-.22)/1.1),e=1-Math.pow(1-k,3);g.save();g.translate(W/2,H/2);g.rotate(-e*.55);g.scale(1+e*.25,1+e*.25);g.translate(-W/2,-H/2-e*26);memHall(t+12,0,Math.max(.3,1-k));g.restore();
+      g.globalAlpha=Math.max(0,.9-(t-.22)*2);R(0,0,W,H,MG[7]);g.globalAlpha=1;tear(.25+.5*(1-k));crt(t)},
+    // lying where it landed: the hall seen crooked, the picture breaking up, flashes of red
+    e_glitch:t=>{g.save();g.translate(W/2,H/2);g.rotate(-.55);g.scale(1.25,1.25);g.translate(-W/2,-H/2-26);memHall(t+20,0,.25);g.restore();const k=.45+.4*Math.abs(Math.sin(t*1.7));tear(k);
+      if(((t*5)|0)%4===0){g.globalAlpha=.22;R(0,0,W,H,'#ff2a3a');g.globalAlpha=1}if(((t*7)|0)%9===0){R(0,0,W,H,'#000')}crt(t,'MEMORY  ERROR')},
+    // through the snow, the gate's light shoots out as a beam, then cuts off
+    e_beam:t=>{g.save();g.translate(W/2,H/2);g.rotate(-.55);g.scale(1.25,1.25);g.translate(-W/2,-H/2-26);const on=t>.6&&t<3.6,bk=on?Math.min(1,(t-.6)/.4)*(t>3.2?(3.6-t)/.4:1):0;memHall(t+30,0,bk);g.restore();
+      if(!on&&t>3.6){g.globalAlpha=Math.min(.75,(t-3.6)*.5);R(0,0,W,H,'#000');g.globalAlpha=1}tear(.55+.3*Math.abs(Math.sin(t*2.3)));if(((t*5)|0)%5===0){g.globalAlpha=.2;R(0,0,W,H,'#ff2a3a');g.globalAlpha=1}crt(t,'MEMORY  ERROR')},
+    // the screen switches off (the picture squeezed into a line, then a dot), and we are back in the dark room
+    e_off:t=>{if(!offSnap){offSnap=document.createElement('canvas');offSnap.width=W;offSnap.height=H;offSnap.getContext('2d').drawImage(cv,0,0)}if(t<.5){const k=t/.5,h=Math.max(1,Math.round(H*(1-k)));R(0,0,W,H,'#000');g.drawImage(offSnap,0,(H-h)/2,W,h);R(0,H/2-1,W,2,MG[7]);return}
+      if(t<1.1){R(0,0,W,H,'#000');const k=(t-.5)/.6,w=Math.max(2,Math.round(W*(1-k)));R((W-w)/2,H/2-1,w,2,MG[7]);return}
+      if(t<1.8){R(0,0,W,H,'#000');const a=1-(t-1.1)/.7;g.globalAlpha=Math.max(0,a);R(W/2-1,H/2-1,3,3,MG[7]);g.globalAlpha=1;return}
+      engRoom(t,0);engBot(t,0,0);g.globalAlpha=Math.max(0,1-(t-1.8)/1.2);R(0,0,W,H,'#000');g.globalAlpha=1},
+    // the engine wakes: lamps come on one by one, the core glows blue, and the shaking grows until the whole ship hums
+    e_engine:t=>{const L=Math.min(1,Math.max(0,(t-.4)/3.2));engRoom(t,L,t>3?Math.min(2.5,(t-3)*.6):L*.6);engBot(t,0,0)},
+    // the same room, quiet and lit, the shaking settled to a low hum
+    e_still:t=>{engRoom(t,1,.4);engBot(t,0,0)}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
-  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
+  function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'')+(L.sys?' sys':'');q('.stv-txt').textContent='';shown=0;full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
   function cur(){const L=S.scenes[si].lines[li];return L.v?`“${L.v}”`:L.t}
   const at=performance.now();let st0=at,artNow='',fadeC=null,fadeAt=0;
-  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep()}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
+  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow&&!(S.scenes[si].cut&&an===S.scenes[si].art)){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep();{const fx=S.scenes[si].sfx;if(fx==='boom')sfxBoom();else if(fx==='static')sfxStatic();else if(fx==='hum')sfxEngHum();else if(fx==='monon'||fx==='off')sfxMon(fx==='off')}}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
     const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++){if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}else if(!L0.v&&txt[i]!==' '&&now-lastBeep>55){sfxType();lastBeep=now}}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;fullAt=now;q('.stv-next').classList.add('on')}}
     /* auto stories turn their own pages: each line stays a little while once it is fully shown */if(AUTO&&full&&fullAt&&now-fullAt>1800+cur().length*45){fullAt=0;autoCall=true;next();autoCall=false}
     raf=requestAnimationFrame(loop)}
@@ -8308,6 +8397,9 @@ const A={
  chestok(){chestOpen=null;renderPanel()},
  raidbag(){raidBag=!raidBag;renderPanel()},
  raidpick(d){raidPick=d.id;renderPanel()},
+ raideatopen(){raidEatOpen=!raidEatOpen;try{localStorage.setItem('nebula-raideat',raidEatOpen?'1':'0')}catch(e){}if(!raidEatOpen)raidEatPick=null;renderPanel()},
+ raideattab(d){raidEatTab=d.k;raidEatPick=null;renderPanel()},
+ raideatpick(d){raidEatPick=raidEatPick===d.id?null:d.id;renderPanel()},
  async raideat(d){const id=d.id,it=ITEMS[id],r=MYRAID;if(!it||!(P.inv[id]>0)||!raidSoloRest(r)||raidBusy)return;raidBusy=true;const mk=P.job==='medic'?1.5:1;let h=0;
   const nx=await raidTx(r.id,cur=>{if(!raidSoloRest(cur))return null;const me=cur.m[uid];h=it.hp>=999?me.maxHp:Math.round((it.hp||0)*mk);me.hp=Math.min(me.maxHp,me.hp+h);return cur}).catch(()=>null);raidBusy=false;
   if(!nx){toast('지금은 먹을 수 없습니다.');return}if(!take(id))return;const ee=it.en>=999?maxEn():Math.round((it.en||0)*mk);heal(0,ee);applyDish(id);MYRAID=Object.assign({},nx,{id:r.id});raidHpSync();
