@@ -2955,7 +2955,7 @@ const COOK=[
  // 궁극의 요리: the six dishes made from the new hard ingredients (냉각 젤리 · 니블의 서리 꼬리살 · 카를로스의 불씨 열매); shown in 고급 요리 with a 궁극 mark
  {id:'d_fleetFeast',n:'기함 만찬',ic:'dTray',t:'#e0a060',eg:1,ult:1,uhp:500,need:[['coolJelly',2],['grawlMeat',1],['morgaEgg',1],['wreckNozzle',3],['d_terraSet',1],['d_omurice',1]],sec:300,hp:400,en:200,xp:80,buff:{atkP:38,defP:30,crit:15},bmin:20,d:'궁극의 요리. 기함의 사령관만 맛볼 수 있었다는, 냉각 젤리를 곁들인 한 상.'},
  {id:'d_jellyBingsu',n:'냉각 젤리 빙수',ic:'dIce',t:'#7fe8ff',eg:1,ult:1,uhp:300,need:[['coolJelly',2],['frostCrystal',3],['abyssPrism',2],['d_parfait',1],['d_creamSoda',1]],sec:180,hp:150,en:300,xp:70,buff:{atkP:25,crit:25,dodge:40},bmin:25,d:'궁극의 요리. 기함 노심의 냉각 젤리를 산처럼 쌓아 올린 빙수.'},
- {id:'d_niblSashimi',n:'니블 서리 담금주',ic:'dCup',t:'#bfe8ff',eg:1,ult:1,uhp:480,need:[['niblTail',2],['fish:l',1],['iceRadish',2],['d_cometSushi',1],['d_frostNoodle',1]],sec:240,hp:350,en:150,xp:80,buff:{atkP:25,defP:45,dodge:20},bmin:20,d:'궁극의 요리. 녹지 않는 얼음 결이 박힌 서리용의 꼬리살을 통째로 담가 오래 숙성한 술. 한 모금이면 온몸이 서늘하게 깨어난다.'},
+ {id:'d_niblSashimi',n:'니블 서리 담금주',ic:'dCup',t:'#bfe8ff',eg:1,ult:1,uhp:480,need:[['niblTail',2],['d_cactusAde',1],['d_punch',1],['frostCrystal',2],['frostBerry',1],['iceRadish',1]],sec:240,hp:350,en:150,xp:80,buff:{atkP:25,defP:45,dodge:20},bmin:20,d:'궁극의 요리. 녹지 않는 얼음 결이 박힌 서리용의 꼬리살을 통째로 담가 오래 숙성한 술. 한 모금이면 온몸이 서늘하게 깨어난다.'},
  {id:'d_niblShabu',n:'서리용 샤브샤브',ic:'dPot',t:'#8ad8ff',eg:1,ult:1,uhp:520,need:[['niblTail',1],['coolJelly',1],['shadeShroom',2],['d_abyssPot',1],['d_starSoup',1]],sec:300,hp:450,en:180,xp:90,buff:{atkP:25,defP:35,crit:15,critD:50},bmin:20,d:'궁극의 요리. 차가운 젤리 육수에 서리용의 꼬리살을 살짝 담가 먹는다.'},
  {id:'d_emberRoast',n:'불씨 열매 화덕 구이',ic:'dPlate',t:'#ff6a3a',eg:1,ult:1,uhp:500,need:[['carlosFruit',2],['grawlMeat',2],['canyonPepper',3],['d_lavaRice',1],['d_nebulaCake',1]],sec:240,hp:380,en:160,xp:85,buff:{atkP:56,critD:40},bmin:20,d:'궁극의 요리. 카를로스의 불씨 열매로 달군 화덕에서 구워 낸, 아직도 뜨겁게 뛰는 구이.'},
  {id:'d_starCourse',n:'별의 심장 코스',ic:'dCake',t:'#ffc94a',eg:1,ult:1,need:[['coolJelly',1],['niblTail',1],['carlosFruit',1],['seleneCrystal',1],['d_orbisTart',1],['d_nebulaTea',1]],sec:360,hp:999,en:999,xp:120,buff:{atkP:44,defP:35,crit:25,critD:60,dodge:20},bmin:30,d:'궁극의 요리. 세 하드 재료를 모두 담은, 이 행성에서 가장 귀한 코스 요리.'},
@@ -7328,8 +7328,8 @@ const bdlOpen=()=>{try{const c=SHIP.find(x=>x.id==='comm');return mode==='online
 const kstDay=()=>new Date(Date.now()+9*3600e3).toISOString().slice(0,10),bdlKey=()=>{const k=reqKey(),r=P&&P.bdlR;return r&&r.w===k?k+':'+r.s:k},bdlRerollOk=()=>!(P.bdlR&&P.bdlR.d===kstDay());
 // unit prices: hard-run materials are precious (1,500 CR each), gathering finds 15x their buying price, seeds 20x, crops 6x
 const bdlUnit=id=>{const it=ITEMS[id],v=+sellPrice0(id)||1;return it.eg?1500:it.type==='seed'?Math.max(60,v*20):it.type==='food'?Math.max(40,v*6):Math.max(40,v*15)};
-function bdlStock(){const eg=egOpen(),k=bdlKey()+(eg?'':'~');if(window.__bdlK===k&&window.__bdl)return window.__bdl;let h=97;for(const c of k+'bdl')h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+5),pick=a=>a.splice(Math.floor(rnd()*a.length),1)[0];
-  const gat=[...new Set(Object.values(GX).flatMap(g=>g.mats.map(m=>m[0])))].filter(id=>ITEMS[id]),hard=eg?['grawlMeat','seleneCrystal','morgaEgg'].filter(id=>ITEMS[id]):[]/* the 주 엔진 hard ingredients stay boss drops only */,seeds=GX_SEEDS().filter(id=>ITEMS[id]),crops=GX_CROPS().filter(id=>ITEMS[id]);
+function bdlStock(){const eg=egOpen(),k=bdlKey()+(eg?'':'~')+(eg&&engDone()?'E':'');if(window.__bdlK===k&&window.__bdl)return window.__bdl;let h=97;for(const c of k+'bdl')h=(h*31+c.charCodeAt(0))%2147483647;const rnd=reqRng(h+5),pick=a=>a.splice(Math.floor(rnd()*a.length),1)[0];
+  const gat=[...new Set(Object.values(GX).flatMap(g=>g.mats.map(m=>m[0])))].filter(id=>ITEMS[id]),hard=eg?['grawlMeat','seleneCrystal','morgaEgg',...(engDone()?['coolJelly','niblTail','carlosFruit']:[])].filter(id=>ITEMS[id]):[]/* the 주 엔진 hard ingredients join once the 주 엔진 story is out */,seeds=GX_SEEDS().filter(id=>ITEMS[id]),crops=GX_CROPS().filter(id=>ITEMS[id]);
   // slot 1 is a cooking ingredient: a hard-run material (only for crew with hard mode) or one of the rare local vegetables
   const cook=hard.length&&rnd()<.5?[pick(hard),1,2]:[pick(crops),3,6];
   const out=[cook,[pick(gat),3,6],rnd()<.5?[pick(seeds),2,4]:[pick(crops),3,6]].filter(x=>x[0]).slice(0,BDL_N).map(([id,a,b])=>{const n=ITEMS[id].eg?Math.min(2,a+Math.floor(rnd()*2)):a+Math.floor(rnd()*(b-a+1));return{id,n,cr:Math.round(bdlUnit(id)*n/10)*10}});
@@ -7657,7 +7657,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795261317';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795261773';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
