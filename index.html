@@ -4185,9 +4185,9 @@ const raidZoneMat=z=>(RAID_MATS.find(m=>m[0]===z.id)||[])[1];
    summon: the boss calls minions; while any is alive the boss takes half damage
    forks: on these steps the party picks one of two paths
    ev: events that only happen in this dungeon (mixed in with the common ones) */
-const RZR={r6:{lava:.04,rage:.5,boom:3,forks:[4,8],rule:'용암 지대 · 분노 · 대폭발'},
+const RZR={r6:{lava:.03,rage:.5,boom:3,forks:[4,8],rule:'용암 지대 · 분노 · 대폭발'},
  r5:{freeze:.16,breath:'서리 숨결',breathFrz:.35,forks:[4,8],rule:'빙결 · 서리 숨결'},
- r4:{shield:.18,shieldP:.7,focus:.5,forks:[4,8],rule:'보호막 · 집중 포격'},
+ r4:{shield:.1,shieldP:.7,shRegen:.5,focus:.5,forks:[4,8],rule:'보호막 · 집중 포격'},
  r3:{fog:.15,poison:.35,hide:1,forks:[4,8],rule:'안개 · 독 — 안개 때문에 일반 공격이 15% 확률로 빗나갑니다(직업 스킬은 빗나가지 않음). 몬스터에게 맞으면 35% 확률로 3턴 동안 독(턴마다 최대 체력 4%)에 걸리며, 의무원 스킬이나 회복 아이템으로 풉니다. 보스 「모르가」는 안개 속에 숨어 한 턴 동안 피해를 받지 않고 체력을 회복합니다.'},
  r2:{armor:.4,summon:'결정 하수인',forks:[4,8],rule:'결정 갑옷 — 💎 표시가 있는 적은 직업 스킬로 갑옷을 깨기 전까지 받는 피해가 절반입니다. 보스 「셀레네」는 결정 하수인을 불러내고, 하수인이 살아 있는 동안 피해를 절반만 받습니다.'}};
 // hard zones add their own patterns on top of the base zone's (stronger monsters alone are not the point)
@@ -4310,10 +4310,12 @@ const raidMonXp=(L,kind)=>Math.round(xpBase(L)*.042*({elite:1.5,mid:3,boss:6}[ki
 const typHp=L=>76+15.2*L,typDef=L=>2+2.2*L,RMK={'':[8,6,1],elite:[14,4.5,1.1],mid:[22,3.5,1.15],boss:[34,2.5,1.2]};
 // monsters are tuned for a full party of 4; smaller parties meet weaker ones (HP and attack) so the fight stays about as long
 const RAID_HPF=[0,.36,.57,.79,1],RAID_ATKF=[0,.77,.85,.92,1];
-const RAID_HARD={r4:[1.6,1.4],r5:[1.9,1.55],r6:[2.2,1.7]};
+const RAID_HARD={r4:[1.6,1.4],r5:[1.9,1.55],r6:[1.9,1.5]};/* 붉은 별의 핵 eased 11/21 (was 2.2 / 1.7) */
 // hard zones on top of the shared hard factors: [hp, attack] — every hard zone outhits 붉은 별의 핵 (r6), and each step is harder than the last
 const HARD_ZX={r1:[1.3,1.4],r2:[1.35,1.4],r3:[1.5,1.5]};
-function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx0=RAID_HARD[zone&&zone.id]||[1,1],hzx=zone&&zone.hard?(HARD_ZX[zone.id]||[1,1]):[1,1],hx=zone&&zone.hard?[hx0[0]*RAID_HARDN.hp[pn-1]*hzx[0],hx0[1]*RAID_HARDN.atk[pn-1]*hzx[1]]:hx0,def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
+// 붉은 별의 핵 alone: only half of the zone's extra strength applies (×1.45 health, ×1.25 attack instead of ×1.9 / ×1.5), so a solo run can be cleared
+const raidSoloEase=(zone,pn,hx)=>pn===1&&zone&&zone.id==='r6'?[1+(hx[0]-1)*.5,1+(hx[1]-1)*.5]:hx;
+function raidMon(zone,L,kind,name,n){const k=RMK[kind||'']||RMK[''],pn=Math.max(1,Math.min(4,n||1)),hx0=raidSoloEase(zone,pn,RAID_HARD[zone&&zone.id]||[1,1]),hzx=zone&&zone.hard?(HARD_ZX[zone.id]||[1,1]):[1,1],hx=zone&&zone.hard?[hx0[0]*RAID_HARDN.hp[pn-1]*hzx[0],hx0[1]*RAID_HARDN.atk[pn-1]*hzx[1]]:hx0,def=Math.round((1+L*.6)*k[2]),hp=Math.max(1,Math.round(k[0]*Math.max(4,typAtk(L)-def*.5)*RAID_HPF[pn]*hx[0])),atk=Math.max(1,Math.round((typHp(L)/k[1]+typDef(L)*.5)*RAID_ATKF[pn]*hx[1]));
   return{n:name,L,kind:kind||'',hp,max:hp,atk,def,agi:Math.round(4+L*.5+(kind==='boss'?3:0)),t:zone.t}}
 // the zone (and normal/hard) I picked last is remembered on this device
 const RAID_SEL_LS='nebula-raid-sel';const raidSelLoad=()=>{try{const v=JSON.parse(localStorage.getItem(RAID_SEL_LS)||'{}');return v&&typeof v==='object'?v:{}}catch(e){return{}}},raidSelSave=()=>{try{localStorage.setItem(RAID_SEL_LS,JSON.stringify({z:raidSel,m:raidMode}))}catch(e){}};
@@ -4409,7 +4411,10 @@ function raidForkGo(r,k,by){const z=raidZone(r),o=((r.fork||{}).opts||[])[k];if(
   const pre=`${by} 님이 「${o.n}」${jo(o.n,'을','를')} 골랐다. `;
   if(o.fight){const lvl=raidLvFn(r,z,rnd),n=raidIn(r).length,ms=Array.from({length:o.fight},()=>raidMon(z,lvl(2),'elite','흉포한 '+z.mons[Math.floor(rnd()*z.mons.length)],n));raidBattle(r,ms,pre+`${ms.map(m=>`${m.n} Lv.${m.L}`).join(', ')}이(가) 길을 막았다! (보상 ${o.bx}배)`);r.b.bx=o.bx;return r}
   return raidEvApply(r,z,rnd,avg,o.ev,pre)}
-function raidBattle(r,mons,intro){const zr=zrOf(raidZone(r));if(zr&&zr.armor)mons.forEach(m=>{if(m.kind||Math.random()<zr.armor)m.arm=1});
+// over-level help: when the party's average level is above the dungeon's top level, its monsters lose 4% health and attack per level over (down to 60%); boss rush is left as it is
+function raidOverEase(r,mons){if(r.rush)return;const z=raidZone(r),n=raidIn(r).length;if(!z||!n)return;const avg=raidIn(r).reduce((a,u)=>a+(+r.m[u].lvl||1),0)/n,over=Math.floor(avg-z.max);if(over<=0)return;const f=Math.max(.6,1-.04*over);
+  mons.forEach(m=>{m.max=Math.max(1,Math.round(m.max*f));m.hp=Math.min(m.hp,m.max);m.atk=Math.max(1,Math.round(m.atk*f))})}
+function raidBattle(r,mons,intro){raidOverEase(r,mons);const zr=zrOf(raidZone(r));if(zr&&zr.armor)mons.forEach(m=>{if(m.kind||Math.random()<zr.armor)m.arm=1});
   if(zr&&zr.shield)mons.forEach(m=>{if(m.kind||Math.random()<zr.shieldP){m.shMax=Math.max(1,Math.round(m.max*zr.shield));m.sh=m.shMax}});(r.ids||[]).forEach(u=>{if(r.m[u])delete r.m[u].od});r.phase='battle';r.ev={n:intro};r.b={mons,round:0,order:[],ti:-1,def:{},flee:{},log:[intro]};raidNextTurn(r);return r}
 function raidOrder(r){const b=r.b,a=[...raidUp(r).map(u=>({k:'p',id:u,agi:r.m[u].agi})),...b.mons.map((m,i)=>m.hp>0?{k:'m',id:i,agi:m.agi}:null).filter(Boolean)];a.sort((x,y)=>y.agi-x.agi||(x.k==='p'?-1:1));return a.map(o=>({k:o.k,id:o.id}))}
 function raidNextTurn(r){const b=r.b;for(let g=0;g<40;g++){b.ti++;if(b.ti>=b.order.length){b.round++;b.order=raidOrder(r);b.ti=0;
@@ -4485,7 +4490,7 @@ function raidAct(kind,arg){const r0=MYRAID;if(raidBusy&&Date.now()-raidBusyAt>8e
     return raidSettle(r)}).catch(()=>null).finally(()=>{raidBusy=false;setTimeout(raidQRun)})}
 // one monster's turn (the monster in b.cur acts, then the turn passes on)
 function raidMonTurn(r){const b=r.b,a=b.cur;raidLastStand(r,b,b.mons[a.id]);const m=b.mons[a.id],tg=raidUp(r);if(!tg.length)return raidSettle(r);
-      if(m.shMax&&!m.shT&&m.sh<m.shMax)m.sh=m.shMax;
+      if(m.shMax&&!m.shT&&m.sh<m.shMax){const g=(zrOf(raidZone(r))||{}).shRegen||1;m.sh=Math.min(m.shMax,Math.max(0,m.sh||0)+Math.round(m.shMax*g))}/* 녹슨 함대 묘지: the shield only half refills each turn */
       if(m.hide){m.hide=0;raidLog(b,`${m.n}${jo(m.n,'이','가')} 안개 속에서 모습을 드러냈다!`)}
       {const zr=zrOf(raidZone(r));if(zr&&zr.hide&&m.kind==='boss'&&!m.chg&&((b.round>1&&b.round%3===0&&m.hr!==b.round)||(!m.h1&&m.hp<m.max*.5))){m.h1=1;m.hr=b.round;m.hide=1;const h=Math.round(m.max*.08);m.hp=Math.min(m.max,m.hp+h);
         raidLog(b,`⚠ ${m.n}${jo(m.n,'이','가')} 짙은 안개 속으로 숨었다! 다음 차례까지 피해를 받지 않는다. (체력 +${h})`);b.skfx={n:'안개 은신',j:'warn',by:`${m.n} · 다음 차례까지 무적`,id:((b.skfx&&b.skfx.id)||0)+1};return raidSettle(r)}}
@@ -7658,7 +7663,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795264233';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795264550';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
