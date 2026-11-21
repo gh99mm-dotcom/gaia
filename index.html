@@ -4621,6 +4621,8 @@ let raidClaiming=null;
 // rewards are paid once per expedition, in this order: pay + note the run in my own save (P.raidDone) → wait for that save to land →
 // only then mark claimed[uid] on the party record. So a claimed mark always means "paid and saved": such a run is never paid again
 // (nor reopened, however long ago it was), while a run whose save was lost carries no mark and is simply paid again on the next visit.
+// runs I closed with 확인 are never picked up again by the reconnect check, even before my save reaches the server
+const RAID_DISMISS=new Set();
 function raidClaim(r){if(!r||raidClaiming===r.id)return;runIdxEnd(r);const mark=()=>{if(!(P.raidDone||[]).includes(r.id))P.raidDone=[...(P.raidDone||[]).slice(-199),r.id]};
   if((r.claimed||{})[uid]||(P.raidDone||[]).includes(r.id)){if(!(P.raidDone||[]).includes(r.id)){mark();save()}return}
   raidClaiming=r.id;mark();raidPay(r);
@@ -4722,7 +4724,7 @@ function raidRunListHTML(){const list=RAIDS_RUN.filter(x=>egOpen()||!(x.rush||x.
       <div class="pcfoot"><b>${(x.ids||[]).length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
 function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{const sig=x=>JSON.stringify(x.map(v=>Object.assign({},v,{hb:0})));const was=sig(RAIDS_ALL);RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));partySweep(RAIDS_ALL);partyStaffSweep();const moved=raidRefilter();if(tab==='raid'&&(moved||sig(RAIDS_ALL)!==was))renderPanel()},()=>{}));
   tabSub(()=>tab==='raid'&&!MYRAID,()=>runIdxRef().onSnapshot(sn=>{const d=runIdxTidy(sn.exists?sn.data():{});RAIDS_RUN=Object.entries(d).map(([id,v])=>Object.assign({id},v));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{}));
-  tabSub(()=>!MYRAID&&!!uid,()=>db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{partyTidyMine(sn.docs.map(d=>Object.assign({id:d.id},d.data())));const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
+  tabSub(()=>!MYRAID&&!!uid,()=>db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{partyTidyMine(sn.docs.map(d=>Object.assign({id:d.id},d.data())));const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!RAID_DISMISS.has(v.id)&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{}));
   clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
 /* ---- lobby actions ---- */
@@ -7666,7 +7668,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795274866';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795305453';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8591,7 +8593,7 @@ const A={
  raiditem(d){const id=d.k;if(!(P.inv[id]>0)||!MYRAID||!raidMyTurn())return;const to=raidItemTo&&MYRAID.m[raidItemTo]?raidItemTo:uid;raidAct('item',{id,to}).then(nx=>{if(nx){take(id);raidBag=false;raidPick=null;commit();renderPanel()}})},
  raidnext(){raidNext()},
  raidfork(d){raidFork(+d.k||0)},
- raiddone(){if(MYRAID&&MYRAID.phase==='end')raidClaim(MYRAID);raidWatch(null);renderPanel()},
+ raiddone(){const r=MYRAID;if(r&&r.phase==='end')raidClaim(r);if(r&&r.id){RAID_DISMISS.add(r.id);if(!(P.raidDone||[]).includes(r.id)){P.raidDone=[...(P.raidDone||[]).slice(-199),r.id];save()}}raidWatch(null);renderPanel()},
  growtab(d){growTab=d.k==='tank'?'tank':'pod';renderPanel()},
  tdon(){if(FARM.tlv>=TANK_LV)return;if(!take('crystal',1)){toast('은하 결정이 없습니다.');return}const before=FARM.tlv;FARM=farmShape(FARM.xu,FARM.ore,FARM.pods,{crys:FARM.crys+1,water:FARM.wset?FARM.water:null,refCd:FARM.refCd});if(mode==='online')farmInc('farm/pods','crys',1).catch(()=>{});else farmSave();gainXp(1);
   log(FARM.tlv>before?`은하 결정을 넣어 공용 물탱크를 ${FARM.cap}까지 늘렸다!`:`물탱크 증설에 은하 결정 1개를 보탰다. (${FARM.tprog}/${FARM.tneed})`,FARM.tlv>before?'good':'');commit()},
