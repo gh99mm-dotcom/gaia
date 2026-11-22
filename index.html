@@ -6372,7 +6372,7 @@ const SHIP=[
 // from 주 엔진 on, every dungeon material (원정 재료) is asked 10,000 at a time
  {id:'engine',n:'주 엔진',d:'추락 충격으로 멈춘 추진기. 붉은 철로 노즐을 다시 깎아야 합니다.',need:[['redIron',500],['crystal',15000],['volcAsh',500],['dark',3000],['bogResin',10000],['wreckNozzle',10000],['corn',1000],['canyonPepper',500],['pot',1000],['pump',1000]]},
  {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',500],['brokenLens',500],['impactGlass',500],['abyssPrism',5000],['pump',1000],['berry',1000],['frozenTomato',500],['shadeShroom',500]]},
- {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',5000],['craterIron',700],['rustBolt',700],['sandSlate',700],['starHeart',7000],['carrot',1000],['dustPot',700],['iceRadish',500],['mistLotus',500]]},
+ {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',10000],['dark',10000],['craterIron',700],['rustBolt',700],['sandSlate',700],['starHeart',7000],['carrot',1000],['dustPot',700],['iceRadish',500],['mistLotus',500]]},
 ];
 let SHIPDON=[],shipSel=null;
 /* repair totals live in one shared record (boss/ship: p = part → material → count, u = member → {n, nick}) kept with counters,
@@ -7678,7 +7678,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795343591';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795344675';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7896,7 +7896,7 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'e_still',lines:[{t:'……',wait:.8},{v:'……그런데 말이야.',who:'녹슨 7호'},{v:'돌아간다는 게 어디였더라?',who:'녹슨 7호'}]},
   {art:'black',noart:1,lines:[{t:'그 길을 찾기 위해서라도 항법 장치를 수리할 차례다.',btn:'▶'},{t:'또, 항해를 대비하여 비어버린 자리도 새로 세우는 것이 좋겠다.',btn:'▶'}]}]},
   // 항법 장치 repaired (and the 부서장 vote closed): a party in the lit mess, 3호's memory on the wall screen, then the navigation console names its destination
-  nav:{n:'항법 장치 · 3호의 기억',anyKey:1,scenes:[
+  nav:{n:'항법 장치 · 3호의 기억',anyKey:1,fadeOut:3.5,scenes:[
   {art:'n_party',lines:[{t:'항법 장치의 수리와 함께 우리들의 투표 또한 완료됐다.',wait:1.2},{t:'새로운 자리에 앉은 인원들을 축하하며, 오늘만큼은 마음껏 먹고 즐기기로 한다.'}]},
   {art:'n_bot',sfx:'roll',lines:[{t:'녹슨 7호가 음식들과 함께 나타난다.'},{t:'그는 새 기억모듈을 찾았다는 소식에 흔쾌히 이 파티에 어울리기로 했다.'},{t:'마담과 보따리 상인 등은 바빠서 불참의 소식을 전했다나, 뭐라나.'},{v:'아니라는 걸 알지만, 마치 나를 축하하기 위해 모인 것 같잖아.',who:'녹슨 7호'},{v:'그렇다면 이번 기억도 확인해볼까.',who:'녹슨 7호'}]},
   {art:'n_chip',lines:[{t:'3번 기억모듈이 7호의 손으로 건너간다.'}]},
@@ -8165,11 +8165,21 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
   // an ordinary street: houses with lit windows, lamp posts and wires, a tree, a road; ten = how fast we walk past
   function townView(t,spd){R(0,0,W,H,MG[2]);for(let y=0;y<56;y+=3){g.globalAlpha=.2;R(0,y,W,1,MG[3]);g.globalAlpha=1}const hz=78,off=t*spd,wk=spd>4?Math.round(Math.abs(Math.sin(t*4))*1.2):0;g.save();g.translate(0,wk);
     R(0,hz,W,H-hz+4,MG[1]);R(0,hz,W,1,MG[4]);for(let i=0;i<10;i++){const x=((i*30-off*1.4)%(W+30)+W+30)%(W+30)-15|0;R(x,hz+18,12,2,MG[4])}
-    for(let i=0;i<6;i++){let x=((i*52-off)%(W+60)+W+60)%(W+60)-40|0,hw=34+(i%3)*6,hh=26+(i%2)*8,col=i%2?MG[3]:MG[4];R(x,hz-hh,hw,hh,col);
-      for(let k=0;k<=hw/2+2;k++)R(x-2+k,hz-hh-Math.round(k*.6),hw+4-2*k,1,MG[5]);for(let wy=hz-hh+5;wy<hz-8;wy+=10)for(let wx=x+5;wx<x+hw-6;wx+=12){const lit=((i*3+wx+wy)%5)<3;R(wx,wy,6,5,lit?MG[6]:MG[1])}R(x+hw/2-3|0,hz-9,6,9,MG[1])}
-    for(let i=0;i<4;i++){let x=((i*70+30-off*1.3)%(W+70)+W+70)%(W+70)-35|0;R(x,hz-40,2,44,MG[5]);R(x-3,hz-40,8,2,MG[6]);g.globalAlpha=.3;g.fillStyle=MG[6];g.beginPath();g.arc(x+1,hz-37,6,0,7);g.fill();g.globalAlpha=1;
-      g.strokeStyle=MG[3];g.beginPath();g.moveTo(x+1,hz-44);g.quadraticCurveTo(x+36,hz-36,x+71,hz-44);g.stroke()}
-    {let x=((150-off*1.2)%(W+80)+W+80)%(W+80)-40|0;R(x,hz-18,3,20,MG[3]);g.fillStyle=MG[4];g.beginPath();g.arc(x+1,hz-24,10,0,7);g.fill();g.fillStyle=MG[5];g.beginPath();g.arc(x-2,hz-27,5,0,7);g.fill()}
+    // ruined houses, every light out: walls broken off in jagged edges, roofs caved in or gone, dark smashed windows, rubble at their feet
+    for(let i=0;i<6;i++){let x=((i*52-off)%(W+60)+W+60)%(W+60)-40|0,hw=34+(i%3)*6,hh=26+(i%2)*8,col=i%2?MG[3]:MG[4],top=hz-hh,
+        bite=dx=>Math.max(0,Math.round((i%3===0?12:6)*Math.sin((dx+i*7)/hw*Math.PI*(1+i%2)))+((dx*5+i)%3)-1);
+      for(let dx=0;dx<hw;dx++){const b=bite(dx);R(x+dx,top+b,1,hh-b,col);P(x+dx,top+b,MG[5])}
+      if(i%3){const hx=x+Math.round(hw*(.3+.15*(i%2))),hwid=Math.round(hw*.3);for(let k=0;k<=hw/2+2;k++){const y=top-Math.round(k*.6)+(k>3?Math.round((k-3)*.35):0),x0=x-2+k,x1=x0+hw+4-2*k;if(x1<=x0)break;
+          if(k<2){R(x0,y,x1-x0,1,MG[5]);continue}const a0=Math.max(x0,hx),a1=Math.min(x1,hx+hwid);if(a0<a1){R(x0,y,a0-x0,1,MG[5]);R(a1,y,x1-a1,1,MG[5])}else R(x0,y,x1-x0,1,MG[5])}}
+      for(let wy=top+5;wy<hz-8;wy+=10)for(let wx=x+5;wx<x+hw-6;wx+=12){if(wy<top+bite(wx-x)+3||wy<top+bite(wx-x+5)+3)continue;R(wx,wy,6,5,MG[1]);const br=(i*3+wx+wy)%4;if(br===0){P(wx+1,wy+1,MG[3]);P(wx+2,wy+2,MG[3]);P(wx+4,wy+1,MG[3])}else if(br===1){R(wx,wy+2,6,1,MG[3]);P(wx+3,wy+1,MG[3])}}
+      for(let c=0;c<8;c++)P(x+8+((i*5)%10)+c,top+hh*.4+c+(c%2),MG[1]);
+      R(x+hw/2-3|0,hz-9,6,9,MG[1]);P(x+hw/2-3|0,hz-9,MG[3]);
+      for(let r=0;r<7;r++){const rx=x-4+((r*13+i*7)%(hw+8)),rs=1+((r+i)%3);R(rx,hz-rs,rs+1,rs,r%2?MG[4]:MG[3])}}
+    // street lamps, dead and leaning, their wires snapped and hanging
+    for(let i=0;i<4;i++){let x=((i*70+30-off*1.3)%(W+70)+W+70)%(W+70)-35|0,ln=[.08,.28,-.2,.42][i];for(let y=0;y<44;y++)P(x+Math.round(y*ln),hz+4-y,MG[4]),P(x+1+Math.round(y*ln),hz+4-y,MG[4]);
+      const tx=x+Math.round(43*ln),ty=hz-39;R(tx-3,ty-1,8,2,MG[3]);g.strokeStyle=MG[3];g.beginPath();g.moveTo(tx+1,ty-4);if(i%2)g.quadraticCurveTo(tx+14,ty+18,tx+20,hz);else g.quadraticCurveTo(tx+36,ty+6,tx+71,ty-4);g.stroke()}
+    // a dead tree, bare branches
+    {let x=((150-off*1.2)%(W+80)+W+80)%(W+80)-40|0;R(x,hz-20,3,22,MG[3]);g.strokeStyle=MG[3];g.beginPath();g.moveTo(x+1,hz-14);g.lineTo(x-7,hz-24);g.moveTo(x+1,hz-18);g.lineTo(x+9,hz-28);g.moveTo(x-4,hz-20);g.lineTo(x-6,hz-28);g.moveTo(x+6,hz-24);g.lineTo(x+11,hz-25);g.stroke()}
     g.restore()}
   // the navigation console: a round radar, its sweep turning with a fading trail; m 0 booting/scanning, 1 a destination picked out and named
   // at the bottom, 2 the destination marker settling right on top of our own ship in the centre
@@ -8363,16 +8373,20 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     n_dest:t=>{navConsole(t+5,1)},
     n_arrive:t=>{navConsole(t,2)}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
-  let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0;const q=x=>op.querySelector(x);
+  let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0,fading=false;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'')+(L.sys?' sys':'');shown=L.pre||0;q('.stv-txt').textContent=(L.v?'':L.t||'').slice(0,shown);full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
   function cur(){const L=S.scenes[si].lines[li];return L.v?`“${L.v}”`:L.t}
   const at=performance.now();let st0=at,artNow='',fadeC=null,fadeAt=0;
-  function loop(now){if(over)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow&&!(S.scenes[si].cut&&an===S.scenes[si].art)){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep();{const fx=S.scenes[si].sfx;if(fx==='boom')sfxBoom();else if(fx==='static')sfxStatic();else if(fx==='hum')sfxEngHum();else if(fx==='monon'||fx==='off')sfxMon(fx==='off');else if(fx==='ping')sfxRadar();else if(fx==='wind')sfxWind();else if(fx==='roll')sfxRoll()}}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
+  function loop(now){if(over&&!fading)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow&&!(S.scenes[si].cut&&an===S.scenes[si].art)){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep();{const fx=S.scenes[si].sfx;if(fx==='boom')sfxBoom();else if(fx==='static')sfxStatic();else if(fx==='hum')sfxEngHum();else if(fx==='monon'||fx==='off')sfxMon(fx==='off');else if(fx==='ping')sfxRadar();else if(fx==='wind')sfxWind();else if(fx==='roll')sfxRoll()}}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
     const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,(L0.pre||0)+Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++){if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}else if(!L0.v&&txt[i]!==' '&&now-lastBeep>55){sfxType();lastBeep=now}}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;fullAt=now;q('.stv-next').classList.add('on')}}
     /* auto stories turn their own pages: each line stays a little while once it is fully shown */if(AUTO&&full&&fullAt&&now-fullAt>1800+cur().length*45){fullAt=0;autoCall=true;next();autoCall=false}
     raf=requestAnimationFrame(loop)}
   function next(){if(AUTO&&!autoCall)return;if(!full){full=true;q('.stv-txt').textContent=cur();q('.stv-next').classList.add('on');return}const sc=S.scenes[si];if(li<sc.lines.length-1){li++}else if(si<S.scenes.length-1){si++;li=0;st0=performance.now();const a=q('.stv-art');a.classList.remove('in');void a.offsetWidth;a.classList.add('in')}else{finish();return}t0=performance.now();setLine()}
-  function finish(sk){if(over)return;over=true;cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done(!!sk)}
+  function finish(sk){if(over)return;over=true;
+    /* fadeOut: after the last line the text box goes and the picture (still moving) sinks slowly into black, then the story closes */
+    if(!sk&&S.fadeOut){fading=true;document.removeEventListener('keydown',key,true);const bx2=q('.stv-box'),sk2=q('.stv-skip');[bx2,sk2].forEach(e=>{if(e){e.style.transition='opacity .6s';e.style.opacity=0;e.style.pointerEvents='none'}});const bl=document.createElement('div');bl.style.cssText='position:fixed;inset:0;background:#000;opacity:0;z-index:99;transition:opacity '+S.fadeOut+'s ease-in';op.appendChild(bl);void bl.offsetWidth;bl.style.opacity=1;
+      setTimeout(()=>{fading=false;cancelAnimationFrame(raf);op.remove();if(done)done(false)},S.fadeOut*1000+1000);return}
+    cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);op.classList.add('out');setTimeout(()=>op.remove(),400);if(done)done(!!sk)}
   const key=e=>{if(e.code==='Space'||e.code==='Enter'||(S.anyKey&&e.key&&e.code!=='Escape'&&!['Shift','Control','Alt','Meta','Tab','CapsLock'].includes(e.key))){e.preventDefault();e.stopPropagation();next()}else if(e.code==='Escape'&&!AUTO){e.preventDefault();finish(true)}};
   op.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('.stv-skip')&&!AUTO){finish(true);return}next()});document.addEventListener('keydown',key,true);
   q('.stv-art').classList.add('in');setLine();raf=requestAnimationFrame(loop)}
@@ -9613,6 +9627,16 @@ async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const
   if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`)}else{P.roles=r;save();renderPanel()}
   toast(id?`${whoP(id).nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠습니다.`)}
 document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classList.contains('orgsel'))setRole(t.dataset.role,t.value)});
+// when the 선장 appoints me to a post, I get a popup of my own once (shown again only if I lose the post and am appointed again)
+function rolePopCheck(){if(mode!=='online'||!P||!uid||P._fresh||!P.joined)return;const r=ROLES||{},seen=Object.assign({},P.roleSeen);let ch=false,newK=null;
+  for(const [k] of POSTS3){if(r[k]===uid){if(!seen[k]&&!newK)newK=k}else if(seen[k]){delete seen[k];ch=true}}
+  if(newK){if($('#story')||$('#opCrawl')||$('#unlockPop')||$('#orbisFx')||$('#rolePop'))return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;seen[newK]=Date.now();ch=true}
+  if(ch){P.roleSeen=seen;save()}if(newK)rolePop(POSTS3.find(x=>x[0]===newK)[1])}
+function rolePop(name){const el=document.createElement('div');el.id='rolePop';el.className='modal';el.style.zIndex=230;
+  el.innerHTML=`<div class="px infobox unlockbox" role="dialog" aria-label="임명"><span class="lbl">Appointed · 임명</span><b class="unlockt">${esc(P.nick||'선원')} 님이 ${esc(name)}(으)로 임명되었습니다.</b><span class="hint">우주선 탭의 조직도에서 확인할 수 있습니다.</span><button class="btn gold" type="button" id="rolePopOk">확인</button></div>`;
+  document.body.appendChild(el);const close=()=>{el.remove();document.removeEventListener('keydown',kk,true)},kk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.code==='Space'){e.preventDefault();close()}};
+  el.querySelector('#rolePopOk').addEventListener('click',close);document.addEventListener('keydown',kk,true);try{sfxFanfare(false)}catch(e){}}
+setInterval(()=>{try{rolePopCheck()}catch(e){}},5000);
 let profId=null,profBio=false;
 // 내 프로필: my card exactly as other crew see it when they open me (likes and hates shown, since it is mine)
 // a profile photo instead of the character (kept as an uploaded image id on the player record)
@@ -9804,7 +9828,7 @@ function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();pa
 function socSubscribe(){
   padListen();setTimeout(nboxBackfill,4000);
   db.collection('guest').where('to','==',uid).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
-  db.doc('org/roles').onSnapshot(sn=>{ROLES=sn.exists?Object.assign({},sn.data()):{};if(socOpen)renderPanel()},()=>{});
+  db.doc('org/roles').onSnapshot(sn=>{ROLES=sn.exists?Object.assign({},sn.data()):{};if(socOpen)renderPanel();setTimeout(()=>{try{rolePopCheck()}catch(e){}},800)},()=>{});
 db.doc('org/ship').onSnapshot(sn=>{SHIPOPEN=Object.assign({},(sn.exists&&sn.data().open)||{});if(tab==='ship')renderPanel()},()=>{});
   /* 귓속말 is no longer in 교류: nothing is read for it */if(false)db.collection('dm').where('users','array-contains',uid).orderBy('at','desc').limit(100).onSnapshot(sn=>{DMS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));
     const viewing=socOpen&&socTab==='dm';
