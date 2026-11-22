@@ -7678,7 +7678,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795344675';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795344767';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8509,7 +8509,7 @@ function renderCrew(){
 }
 /* ticker: the top bar shows new arrivals, the captain's appointments and admin notices */
 // the NOTICE bar carries joins, notices, captain lines, +12-and-up upgrade records, slot jackpots and legendary catches
-const TICK_RE=/^(새 선원|\[공지\]|선장이)|님이 「[^」]+ \+\d+」을 완성했습니다|님이 슬롯머신 잭팟을 터뜨렸습니다|님이 레전더리 어종 「/;
+const TICK_RE=/^(새 선원|\[공지\]|선장이|투표를 통해)|님이 「[^」]+ \+\d+」을 완성했습니다|님이 슬롯머신 잭팟을 터뜨렸습니다|님이 레전더리 어종 「/;
 let tickOpen=false;
 // notices older than 2 hours drop off the ticker; a minute timer keeps it fresh even with no new chat
 // pinned notices: the admin's, and the invader's win / loss announcements; they stay up until a newer pinned one replaces them
@@ -9624,7 +9624,7 @@ function socCrew(){if(profId){const ph=profHTML();if(ph)return`<div class="row">
   ${loose.length?`<div class="orgstem"></div><div class="orgdept crewbox"><div class="orgdh">직업 미정 <span class="hint">${loose.length}</span></div><div class="orgrow">${loose.map(([id,p])=>orgNode(id,p)).join('')}</div></div>`:''}</div>
   ${isAdmin?'<p class="hint">운영자·관리자에게만 임명 메뉴가 보입니다. 다른 직책에 있던 사람을 고르면 그 자리는 자동으로 공석이 됩니다.</p>':''}${all.length<2?'<p class="hint">아직 다른 선원이 없습니다. 게임 링크를 친구에게 공유해 보십시오.</p>':''}`}
 async function setRole(k,id){if(!isAdmin||!POSTS3.some(x=>x[0]===k))return;const r=Object.assign({},rolesNow());for(const [kk] of POSTS3)if(id&&r[kk]===id)r[kk]='';r[k]=id||'';
-  if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`선장이 ${p.nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`)}else{P.roles=r;save();renderPanel()}
+  if(mode==='online'){try{await db.doc('org/roles').set(Object.assign(r,{at:Date.now()}))}catch(e){toast('임명하지 못했습니다. 다시 시도해 주십시오.');renderPanel();return}const p=PLAYERS[id];if(p)sys(`투표를 통해 ${p.nick||'선원'} 님이 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명되었습니다.`)}else{P.roles=r;save();renderPanel()}
   toast(id?`${whoP(id).nick||'선원'} 님을 ${POSTS3.find(x=>x[0]===k)[1]}(으)로 임명했습니다.`:`${POSTS3.find(x=>x[0]===k)[1]} 자리를 비웠습니다.`)}
 document.addEventListener('change',e=>{const t=e.target;if(t.classList&&t.classList.contains('orgsel'))setRole(t.dataset.role,t.value)});
 // when the 선장 appoints me to a post, I get a popup of my own once (shown again only if I lose the post and am appointed again)
