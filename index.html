@@ -9421,16 +9421,27 @@ function dmLogHTML(){const ms=DMS.filter(d=>(d.from===uid&&d.to===dmPeer)||(d.fr
 /* ---- 만남 (memo board): a memo board like a Naver cafe's, newest first, with short comments under each memo ---- */
 const MEMO_MAX=1500,MEMO_CM=1500,MEMO_PG=5;let memoPage=0;let MEMOS=[],memoDraft='',memoCm={},memoOpen=null,memoDelArm=null,memoBusy=false,memoReply=null,memoCmDel=null,memoEdit=null,memoEdTx=null,memoSort='old';
 // comments are kept flat on the memo ({id,pid,...}); pid points at the comment being answered, so replies can go as deep as people like
-const memoCms=m=>(m.cm||[]).map((c,i)=>c&&Object.assign({id:'o'+i},c)).filter(Boolean);
+// 휴게실 comments: each one is its own document in mcm ({mid, mu: memo owner, pid, pu: answered comment's owner, uid, nick, text, at}),
+// so a memo has no size or count limit. Comments written before this change stay in the memo's own cm list and show together with them.
+const memoOld=m=>(m.cm||[]).map((c,i)=>c&&Object.assign({id:'o'+i},c)).filter(Boolean);
+const MCMS={pg:[],mu:[],pu:[]},mcmRef=()=>db.collection('mcm');let mcmPgKey='',mcmPgUn=null;
+function mcmOf(mid){const seen=new Set(),out=[];for(const k in MCMS)MCMS[k].forEach(c=>{if(c.mid===mid&&!seen.has(c.id)){seen.add(c.id);out.push(c)}});return out.sort((a,b)=>(+a.at||0)-(+b.at||0))}
+const memoCms=m=>{const o=memoOld(m),ids=new Set(o.map(c=>c.id));return o.concat(mcmOf(m.id).filter(c=>!ids.has(c.id)))};
+const mcmDocs=sn=>sn.docs.map(d=>Object.assign({},d.data(),{id:d.id,_n:1}));
+// the comments of the memos on the page being looked at (Firestore 'in' takes up to 10 values; a page holds 5 memos)
+function mcmPage(ids){if(mode!=='online'||!db)return;const k=ids.slice().sort().join(',');if(k===mcmPgKey)return;mcmPgKey=k;if(mcmPgUn){try{mcmPgUn()}catch(e){}mcmPgUn=null}MCMS.pg=[];if(!ids.length)return;
+  mcmPgUn=mcmRef().where('mid','in',ids.slice(0,10)).onSnapshot(sn=>{MCMS.pg=mcmDocs(sn);bellRefresh();if(memoShown()&&!isField(document.activeElement))renderPanel()},()=>{})}
 const memoRef=()=>db.collection('memos');
 // 만남 is read only while its tab is open (its alerts catch up when you visit)
 // 만남 now lives in the 우주선 tab (우주선 › 만남)
 const memoShown=()=>tab==='ship'&&shipView==='memo';
+tabSub(()=>!!P&&!!uid,()=>mcmRef().where('mu','==',uid).onSnapshot(sn=>{MCMS.mu=mcmDocs(sn);bellRefresh()},()=>{}));
+tabSub(()=>!!P&&!!uid,()=>mcmRef().where('pu','==',uid).onSnapshot(sn=>{MCMS.pu=mcmDocs(sn);bellRefresh()},()=>{}));
 tabSub(()=>!!P&&!!uid&&!memoShown(),()=>memoRef().where('uid','==',uid).onSnapshot(sn=>{MEMOS_MINE=sn.docs.map(d=>Object.assign({id:d.id},d.data()));bellRefresh()},()=>{}));
 tabSub(()=>!!P&&memoShown(),()=>memoRef().orderBy('at','desc').limit(200).onSnapshot(sn=>{MEMOS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));bellRefresh();if(memoShown()&&!isField(document.activeElement))renderPanel()},()=>{}));
 function memoStamp(t){const d=new Date(+t||0);return`${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
 function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px 0">휴게실은 온라인에 접속했을 때 쓸 수 있습니다.</p>';
-  const A=MEMOS.filter(m=>m&&m.text),pages=Math.max(1,Math.ceil(A.length/MEMO_PG));if(memoPage>=pages)memoPage=pages-1;const L=A.slice(memoPage*MEMO_PG,memoPage*MEMO_PG+MEMO_PG);
+  const A=MEMOS.filter(m=>m&&m.text),pages=Math.max(1,Math.ceil(A.length/MEMO_PG));if(memoPage>=pages)memoPage=pages-1;const L=A.slice(memoPage*MEMO_PG,memoPage*MEMO_PG+MEMO_PG);mcmPage(L.map(m=>m.id));
   return`
   <div class="card memonew"><div class="memohd"><span class="mav">${headImg(2,P)}</span><b>${esc(P.nick)}</b><span class="hint" id="memoCnt">${memoDraft.length}/${MEMO_MAX}</span></div>
    <textarea id="memoIn" class="sel memota" maxlength="${MEMO_MAX}" placeholder="메모를 남겨 주세요. (${MEMO_MAX}자까지 · Ctrl+Enter로 등록)" aria-label="메모 내용">${esc(memoDraft)}</textarea>
@@ -9465,14 +9476,17 @@ function memoCmRow(m,c,to,rep){const mine=c.uid===uid,gone=c.del||!c.text,arm=me
     ${ed?memoEditBox(m.id,c.id,c.text,MEMO_CM):`<p class="mcmt">${to&&!(to.del||!to.text)?`<span class="mcmto">${esc(to.nick||'선원')}</span> `:''}${menHTML(esc(c.text))}</p>`}`}</div></div>`}
 async function memoSave(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)return;const i=$('#memoEdIn'),t=String(i&&i.value||'').trim();if(!t){toast('내용을 적어 주십시오.');return}if(i)i.blur();
   try{if(!cid){if(m.uid!==uid)return;await memoRef().doc(mid).update({text:t.slice(0,MEMO_MAX),ed:Date.now()})}
-   else{const cms=memoCms(m),c=cms.find(x=>x.id===cid);if(!c||c.uid!==uid)return;await memoRef().doc(mid).update({cm:cms.map(x=>x.id===cid?Object.assign({},x,{text:t.slice(0,MEMO_CM),ed:Date.now()}):x)})}
+   else{const c=memoCms(m).find(x=>x.id===cid);if(!c||c.uid!==uid)return;if(c._n)await mcmRef().doc(cid).update({text:t.slice(0,MEMO_CM),ed:Date.now()});
+     else{const old=memoOld(m);await memoRef().doc(mid).update({cm:old.map(x=>x.id===cid?Object.assign({},x,{text:t.slice(0,MEMO_CM),ed:Date.now()}):x)})}}
    memoEdit=null}catch(e){toast('수정하지 못했습니다.')}renderPanel()}
 // deleting a comment that has answers leaves a "삭제된 댓글" placeholder so the thread below it still hangs together
 async function memoCmDelete(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)return;const cms=memoCms(m),c=cms.find(x=>x.id===cid);if(!c||(c.uid!==uid&&!isAdmin))return;
-  const kids=cms.some(x=>x.pid===cid);const out=kids?cms.map(x=>x.id===cid?Object.assign({},x,{text:'',del:1}):x):cms.filter(x=>x.id!==cid);
-  try{await memoRef().doc(mid).update({cm:out})}catch(e){toast('댓글을 지우지 못했습니다.')}renderPanel()}
+  const kids=cms.some(x=>x.pid===cid);
+  try{if(c._n){if(kids)await mcmRef().doc(cid).update({text:'',del:1});else{await mcmRef().doc(cid).delete();for(const k in MCMS)MCMS[k]=MCMS[k].filter(x=>x.id!==cid)}}
+    else{const old=memoOld(m),out=kids?old.map(x=>x.id===cid?Object.assign({},x,{text:'',del:1}):x):old.filter(x=>x.id!==cid);await memoRef().doc(mid).update({cm:out})}}catch(e){toast('댓글을 지우지 못했습니다.')}renderPanel()}
 async function memoCmPost(id,pid=''){const m=MEMOS.find(x=>x.id===id);if(!m)return;const key=id+'|'+pid,i=$('#memoCmIn'),t=String((i&&i.value)||memoCm[key]||'').trim().slice(0,MEMO_CM);if(!t){toast('댓글을 적어 주십시오.');return}
-  const cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),cm=[...memoCms(m),{id:cid,pid,uid,nick:P.nick,text:t,at:Date.now()}].slice(-300);if(i)i.blur();try{await memoRef().doc(id).update({cm});memoMention(t,id,cid);memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();if(!pid)setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus({preventScroll:true})},30)}
+  const cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),par=pid?memoCms(m).find(x=>x.id===pid):null,doc={mid:id,mu:m.uid||'',pid,pu:(par&&par.uid)||'',uid,nick:P.nick,text:t,at:Date.now()};if(i)i.blur();
+  try{await mcmRef().doc(cid).set(doc);if(!MCMS.pg.some(x=>x.id===cid))MCMS.pg=MCMS.pg.concat([Object.assign({},doc,{id:cid,_n:1})]);memoMention(t,id,cid);memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();if(!pid)setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus({preventScroll:true})},30)}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoEdIn')memoEdTx={k:t.dataset.k+'|'+(t.dataset.c||''),v:t.value};else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k,t.dataset.p||'')}});
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];

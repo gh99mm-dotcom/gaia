@@ -131,6 +131,13 @@ service cloud.firestore {
         || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cm']));
       allow delete: if member() && (resource.data.uid == me() || staff());
     }
+    // 휴게실 댓글: 댓글 하나가 문서 하나 (메모 하나에 댓글이 아무리 많아도 됨). 자기 이름으로만 쓰고, 글쓴이(또는 운영진)만 고치고 지움.
+    match /mcm/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.uid == me() && str('text', 1500);
+      allow update: if member() && ((resource.data.uid == me() && request.resource.data.uid == me()) || staff()) && str('text', 1500);
+      allow delete: if member() && (resource.data.uid == me() || staff());
+    }
 
     // 귓속말: 주고받은 두 사람만 읽을 수 있어요.
     match /dm/{id} {
