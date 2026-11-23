@@ -9772,7 +9772,7 @@ const guestDel=new Map();const guestWait=id=>Date.now()-(guestDel.get(id)||0)<15
 function receiveGuest(){let ch=false;P.gotHi=P.gotHi||[];
   GUEST.forEach(g=>{if(g.to!==uid||g.from===uid)return;
     if(g.kind==='ment'&&g.mid&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];const x={memo:1,why:'휴게실에서 나를 언급했습니다',mid:g.mid,cid:g.cid||'m'+g.id,uid:g.from,nick:g.nick||'선원',text:g.text||'',at:+g.at||Date.now()};
-      P.nbox=[...(P.nbox||[]).filter(y=>nbKey(y)!==nbKey(x)),x].sort((a,b)=>b.at-a.at).slice(0,NBOX_MAX);if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 휴게실에서 나를 언급했습니다.`);ch=true;bellRefresh()}
+      if(!(P.nbox||[]).some(y=>nbKey(y)===nbKey(x)))P.nbox=[...(P.nbox||[]),x].sort((a,b)=>b.at-a.at).slice(0,NBOX_MAX);if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 휴게실에서 나를 언급했습니다.`);ch=true;bellRefresh()}
     if(g.kind==='hi'&&!P.gotHi.includes(g.id)&&g.at>=(P.joined||0)){P.gotHi=[...P.gotHi.slice(-80),g.id];P.hnoti=[...(P.hnoti||[]).slice(-39),{hi:1,from:g.from,nick:g.nick||'선원',at:+g.at||Date.now()}];log(`${g.nick||'선원'} 님이 인사를 건넸다.`,'good');addAff(g.from,AFF.hi,'인사를 받음');if(g.at>socBoot)toast(`${g.nick||'선원'} 님이 인사를 건넸습니다!`);ch=true}});
   if(ch)commit();
   // once counted (or too old to count), a greeting is removed so this list never grows
@@ -9787,9 +9787,9 @@ const nbPad=p=>({id:p.id,uid:p.uid||'',nick:p.nick||'',text:String(p.text||'').s
 const nbMemo=n=>({memo:1,why:n.why,mid:n.mid,cid:n.cid,uid:n.uid||'',nick:n.nick||'',text:String(n.text||'').slice(0,120),at:+n.at||0});
 function memoAll(){const m=new Map();MEMOS_MINE.forEach(x=>m.set(x.id,x));MEMOS.forEach(x=>m.set(x.id,x));return[...m.values()]}
 function padNotis(){if(mode!=='online'||!P)return[];const m=new Map();(P.nbox||[]).filter(x=>!x.memo).forEach(x=>m.set(x.id,x));padLive().forEach(x=>m.set(x.id,x));return[...m.values()].sort((a,b)=>b.at-a.at).slice(0,30)}
-function memoNotis(){if(mode!=='online'||!P)return[];const m=new Map();(P.nbox||[]).filter(x=>x.memo).forEach(x=>m.set(nbKey(x),x));memoLive().forEach(x=>m.set(nbKey(x),x));return[...m.values()].sort((a,b)=>b.at-a.at)}
+function memoNotis(){if(mode!=='online'||!P)return[];const m=new Map();memoLive().forEach(x=>m.set(nbKey(x),x));(P.nbox||[]).filter(x=>x.memo).forEach(x=>m.set(nbKey(x),x));return[...m.values()].sort((a,b)=>b.at-a.at)}
 function nboxCapture(){if(mode!=='online'||!P||P._fresh||!P.nick||P.nick==='새 선원')return;const have=new Set((P.nbox||[]).map(nbKey));
-  const gone=new Set(P.nbGone||[]),add=[...padLive().map(nbPad),...memoLive().map(nbMemo)].filter(x=>!have.has(nbKey(x))&&!gone.has(nKey(x)));if(!add.length)return;
+  const gone=new Set(P.nbGone||[]),add=[...padLive().map(nbPad),...memoLive().map(nbMemo)].filter(x=>!have.has(nbKey(x))&&!gone.has(nKey(x))&&!nOldHit(gone,x));if(!add.length)return;
   P.nbox=[...(P.nbox||[]),...add].sort((a,b)=>b.at-a.at).slice(0,NBOX_MAX);save()}
 // once per character: bring back PAD replies and reposts of my posts from before the copy existed
 function nboxBackfill(){if(mode!=='online'||!P||P.nboxV||!P.nick||P.nick==='새 선원')return;P.nboxV=1;
@@ -9807,12 +9807,15 @@ function memoLive(){if(mode!=='online'||!P)return[];const out=[];
 // 관계 alerts: a proposal waiting for me, and my proposal that was accepted
 function bondNotis(){if(mode!=='online'||!P)return[];const out=[];Object.entries(BONDS).forEach(([o,v])=>{if(v.pm&&v.pby&&v.pby!==uid)out.push({bond:1,o,nick:bondNick(o,v),text:v.pm,at:+v.at||0});else if(v.memo&&v.okby&&v.okby!==uid&&!v.pm)out.push({bond:2,o,nick:bondNick(o,v),text:v.memo,at:+v.okat||0})});return out}
 /* an alert stays unread until it is clicked (P.notiRd holds the clicked ones); 모두 읽음 moves P.notiSeen past them all */
-const nKey=p=>p.hi?`h:${p.from}:${p.at}`:p.bond?`b:${p.o}:${p.at}`:p.memo?`m:${p.mid}:${p.at}`:(p.resc||p.by&&!p.id)?`r:${p.by}:${p.at}`:`p:${p.id}`;
-const notiIsNew=p=>p.at>(P&&P.notiSeen||0)&&!((P&&P.notiRd)||{})[nKey(p)];
+const nKey=p=>p.hi?`h:${p.from}:${p.at}`:p.bond?`b:${p.o}:${p.at}`:p.memo?`mc:${p.mid}:${p.cid}`:(p.resc||p.by&&!p.id)?`r:${p.by}:${p.at}`:`p:${p.id}`;
+// a 휴게실 alert is one per comment (mid + cid). Older saves keyed it by time ('m:mid:at'); the reply and the @mention of the same
+// comment carried times a few ms apart, so a read one could come back as new — an old key within 15s of this one still counts
+function nOldHit(keys,p){if(!p.memo)return false;const pre='m:'+p.mid+':';for(const k of keys)if(k.startsWith(pre)&&Math.abs((+k.slice(pre.length)||0)-(+p.at||0))<15e3)return true;return false}
+const notiIsNew=p=>p.at>(P&&P.notiSeen||0)&&!((P&&P.notiRd)||{})[nKey(p)]&&!nOldHit(Object.keys((P&&P.notiRd)||{}),p);
 function notiUnread(){if(!P)return 0;return notiAll().filter(notiIsNew).length}
 /* read alerts: only the newest 10 stay; older read ones are removed for good (their keys are remembered so they don't come back) */
 const NOTI_READ_KEEP=30;
-function notiAll(){const g=new Set((P&&P.nbGone)||[]);return[...padNotis(),...rescueNotis().map(n=>Object.assign({resc:1},n)),...memoNotis(),...bondNotis(),...hiNotis()].filter(x=>!g.has(nKey(x)))}
+function notiAll(){const g=new Set((P&&P.nbGone)||[]);return[...padNotis(),...rescueNotis().map(n=>Object.assign({resc:1},n)),...memoNotis(),...bondNotis(),...hiNotis()].filter(x=>!g.has(nKey(x))&&!nOldHit(g,x))}
 const notiGrp=p=>p.memo?'memo':(p.bond||p.resc||p.hi)?'etc':'pad';let notiTab='';
 function notiPrune(){if(mode!=='online'||!P||P._fresh)return;const read=notiAll().filter(x=>!notiIsNew(x)).sort((a,b)=>b.at-a.at),cnt={},old=read.filter(x=>{const g=notiGrp(x);cnt[g]=(cnt[g]||0)+1;return cnt[g]>NOTI_READ_KEEP});if(!old.length)return;
   const ks=old.map(nKey),R=Object.assign({},P.notiRd);ks.forEach(k=>delete R[k]);
