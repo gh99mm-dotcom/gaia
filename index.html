@@ -6457,7 +6457,7 @@ function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||'
   if(k==='opening'){OP_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')});add('[조우]','ttl')}
   const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
   return out.join('')}
-var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호'],['engine','주 엔진 · 6호의 기억'],['nav','항법 장치 · 3호의 기억']];
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호'],['engine','주 엔진 · 6호의 기억'],['nav','항법 장치 · 3호의 기억'],['hull','선체 외벽 · 1호의 기억']];
 // 통신 장치 · 첫 신호 opens for each crew member right after they first meet 오르비스 in the real (operator-started) visit
 const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k]||(k==='comm'&&!!ORB_GO&&(+(P&&P.orbis)||0)>=1&&(+(P&&P.orbisAt)||0)>=ORB_GO);
 // once 생명 유지 장치 is repaired every crew member sees its story one time (the next time they are in the game), then the 마이룸 popup
@@ -6502,6 +6502,12 @@ function navUnlockPop(){const old=$('#unlockPop');if(old)old.remove();const el=d
   document.body.appendChild(el);const close=()=>{el.remove();document.removeEventListener('keydown',kk,true)},kk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.code==='Space'){e.preventDefault();close()}};
   el.querySelector('#unlockOk').addEventListener('click',close);document.addEventListener('keydown',kk,true);try{sfxFanfare(false)}catch(e){}}
 setInterval(()=>{try{navStoryCheck()}catch(e){}},8000);
+// once 선체 외벽 is repaired (and 이야기 공개 has released its story) every crew member sees it one time, after the 항법 장치 story
+function hullStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
+  if(!STORY_ON.hull)return;const pt=SHIP.find(x=>x.id==='hull');if(!pt||!shipDone(pt)||(P.stSeen||{}).hull)return;
+  if($('#story')||$('#opCrawl')||$('#unlockPop')||$('#rolePop')||$('#orbisFx')||(typeof raidLocked==='function'&&raidLocked()))return;if(STORY_ON.nav&&!(P.stSeen||{}).nav)return;
+  P.stSeen=Object.assign({},P.stSeen,{hull:Date.now()});save();playStory('hull')}
+setInterval(()=>{try{hullStoryCheck()}catch(e){}},8000);
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
 function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 우주함선이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
 const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
@@ -7908,7 +7914,24 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'n_off',sfx:'off',cut:1,lines:[{t:'재생이 끝난 후, 정적을 깬 것은 항법장치다.',wait:2.2}]},
   {art:'n_radar',sfx:'ping',lines:[{t:'기본적인 세팅이 끝난 듯, 빙글빙글 레이더를 돌리며 우리를 부르고 있었다.'}]},
   {art:'n_dest',lines:[{t:'DESTINATION : TERRA',sys:1,wait:1.4},{t:'목적지 : 테라.'}]},
-  {art:'n_arrive',lines:[{t:'그리고 항법장치가 응답했다.',wait:.8},{t:'우리는 이미 목적지에 도착했다고.'}]}]}};
+  {art:'n_arrive',lines:[{t:'그리고 항법장치가 응답했다.',wait:.8},{t:'우리는 이미 목적지에 도착했다고.'}]}]},
+  // 선체 외벽 repaired: a rainy day, 1호's memory (the city before, a fleet leaving under the name 가이아 프로젝트), and 6호's machine again
+  hull:{n:'선체 외벽 · 1호의 기억',anyKey:1,fadeOut:4,scenes:[
+  {art:'r_ship',sfx:'rain',lines:[{t:'오늘은 아침부터 멈추지 않고 비가 내린다.',wait:1.4},{t:'우주선을 고치면서, 모든 게 의미가 있는 행동인지 헷갈렸다.'},{t:'우리는 어디로 돌아가야 하는가?'},{t:'…그러나 고민과 별개로 함선은 빠르게 수리가 완료됐다.'}]},
+  {art:'r_nav',lines:[{v:'기계는 가끔 헛소리를 해. 나도 그러니까 잘 알지.',who:'녹슨 7호',wait:2}]},
+  {art:'r_bot',lines:[{t:'위로하듯 투박한 말을 꺼낸 것은 녹슨 7호다.'}]},
+  {art:'r_chip',lines:[{t:'새로 발견된 1번 기억 모듈은 최초의 것답게 파손된 부분이 많았다.'}]},
+  {art:'r_botc',lines:[{v:'너희는 돌아갈 곳을 잊었고, 나는 어디서 왔는지를 잊었고.',who:'녹슨 7호'},{v:'어쩌면 두 개는 같은 질문일지도 모르겠군.',who:'녹슨 7호'},{t:'모듈을 받아든 녹슨 7호는 이제 익숙하게 모니터를 띄운다.'}]},
+  {art:'r_city',sfx:'monon',lines:[{t:'……',wait:1.4},{t:'화면에 비춰진 것은 이미 알고 있는 풍경에 가깝다.'},{t:'녹슬지 않은 금속 표면. 깨끗하게 정돈된 거리. 푸른 하늘 아래로 움직이는 사람들.'},{t:'그러나 그들의 얼굴은 어딘가 불안을 담고 있다.',art:'r_faces'}]},
+  {art:'r_drone',lines:[{t:'7호의 몸체도 지금과는 사뭇 달랐다.'},{t:'그는 주변을 날쌔게 돌아다니며 여러 장비를 점검하고 있다.'}]},
+  {art:'r_log',lines:[{t:'단말기에는 수많은 작업 기록이 남아 있다.'},{t:'물자 적재.',sys:1},{t:'물자 적재.\n생명유지장치 점검.',sys:1,pre:6},{t:'물자 적재.\n생명유지장치 점검.\n항행 데이터 확인.',sys:1,pre:17}]},
+  {art:'r_fleet',lines:[{t:'거대한 우주선 여러 척이 차례로 출항을 준비한다.'},{t:'사람들은 하나둘 탑승하고, 출항을 알리는 조명이 켜진다.',art:'r_board'},{t:'귀를 잡아끄는 단어가 들린다. ‘가이아 프로젝트’, 그리고 ‘이주’…….',art:'r_gaia'}]},
+  {art:'r_launch',sfx:'hum',lines:[{t:'거대한 엔진음을 끝으로 화면은 꺼진다.',wait:.6}]},
+  {art:'r_off',sfx:'off',cut:1,lines:[{t:'녹슨 7호는 꺼진 모니터를 바라보고 있다.',wait:2.2},{v:'아무래도 나는 떠나는 쪽이 아니었던 모양이지.',who:'녹슨 7호',art:'r_look'},{v:'그렇다면 내가 여기에 남겨진 이유도 있을 거야.',who:'녹슨 7호',art:'r_look'}]},
+  {art:'r_look',lines:[{t:'그는 모니터를 조작하더니 기억 모듈 6번의 한 장면을 띄운다.'}]},
+  {art:'r_six',sfx:'monon',lines:[{v:'이 수상한 기계가 있는 곳 말인데.',who:'녹슨 7호',wait:3.4}]},
+  {art:'r_look',lines:[{v:'이제 보니 짐작이 가는 위치가 있어. 원한다면 안내해줄 수 있지만, 기계는 물에 취약하다고.',who:'녹슨 7호'},{t:'녹슨 7호는 우리에게 다음 날 출발하자고 제안해온다.'}]},
+  {art:'r_ship2',sfx:'rain',lines:[{t:'날아오를 수 있는 선체를 가졌음에도 발이 묶인 우리에게 짧은 휴식 시간이 생겼다.'},{t:'……빗소리가 여전히 외벽을 두드린다.',art:'r_drops'}]}]}};
 // 녹슨 7호's voice, read out like Animal Crossing's babble but through a cracked speaker: every Hangul syllable becomes a
 // tiny sped-up "syllable" — a buzzy carrier shaped by the vowel's two formants, with a tick or hiss for the consonant
 const VOW=[[800,1300],[520,1850],[800,1300],[520,1850],[620,1050],[480,1900],[620,1050],[480,1900],[460,820],[800,1300],[520,1850],[480,1900],[460,820],[360,760],[620,1050],[480,1900],[300,2250],[360,760],[420,1450],[300,2250],[300,2250]];
@@ -7947,6 +7970,8 @@ function sfxRattle(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.curr
 // 항법 장치 story: 7호 rolling in with the food (no switch click), a gust carrying the newspaper, and the radar's sonar pings
 function sfxRoll(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime;for(const g0 of [.05,.75])for(let i=0;i<10;i++){const f=120+Math.random()*110;tone(a,'square',f,f*.7,t+g0+i*.042,.024,.055);if(i%3===0)tone(a,'triangle',60+Math.random()*30,40,t+g0+i*.042,.03,.05)}}
 function sfxWind(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.02;noiseBurst(a,t,1.8,'bandpass',500,1600,.12,1)}
+// 선체 외벽 story: a long soft rain, with drops ticking now and then
+function sfxRain(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.05;noiseBurst(a,t,14,'lowpass',2200,1500,.08,.35);noiseBurst(a,t,14,'highpass',5200,4200,.025,.35);for(let i=0;i<46;i++){const at=t+Math.random()*12;tone(a,'sine',2000+Math.random()*2200,900,at,.03,.012)}}
 function sfxRadar(){if(!soundOn)return;const a=ac();if(!a)return;const t=a.currentTime+.1;for(let i=0;i<3;i++){tone(a,'sine',1320,1300,t+i*1.4,.6,.06);tone(a,'sine',660,650,t+i*1.4,.4,.025)}}
 let deckSnd=null;function sfxDeckSteps(){if(!soundOn)return;try{if(!deckSnd)deckSnd=new Audio('steps.mp3');deckSnd.volume=Math.min(1,sfxVol/100);deckSnd.currentTime=0;deckSnd.play().catch(()=>{})}catch(e){}}
 function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&&opt.manual);if(!S||$('#story'))return;const op=document.createElement('div');op.id='story';op.className='stv'+(AUTO?' auto':'');let fullAt=0,autoCall=false;op.setAttribute('role','dialog');op.setAttribute('aria-label',S.n);
@@ -8043,7 +8068,7 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     OPA=A;return A}
   // reserve-power lights: mostly on, now and then dropping out for a beat
   // after 동력로 is repaired the ship has real power: in its story the lamps hold steady and the corridor is brightly lit
-  const STEADY=sid==='power'||sid==='nav';const lampOn=(t,i)=>{if(STEADY)return 1;const a=Math.sin(t*17+i*3.1)+Math.sin(t*5.3+i*1.7)*.8;return a<-1.2?0:a<-.9?.35:1};
+  const STEADY=sid==='power'||sid==='nav'||sid==='hull';const lampOn=(t,i)=>{if(STEADY)return 1;const a=Math.sin(t*17+i*3.1)+Math.sin(t*5.3+i*1.7)*.8;return a<-1.2?0:a<-.9?.35:1};
   // a corridor seen from its middle: ceiling, floor grating, private-room doors on both walls, weak lamps; vx moves the vanishing point
   // (the camera turning), out opens the far hatch to the night outside
   function cabin(t,vx,out,lit){const CC=STEADY?{bg:'#0d1a33',top:'#12234a',bot:'#183062',side:'#142a54',far:'#152a52',door:'#10203f'}:{bg:B[0],top:'#08101f',bot:'#0c1730',side:'#0a1428',far:'#0b1426',door:'#08101e'};R(0,0,W,H,CC.bg);const vy=54,bw=44,bh=34,bx=vx-bw/2,by=vy-bh/2,poly=(pts,c)=>{g.fillStyle=c;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.closePath();g.fill()};
@@ -8058,7 +8083,7 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     // ceiling lamps down the middle, with a pool of light under each
     [.12,.42,.68].forEach((k,i)=>{const on=lampOn(t,i+7)*(lit?1:.75),x=lerp(W/2,vx,k),y=lerp(0,by,k)+3,w=lerp(40,8,k);R(x-w/2,y,w,Math.max(1,3-2*k),on?B[6]:B[2]);if(on&&STEADY){const cy=Math.round(lerp(H,by+bh,k)-4),rx=w*1.2,ry=lerp(18,3,k);for(let yy=Math.floor(cy-ry);yy<=cy+ry;yy++)for(let xx=Math.floor(x-rx);xx<=x+rx;xx++){const d=((xx-x)/rx)**2+((yy-cy)/ry)**2;if(d<1&&(d<.35||((xx+yy)&1)===0))P(xx,yy,'#21407c')}}else if(on){g.globalAlpha=.12*on;g.fillStyle=B[5];g.beginPath();g.ellipse(x,lerp(H,by+bh,k)-4,w*1.2,lerp(18,3,k),0,0,7);g.fill();g.globalAlpha=1}})}
   // a tiny 3×5 pixel font for the console labels, so they stay crisp when the picture is scaled up
-  const F35={A:'010101111101101',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',Y:'101101010010010','-':'000000111000000','·':'000000010000000',':':'000010000010000',' ':'000000000000000'};
+  const F35={A:'010101111101101',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',Y:'101101010010010','-':'000000111000000','·':'000000010000000',':':'000010000010000',J:'001001001101010',K:'101101110101101',W:'101101101111101',B:'110101110101110',X:'101101010101101',' ':'000000000000000'};
   const ptext=(str,X,Y,col)=>{let cx=X;for(const ch of str){const f=F35[ch]||F35[' '];for(let i=0;i<15;i++)if(f[i]==='1')R(cx+(i%3),Y+((i/3)|0),1,1,col);cx+=4}};
   // ── 주 엔진 story: the engine room, and 6호's memory played back on its wall screen (in its own green, like old footage) ──
   // the engine room: the engine's round housing, pipes, a grated floor; lit (0..1) turns the blue lamps on one by one, sh shakes the room
@@ -8187,14 +8212,92 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     for(let i=0;i<5;i++){const on=((t*2+i)|0)%5!==0;R(196,14+i*10,22,5,on?(i===2?'#ffd27a':B[4]):B[2])}ptext('NAV SYSTEM',16,9,B[5]);
     const cx=110,cy=46,rr=38,boot=m?1:Math.min(1,t/1.2);for(let y=-rr;y<=rr;y++)for(let x=-rr;x<=rr;x++){const d=Math.sqrt(x*x+y*y);if(d>rr)continue;P(cx+x,cy+y,d>rr-1.5?B[4]:'#031008')}
     g.strokeStyle='#1a5a44';g.lineWidth=1;for(const r of [11,22,33]){if(r>rr*boot)continue;g.beginPath();g.arc(cx+.5,cy+.5,r,0,7);g.stroke()}if(boot>=1){R(cx-rr,cy,rr*2,1,'#0f3a2c');R(cx,cy-rr,1,rr*2,'#0f3a2c')}
-    const ang=t*2.2;if(boot>=1)for(let k=0;k<14;k++){const a=ang-k*.06;g.globalAlpha=(1-k/14)*.8;g.strokeStyle=k?'#2f8a6a':'#6ccfa8';g.beginPath();g.moveTo(cx+.5,cy+.5);g.lineTo(cx+.5+Math.cos(a)*rr,cy+.5+Math.sin(a)*rr);g.stroke()}g.globalAlpha=1;
+    const ang=m===3?-.9:t*2.2;if(boot>=1&&m!==3)for(let k=0;k<14;k++){const a=ang-k*.06;g.globalAlpha=(1-k/14)*.8;g.strokeStyle=k?'#2f8a6a':'#6ccfa8';g.beginPath();g.moveTo(cx+.5,cy+.5);g.lineTo(cx+.5+Math.cos(a)*rr,cy+.5+Math.sin(a)*rr);g.stroke()}g.globalAlpha=1;
     const swept=a=>{const d=((ang-a)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);return Math.max(0,1-d/2.5)};
     [[.7,30],[2.4,18],[3.9,33],[5.2,25]].forEach(([a,r])=>{const v=swept(a);if(v>0&&boot>=1){g.globalAlpha=v;R(cx+Math.cos(a)*r-1,cy+Math.sin(a)*r-1,2,2,'#6ccfa8');g.globalAlpha=1}});
     R(cx-1,cy-1,3,3,'#ffd27a');
-    if(m){const k=m===2?Math.min(1,t/2.4):0,e=.5-.5*Math.cos(k*Math.PI),ta=-.9,tr=28*(1-e),tx=Math.round(cx+Math.cos(ta)*tr),tyy=Math.round(cy+Math.sin(ta)*tr),bl=((t*3)|0)%2;
+    if(m){const k=m===3?1:m===2?Math.min(1,t/2.4):0,e=.5-.5*Math.cos(k*Math.PI),ta=-.9,tr=28*(1-e),tx=Math.round(cx+Math.cos(ta)*tr),tyy=Math.round(cy+Math.sin(ta)*tr),bl=((t*(m===3?.7:3))|0)%2;
       g.strokeStyle=bl?'#ff6a7a':'#a02a3a';g.strokeRect(tx-3.5,tyy-3.5,8,8);P(tx,tyy,'#ff6a7a');if(m===2&&k>=1){const pr=(t*8)%12;g.globalAlpha=Math.max(0,1-pr/12);g.beginPath();g.arc(cx+.5,cy+.5,4+pr,0,7);g.stroke();g.globalAlpha=1}
-      R(16,88,174,12,'#030a08');R(16,88,174,1,'#1a5a44');ptext('DESTINATION : TERRA',20,92,bl||m===2?'#6ccfa8':'#2f8a6a');if(m===2&&k>=1)ptext('ARRIVED',142,92,((t*2)|0)%2?'#ffd27a':'#7a5a20');
-      if(!(m===2&&k>=1)&&((t*2)|0)%2)R(98,92,3,5,'#6ccfa8')}else{if(((t*2)|0)%2)ptext('SCANNING',20,92,'#2f8a6a')}}
+      R(16,88,174,12,'#030a08');R(16,88,174,1,'#1a5a44');ptext('DESTINATION : TERRA',20,92,(m===3?bl:bl||m===2)?'#6ccfa8':'#2f8a6a');if(m>=2&&k>=1)ptext('ARRIVED',142,92,((t*(m===3?.7:2))|0)%2?'#ffd27a':'#7a5a20');
+      if(!(m>=2&&k>=1)&&((t*2)|0)%2)R(98,92,3,5,'#6ccfa8')}else{if(((t*2)|0)%2)ptext('SCANNING',20,92,'#2f8a6a')}}
+  // ── 선체 외벽 story: a rainy day on the finished ship, 1호's memory (a clean city, a fleet leaving), and 6호's machine again ──
+  // rain: thin slanted streaks over the picture (k = how heavy), and small splashes along the ground line gy
+  function rainFx(t,k,gy){g.fillStyle='#9fbcff';g.globalAlpha=.5;for(let i=0;i<Math.round(110*k);i++){const s=ST[i%120],sp=160+s.b*90,x=((s.x*W*1.4+i*7+t*sp*.28)%(W+30))-15,y=((s.y*H+i*13+t*sp)%(H+24))-12,l=3+(s.b*3|0);
+      g.fillRect(Math.round(x),Math.round(y),1,l);g.fillRect(Math.round(x)-1,Math.round(y)+l,1,2)}g.globalAlpha=1;
+    if(gy!=null)for(let i=0;i<Math.round(16*k);i++){const q=t*3+i*.37,ph=q%1;if(ph>.35)continue;const x=(i*53+(q|0)*31)%W;P(x-1,gy-1,'#cfe0ff');P(x+1,gy-1,'#cfe0ff');if(ph<.15)P(x,gy-2,'#cfe0ff')}}
+  // the finished ship under low clouds, everything darkened by the rain
+  function hullRain(t,k){R(0,0,W,H,'#060c1c');for(let y=0;y<40;y+=2){g.globalAlpha=.12;R(0,y,W,1,'#1a2a50');g.globalAlpha=1}
+    g.fillStyle='#0b1430';for(let i=0;i<7;i++){const x=((i*44+t*2.5)%(W+80))-40;g.beginPath();g.ellipse(x,2+(i%3)*4,40,11,0,0,7);g.fill()}
+    const gy=H-20;R(0,gy,W,20,'#0a1226');R(0,gy,W,1,'#25458c');for(let x=0;x<W;x+=4)if((x*7)%9<2)R(x,gy+3+((x*3)%12),3,1,'#16295a');
+    // the finished ship: a long hull with a raised bridge, swept fins, the engine block at the back, landing legs
+    const sx=36,sy=50,poly=(pts,c)=>{g.fillStyle=c;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.closePath();g.fill()};
+    for(const lx of [58,104,150])R(sx+lx-sx,sy+20,3,gy-sy-20,'#16295a');
+    poly([[sx,sy+6],[sx+14,sy-2],[sx+150,sy-2],[sx+176,sy+8],[sx+150,sy+20],[sx+14,sy+20]],'#25458c');
+    poly([[sx+50,sy-2],[sx+64,sy-14],[sx+112,sy-14],[sx+122,sy-2]],'#1d3a74');poly([[sx+40,sy+18],[sx+20,sy+30],[sx+76,sy+20]],'#16295a');poly([[sx+52,sy-2],[sx+30,sy-12],[sx+70,sy-2]],'#16295a');
+    R(sx-10,sy+1,12,16,'#16295a');R(sx-12,sy+4,3,10,'#0a1530');R(sx,sy-2,176,1,'#3e6cc4');R(sx+64,sy-14,48,1,'#3e6cc4');
+    for(let x=sx+20;x<sx+150;x+=18)R(x,sy-1,1,20,'#1d3a74');for(let i=0;i<7;i++){const on=((t*.6+i*.37)|0)%5!==0;R(sx+68+i*6,sy-10,3,2,on?'#ffd27a':'#2a3a5a')}for(let i=0;i<9;i++)R(sx+24+i*14,sy+6,3,2,(i*5)%3?'#2a3a5a':'#ffd27a');
+    const bl=((t*1.2)|0)%2;R(sx+175,sy+7,2,2,bl?'#ff5a6a':'#5a1a24');R(sx+66,sy-16,2,2,bl?'#5aff8a':'#1a5a2a');
+    // its blurred reflection in the wet ground
+    g.save();g.globalAlpha=.18;g.translate(0,2*gy+1);g.scale(1,-1);poly([[sx,sy+6],[sx+14,sy-2],[sx+150,sy-2],[sx+176,sy+8],[sx+150,sy+20],[sx+14,sy+20]],'#3e6cc4');g.restore();g.globalAlpha=1;
+    rainFx(t,k,gy+2)}
+  // the lit corridor; through the far hatch the rain; 녹슨 7호 in the middle (chip: the module in its hand)
+  function hullBot(t,chip){cabin(t,120,true,true);g.save();g.beginPath();g.rect(98,37,44,34);g.clip();g.globalAlpha=.35;R(98,37,44,34,'#030612');g.globalAlpha=1;rainFx(t,1.4,71);g.restore();
+    const bw=56,rx=Math.round(W*.27-bw/2),gy=Math.round(H*.88);g.fillStyle='rgba(3,6,15,.6)';g.fillRect(rx+6,gy-2,bw-12,4);if(BOT)g.drawImage(BOT,rx,gy-bw+Math.round(Math.sin(t*2)*1),bw,bw);
+    if(chip){const cx=rx+bw-4,cy=gy-Math.round(bw*.42);R(cx-5,cy-3,10,7,'#1e3a2c');R(cx-5,cy-3,10,1,'#5a9a76');P(cx-2,cy,'#0c1a14');P(cx-1,cy+1,'#0c1a14');P(cx+3,cy-1,((t*2.3)|0)%3?'#7a5a20':'#ffe08a')}}
+  // the first memory module, badly damaged: cracks, bent and missing pins, a light that barely flickers
+  function hullChip(t){R(0,0,W,H,'#03060c');R(0,H-40,W,40,'#0c1424');R(0,H-40,W,1,'#25458c');g.globalAlpha=.18;g.fillStyle='#7ea6f0';g.beginPath();g.moveTo(96,0);g.lineTo(144,0);g.lineTo(190,H);g.lineTo(50,H);g.fill();g.globalAlpha=1;
+    const cx=W/2,cy=64;R(cx-34,cy-20,68,40,'#1e3a2c');R(cx-34,cy-20,68,2,'#5a9a76');R(cx-34,cy+18,68,2,'#0c1a14');R(cx+22,cy-20,12,9,'#03060c');R(cx+20,cy-12,6,3,'#03060c');
+    for(let i=0;i<10;i++){if(i===3||i===7)continue;const bent=i===5?2:0;R(cx-31+i*7+bent,cy+20,4,5-bent,'#e0b860')}for(let i=0;i<6;i++){R(cx-30+i*11,cy-12,6,1,'#3a7a5a');R(cx-30+i*11,cy+10,6,1,'#3a7a5a')}
+    R(cx-14,cy-10,28,20,'#0c1a14');R(cx-11,cy-7,22,14,'#e8e0c8');['00100','01100','00100','00100','01110'].forEach((r,j)=>[...r].forEach((c,i)=>{if(c==='1')R(cx-5+i*2,cy-5+j*2,2,2,'#1a1206')}));
+    const crack=[[cx-30,cy-14],[cx-22,cy-6],[cx-17,cy-8],[cx-8,cy+2],[cx-2,cy+1],[cx+6,cy+12],[cx+14,cy+17]];for(let i=0;i<crack.length-1;i++){const [x0,y0]=crack[i],[x1,y1]=crack[i+1],n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let q=0;q<=n;q++)P(Math.round(x0+(x1-x0)*q/n),Math.round(y0+(y1-y0)*q/n),'#050a08')}
+    const on=Math.random()<.18;R(cx-28,cy-17,4,4,on?'#ffe08a':'#4a3a18');if(on){g.globalAlpha=.25;g.fillStyle='#ffe08a';g.beginPath();g.arc(cx-26,cy-15,6,0,7);g.fill();g.globalAlpha=1}}
+  // 1호's memory: a clean city — unrusted metal, a tidy street, people walking; the view glides (it could fly then)
+  function cityView(t,spd){R(0,0,W,H,MG[2]);for(let y=0;y<52;y+=3){g.globalAlpha=.18;R(0,y,W,1,MG[4]);g.globalAlpha=1}const hz=84,off=t*spd,wr=(a,m)=>((a%m)+m)%m;
+    for(let i=0;i<10;i++){const x=(wr(i*29-off*.35,W+40)-20)|0,h=34+((i*17)%5)*9,w=14+(i%3)*5;R(x,hz-h,w,h,MG[3]);R(x,hz-h,w,1,MG[5]);if(i%3===0){R(x+(w>>1),hz-h-8,1,8,MG[4]);P(x+(w>>1),hz-h-9,((t*2+i)|0)%2?MG[7]:MG[4])}for(let wy=hz-h+4;wy<hz-4;wy+=5)for(let wx=x+2;wx<x+w-2;wx+=4)P(wx,wy,MG[4])}
+    for(let i=0;i<5;i++){const x=(wr(i*58-off,W+60)-40)|0,h=40+(i%2)*12,w=42;R(x,hz-h,w,h,MG[4]);R(x,hz-h,w,1,MG[7]);for(let q=x+5;q<x+w;q+=9)R(q,hz-h+2,1,h-2,MG[3]);for(let wy=hz-h+6;wy<hz-12;wy+=8){R(x+3,wy,w-6,3,MG[5]);P(x+4+((wy*3)%30),wy+1,MG[7])}R(x+16,hz-10,10,10,MG[2])}
+    R(0,hz,W,H-hz,MG[1]);R(0,hz,W,1,MG[6]);R(0,hz+16,W,1,MG[3]);for(let i=0;i<12;i++){const x=(wr(i*24-off*1.4,W+24)-12)|0;R(x,hz+24,10,1,MG[4])}
+    for(let i=0;i<10;i++){const dir=i%2?1:-1,sp=5+(i%3)*3,x=(wr(i*27+dir*t*sp-off*1.4,W+20)-10)|0,y=hz+5+(i%3)*4,st=((t*5+i)|0)%2;R(x,y-10,2,2,MG[7]);R(x,y-8,2,5,MG[6]);P(x-1+st,y-3,MG[6]);P(x+1+st,y-3,MG[6]);P(x+st*2-1,y-2,MG[5])}}
+  // close on a few faces in the crowd: brows pulled together, eyes flicking aside
+  function crowdFaces(t){cityView(t*.3,2);g.globalAlpha=.55;R(0,0,W,H,MG[1]);g.globalAlpha=1;
+    [[58,74,15,0],[122,66,19,1],[188,78,14,2]].forEach(([cx,cy,r,i])=>{const sh=Math.round(Math.sin(t*1.3+i)*1),look=((t*.7+i*.5)|0)%3===1?2:0;
+      R(cx-r*.7|0,cy+r-2,r*1.4|0,H,MG[3]);for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++){if(x*x+y*y*1.15>r*r)continue;P(cx+x+sh,cy+y,y<-r*.45?MG[2]:MG[5])}
+      const ey=cy-Math.round(r*.1),ex=Math.round(r*.38);R(cx-ex-1+sh+look,ey,2,2,MG[1]);R(cx+ex-1+sh+look,ey,2,2,MG[1]);
+      for(let q=0;q<4;q++){P(cx-ex-2+q+sh,ey-3-(q>1?1:0),MG[2]);P(cx+ex+1-q+sh,ey-3-(q>1?1:0),MG[2])}R(cx-3+sh,cy+Math.round(r*.45),6,1,MG[2]);P(cx-4+sh,cy+Math.round(r*.45)+1,MG[2])})}
+  // inspecting equipment fast; in a polished panel, its old body is reflected: a sleek round drone with thrusters
+  function droneView(t){R(0,0,W,H,MG[1]);const off=t*40,wr=(a,m)=>((a%m)+m)%m;R(0,H-16,W,16,MG[2]);R(0,H-16,W,1,MG[4]);
+    for(let i=0;i<7;i++){const x=(wr(i*40-off,W+40)-20)|0;R(x,12,30,H-30,MG[2]);R(x,12,30,1,MG[5]);for(let y=18;y<H-22;y+=9){R(x+3,y,24,6,MG[3]);P(x+5,y+2,((t*4+i+y)|0)%3?MG[4]:MG[7]);P(x+8,y+2,MG[5])}}
+    g.globalAlpha=.5;g.fillStyle=MG[6];g.beginPath();g.moveTo(120,H);g.lineTo(60+Math.sin(t*3)*30,30);g.lineTo(80+Math.sin(t*3)*30,30);g.fill();g.globalAlpha=1;
+    const k=Math.min(1,Math.max(0,(t-.8)/1.2)),px=Math.round(W-k*(W-150));R(px,10,64,82,MG[0]);R(px,10,64,1,MG[6]);R(px,91,64,1,MG[4]);for(let i=0;i<5;i++)for(let y=0;y<80;y+=2)P(px+10+i*12+(y>>2),12+y,MG[2]);
+    const dx=px+32,dy=50+Math.round(Math.sin(t*4)*2);g.fillStyle=MG[5];g.beginPath();g.ellipse(dx,dy,15,10,0,0,7);g.fill();g.fillStyle=MG[6];g.beginPath();g.ellipse(dx,dy-3,11,5,0,0,7);g.fill();R(dx-3,dy-2,6,5,MG[1]);R(dx-1,dy-1,2,2,MG[7]);
+    R(dx-19,dy-1,5,3,MG[4]);R(dx+14,dy-1,5,3,MG[4]);const fl=((t*14)|0)%2;R(dx-6,dy+10,3,2+fl,MG[7]);R(dx+3,dy+10,3,3-fl,MG[7]);R(dx-1,dy-14,2,5,MG[4]);P(dx,dy-15,((t*3)|0)%2?MG[7]:MG[3])}
+  // the terminal's work log scrolling, three entries settling with OK
+  function workLog(t){R(0,0,W,H,MG[0]);R(16,8,208,104,MG[1]);R(16,8,208,1,MG[5]);R(16,111,208,1,MG[4]);ptext('WORK LOG',24,14,MG[6]);
+    const sc=(t*16)%8;g.save();g.beginPath();g.rect(20,24,200,44);g.clip();for(let i=0;i<9;i++){const y=26+i*8-sc;R(24,y,10,3,MG[3]);R(38,y,40+((i*37+((t*2)|0)*13)%110),3,MG[2])}g.restore();R(20,70,200,1,MG[3]);
+    [['CARGO LOAD',.6],['LIFE SUPPORT CHECK',2.2],['NAV DATA CHECK',3.8]].forEach(([n,at],i)=>{if(t<at)return;const y=76+i*11,ok=t>at+.7;ptext(n,24,y,MG[6]);ptext(ok?'OK':'--',196,y,ok?MG[7]:MG[4]);if(!ok&&((t*6)|0)%2)R(186,y,3,5,MG[6])})}
+  // the launch field: great ark-ships in their cradles; ph 0 waiting, 1 people boarding and the lights coming on, 2 the name on the nearest hull
+  function fleetView(t,ph){R(0,0,W,H,MG[1]);for(let y=0;y<60;y+=3){g.globalAlpha=.16;R(0,y,W,1,MG[3]);g.globalAlpha=1}const hz=92;R(0,hz,W,H-hz,MG[2]);R(0,hz,W,1,MG[5]);
+    const ark=(cx,cy,rx,ry,lit)=>{g.fillStyle=MG[3];g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,7);g.fill();g.fillStyle=MG[4];g.beginPath();g.ellipse(cx,cy-ry*.3,rx*.92,ry*.55,0,Math.PI,0);g.fill();R(cx-rx,cy,rx*2,1,MG[5]);
+      for(let x=-rx+8;x<rx-8;x+=8)P(cx+x,cy-ry*.2,lit&&((x+((t*3)|0))&8)?MG[7]:MG[5]);R(cx+rx-4,cy-3,6,6,MG[2]);R(cx-rx*.5,cy+ry,3,hz-cy-ry,MG[3]);R(cx+rx*.5,cy+ry,3,hz-cy-ry,MG[3])};
+    ark(40,48,26,7,ph>0);ark(196,40,34,9,ph>0);ark(118,70,74,16,ph>0);
+    if(ph===2){g.save();g.translate(118,66);g.scale(2,2);ptext('GAIA PROJECT',-23,0,MG[7]);g.restore()}
+    for(let i=0;i<12;i++){const x=10+i*20,on=ph>0&&t>.4+i*.18;R(x,hz+6,3,2,on?MG[7]:MG[3]);if(on){g.globalAlpha=.3;R(x-2,hz+4,7,6,MG[6]);g.globalAlpha=1}}
+    R(150,hz-6,40,2,MG[4]);for(let q=0;q<10;q++)P(150+q*4,hz-6-q,MG[4]);if(ph>0)for(let i=0;i<5;i++){const k=((t*.25+i*.2)%1),x=Math.round(190-k*40),y=Math.round(hz-7-k*10);R(x,y-4,2,4,MG[7]);P(x,y-5,MG[7])}}
+  // ignition: the arks' engines flare, dust rolls along the field, everything shakes, then a white flash
+  function launchView(t){const sh=Math.min(3,t*.9);g.save();g.translate(Math.round((Math.random()-.5)*sh),Math.round((Math.random()-.5)*sh));fleetView(t+6,1);
+    [[40,55,.7],[196,49,.8],[118,86,1.4]].forEach(([x,y,s])=>{const f=Math.min(1,t/1.5)*(.8+.2*Math.random());g.globalAlpha=.7*f;g.fillStyle=MG[7];g.beginPath();g.ellipse(x,y+4*s,10*s,5*s*f,0,0,7);g.fill();g.globalAlpha=.35*f;g.fillStyle=MG[6];g.beginPath();g.ellipse(x,y+6*s,22*s,8*s,0,0,7);g.fill();g.globalAlpha=1});
+    for(let i=0;i<10;i++){const ph=(t*.4+i/10)%1;g.globalAlpha=(1-ph)*.5;g.fillStyle=MG[4];g.beginPath();g.arc((i*29+ph*40)%W,96-ph*8,4+ph*10,0,7);g.fill()}g.globalAlpha=1;g.restore();
+    if(t>3.2){g.globalAlpha=Math.min(1,(t-3.2)/.6);R(0,0,W,H,MG[7]);g.globalAlpha=1}}
+  // the engine room lit, 녹슨 7호 before the wall screen (dark, or holding 6호's frozen picture)
+  function hullLook(t,nod){engRoom(t,1,0);engBot(t,0,nod||0)}
+  // 6호's memory frozen on the screen; the view closes in on the machine, where worn letters show under the ring
+  function sixZoom(t){const k=Math.min(1,Math.max(0,(t-1.2)/3.2)),e=.5-.5*Math.cos(k*Math.PI),sc=1+e*1.6,fx=120,fy=78;g.save();g.translate(fx,fy);g.scale(sc,sc);g.translate(-fx,-fy);memHall(5,0,0);
+    R(96,82,48,9,MG[2]);R(96,82,48,1,MG[4]);g.globalAlpha=.25+.6*e;ptext('GAIA PROJECT',97,84,MG[6]);g.globalAlpha=1;
+    for(let i=0;i<46;i++){const x=97+((i*37)%47),y=84+((i*11)%5);if((i*7)%3===0)P(x,y,MG[2])}g.restore();crt(t,'MEMORY  PAUSE');R(W-24,6,2,5,MG[5]);R(W-20,6,2,5,MG[5])}
+  // close on the hull plates: drops land and run down in thin streams
+  function hullDrops(t){R(0,0,W,H,'#0a1428');for(let y=0;y<H;y+=24){R(0,y,W,1,'#050a18');for(let x=(y/24%2)*20;x<W;x+=40){R(x,y,1,24,'#050a18');P(x+4,y+4,'#25458c');P(x+4,y+19,'#25458c')}}
+    g.globalAlpha=.6;R(0,0,W,H,'#030612');g.globalAlpha=1;for(let i=0;i<24;i++){const s=ST[i],x=Math.round(s.x*W),sp=8+s.b*14,y=((s.y*H+t*sp)%(H+20))-10;R(x,y-6,1,6,'#3e6cc4');R(x,y,1,2,'#9fbcff')}
+    for(let i=0;i<10;i++){const q=t*1.6+i*.29,ph=q%1,x=(i*47+(q|0)*61)%W,y=(i*31+(q|0)*17)%H;if(ph<.4){g.globalAlpha=1-ph/.4;g.strokeStyle='#9fbcff';g.beginPath();g.arc(x+.5,y+.5,1+ph*8,0,7);g.stroke();g.globalAlpha=1}}rainFx(t,.6)}
+
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
     // ── the opening's own pictures, drawn fresh: a dusk-purple desert seen from afar, a small crashed ship, a small 녹슨 7호 ──
@@ -8371,13 +8474,36 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
       navParty(t,3);g.globalAlpha=Math.max(0,1-(t-1.8)/1.2);R(0,0,W,H,'#000');g.globalAlpha=1},
     n_radar:t=>{navConsole(t,0)},
     n_dest:t=>{navConsole(t+5,1)},
-    n_arrive:t=>{navConsole(t,2)}};
+    n_arrive:t=>{navConsole(t,2)},
+    // ── 선체 외벽 story ──
+    r_ship:t=>{hullRain(t,1)},
+    r_nav:t=>{navConsole(t,3)},
+    r_bot:t=>{hullBot(t,0)},
+    r_chip:t=>{hullChip(t)},
+    r_botc:t=>{hullBot(t,1)},
+    r_city:t=>{cityView(t,5);if(t<1.2){g.globalAlpha=1-t/1.2;R(0,0,W,H,'#000');g.globalAlpha=1;if(((t*12)|0)%2)tear(.6)}else if(Math.random()<.05)tear(.25);crt(t)},
+    r_faces:t=>{crowdFaces(t);crt(t)},
+    r_drone:t=>{droneView(t);crt(t)},
+    r_log:t=>{workLog(t);crt(t)},
+    r_fleet:t=>{fleetView(t,0);crt(t)},
+    r_board:t=>{fleetView(t,1);crt(t)},
+    r_gaia:t=>{fleetView(t,2);crt(t)},
+    r_launch:t=>{launchView(t);crt(t,false)},
+    // the screen switches off, and we are back in the lit engine room with 녹슨 7호 facing the dark screen
+    r_off:t=>{if(!offSnap){offSnap=document.createElement('canvas');offSnap.width=W;offSnap.height=H;offSnap.getContext('2d').drawImage(cv,0,0)}if(t<.5){const k=t/.5,h=Math.max(1,Math.round(H*(1-k)));R(0,0,W,H,'#000');g.drawImage(offSnap,0,(H-h)/2,W,h);R(0,H/2-1,W,2,MG[7]);return}
+      if(t<1.1){R(0,0,W,H,'#000');const k=(t-.5)/.6,w=Math.max(2,Math.round(W*(1-k)));R((W-w)/2,H/2-1,w,2,MG[7]);return}
+      if(t<1.8){R(0,0,W,H,'#000');const a=1-(t-1.1)/.7;g.globalAlpha=Math.max(0,a);R(W/2-1,H/2-1,3,3,MG[7]);g.globalAlpha=1;return}
+      hullLook(t);g.globalAlpha=Math.max(0,1-(t-1.8)/1.2);R(0,0,W,H,'#000');g.globalAlpha=1},
+    r_look:t=>{hullLook(t,t>.6&&t<2?t-.6:0)},
+    r_six:t=>{sixZoom(t)},
+    r_ship2:t=>{hullRain(t*.7,.8)},
+    r_drops:t=>{hullDrops(t)}};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0,fading=false;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'')+(L.sys?' sys':'');shown=L.pre||0;q('.stv-txt').textContent=(L.v?'':L.t||'').slice(0,shown);full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
   function cur(){const L=S.scenes[si].lines[li];return L.v?`“${L.v}”`:L.t}
   const at=performance.now();let st0=at,artNow='',fadeC=null,fadeAt=0;
-  function loop(now){if(over&&!fading)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow&&!(S.scenes[si].cut&&an===S.scenes[si].art)){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep();{const fx=S.scenes[si].sfx;if(fx==='boom')sfxBoom();else if(fx==='static')sfxStatic();else if(fx==='hum')sfxEngHum();else if(fx==='monon'||fx==='off')sfxMon(fx==='off');else if(fx==='ping')sfxRadar();else if(fx==='wind')sfxWind();else if(fx==='roll')sfxRoll()}}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
+  function loop(now){if(over&&!fading)return;const L1=S.scenes[si].lines[li],an=L1.art||S.scenes[si].art;if(an!==artNow){if(artNow&&!(S.scenes[si].cut&&an===S.scenes[si].art)){fadeC=document.createElement('canvas');fadeC.width=W;fadeC.height=H;fadeC.getContext('2d').drawImage(cv,0,0);fadeAt=now}artNow=an;st0=now;if(S.scenes[si].sfx==='steps')sfxDeckSteps();if(S.scenes[si].sfx==='rattle')sfxRattle();if(S.scenes[si].sfx==='beep')sfxSigBeep();{const fx=S.scenes[si].sfx;if(fx==='boom')sfxBoom();else if(fx==='static')sfxStatic();else if(fx==='hum')sfxEngHum();else if(fx==='monon'||fx==='off')sfxMon(fx==='off');else if(fx==='ping')sfxRadar();else if(fx==='wind')sfxWind();else if(fx==='roll')sfxRoll();else if(fx==='rain')sfxRain()}}const t=(now-st0)/1000;try{ART[an](t)}catch(e){}if(fadeC){const k=(now-fadeAt)/700;if(k<1){g.globalAlpha=1-k;g.drawImage(fadeC,0,0);g.globalAlpha=1}else fadeC=null}if(((now-at)/80|0)%2===0)drawBg((now-at)/1000);
     const txt=cur(),L0=S.scenes[si].lines[li];if(!full){const n=Math.min(txt.length,(L0.pre||0)+Math.max(0,Math.floor((now-t0-(L0.wait||0)*1000)/1000*(L0.v?13:26))));if(n>shown){for(let i=shown;i<n;i++){if(L0.v&&now-lastBeep>60){sfxVoice(txt[i],L0.voice);lastBeep=now}else if(!L0.v&&txt[i]!==' '&&now-lastBeep>55){sfxType();lastBeep=now}}shown=n;q('.stv-txt').textContent=txt.slice(0,n)}if(n>=txt.length){full=true;fullAt=now;q('.stv-next').classList.add('on')}}
     /* auto stories turn their own pages: each line stays a little while once it is fully shown */if(AUTO&&full&&fullAt&&now-fullAt>1800+cur().length*45){fullAt=0;autoCall=true;next();autoCall=false}
     raf=requestAnimationFrame(loop)}
