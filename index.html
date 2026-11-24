@@ -6301,7 +6301,7 @@ function scFpHTML(sc){const mv=sc.mv,i=mv?mv.t:sc.t,T=TRAILS[i],k=mv?mv.to:sc.at
 let scCamT='none';
 function scCam(){const f=document.querySelector('#stage .scmap'),m=f&&f.querySelector('.scmapin');if(!m)return;const fw=f.clientWidth,fh=f.clientHeight,iw=m.offsetWidth,ih=m.offsetHeight,[x,y]=scoutPos();
   const tx=Math.max(fw-iw,Math.min(0,fw/2-(x+.5)/SC_W*iw)),ty=Math.max(fh-ih,Math.min(0,fh/2-(y+.5)/SC_H*ih));scCamT=`translate(${Math.round(tx)}px,${Math.round(ty)}px)`;if(m.style.transform!==scCamT)m.style.transform=scCamT}
-/* ───────── 조사 이벤트 「워프기계를 찾아 떠나는 여정」 1부: a fixed click-and-point investigation the operator opens for everyone, like 오르비스.
+/* ───────── 조사 이벤트 「워프기계를 찾아 떠나는 여정」: a fixed click-and-point investigation the operator opens for everyone, like 오르비스.
    선체 외벽 is repaired; 녹슨 7호 leads the crew past the settlement: the wilds, a swept-away city, (the boarding gates,) and an
    empty lot where a bunker door lies hidden. Anyone online clicks spots in the picture to find clues, which everyone sees.
    When a place's clues are all found the crew votes (2 minutes, or the operator's 집계) and moves on; some places branch.
@@ -6419,7 +6419,7 @@ setInterval(()=>{if(!XEV||!XEV.on)return;const fin=XEV.done&&P&&P.xevEnd===XEV.e
   if((xevHid!==XEV.eid&&xevCanShow())!==xevShown()||document.getElementById('xevPill'))xevPaint();if(XEV.done){if(xevShown())xevEndSeq();return}const t=document.getElementById('xevT');if(t)t.textContent=xevLeft();if(xevShown()||isAdmin)xevDrive(false)},1000);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&xevShown()&&!document.getElementById('lgMenu')&&!(e.target&&/^(TEXTAREA|INPUT)$/.test(e.target.tagName))){e.stopPropagation();xevHid=XEV&&XEV.eid||'';xevPaint()}},true);
 function xevAdminHTML(){if(mode!=='online')return'';const on=XEV&&XEV.on,sc=on&&!XEV.done&&xevScene();
-  return`<div class="info-sec" data-adm="xev"><span class="lbl">Expedition · 워프기계를 찾아 떠나는 여정 (1부)</span>
+  return`<div class="info-sec" data-adm="xev"><span class="lbl">Expedition · 워프기계를 찾아 떠나는 여정</span>
    <span class="hint">선체 외벽을 모두 고친 뒤의 조사입니다. 열면 접속한 모든 선원의 화면 위에 오르비스처럼 조사 화면이 뜹니다. 장소마다 선원 각자가 그림 속을 눌러 단서를 찾고(선택지도 각자 고름), 운영자가 「투표 열기」를 누르면 투표로 다음 장소를 정합니다(투표는 3분이 지나거나 운영자가 집계하면 끝). 지하 벙커의 문이 열리면 화면이 어두워지고 「새로운 구역에 맞춰 조사가 개편되었습니다!」 팝업이 뜹니다.</span>
    <p class="hint">${on?(XEV.done?'끝남 · 벙커 문이 열렸습니다. 선원들이 모두 확인했다면 조사를 닫아 주십시오.':`진행 중 · ${esc(sc.ch+' '+sc.t)}${XEV.vk?' · 투표 중':''}`):'닫혀 있습니다.'}</p>
    <div class="row" style="gap:6px;flex-wrap:wrap">${on&&!XEV.done?`<button class="btn sm gold" type="button" data-act="xevnext">${XEV.vk?'투표 지금 집계':sc.go?'다음 장소로':'투표 열기'}</button><button class="btn sm ghost" type="button" data-act="xevend">조사 닫기</button>`:`<button class="btn sm gold" type="button" data-act="xevopen">조사 열기 (처음부터)</button>${on?'<button class="btn sm ghost" type="button" data-act="xevend">조사 닫기</button>':''}`}</div></div>`}
@@ -8239,7 +8239,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795513487';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795513899';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
