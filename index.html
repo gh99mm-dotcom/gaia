@@ -168,6 +168,98 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .farmcook .rtiles{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
 .benchcook{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"h h" "t t" "b b" "k k" "c c" "r s" "d d";gap:10px 16px;padding:14px}
 .benchcook>.cook-h{grid-area:h}.benchcook>.tastyhint{grid-area:t;margin:0}.benchcook>.cbuff{grid-area:b}.benchcook>.rtiles{grid-area:r;align-self:start}.benchcook>.csel{grid-area:s;align-self:start;position:sticky;top:8px}.rtile.ult{border-color:#e0b040!important;box-shadow:inset 0 0 0 1px #ffd070}.ulttag{font-family:var(--f-pix);font-size:10px;color:#1a1206;background:linear-gradient(90deg,#ffd070,#ff9a3a);padding:0 5px;margin-left:4px;vertical-align:middle}
+#xevFx{position:fixed;inset:0;z-index:94;background:rgba(4,6,10,.96);overflow:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 24px max(12px,env(safe-area-inset-left,0px));animation:orbIn .6s steps(4)}
+.xevwrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+#xevFx{--void:#06070d;--deep:#0b0d16;--panel:#11131e;--panel2:#181b29;--ink:#030409;--line:#232838;--text:#c4c7d4;--mute:#787d94;--dim:#4a4f64;--pink:#a8778c;--pinkd:#4f3240;--violet:#7a6fa0;--violetd:#2c2845;--cyan:#8aa9bd;--cyand:#2b4252;--gold:#bfae80;--green:#8ba790;--red:#a8626b;--me-name:#b892ff;--off-name:#6a6e80;color-scheme:dark;color:var(--text)}
+#xevFx .xevtalk{background:#0b0f16;border:1px solid #262e3a;box-shadow:0 0 0 1px #05070a,0 12px 34px rgba(0,0,0,.55);padding:14px 16px;color:#c9d1dc}
+#xevFx .xevtalk>.lbl{color:#7d8899}#xevFx .btn.gold{color:#2a2414}
+@media (min-width:1000px){.xevwrap{max-width:1440px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);align-items:start;gap:10px 14px}.xevwrap>.xevbar{grid-column:1/-1}.xevwrap>.xevtalk{align-self:stretch;contain:size;box-sizing:border-box;min-height:0;overflow:hidden}.xevwrap>.xevtalk #xevTalk{display:flex;flex-direction:column;min-height:0;flex:1}.xevwrap>.xevtalk .hfeed{max-height:none;flex:1 1 auto;min-height:160px;overflow-y:auto}}
+.xevbar{display:flex;justify-content:space-between;align-items:center;color:#7d8899;font-family:var(--f-pix);font-size:11px;letter-spacing:.14em}
+.xevbar .qchip{background:transparent;color:#aeb8c6;border-color:#3a4250}.xevbar .qchip:hover{background:rgba(174,184,198,.1)}
+#xevPill{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:93;padding:8px 16px;background:#0b0f16;color:#cfd6df;border:1px solid #4a5464;font-size:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+.xvbox{background:#0b0f16;border:1px solid #262e3a;box-shadow:0 0 0 1px #05070a,0 12px 34px rgba(0,0,0,.55);padding:14px 16px;display:flex;flex-direction:column;gap:12px;color:#c9d1dc}
+.xvhd{display:grid;grid-template-columns:1fr auto auto auto;gap:22px;align-items:baseline;font-size:13px;color:#6f7a8b}
+.xvhd b{color:#dfe5ee;font-weight:700;letter-spacing:.02em}.xvhd i{font-style:normal;color:#dfe5ee}
+.xvpic{position:relative;width:100%;aspect-ratio:2/1;border:1px solid #262e3a;background:#05070a;overflow:hidden}
+.xvpic canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+.xvspot,.xvspot:hover,.xvspot:focus,.xvspot:focus-visible,.xvspot:active,.xvspot.sel{position:absolute;background:transparent!important;border:0!important;box-shadow:none!important;outline:none!important;cursor:pointer;padding:0}
+.xvspot i{display:none;position:absolute;right:-4px;top:-9px;font-style:normal;font-size:11px;color:#e6c98f;text-shadow:0 1px 2px #000}
+.xvtxt{min-height:132px;border:1px solid #262e3a;background:#090c11;padding:18px 20px;display:flex;flex-direction:column;gap:12px;font-size:14px;line-height:1.9;color:#cfd6df}
+.xvtxt p{margin:0;white-space:pre-line;animation:xvIn .9s ease}
+@keyframes xvIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.xvt{color:#e6c98f;font-size:15px;letter-spacing:.02em}
+.xvhint{font-size:12px;color:#6f7a8b;line-height:1.6}
+.xvlink{background:none;border:0;padding:0;color:#9aa6b8;text-decoration:underline;cursor:pointer;font:inherit}
+.xvvote{display:flex;flex-direction:column;gap:8px;border-top:1px dashed #262e3a;padding-top:12px}.xvvote>b{color:#dfe5ee;font-size:14px}
+.xvopts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.xvopts.n3{grid-template-columns:1fr 1fr 1fr}
+.sctabs{display:inline-flex;margin:0 auto 0 12px;align-self:center}.stage-head .sctabs button{padding:3px 12px}
+.cllog.board{position:relative;gap:22px;padding:22px 20px 30px;border:10px solid #c4cad0;border-radius:0;font-family:"Galmuri11",var(--f-body);-webkit-font-smoothing:none;font-smooth:never;
+ box-shadow:inset 0 0 0 2px #9aa2aa,inset 0 4px 0 2px rgba(0,0,0,.06),0 0 0 2px #6f777f,6px 8px 0 2px rgba(0,0,0,.45);
+ background:linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.75) 30% 36%,rgba(255,255,255,0) 36% 40%,rgba(255,255,255,.5) 40% 42%,rgba(255,255,255,0) 42%),linear-gradient(180deg,#fbfcfd,#eef1f4)}
+.cllog.board::after{content:"";position:absolute;left:12%;right:12%;bottom:-20px;height:8px;background:#b8bfc6;box-shadow:0 4px 0 0 #8e969e,4px 8px 0 0 rgba(0,0,0,.35)}
+.clstr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;overflow:visible;shape-rendering:crispEdges}
+.clstr path{fill:none;stroke:#2f5fb3;stroke-width:3;opacity:.8}
+.clstr circle{display:none}
+.cltitle{align-self:flex-start;position:relative;z-index:2;color:#1f3f8f;padding:0 6px 4px}
+.cltitle b{display:block;font-family:"Galmuri11",var(--f-body);font-size:33px;font-weight:400;line-height:1.1;background:linear-gradient(transparent 80%,rgba(214,62,52,.55) 80% 92%,transparent 92%)}
+.cltitle span{font-family:"Galmuri11",var(--f-body);font-size:11px;color:#3d4652}
+.clsrc{display:block;position:relative;z-index:2;margin:8px 0 -8px;color:#7a838d;font-family:"Galmuri11",var(--f-body);font-size:11px;letter-spacing:.08em}
+.clgroup{display:flex;flex-direction:column;gap:14px;border:0;padding:0}
+.clgh{position:relative;z-index:2;align-self:flex-start;display:flex;gap:10px;align-items:baseline;padding:0 4px 4px;border-bottom:3px solid #c8413a}
+.clgh b{color:#b3332c;font-family:"Galmuri11",var(--f-body);font-size:22px;font-weight:400;line-height:1.1}.clgh .xvhint{color:#6c7580;font-family:"Galmuri11",var(--f-body);font-size:11px}
+.clitems{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:26px 22px;padding:6px 4px 0}
+.clitem{position:relative;z-index:1;display:flex;flex-direction:column;gap:7px;padding:17px 15px 13px;min-width:0;background:#fff7b8;color:#2a2620;border:0;border-radius:0;box-shadow:4px 4px 0 0 rgba(40,50,60,.22);transition:transform .1s steps(2)}
+.clitem:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 0 rgba(40,50,60,.22);z-index:4}
+.clitem::before{display:none}
+.clitem::after{content:"";position:absolute;left:50%;top:-7px;width:16px;height:16px;margin-left:-8px;background:var(--mg,#d94a3f);box-shadow:inset -4px -4px 0 0 rgba(0,0,0,.22),inset 4px 4px 0 0 rgba(255,255,255,.45);clip-path:polygon(4px 0,12px 0,12px 2px,14px 2px,14px 4px,16px 4px,16px 12px,14px 12px,14px 14px,12px 14px,12px 16px,4px 16px,4px 14px,2px 14px,2px 12px,0 12px,0 4px,2px 4px,2px 2px,4px 2px)}
+.clitem.c0{background:#fff4a6;--mg:#2f66c9}.clitem.c1{background:#ffd9e2;--mg:#2b9a6a}.clitem.c2{background:#d6ecff;--mg:#e0a128}.clitem.c3{background:#dcf5d4;--mg:#d94a3f}
+.clitem.kc{background:#fff;border:2px solid #d5dae0;border-top:4px solid #2f5fb3;padding-top:18px;--mg:#d94a3f}
+.clitem.kc .clhd{padding-right:48px}.clitem.kc .clhd::after{content:"핵심";position:absolute;right:10px;top:14px;font-family:"Galmuri11",var(--f-body);font-size:11px;color:#c8413a;border:2px solid #c8413a;padding:1px 5px;box-shadow:2px 2px 0 0 rgba(200,65,58,.25)}
+.clitem.open{grid-column:1/-1;z-index:5;padding:20px 22px 16px}.clitem.open:hover{transform:none;box-shadow:4px 4px 0 0 rgba(40,50,60,.22)}
+.clitem.x{background:transparent;border:2px dashed #b4bcc5;box-shadow:none;color:#8a939d;justify-content:center;align-items:center;min-height:120px}
+.clitem.x::after{display:none}.clitem.x b{font-family:"Galmuri11",var(--f-body);font-size:33px;font-weight:400;color:#9aa3ad;line-height:1}.clitem.x .xvhint{color:#8a939d;font-family:"Galmuri11",var(--f-body);font-size:11px}
+.clhd{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.clhd b{color:#1d2a44;font-family:"Galmuri11",var(--f-body);font-size:22px;font-weight:400;line-height:1.15}
+.clhd .xvhint{color:#6a6458;font-family:"Galmuri11",var(--f-body);font-size:11px}
+.clitem p{margin:0;font-family:"Galmuri11",var(--f-body);font-size:11px;line-height:1.9;color:#33302a;white-space:pre-line}
+.clitem:not(.open) p{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.clcnt{align-self:flex-start;background:none;border:0;border-bottom:2px solid rgba(40,50,70,.35);color:#3b4658;font-family:"Galmuri11",var(--f-body);font-size:11px;padding:1px 2px;cursor:pointer}.clcnt:hover,.clitem.open .clcnt{border-color:#2f5fb3;color:#2f5fb3}
+.clcms{display:flex;flex-direction:column;gap:9px;border-top:2px dashed rgba(40,50,70,.3);padding-top:10px}
+.clcm{display:flex;gap:8px;align-items:flex-start}.clcm>div{min-width:0;flex:1}.clcmh{display:flex;gap:8px;align-items:baseline}.clcmh b{color:#1d2a44!important;font-family:"Galmuri11",var(--f-body);font-weight:400}
+.clcm p{font-size:11px;color:#2a2620}.clcms .xvhint{color:#6a6f78;font-family:"Galmuri11",var(--f-body);font-size:11px}.clcms .xvlink{color:#8a4a40;font-family:"Galmuri11",var(--f-body)}
+.clitem .sendrow input{background:#fff;color:#2a2620;border:2px solid #c3c9d0;box-shadow:none;border-radius:0;font-family:"Galmuri11",var(--f-body);font-size:11px}.clitem .sendrow input::placeholder{color:#8a919a}
+.clitem .sendrow .btn{font-family:"Galmuri11",var(--f-body);font-size:11px}
+.cllog.board>.xvhint{color:#8a4a40}
+#clIn{flex:1;min-width:0}
+@media (max-width:560px){.clitems{grid-template-columns:1fr 1fr;gap:20px 12px}.clhd b{font-size:21px}.clitem{padding:14px 11px 11px}}
+.bkbox{margin-top:4px}
+.bkui{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}.bkui .bkbox{margin:0}
+.bkui .bkmap{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"lounge archive" "workshop server" "warp warp";gap:8px;padding:10px}
+.bkui .bkroom{min-height:52px;padding:7px 9px}.bkui .bk-warp{min-height:64px}
+.bkroom.here{border-color:#e6c98f;box-shadow:inset 0 0 0 1px #e6c98f}.bkroom.here span{color:#e6c98f}
+.bkroom.dest{border-color:#7ac8e0;animation:bkDest 1.6s ease-in-out infinite}.bkroom.dest span{color:#7ac8e0}@keyframes bkDest{50%{box-shadow:0 0 14px rgba(122,200,224,.45)}}
+.bkroom[disabled]{opacity:.45;cursor:default}
+.bkui .scside .sclog{flex:1;min-height:300px;overflow:hidden;display:flex;flex-direction:column}.bkfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:9px;border-top:1px dashed color-mix(in srgb,var(--hc) 40%,transparent);font-size:12.5px;color:#a8c4cf}.bkfoot b{color:#d6e6ec;font-weight:400}.bkfoot .btn small{opacity:.75;margin-left:4px}@media (min-width:761px){.bkui>.scside{contain:size}.bkui .scside .sclog{min-height:0}}.bkui .scside .sclog.holo .scll{flex:1 1 0;height:auto;max-height:none;min-height:0;overflow-y:auto;font-size:14px;line-height:1.75}.bkfound{animation:sclin .8s ease-out}.bkfound b{color:#e6c98f}.bkfound b.bknote{color:#cfe0e8}.bkui{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)!important}
+@media (max-width:760px){.bkui{grid-template-columns:minmax(0,1fr)}}
+.bkmap{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:"lounge archive workshop server" "warp warp warp warp";gap:14px;padding:14px;background:#07090d;border:1px solid #262e3a;background-image:linear-gradient(#11161d 1px,transparent 1px),linear-gradient(90deg,#11161d 1px,transparent 1px);background-size:16px 16px}
+.bkroom{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:2px;min-height:78px;padding:10px 12px;background:#0d1219;border:1px solid #2e3744;color:#cfd6df;font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
+.bkroom:hover{border-color:#6a7a8e;background:#111823}.bkroom b{font-size:14px;color:#dfe5ee}.bkroom span{font-size:11px;color:#6f7a8b}
+.bkroom.done{border-color:#5a6a50}.bkroom.done span{color:#9ab88a}
+.bkroom::before{content:'';position:absolute;top:8px;right:8px;width:6px;height:6px;background:#c8424a;box-shadow:0 0 6px #c8424a;opacity:.8;animation:bkBlink 2.4s steps(2) infinite}
+.bkroom.done::before{background:#5ac88a;box-shadow:0 0 6px #5ac88a}
+@keyframes bkBlink{50%{opacity:.25}}
+.bk-lounge{grid-area:lounge}.bk-quarters{grid-area:quarters}.bk-canteen{grid-area:canteen}.bk-storage{grid-area:storage}.bk-workshop{grid-area:workshop}.bk-archive{grid-area:archive}.bk-server{grid-area:server}
+.bk-warp{grid-area:warp;min-height:96px;align-items:center;justify-content:center;text-align:center;border-color:#4a5a78;background:radial-gradient(ellipse at center,#152032,#0d1219 70%)}.bk-warp b{font-size:16px;letter-spacing:.04em}
+.bkhall{position:absolute;left:14px;right:14px;top:50%;height:2px;background:#1c232d;z-index:0}
+@media (max-width:600px){.bkmap{grid-template-columns:1fr 1fr;grid-template-areas:"lounge archive" "workshop server" "warp warp"}}.xvopts.n1{grid-template-columns:minmax(0,320px)}
+#xevFx.xvfade::after{content:'';position:fixed;inset:0;background:#000;z-index:5;animation:xvBlack 3s ease-in forwards}@keyframes xvBlack{from{opacity:0}to{opacity:1}}
+.xvres{color:#8f9aab;font-style:italic;border-left:2px solid #2e3744;padding-left:12px}.xvout{color:#e6c98f}.xvtxt em{font-style:normal;color:#e6c98f}
+.xvopt{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:#0f141c;border:1px solid #2e3744;color:#cfd6df;font:inherit;font-size:13px;cursor:pointer;text-align:left}
+.xvopt:hover{border-color:#5a6678}.xvopt.mine{border-color:#e6c98f;box-shadow:inset 0 0 0 1px #e6c98f}.xvopt em{font-style:normal;font-family:var(--f-pix);font-size:11px;color:#9aa6b8}
+.xvnote{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.xvchip{padding:3px 10px;background:#0f141c;border:1px solid #2e3744;color:#aeb8c6;font:inherit;font-size:12px;cursor:pointer}.xvchip.x{color:#4a5464;border-style:dashed;cursor:default;letter-spacing:.1em}.xvchip.on,.xvchip:hover{border-color:#e6c98f;color:#e6c98f}
+.xvadm{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px dashed #262e3a;padding-top:10px}
+.xevtalk{display:flex;flex-direction:column;gap:8px}.xevtalk .hfeed{max-height:340px;min-height:120px}
+@media (max-width:600px){.xvhd{grid-template-columns:1fr 1fr;gap:4px 12px}.xvopts,.xvopts.n3{grid-template-columns:1fr}.xvtxt{padding:14px}}
 .benchcook>.cooking{grid-area:k}.benchcook>.cooktabs{grid-area:c}
 .benchcook>.dlist{grid-area:d;border-top:1px dashed var(--line);padding-top:10px}
 .benchcook .rtiles{grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:5px}.benchcook .rtile{aspect-ratio:1}
@@ -3120,7 +3212,7 @@ let P=newPlayer('새 선원');
 const TAB_SUBS=[];
 const tabSub=(want,open)=>TAB_SUBS.push({want,open,un:null});
 let farmSeenAt=0;
-function tabSubsSync(){if(tab==='farm')farmSeenAt=Date.now();try{padSync();farmSync();if(attUn&&!(tab==='ship'&&shipView==='supply')){try{attUn()}catch(e){}attUn=null;attDay=''}}catch(e){}try{bossSubSync()}catch(e){}TAB_SUBS.forEach(s=>{const w=mode==='online'&&!!db&&s.want();if(w&&!s.un)s.un=s.open()||(()=>{});else if(!w&&s.un){try{s.un()}catch(e){}s.un=null}})}
+function tabSubsSync(){try{xvSync();xmapSync()}catch(e){}if(tab==='farm')farmSeenAt=Date.now();try{padSync();farmSync();if(attUn&&!(tab==='ship'&&shipView==='supply')){try{attUn()}catch(e){}attUn=null;attDay=''}}catch(e){}try{bossSubSync()}catch(e){}TAB_SUBS.forEach(s=>{const w=mode==='online'&&!!db&&s.want();if(w&&!s.un)s.un=s.open()||(()=>{});else if(!w&&s.un){try{s.un()}catch(e){}s.un=null}})}
 const AS=k=>Math.max(2,(P.as&&P.as[k])||0);
 const CRAFT={
  head:{n:'머리',ic:'gearH',list:[
@@ -3452,7 +3544,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
   const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
   box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
   const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
-  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+affAdminHTML()+rbAdminHTML()+padResetHTML()+seasonAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+xevAdminHTML()+affAdminHTML()+rbAdminHTML()+padResetHTML()+seasonAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
   if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
   const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
@@ -3464,7 +3556,7 @@ document.addEventListener('focusout',e=>{if(!admPend)return;const box=$('#adminB
 // the admin page is split into tabs: tools, member management, deleted members; sections say which tab they belong to
 let admTab='tools';
 function admTabsApply(){const box=$('#adminBox');if(!box)return;const head=box.querySelector('.info-head'),nc=Object.keys(PLAYERS).filter(id=>id!==uid).length,nd=Object.keys(DELP).length;
-  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['story',`이야기 공개 <em>${STORY_LIST.filter(([k])=>STORY_ON[k]).length}/${STORY_LIST.length}</em>`],['give','아이템 지급'],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['rb',`관계함 <em>${rbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`],['reset','초기화']].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
+  head.insertAdjacentHTML('afterend',`<div class="dtabs admtabs" role="tablist">${[['tools','운영 도구'],['story',`이야기 공개 <em>${STORY_LIST.filter(([k])=>STORY_ON[k]).length}/${STORY_LIST.length}</em>`],['give','아이템 지급'],['xev',`조사 이벤트${XEV&&XEV.on&&!XEV.done?' <em>진행 중</em>':''}`],['boss',`침략자 소환${bossAlive(BOSS)?' <em>출현 중</em>':''}`],['spres',`특별의뢰 예약 <em>${SPRES.filter(e=>e.end>Date.now()).length}</em>`],...(box.querySelector('[data-adm="inv"]')?[['inv','초대장']]:[]),['fb',`건의함 <em>${fbItems().length}</em>`],['rb',`관계함 <em>${rbItems().length}</em>`],['crew',`선원 관리 <em>${nc}</em>`],['del',`삭제된 선원 <em>${nd}</em>`],['reset','초기화']].map(([k,n])=>`<button role="tab" aria-selected="${admTab===k}" data-act="admtab" data-k="${k}">${n}</button>`).join('')}</div>`);
   box.querySelectorAll('.info-sec').forEach(el=>{el.hidden=(el.dataset.adm||'tools')!==admTab});
   if(![...box.querySelectorAll('.info-sec')].some(el=>(el.dataset.adm||'tools')===admTab))box.insertAdjacentHTML('beforeend',`<div class="info-sec" data-adm="${admTab}"><span class="hint">${admTab==='del'?'삭제된 선원이 없습니다.':'이 기능은 공용 서버에 연결했을 때만 쓸 수 있습니다.'}</span></div>`)}
 /* ───────── activity log ───────── */
@@ -5084,7 +5176,7 @@ function bresTick(){if(mode!=='online'||!db||bresBusy||!P||!P.joined)return;cons
    .then(nx=>{if(!nx)return;const K=BOSS_KINDS[r.k];return bossSummon(r.k,r.lv).then(x=>{if(x&&K)sys(`[공지] 심연에서 침략자가 나타났다! ${K.n} (Lv.${r.lv}) · 2시간 안에 토벌하십시오. 탐사 탭으로!`,true,'siren')})}).catch(()=>{}).finally(()=>{bresBusy=false})}
 setInterval(bresTick,20e3);
 function bossSubscribe(){
-  endSub();memSub();affSub();bondSub();bresSub();
+  endSub();memSub();xevSub();affSub();bondSub();bresSub();
   bossSubSync();if(!bossPollT)document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode==='online'&&db&&!bossUn)bossRef().get().then(bossOn,()=>{})});if(!bossPollT)bossPollT=setInterval(()=>{if(mode==='online'&&db&&!bossUn&&!document.hidden)bossRef().get().then(bossOn,()=>{})},BOSS_POLL);
   tabSub(()=>tab==='adv',()=>bchatRef().onSnapshot(sn=>{BCHAT=sn.exists?(sn.data().msgs||[]):[];if(tab==='adv')bossPaintChat()},()=>{}));
   tabSub(()=>socOpen&&socTab==='chat',()=>loungeRef().onSnapshot(sn=>{LCHAT=sn.exists?(sn.data().msgs||[]):[];if(socOpen&&socTab==='chat')loungePaint()},()=>{}));
@@ -6209,8 +6301,471 @@ function scFpHTML(sc){const mv=sc.mv,i=mv?mv.t:sc.t,T=TRAILS[i],k=mv?mv.to:sc.at
 let scCamT='none';
 function scCam(){const f=document.querySelector('#stage .scmap'),m=f&&f.querySelector('.scmapin');if(!m)return;const fw=f.clientWidth,fh=f.clientHeight,iw=m.offsetWidth,ih=m.offsetHeight,[x,y]=scoutPos();
   const tx=Math.max(fw-iw,Math.min(0,fw/2-(x+.5)/SC_W*iw)),ty=Math.max(fh-ih,Math.min(0,fh/2-(y+.5)/SC_H*ih));scCamT=`translate(${Math.round(tx)}px,${Math.round(ty)}px)`;if(m.style.transform!==scCamT)m.style.transform=scCamT}
-function renderScan(){const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(renderNav,0)}const on=!!sc.mv||sc.t>=0;
-  return head()+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 들어가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 깊이 들어갈수록 길이 험해져 에너지가 ${scEn(1)}에서 ${scEn(SC_N)}까지 듭니다. 길의 끝(${SC_N}지점)에서는 <b style="color:var(--gold)">공명 촉매</b>를 반드시 하나 얻습니다.</p>
+/* ───────── 조사 이벤트 「워프기계를 찾아 떠나는 여정」 1부: a fixed click-and-point investigation the operator opens for everyone, like 오르비스.
+   선체 외벽 is repaired; 녹슨 7호 leads the crew past the settlement: the wilds, a swept-away city, (the boarding gates,) and an
+   empty lot where a bunker door lies hidden. Anyone online clicks spots in the picture to find clues, which everyone sees.
+   When a place's clues are all found the crew votes (2 minutes, or the operator's 집계) and moves on; some places branch.
+   Once the bunker door opens, the screen fades to black and a popup says a new area has been added.
+   xev/cur holds the run: sc (where we are), path (the places reached), picks (each place's choice), found (clues, and a pick
+   made inside one). ───────── */
+const xevRef=()=>db.doc('xev/cur');
+const XEV_VOTE_MS=180e3,XEV_STEP_MS=4000;
+let XEV=null,xevHid='',xevSel=null,xevBusy=false,xevEndT=null;
+const xevPk=()=>(XEV&&XEV.picks)||{};
+const xevTarp=pk=>(pk||xevPk()).v0===0;   // 방수포를 씌웠다
+// spots are in the picture's own 240×120 pixels; `if` shows a spot only in some runs
+const XEV_SC=[
+ {id:'intro',ch:'도입',t:'출발 준비',art:'dawn',txt:()=>'빗소리가 그친 뒤 7호가 짐작한 장소로 출발하게 되었다.\n우리는 각자의 짐을 챙겼다.',
+  spots:[{id:'a1',n:'웅덩이',x:28,y:100,w:48,h:13,d:'물웅덩이다. 7호가 닿지 않게 조심해야 할 것 같다.'},
+   {id:'a2',n:'함선 자재들이 놓여 있는 곳',x:122,y:76,w:44,h:24,d:'방수포다. 어딘가에 사용할 수 있을 것 같다.'},
+   {id:'a3',n:'녹슨 7호',x:184,y:66,w:32,h:34,d:'“습도가 높아. 관절이 시린 느낌이 드는걸.”'}],
+  vote:{q:'7호를 어떻게 데리고 갈까?',o:[{t:'방수포를 씌워 준다',r:'7호가 방수포를 망토처럼 두른다.\n“이거, 꽤 근사한데? 선물이지? 값은 내 *마음*으로 칠게.”'},{t:'그대로 출발한다',r:'“좋아, 오늘은 내가 항해사지. 손님들은 뒤따라오기나 해.”'}]}},
+ {id:'wild',ch:'장소 1',t:'녹슨잔해길 너머 황야',art:'wild',txt:pk=>((pk||{}).v0===1?'가는 도중, 녹슨 7호가 잠시 가동을 멈췄다. 습기에 관절이 굳은 모양이다.\n한참 만에 다시 바퀴가 구른다. “…괜찮아. 잠깐 쉰 거야.”\n\n':'')+'7호의 말에 의하면 우리는 녹슨 잔해길의 너머를 향해 가야 한다. 몇 번이나 와 본 곳이지만 다른 길은 보지 못했다. 7호의 바퀴 자국이 질척한 바닥에 남고 있다.\n정착지의 마지막 불빛이 등 뒤로 멀어진다. 7호의 바퀴 소리만 일정하게 이어진다.\n“여기서부턴 너희 지도에 없는 땅이야. 내 바퀴는 알고 있지만.”',
+  spots:[{id:'b1',n:'누운 잔해',x:8,y:62,w:104,h:44,d:'고철도, 기둥도, 바위마저 전부 같은 방향으로 누워 있다. 무언가가 쓸고 지나간 것처럼.'},
+   {id:'b2',n:'녹슨 7호',x:122,y:68,w:34,h:32,d:'7호가 누운 기둥을 바퀴로 톡 건드린다.\n“남아 있는 흔적의 대부분은 이런 모양이야. 인사라도 하는 건지.”'},
+   {id:'b3',n:'잔해 사이의 틈',x:164,y:48,w:24,h:50,d:'…외계 생물체다. 지금 인원으로는 두려울 것이 없다. 생물체는 몇 번 울더니 도망가 버렸다.\n외생물체가 도망간 쪽으로 공간이 보인다.'},
+   {id:'b4',n:'녹슨 표지판 너머',x:200,y:46,w:38,h:52,d:'무성한 잔해들 사이로 밟고 지나갈 곳이 보인다.'}],
+  vote:{q:'어느 길로 갈까?',o:[{t:'외생물체가 도망간 곳으로 간다',r:'좁디좁은 틈이다. 숨이 막혀 오는 찰나, 큰 공간으로 이어져 한숨을 돌렸다. 보이는 것은…'},
+   {t:'녹슨 표지판 너머로 간다',r:'항해장 {항해장}이 녹슨 표지판을 옆으로 치웠다. 아슬아슬하게 작은 잔해들만 밟고 지나간다. 어느 정도 들어가면 잔해가 없는 길이 보인다. 그곳으로 계속 걸었다. 그리고 보이는 것은…'},
+   {t:'7호의 기억을 믿는다',r:'도르륵거리는 7호의 바퀴 소리가 들린다. 겨우 지나갈 수 있을 만한 공간이 우리의 시선이 닿기 어려운 곳에 숨어 있었다. 몇 분 걷지도 않았는데 큰 공간이 나왔다. 보이는 것은…'}]}},
+ {id:'city',ch:'장소 2',t:'쓸려나간 도시 잔해',art:'city',
+  txt:pk=>'도시다. 아니, 도시였던 것이다. 3호의 기억에서 본 익숙한 풍경이 위쪽 절반만 쓸려나간 채 남아 있다.\n7호가 조용히 말한다. “…꽤나 큰 도시였을 텐데. 사람이 아주 많았고.”',
+  spots:[{id:'c1',n:'건물',x:2,y:32,w:96,h:30,d:'건물들의 높이가 비슷하다. 윗부분이 몽땅 사라진 탓이다.'},
+   {id:'c2',n:'행성 모형',x:26,y:88,w:26,h:20,d:'바닥을 구르고 있는 모형. 대륙의 모양은 익히 아는 것이다.\n우리의 고향, 테라.'},
+   {id:'c3',n:'이주 탑승구',x:96,y:54,w:48,h:46,d:'안내판 아래 빼곡한 이름들 위로 선이 그어져 있다.'}],
+  vote:{q:'어디로 가야 할까?',o:[{t:'이주 탑승구',r:'우리는 이주 탑승구로 이동했다.',go:'gate'},{t:'사람의 흔적이 없는 곳',r:'7호는 망설임 없이 반대쪽으로 바퀴를 굴린다.\n도시가 끝나는 곳에, 공터가 있었다.',go:'lot'}]}},
+ {id:'gate',ch:'장소 2-1',t:'이주 탑승구',art:'launch',txt:()=>'텅 빈 발사장. 거대한 받침대만 줄지어 남아 있다.\n“모두 떠났어. 무사히.” 7호의 목소리만 넓은 발사장 안에 울린다.',
+  spots:[{id:'g1',n:'받침대',x:136,y:40,w:54,h:52,d:'에스컬레이터는 가동을 멈춘 지 오래다.'},
+   {id:'g2',n:'신문',x:38,y:94,w:36,h:18,d:'xxxx년 xx월 xx일의 신문. 우리가 아는 시기에서 멀지 않은 날짜다.'}],
+  go:{t:'7호를 따라 이동한다',r:'7호를 따라 한참이나 길을 걸었다. 어느새 도시를 벗어나 끝자락에 있는 공터를 발견했다. 특이한 점은 없어 보인다.',to:'lot'}},
+ {id:'lot',ch:'장소 3',t:'잔해만 남은 공터',art:'lot',txt:()=>'녹슨 7호가 바퀴를 멈춘다.\n“아마 여기일 거야. 내 직감이 그렇게 말해 주고 있거든.”',
+  spots:[{id:'h1',n:'잔해 1',x:12,y:64,w:56,h:36,d:'고철 더미다. 우리가 여태껏 써 왔던 게 혹시 여기서 나온 건 아닐까?'},
+   {id:'h2',n:'잔해 2',x:92,y:80,w:58,h:24,d:'잔해 아래에 익숙한 꽃이 잔뜩 피어 있다.',
+    pick:[{t:'꽃을 꺾는다',r:'꽃을 꺾어 내자, 그 아래로 둥근 문의 가장자리가 드러난다.'},{t:'헤집는다',r:'흙을 헤집자, 발끝에 무언가 단단한 것이 채인다.'},{t:'무시한다',r:'꽃은 그대로 두었다. 아무것도 알 수 없었다.'}]},
+   {id:'h3',n:'잔해 3',x:174,y:74,w:52,h:28,d:'잔해는 조금만 만져도 부서져 버린다.'}],
+  pre:'지하 벙커의 입구를 찾았다. 하지만 열리지 않는다.\n문을 열어야 하는데, 아무리 찾아봐도 열쇠 비슷한 건 없다.',
+  vote:{q:'문을 어떻게 열까?',o:[{t:'힘으로 연다',r:'기관장 {기관장}과 몇몇 기관사들이 해치를 들어 올린다. 녹슨 문이 비명 같은 소리를 내며 열린다.'},{t:'녹슨 7호에게 맡긴다',r:'7호가 문을 이리저리 살피더니, 자신의 손을 홈에 넣어 본다. 정확히 들어맞는다.'}]}}];
+const XEV_IDX=Object.fromEntries(XEV_SC.map((s,i)=>[s.id,i]));
+const XEV_OUTRO='문이 열렸다. 우리는 안으로 들어간다.';
+// {항해장} / {기관장}: the appointed officer's name, with the particle after it fitted to the name (이/가, 과/와)
+function xevNames(s){const name=a=>{try{const r=rolesNow()[a==='항해장'?'navigator':'engineer'],p=r&&(r===uid?P:PLAYERS[r]);return p&&p.nick||''}catch(e){return''}},
+    bat=w=>{const c=w.charCodeAt(w.length-1);return c>=0xAC00&&c<=0xD7A3?(c-0xAC00)%28!==0:/[0136-8lmnr]$/i.test(w)},
+    fix=(w,j)=>j?((j==='이'||j==='가')?(bat(w)?'이':'가'):(bat(w)?'과':'와')):'';
+  return String(s).replace(/(항해장|기관장) \{\1\}(이|가|과|와)?/g,(m,a,j)=>{const n=name(a);return(n?a+' '+n:a)+fix(n||a,j)})
+    .replace(/\{(항해장|기관장)\}(이|가|과|와)?/g,(m,a,j)=>{const w=name(a)||a;return w+fix(w,j)})}
+const xevSpots=(sc,pk,f)=>sc.spots.filter(s=>!s.if||s.if(pk||xevPk(),f||xevMine()));
+const xevScene=()=>XEV&&!XEV.done?XEV_SC[XEV.sc]||null:null;
+// each crew member finds the clues for themself, and makes the choices inside them for themself (P.xevF = {eid, f:{clue id:{at, c?}}})
+const xevMine=()=>(P&&P.xevF&&XEV&&P.xevF.eid===XEV.eid&&P.xevF.f)||{};
+const xevGot=id=>!!xevMine()[id];
+const xevSceneDone=sc=>!!sc&&xevSpots(sc).every(s=>xevGot(s.id)&&(!s.pick||xevMine()[s.id].c!=null));
+const xevLeft=()=>{const s=Math.max(0,Math.ceil(((+XEV.vuntil||0)-sNow())/1000));return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
+function xvSync(){}function xmapSync(){}
+function xevSub(){if(mode!=='online'||!db)return;
+  xevRef().onSnapshot(sn=>{const was=XEV&&XEV.eid,wsc=XEV&&XEV.sc;XEV=sn.exists?sn.data():null;if(XEV&&XEV.done&&!BK_OPEN&&!bkOpening&&mode==='online'){bkOpening=true;bossTx(db.doc('org/bunker'),d=>d&&d.open?null:Object.assign({},d||{},{open:true,at:Date.now()})).catch(()=>{}).then(()=>{bkOpening=false})}if(XEV&&XEV.eid!==was)xevHid='';if(XEV&&(XEV.eid!==was||XEV.sc!==wsc))xevSel=null;xevPaint();if(typeof adminShown==='function'&&adminShown())try{renderAdminAll()}catch(e){}},()=>{});}
+const xevShown=()=>!!document.getElementById('xevFx');
+function xevCanShow(){return mode==='online'&&P&&!P._fresh&&P.nick!=='새 선원'&&!preLock()&&!$('#story')&&!$('#opCrawl')&&!$('#orbisFx')&&!(typeof raidLocked==='function'&&raidLocked())}
+function xevPaint(){const live=XEV&&XEV.on;let M=document.getElementById('xevFx'),pill=document.getElementById('xevPill');
+  if(!live){if(M)M.remove();if(pill)pill.remove();return}
+  const want=xevHid!==XEV.eid&&xevCanShow();
+  if(want){if(pill)pill.remove();if(!M){M=document.createElement('div');M.id='xevFx';M.setAttribute('role','dialog');M.setAttribute('aria-label','조사 이벤트');document.body.appendChild(M);xevLoop()}
+    // the event part is redrawn on every change; the talk board below is drawn once (per event) so typing is never interrupted
+    const sc=M.scrollTop;if(!M.querySelector('#xevMain'))M.innerHTML=`<div class="xevwrap"><div class="xevbar"><span>EXPEDITION · 워프기계를 찾아 떠나는 여정</span><button type="button" class="qchip" data-act="xevhide">잠시 닫기 ✕</button></div><div id="xevMain"></div><div class="card xevtalk"><span class="lbl">Talk · 이야기 나누기</span><div id="xevTalk"></div></div></div>`;
+    M.querySelector('#xevMain').innerHTML=xevHTML();const tk=M.querySelector('#xevTalk');if(tk.dataset.ch!==BRD.x.ch()){tk.dataset.ch=BRD.x.ch();BRD.x.open=null;BRD.x.del=null;tk.innerHTML=boardHTML('x')}M.scrollTop=sc;return}
+  if(M)M.remove();if(mode==='online'&&P&&!P._fresh){if(!pill){pill=document.createElement('button');pill.type='button';pill.id='xevPill';pill.dataset.act='xevshow';document.body.appendChild(pill)}pill.innerHTML=`🧭 조사 이벤트 ${XEV.done?'· 끝남':'진행 중'} — 돌아가기`}}
+const xevP=t=>esc(xevNames(t)).replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
+const xevPath=()=>(XEV&&XEV.path)||[0];
+function xevHTML(){if(!XEV||!XEV.on)return'';const pk=xevPk(),done=!!XEV.done,sc=done?XEV_SC[XEV_IDX.lot]:xevScene(),reach=xevPath().flatMap(i=>xevSpots(XEV_SC[i])),nf=reach.filter(s=>xevGot(s.id)).length;
+  const head=`<div class="xvhd"><b>${esc(sc.ch+' · '+sc.t)}</b><span>단서 <i>${nf}</i>/${reach.length}</span><span>투표 <i>${+XEV.nv||0}</i>회</span></div>`;
+  const spots=done?'':xevSpots(sc).map(s=>`<button type="button" class="xvspot${xevGot(s.id)?' got':''}${xevSel===s.id?' sel':''}" style="left:${s.x/2.4}%;top:${s.y/1.2}%;width:${s.w/2.4}%;height:${s.h/1.2}%" data-act="xevspot" data-k="${s.id}" aria-label="${esc(s.n)} 조사하기" title="${xevGot(s.id)?esc(s.n):'조사하기'}">${xevGot(s.id)?'<i>✓</i>':''}</button>`).join('');
+  const prevRes=()=>{const pv=XEV.prev;if(pv==null)return'';const ps=XEV_SC[pv],c=pk['v'+pv];const o=ps.vote?ps.vote.o[c|0]:ps.go;return o&&o.r?`<p class="xvres">${xevP(o.r)}</p>`:''};
+  let body='';
+  if(done)body=`${prevRes()}<p class="xvout">${xevP(XEV_OUTRO)}</p>`;
+  else{const S=xevSel&&reach.find(s=>s.id===xevSel&&xevGot(s.id)),F=S&&xevMine()[S.id];
+    if(S){body=`<b class="xvt">${esc(S.n)}</b><p>${xevP(S.d)}</p>`;
+      if(S.pick){if(F.c==null)body+=`<div class="xvopts n${S.pick.length}">${S.pick.map((o,i)=>`<button type="button" class="xvopt" data-act="xevpick" data-k="${S.id}" data-i="${i}">${esc(o.t)}</button>`).join('')}</div>`;
+        else body+=`<p class="xvres">${xevP(S.pick[F.c].r)}</p><span class="xvhint">— ‘${esc(S.pick[F.c].t)}’를 골랐다.</span>`}
+      body+=`<span class="xvhint"><button type="button" class="xvlink" data-act="xevback">장소로 돌아가기</button></span>`}
+    else body=`${prevRes()}<p>${xevP(sc.txt(pk))}</p>`;
+    const left=xevSpots(sc).filter(s=>!xevGot(s.id)||(s.pick&&xevMine()[s.id].c==null)).length;
+    if(XEV.vk){const V=sc.vote,vs=(XEV.votes||{})[XEV.vk]||{},cnt=V.o.map((_,i)=>Object.values(vs).filter(c=>c===i).length),mine=vs[uid];
+      body+=`<div class="xvvote">${sc.pre?`<p>${xevP(sc.pre)}</p>`:''}<b>${esc(V.q)}</b><div class="xvopts n${V.o.length}">${V.o.map((o,i)=>`<button type="button" class="xvopt${mine===i?' mine':''}" data-act="xevvote" data-k="${i}">${esc(o.t)}<em>${cnt[i]}표</em></button>`).join('')}</div><span class="xvhint">남은 시간 <b id="xevT">${xevLeft()}</b> · 시간이 끝나기 전까지 바꿀 수 있습니다</span></div>`}
+    else if(!left&&sc.go)body+=`<span class="xvhint">이곳의 단서를 모두 찾았다. 잠시 뒤 다음 장소로 이동한다.</span>`;
+    else if(!left)body+=`<span class="xvhint">이곳의 단서를 모두 찾았다. 잠시 뒤 투표할 수 있다.</span>`;
+    else if(!S)body+=`<span class="xvhint">그림 속 이곳저곳을 눌러 조사하십시오. 남은 단서 ${left}개</span>`}
+  return`<div class="xvbox">${head}<div class="xvpic"><canvas width="240" height="120"></canvas>${spots}${done?'<div class="xvblack"></div>':''}</div><div class="xvtxt">${body}</div>
+   <div class="xvnote"><span class="xvhint">단서 수첩 ${nf}/${reach.length}</span>${reach.map(s=>xevGot(s.id)?`<button type="button" class="xvchip${xevSel===s.id?' on':''}" data-act="xevclue" data-k="${s.id}">${esc(s.n)}</button>`:'<span class="xvchip x" aria-label="아직 찾지 못한 단서">???</span>').join('')}</div>
+   ${isAdmin?`<div class="xvadm">${done?'':`<button class="btn sm gold" type="button" data-act="xevnext">${XEV.vk?'투표 지금 집계':sc.go?'다음 장소로':'투표 열기'}</button>`}<button class="btn sm ghost" type="button" data-act="xevend">조사 닫기</button><span class="xvhint">운영자에게만 보이는 버튼입니다.</span></div>`:''}</div>`}
+// the crew's choice: most votes wins; a tie or no votes is settled by lot among the leaders (the same for everyone: seeded by the run)
+function xevPick(cur,k,n){const vs=Object.values(((cur.votes||{})[k])||{}),c=Array.from({length:n},(_,i)=>vs.filter(v=>v===i).length),top=Math.max(...c),lead=c.map((v,i)=>v===top?i:-1).filter(i=>i>=0);if(lead.length===1)return lead[0];let h=0;for(const ch of String(cur.eid)+k)h=(h*31+ch.charCodeAt(0))|0;return lead[Math.abs(h)%lead.length]}
+async function xevTx(fn){if(xevBusy)return;xevBusy=true;try{await bossTx(xevRef(),cur=>cur&&cur.on&&!cur.done?fn(cur):null)}catch(e){}xevBusy=false}
+// move on from place `at` with choice c: to the place the choice names, or the next one; past the last place the run is done
+function xevMove(cur,at,c){const nx=JSON.parse(JSON.stringify(cur)),sc=XEV_SC[at],o=sc.vote?sc.vote.o[c]:sc.go;nx.picks=Object.assign({},cur.picks,{['v'+at]:c});nx.vk='';nx.prev=at;
+  const to=o&&(o.go||o.to)?XEV_IDX[o.go||o.to]:(sc.id==='lot'?-1:at+1);if(to<0||to>=XEV_SC.length){nx.done=true;nx.doneAt=sNow()}else{nx.sc=to;nx.path=[...(cur.path||[0]),to]}return nx}
+// every client watching drives the run forward; each write is a transaction where the database has them, so only the first one lands
+function xevDrive(force){if(!XEV||!XEV.on||XEV.done)return;const sc=xevScene();if(!sc)return;const eid=XEV.eid,at=XEV.sc,k='v'+at;
+  if(XEV.vk){if(force||sNow()>=(+XEV.vuntil||0))xevTx(cur=>{if(cur.eid!==eid||cur.vk!==k)return null;const nx=xevMove(cur,at,xevPick(cur,k,sc.vote.o.length));nx.nv=(+cur.nv||0)+1;return nx});return}
+  if(sc.go){if(force)xevTx(cur=>cur.eid!==eid||cur.sc!==at?null:xevMove(cur,at,0));return}
+  if(!force)return;
+  const last=Math.max(0,...sc.spots.map(s=>Math.max(+((XEV.found||{})[s.id]||{}).at||0,+((XEV.found||{})[s.id]||{}).pat||0)));
+  xevTx(cur=>cur.eid!==eid||cur.sc!==at||cur.vk?null:Object.assign({},cur,{vk:k,vuntil:sNow()+XEV_VOTE_MS}))}
+// the end: a few seconds on the opened door, the picture sinks to black, then the popup; 확인 closes it all for this crew member
+function xevEndSeq(){if(!XEV||!XEV.done||xevEndT||(P&&P.xevEnd===XEV.eid))return;const eid=XEV.eid;xevEndT=setTimeout(()=>{const M=document.getElementById('xevFx');if(M)M.classList.add('xvfade');
+  setTimeout(()=>{if(!XEV||XEV.eid!==eid)return;xevEndT=null;if(P){P.xevEnd=eid;save()}xevHid=eid;const M2=document.getElementById('xevFx');if(M2)M2.remove();const pill=document.getElementById('xevPill');if(pill)pill.remove();
+    const old=$('#unlockPop');if(old)old.remove();const el=document.createElement('div');el.id='unlockPop';el.className='modal';el.style.zIndex=230;
+    el.innerHTML=`<div class="px infobox unlockbox" role="dialog" aria-label="조사 구역 추가"><span class="lbl">Expedition · 조사</span><b class="unlockt">새로운 구역에 맞춰 조사가 개편되었습니다!</b><button class="btn gold" type="button" id="unlockOk">확인</button></div>`;
+    document.body.appendChild(el);const close=()=>{el.remove();document.removeEventListener('keydown',kk,true)},kk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.code==='Space'){e.preventDefault();close()}};el.querySelector('#unlockOk').addEventListener('click',close);document.addEventListener('keydown',kk,true);try{sfxFanfare(false)}catch(e){}},3200)},5500)}
+setInterval(()=>{if(!XEV||!XEV.on)return;const fin=XEV.done&&P&&P.xevEnd===XEV.eid;if(fin){xevHid=XEV.eid;const M=document.getElementById('xevFx');if(M&&!xevEndT)M.remove();const p=document.getElementById('xevPill');if(p)p.remove();return}
+  if((xevHid!==XEV.eid&&xevCanShow())!==xevShown()||document.getElementById('xevPill'))xevPaint();if(XEV.done){if(xevShown())xevEndSeq();return}const t=document.getElementById('xevT');if(t)t.textContent=xevLeft();if(xevShown()||isAdmin)xevDrive(false)},1000);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&xevShown()&&!document.getElementById('lgMenu')&&!(e.target&&/^(TEXTAREA|INPUT)$/.test(e.target.tagName))){e.stopPropagation();xevHid=XEV&&XEV.eid||'';xevPaint()}},true);
+function xevAdminHTML(){if(mode!=='online')return'';const on=XEV&&XEV.on,sc=on&&!XEV.done&&xevScene();
+  return`<div class="info-sec" data-adm="xev"><span class="lbl">Expedition · 워프기계를 찾아 떠나는 여정 (1부)</span>
+   <span class="hint">선체 외벽을 모두 고친 뒤의 조사입니다. 열면 접속한 모든 선원의 화면 위에 오르비스처럼 조사 화면이 뜹니다. 장소마다 선원 각자가 그림 속을 눌러 단서를 찾고(선택지도 각자 고름), 운영자가 「투표 열기」를 누르면 투표로 다음 장소를 정합니다(투표는 3분이 지나거나 운영자가 집계하면 끝). 지하 벙커의 문이 열리면 화면이 어두워지고 「새로운 구역에 맞춰 조사가 개편되었습니다!」 팝업이 뜹니다.</span>
+   <p class="hint">${on?(XEV.done?'끝남 · 벙커 문이 열렸습니다. 선원들이 모두 확인했다면 조사를 닫아 주십시오.':`진행 중 · ${esc(sc.ch+' '+sc.t)}${XEV.vk?' · 투표 중':''}`):'닫혀 있습니다.'}</p>
+   <div class="row" style="gap:6px;flex-wrap:wrap">${on&&!XEV.done?`<button class="btn sm gold" type="button" data-act="xevnext">${XEV.vk?'투표 지금 집계':sc.go?'다음 장소로':'투표 열기'}</button><button class="btn sm ghost" type="button" data-act="xevend">조사 닫기</button>`:`<button class="btn sm gold" type="button" data-act="xevopen">조사 열기 (처음부터)</button>${on?'<button class="btn sm ghost" type="button" data-act="xevend">조사 닫기</button>':''}`}</div></div>`}
+// ── the pictures: dim, cold, wet; drawn fresh every frame while the event is on screen ──
+let xevBotC=null;function xevBot(){if(xevBotC)return xevBotC;try{const T=IC.robot,c=document.createElement('canvas');c.width=T[0].length;c.height=T.length;const x=c.getContext('2d');T.forEach((row,y)=>[...row].forEach((ch,xx)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(xx,y,1,1)}}));xevBotC=c}catch(e){}return xevBotC}
+const XST=Array.from({length:60},(_,i)=>({x:(i*97%240),y:(i*53%46),p:i*1.7,b:(i*37%10)/10}));
+function xevDraw(g,art,t,pk,found){const W=240,H=120,R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x|0,y|0,w|0,h|0)},P=(x,y,c)=>R(x,y,1,1,c),A=a=>g.globalAlpha=a;g.imageSmoothingEnabled=false;
+  const tarp=pk.v0===0,stopped=!tarp&&pk.v0===1&&!found.c0;
+  const sky=(top,mid,low)=>{R(0,0,W,30,top);R(0,30,W,18,mid);R(0,48,W,16,low);for(let y=0;y<64;y+=2){A(.08);R(0,y,W,1,'#000')}A(1)};
+  const stars=n=>{for(let i=0;i<n;i++){const s=XST[i],tw=(Math.sin(t*1.3+s.p)+1)/2;if(tw<.3)continue;P(s.x,s.y,s.b>.7?'#e8eef8':'#8b97a8')}};
+  const puddle=(x,y,w)=>{R(x,y,w,3,'#3c4a5a');R(x+2,y,w-4,1,'#5d6d80');P(x+((t*1.5+x)|0)%w,y+1,'#8696aa')};
+  const drips=(x0,x1,top,bot2,n)=>{for(let i=0;i<n;i++){const ph=(t*.7+i*.37)%1,x=x0+((i*41)%Math.max(1,x1-x0));P(x,top+ph*(bot2-top),'#8a9bb0');if(ph>.93){A(.6);R(x-2,bot2,5,1,'#8a9bb0');A(1)}}};
+  const rain=k=>{g.fillStyle='#8fa3c0';A(.45);for(let i=0;i<70*k;i++){const s=XST[i%60],x=((s.x*1.3+i*7+t*40)%(W+20))-10,y=((s.y*2.6+i*13+t*150)%(H+16))-8;g.fillRect(x|0,y|0,1,4)}A(1)};
+  // 녹슨 7호: o.cape draws the tarp worn as a cape, o.off a halted 7호 (tilted, eyes dark, water running off), o.tilt a sway
+  const bot=(x,y,s,o={})=>{const c=xevBot();if(!c)return;const bob=o.off?0:Math.sin(t*1.6)*.6;
+    if(o.cape){const fl=Math.sin(t*2.4)*2.5;g.fillStyle='#6a7f99';g.beginPath();g.moveTo(x+s*.12,y+s*.3);g.lineTo(x+s*.88,y+s*.3);g.lineTo(x+s*1.08+fl,y+s*1.0);g.lineTo(x-s*.08+fl*.6,y+s*1.0);g.fill();g.fillStyle='#93a8c2';g.fillRect(x+s*.12|0,y+s*.3|0,s*.76|0,2);g.fillStyle='#4e6078';g.fillRect((x+s*1.02+fl)|0,(y+s*.6)|0,2,(s*.38)|0)}
+    g.save();if(o.off||o.tilt){g.translate(x+s/2,y+s);g.rotate(o.off?.18:o.tilt);g.translate(-(x+s/2),-(y+s))}g.drawImage(c,Math.round(x),Math.round(y+bob),s,s);
+    if(o.off){A(.55);R(x,y,s,s*.55,'#0a0d12');A(1);for(let i=0;i<3;i++){const ph=(t*.8+i*.33)%1;P(x+s*.3+i*s*.2,y+s*.5+ph*s*.5,'#8a9bb0')}}g.restore()};
+  const crates=(x,y,tp)=>{R(x,y+8,14,12,'#3a342c');R(x,y+8,14,1,'#5a5044');R(x+16,y+12,12,8,'#332e27');R(x+16,y+12,12,1,'#544a3f');if(tp){g.fillStyle='#4a5a6c';g.beginPath();g.moveTo(x+4,y+8);g.lineTo(x+30,y+6);g.lineTo(x+40,y+20);g.lineTo(x+10,y+20);g.fill();R(x+8,y+9,22,1,'#6a7c92')}};
+  // ── shared SF backdrop pieces: a graded sky, a faint ringed planet, drifting fog, ruined megastructures far off ──
+  const grad=(y0,y1,c0,c1)=>{const gr=g.createLinearGradient(0,y0,0,y1);gr.addColorStop(0,c0);gr.addColorStop(1,c1);g.fillStyle=gr;g.fillRect(0,y0,W,y1-y0)};
+  const planet=(x,y,r,body,rim,ring,a)=>{A(a);g.fillStyle=body;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.strokeStyle=rim;g.beginPath();g.arc(x,y,r,Math.PI*1.05,Math.PI*1.75);g.stroke();
+    if(ring){g.strokeStyle=ring;g.beginPath();g.ellipse(x,y,r*1.9,r*.38,-.25,0,7);g.stroke()}A(1)};
+  const nebula=(x,y,c,a)=>{for(let i=0;i<4;i++){A(a*(1-i*.2));g.fillStyle=c;g.beginPath();g.ellipse(x+i*14,y+Math.sin(i)*4,40-i*6,8-i,-.1,0,7);g.fill()}A(1)};
+  const fog=(y,h,c,a,sp)=>{for(let i=0;i<5;i++){const x=((i*70+t*sp)%(W+120))-60;A(a);g.fillStyle=c;g.beginPath();g.ellipse(x,y,60,h,0,0,7);g.fill()}A(1)};
+  const ruins=(base,col,lit,seed)=>{for(let i=0;i<9;i++){const x=(i*29+seed*13)%W,w=6+(i*7+seed)%9,h=14+((i*13+seed*5)%26),top=base-h;R(x,top,w,h,col);
+      if(i%3===0){R(x+w/2|0,top-8,1,8,col);if(((t*.8+i)|0)%3===0)P(x+w/2|0,top-9,'#c84a4a')}else{R(x+w-3,top,3,4,'#0000');P(x+1,top,col)}
+      if(lit)for(let q=0;q<3;q++){const wy=top+3+q*5,wx=x+1+((i*5+q*3)%Math.max(1,w-2));if((i+q+seed)%4===0)P(wx,wy,lit)}}};
+  const glints=(n,y0,y1)=>{for(let i=0;i<n;i++){const s=XST[i%60],ph=(t*.3+s.p)%1;A((1-ph)*.5);P((s.x+t*6)%W,y0+(s.y%(y1-y0))+ph*4,'#9fb4c8');A(1)}};
+  if(art==='dawn'){grad(0,70,'#070a12','#1f3140');planet(40,18,13,'#1d2836','#3a5468','#2c3e52',.9);nebula(150,24,'#3a2e5a',.18);stars(34);
+    grad(56,76,'rgba(70,96,110,0)','rgba(70,96,110,.25)');ruins(72,'#141b24','#5a7a8a',3);fog(70,6,'#3a4e5e',.22,3);
+    R(0,72,W,48,'#151a20');for(let y=74;y<120;y+=4){A(.35);R(0,y,W,1,'#1d242c');A(1)}for(let x=0;x<W;x+=12)R(x,98,1,22,'#1a2028');
+    // the ship, repaired: a long angled hull on landing struts, panel seams, dim portholes, an engine still faintly blue
+    const hull=[[2,58],[16,46],[96,42],[118,50],[116,72],[100,80],[8,80]];g.fillStyle='#2a3340';g.beginPath();g.moveTo(hull[0][0],hull[0][1]);hull.slice(1).forEach(([x,y])=>g.lineTo(x,y));g.closePath();g.fill();
+    g.strokeStyle='#4a5a6c';g.beginPath();g.moveTo(16,46);g.lineTo(96,42);g.lineTo(118,50);g.stroke();for(let x=24;x<110;x+=14){R(x,46,1,32,'#222a35')}R(10,62,104,1,'#3a4656');
+    for(let i=0;i<6;i++){const on=((t*.5+i*.37)|0)%4!==0;R(28+i*13,52,4,3,on?'#c8a86a':'#2a3240');if(on){A(.15);R(26+i*13,50,8,7,'#c8a86a');A(1)}}
+    R(0,60,6,14,'#1e2630');A(.4+.2*Math.sin(t*1.8));R(0,62,3,10,'#5a9ac8');A(1);R(30,80,3,18,'#1e2630');R(90,80,3,18,'#1e2630');R(26,96,11,2,'#2a3340');R(86,96,11,2,'#2a3340');
+    R(70,30,1,12,'#3a4656');P(70,29,((t*1.2)|0)%2?'#c84a4a':'#3a1416');
+    // wet plating, puddles holding the sky and the ringed planet
+    const pud=(x,y,w)=>{R(x,y,w,4,'#24364a');R(x+2,y,w-4,1,'#4a6a84');A(.5);R(x+w*.3|0,y+1,3,2,'#6a8aa0');A(1);P(x+((t*1.5+x)|0)%w,y+2,'#8aa8c0')};pud(30,104,44);pud(98,110,30);pud(204,107,30);
+    crates(124,78,!found.a2||!tarp);R(150,82,10,6,'#2c3542');R(150,82,10,1,'#4a5a6c');P(153,84,'#c8a86a');
+    A(.6);R(186,98,28,2,'#0c0f13');A(1);bot(186,70,28,{cape:tarp});drips(10,110,80,98,3);glints(8,74,118)}
+  else if(art==='wild'){grad(0,66,'#09080f','#231c2c');planet(200,16,9,'#241c2c','#4a3a5a',null,.8);
+    // a broken orbital ring arcs across the sky
+    A(.35);g.strokeStyle='#5a4a6a';g.beginPath();g.ellipse(120,92,170,60,0,Math.PI*1.08,Math.PI*1.52);g.stroke();g.beginPath();g.ellipse(120,92,170,60,0,Math.PI*1.6,Math.PI*1.92);g.stroke();A(1);
+    stars(22);nebula(60,20,'#4a2a4a',.14);
+    [[6,62],[12,61],[18,63],[24,62]].forEach(([x,y],i)=>{const f=(Math.sin(t*2+i)+1)/2;A(.4+.5*f);P(x,y,'#e8b86a');A(.12);R(x-2,y-2,5,5,'#e8b86a');A(1)});
+    ruins(66,'#1a1620',null,7);fog(66,5,'#3a2e3e',.25,2);R(0,64,W,56,'#1d1817');for(let y=66;y<120;y+=5){A(.3);R(0,y,W,1,'#241e1c');A(1)}
+    // pylons, beams and a dish all lie toward the right, as if swept
+    const beam=(x,y,l,a,w,c)=>{g.save();g.translate(x,y);g.rotate(a);R(0,-w/2,l,w,c);for(let q=4;q<l;q+=6)R(q,-w/2,1,w,'#120f0f');g.restore()};
+    beam(46,92,60,-.12,6,'#3a302c');beam(60,80,52,-.18,4,'#45382f');beam(84,70,34,-.22,3,'#4a3c34');beam(10,104,44,-.08,5,'#33292a');
+    g.save();g.translate(40,74);g.rotate(.5);g.strokeStyle='#5a4a40';g.beginPath();g.arc(0,0,10,Math.PI*.1,Math.PI*.9);g.stroke();R(-1,0,2,8,'#5a4a40');g.restore();
+    // the gap between two tilted slabs, something's eyes in it until found
+    g.fillStyle='#2e2624';g.beginPath();g.moveTo(150,96);g.lineTo(158,50);g.lineTo(172,50);g.lineTo(168,96);g.fill();g.beginPath();g.moveTo(186,96);g.lineTo(184,52);g.lineTo(198,54);g.lineTo(204,96);g.fill();
+    R(168,52,16,44,'#08070a');if(!found.b3){if(((t*1.2)|0)%6!==0){P(174,70,'#c8e07a');P(178,70,'#c8e07a')}}else{A(.2);R(170,56,12,38,'#5a6a8a');A(1)}
+    // a rusted signboard, its glyph strip still faintly lit
+    g.save();g.translate(216,96);g.rotate(.2);R(-1,-42,3,42,'#4a3c34');R(-14,-46,30,16,'#3a2e28');R(-14,-46,30,1,'#6a5444');for(let i=0;i<5;i++){const on=((t*2+i)|0)%4!==0;R(-11+i*5,-40,3,2,on?'#7ac8b0':'#2a3a36')}g.restore();
+    A(.5);R(120,100,40,2,'#120f0f');A(1);for(let i=0;i<14;i++){P(120+i*4,103+(i%2),'#140f0e')}bot(126,72,26,{cape:tarp});glints(10,66,118)}
+  else if(art==='city'){grad(0,60,'#0a1015','#26333c');planet(196,14,7,'#1a2630','#3a5060',null,.7);stars(10);fog(30,10,'#4a5a64',.12,4);
+    R(0,60,W,60,'#161b20');
+    // towers of glass and steel, every one sheared off at the same height; the cut edge is raw, girders sticking out
+    [[2,22],[26,18],[46,26],[74,22],[100,16],[148,22],[172,18],[192,26],[220,20]].forEach(([x,w],i)=>{R(x,40,w,60,i%2?'#1e262e':'#232c35');R(x,40,w,1,'#6a7a88');
+      for(let q=x;q<x+w;q+=3){R(q,37+((q*7)%3),1,3,'#3a4652')}for(let wy=46;wy<96;wy+=5)for(let wx=x+2;wx<x+w-2;wx+=3){const k=(wx*7+wy*3+i)%13;P(wx,wy,k===0?'#7a9aa8':k<4?'#2e3a46':'#141a20')}
+      R(x+w-2,40,2,60,'#141a20')});
+    // a broken sky-bridge hanging between two of them
+    g.strokeStyle='#3a4652';g.beginPath();g.moveTo(68,62);g.lineTo(86,70);g.stroke();g.beginPath();g.moveTo(100,64);g.lineTo(94,74);g.stroke();
+    R(0,98,W,22,'#14181c');for(let x=0;x<W;x+=10)R(x,98,1,22,'#1a2026');R(0,98,W,1,'#2a323a');
+    // the planet model, tipped off its stand
+    R(36,104,12,2,'#2a323a');R(41,100,2,4,'#3a4450');g.strokeStyle='#7a8a9a';g.beginPath();g.arc(36,98,7,0,7);g.stroke();R(32,96,4,3,'#4a5a6a');R(37,99,5,2,'#4a5a6a');P(31,99,'#4a5a6a');
+    // the boarding sign: a hologram panel, flickering, the names on it struck through one by one
+    const fl=((t*7)|0)%11===0?.25:1;A(.85*fl);R(100,58,40,28,'#0c1820');g.strokeStyle='#4ab0c0';g.strokeRect(100.5,58.5,39,27);
+    for(let r=0;r<5;r++){R(104,63+r*4,26+(r*7)%8,1,'#3a8a98');R(103,63+r*4,30-(r*5)%6,1,'#a8e0e8')}R(118,86,4,12,'#2a3a44');A(1);A(.15*fl);R(96,54,48,36,'#4ab0c0');A(1);
+    drips(10,230,40,98,3);bot(172,70,30,{cape:tarp});glints(8,60,118)}
+  else if(art==='launch'){grad(0,70,'#080b10','#1e2a34');stars(26);
+    // old launch scars: long faded trails climbing the sky
+    [[40,.5],[120,.35],[200,.45]].forEach(([x,a])=>{A(.1+a*.1);g.strokeStyle='#8a9aaa';g.beginPath();g.moveTo(x,70);g.quadraticCurveTo(x+10,30,x+30,-5);g.stroke();A(1)});
+    planet(30,20,10,'#1a2430','#3a5064','#2a3a4c',.8);fog(68,5,'#3a4a58',.2,2);R(0,70,W,50,'#14171b');R(0,70,W,1,'#262c33');
+    // empty launch gantries going away, each with a dead floodlight; one still flickers
+    [[18,.55],[62,.75],[124,1.05],[200,.8]].forEach(([x,k],i)=>{const h=64*k,w=30*k,b=70+6*k;R(x,b-h,3*k,h,'#252c35');R(x+w,b-h,3*k,h,'#252c35');for(let q=0;q<h;q+=8*k){g.strokeStyle='#1c2229';g.beginPath();g.moveTo(x+2,b-h+q);g.lineTo(x+w+1,b-h+q+8*k);g.stroke()}
+      R(x-2,b-h-4,w+8,3,'#2e3640');const on=i===2?((t*5)|0)%9!==0:false;R(x+w/2,b-h-8,4,3,on?'#e8e0b0':'#3a3a34');if(on){A(.08);g.fillStyle='#e8e0b0';g.beginPath();g.moveTo(x+w/2,b-h-6);g.lineTo(x+w/2-30,b);g.lineTo(x+w/2+34,b);g.fill();A(1)}
+      R(x-4,b,w+12,3,'#262c33')});
+    // the stopped escalator up to an empty boarding bridge
+    for(let i=0;i<14;i++)R(140+i*3,86-i*3,4,2,'#3a434e');R(138,88,46,2,'#262c33');R(182,44,2,44,'#262c33');R(160,44,40,3,'#2e3640');R(160,47,40,1,'#1a1f25');
+    R(0,98,W,22,'#111418');for(let x=0;x<W;x+=16)R(x,98,1,22,'#171b20');
+    g.save();g.translate(56,104);g.rotate(-.12);R(-14,-5,30,11,'#8a8e86');R(-14,-5,30,1,'#b8bcb0');for(let r=0;r<3;r++)R(-11,-2+r*3,20-r*4,1,'#4a4e48');g.restore();
+    for(let i=0;i<6;i++){const ph=(t*.25+i/6)%1;A((1-ph)*.4);R(((i*41+t*12)%W)|0,100+ph*10,3,1,'#5a6470');A(1)}
+    bot(196,74,26,{cape:tarp});glints(8,72,118)}
+  else if(art==='lot'||art==='lotopen'){grad(0,62,'#090b10','#232b33');planet(178,22,16,'#1a2028','#3e4c5a','#2e3a48',.85);stars(20);nebula(40,16,'#2a3a4a',.14);
+    ruins(64,'#13171c',null,11);fog(62,6,'#3a4450',.2,1.5);R(0,62,W,58,'#181b1f');R(0,62,W,1,'#262b31');for(let y=64;y<120;y+=6){A(.3);R(0,y,W,1,'#1d2125');A(1)}
+    const fl=(found.h2||{}).c,vk=XEV&&XEV.vk==='v'+XEV_IDX.lot;
+    // 잔해 1: hull plating and pipes, stacked
+    [[16,88,22,10,'#33302c'],[30,82,26,8,'#3a3732'],[22,76,18,7,'#2e2c29'],[44,90,18,8,'#36332e']].forEach(([x,y,w,h,c])=>{R(x,y,w,h,c);R(x,y,w,1,'#55504a');for(let q=x+3;q<x+w;q+=5)P(q,y+2,'#22201d')});
+    g.strokeStyle='#5a544c';g.beginPath();g.moveTo(26,74);g.lineTo(52,70);g.stroke();R(52,68,3,6,'#4a4540');
+    // 잔해 2: a low pile with pale flowers spilling out, until they are picked
+    [[96,92,14,8],[108,86,16,14],[124,88,12,12],[134,93,12,7],[102,96,40,5]].forEach(([x,y,w,h],i)=>{R(x,y,w,h,i%2?'#3a3733':'#423e39');R(x,y,w,1,'#58524b')});
+    if(fl!==0)for(let i=0;i<14;i++){const x=97+(i*11)%46,y=88+(i*7)%10,c=['#c8b8f0','#e8e0f8','#a898d8'][i%3],sw=Math.round(Math.sin(t*1.5+i)*.6);R(x+sw,y-1,2,2,c);P(x+sw+1,y-2,'#f4f0ff');R(x,y+1,1,3,'#5a8a6a')}
+    if(fl===1){A(.8);R(104,97,24,4,'#0c0e10');A(1)}
+    if(fl===0||vk||art==='lotopen'){g.strokeStyle='#6a7484';g.beginPath();g.ellipse(120,100,20,5,0,0,7);g.stroke();if(vk||art==='lotopen'){g.strokeStyle='#8a96a8';g.beginPath();g.ellipse(120,100,6,2,0,0,7);g.stroke();A(.4+.3*Math.sin(t*2));P(132,100,'#7ac8b0');A(1)}}
+    if(art==='lotopen'){g.fillStyle='#020304';g.beginPath();g.ellipse(120,100,18,4,0,0,7);g.fill();A(.2+.15*Math.sin(t*2));R(104,78,32,22,'#5a8a9a');A(1)}
+    // 잔해 3: concrete crumbling, bits dropping off
+    R(178,86,44,14,'#34322f');R(184,78,28,8,'#3a3834');R(184,78,28,1,'#504c46');for(let i=0;i<4;i++){const ph=(t*.5+i*.27)%1;if(ph<.5)P(184+i*9,86+ph*14,'#4a4640')}
+    // wind carrying dust across the lot
+    for(let i=0;i<12;i++){const ph=(t*.2+i/12)%1;A(.35*(1-Math.abs(ph-.5)*2));P(((i*37+t*30)%W)|0,64+((i*13)%50),'#6a7280');A(1)}
+    bot(art==='lotopen'?138:150,70,26,{cape:tarp})}
+  else if(art==='hatch'){sky('#0b0f15','#141a22','#222a33');stars(14);R(0,64,W,56,'#1c1f24');for(let x=0;x<W;x+=4)if((x*5)%9<2)P(x,68+((x*7)%48),'#262a30');
+    g.fillStyle='#2c3138';g.beginPath();g.ellipse(110,96,30,8,0,0,7);g.fill();g.strokeStyle='#4a525c';g.beginPath();g.ellipse(110,96,30,8,0,0,7);g.stroke();g.strokeStyle='#6a7484';g.beginPath();g.ellipse(110,96,8,3,0,0,7);g.stroke();
+    A(.6);R(84,98,52,6,'#1c1f24');A(1);for(let i=0;i<4;i++){R(150+i*10,94+i*2,9,2,'#2a2f36');P(152+i*10,93+i*2,'#3a414b')}for(let i=0;i<14;i++){P(148+i*3,99+(i%2),'#14171b');P(148+i*3,103+(i%2),'#14171b')}
+    R(52,80,20,14,'#2a3039');R(52,80,20,1,'#4a5464');for(let i=0;i<7;i++)R(54+i*2.6,84,1,7,i===3?'#8a94a4':'#14171b');
+    puddle(30,110,26);puddle(180,112,30);bot(196,70,28,{cape:tarp})}
+  else if(art==='archive'){R(0,0,W,H,'#08090c');R(0,96,W,24,'#101216');R(0,96,W,1,'#1e2228');
+    const red=((t*1.1)|0)%2;[[10,4],[230,4]].forEach(([x,y])=>{R(x,y,4,3,red?'#c8424a':'#3a1416');if(red){A(.08);R(0,0,W,96,'#c8424a');A(1)}});
+    for(let r=0;r<3;r++)for(let c=0;c<9;c++){const x=8+c*25,y=8+r*16;R(x,y,22,13,'#14171c');R(x,y,22,1,'#262b33');const lit=(r===0&&c>=1&&c<=6)||((c*7+r*3)%11===0);if(lit)R(x+1,y+1,20,11,'#0d1620')}
+    // the shadow over the sky (오르비스), the invaders' photos, the torn space, side by side
+    A(.9);R(26,10,44,26,'#0e1822');g.fillStyle='#04060a';g.beginPath();g.ellipse(48,18+Math.sin(t*.8),18,6,0,0,7);g.fill();R(28,30,40,4,'#1a2a3a');A(1);
+    for(let i=0;i<4;i++){R(80+(i%2)*21,11+((i/2)|0)*12,18,10,'#2a2620');R(82+(i%2)*21,13+((i/2)|0)*12,14,6,'#100e0c');P(88+(i%2)*21,15+((i/2)|0)*12,'#a83a3a')}
+    R(130,10,44,26,'#0e1822');g.strokeStyle='#7a9ac0';g.beginPath();g.moveTo(138,30);g.lineTo(146,20+Math.sin(t*2)*2);g.lineTo(152,26);g.lineTo(160,14);g.lineTo(166,24);g.stroke();
+    R(176,72,42,26,'#1a1e24');R(176,72,42,1,'#2e343d');R(180,76,34,12,'#0d1620');if(((t*2)|0)%2)R(182,80,20,1,'#5a8ab0');R(182,84,12,1,'#3a5a7a');
+    drips(30,210,58,96,3);bot(94,72,28,{cape:tarp})}
+  else{// warp, k1, k2: the dead ring in its hall, the empty pedestal under it
+    const glow=art==='k1'?Math.min(1,t/3):0,flash=art==='k2'&&t>.6&&t<1.1;R(0,0,W,H,'#0a0d12');for(let x=0;x<W;x+=30)R(x,0,1,92,'#12161d');R(0,92,W,28,'#14171c');R(0,92,W,1,'#252a32');
+    const cx=120,cy=46;for(let y=-40;y<=40;y++)for(let x=-36;x<=36;x++){const d=Math.sqrt(x*x/1296+y*y/1600),din=Math.sqrt(x*x/(26*26)+y*y/(30*30));if(d>1)continue;if(din>=1){const a=Math.atan2(y,x),seg=((a+Math.PI)/(Math.PI*2)*12|0)%2;P(cx+x,cy+y,seg?'#3a414c':'#2c323b')}
+      else if(glow){const r=Math.hypot(x,y*.9),v=(Math.sin(r*.35-t*2)+1)/2*glow;P(cx+x,cy+y,v>.6?'#9fb8d8':v>.3?'#3a4c66':'#141c28')}
+      else if(art!=='k2'||!flash){if(Math.abs(x-Math.sin(y*.3+t*1.5)*3)<1&&Math.abs(y)<22){A(.35+.25*Math.sin(t*2+y));P(cx+x,cy+y,'#7a9ac0');A(1)}}}
+    if(flash){A(1-(t-.6)/.5);R(0,0,W,H,'#e8eef8');A(1)}
+    R(100,86,40,8,'#2a2f37');R(100,86,40,1,'#3d434d');R(110,88,6,3,'#14171b');R(124,88,6,3,'#14171b');
+    R(176,70,40,28,'#1e232a');R(176,70,40,1,'#343a44');R(180,74,32,12,glow?'#1a3048':'#101820');if(((t*2)|0)%4===0)R(182,78,10+((t*3)|0)%14,1,'#4a6a8a');
+    drips(60,200,0,92,4);puddle(60,104,30);puddle(160,110,30);
+    if(art==='k1')bot(106,58,28,{cape:true});else if(art==='k2'){bot(84,66,28,{tilt:Math.sin(t*3)*.08});if(t<3)for(let i=0;i<6;i++){if(Math.random()<.5)P(96+Math.random()*16,72+Math.random()*16,'#ffd890')}}
+    else bot(34,68,30,{cape:tarp})}
+  const vg=g.createRadialGradient(120,60,30,120,60,140);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,W,H)}
+let xevRaf=0;function xevLoop(){cancelAnimationFrame(xevRaf);const t0=performance.now();let artNow='',ta=t0;const step=now=>{const M=document.getElementById('xevFx');if(!M)return;const cv=M.querySelector('.xvpic canvas');
+  if(cv&&XEV){const art=XEV.done?'lotopen':(XEV_SC[XEV.sc]||XEV_SC[0]).art;if(art!==artNow){artNow=art;ta=now}try{xevDraw(cv.getContext('2d'),art,(now-ta)/1000,xevPk(),xevMine())}catch(e){}}xevRaf=requestAnimationFrame(step)};xevRaf=requestAnimationFrame(step)}
+function xevChime(){try{if(!soundOn)return;const a=ac();if(!a)return;tone(a,'sine',520,700,a.currentTime+.02,.35,.035);tone(a,'sine',780,780,a.currentTime+.14,.4,.02)}catch(e){}}
+
+
+/* ───────── 지하 벙커 조사: once the 선체 외벽 story has been seen, the 조사 tab becomes the bunker under the empty lot.
+   A floor map of eight rooms; each opens to a picture with spots to click, like the 조사 이벤트, but each crew member
+   searches on their own (P.bk = {room: [clue ids found]}). The staff can preview it before the story. ───────── */
+const BK_ROOMS=[
+ {id:'lounge',n:'휴게실',d:'낡은 소파와 꺼진 화면. 누군가 쉬던 자리가 그대로 남아 있다.',spots:[
+   {id:"r1",n:"관측 영상",x:0,y:0,w:0,h:0,d:"하늘을 덮는 거대한 그림자. 우리가 행성에서 마주하고 쓰러졌던 그것이다.\n화면 아래 이름이 적혀 있다. ‘관측 대상: 오르비스’."},
+   {id:"l6",n:"신문",x:0,y:0,w:0,h:0,d:"어젯밤 22시경, 궤도 관측소 전원이 동시에 경보를 발령했다. 외곽 항성계에서 관측된 미확인 거대 천체가 예상보다 빠르게 접근하고 있으며, 그 궤적을 따라 별빛이 일그러지는 현상도 확인됐다.\n정부는 오늘 오전 이주 일정을 앞당긴다고 발표했다. 이주 함대는 사흘 안에 차례로 출항하며, 전 시민은 배정된 순서에 따라 출항장으로 이동해야 한다.\n당국은 \"모두를 태울 자리는 충분하다\"며 침착한 대피를 당부했다.'"}],
+  notes:[
+   {n:"소파",d:"쿠션 한쪽이 깊게 꺼져 있다. 오래 앉아 있던 사람이 있었던 모양이다."},
+   {n:"꺼진 화면",d:"화면 구석에 마지막 재생 기록이 남아 있다.\n‘테라 풍경 모음 — 반복 재생 4,812회.’"},
+   {n:"컵 두 개",d:"낮은 테이블 위에 컵 두 개. 하나는 깨끗하고, 하나에는 말라붙은 자국이 있다."},
+   {n:"냉장고",d:"누군가가 좋아할만한 술이 잔뜩 들어있다. 얼마나 지났을 지 모르니 마시는 건 삼가하도록 하자."},
+   {n:"충전받침대",d:"7호에게 꼭 맞아보이는 충전받침대."}]},
+ {id:'archive',n:'기록실',d:'벽 한쪽을 가득 채운 모니터들. 대부분 꺼져 있지만, 몇 개는 같은 영상을 되풀이하고 있다.',spots:[
+   {id:"r2",n:"침략자 기록",x:0,y:0,w:0,h:0,d:"‘오르비스에서 떨어져 나온 개체들. 지표를 쓸고 지나가며 모든 것을 파괴한다.’\n우리가 싸워 온 침략자들의 사진이 함께 붙어 있다."},
+   {id:"r3",n:"공간 관측 기록",x:0,y:0,w:0,h:0,d:"‘오르비스가 지나간 자리마다 공간이 찢어진다. 이 상처는 시공간에 영향을 미치는 듯하다.’\n그 아래, 누군가 손글씨로 적어 두었다. ‘이것을 재현할 수 있다면?’"}],
+  notes:[
+   ]},
+ {id:'workshop',n:'제조실',d:'작업대 위로 멈춘 로봇 팔이 드리워 있다. 공기에서 식은 금속 냄새가 난다.',spots:[
+   {id:"w2",n:"설계도",x:0,y:0,w:0,h:0,d:"벽에 핀으로 꽂힌 설계도. 둥근 고리와, 그 아래 바퀴 달린 무언가의 윤곽. 제목이 적혀 있다. '안내자.'"},
+   {id:"w3",n:"보고서",x:0,y:0,w:0,h:0,d:"프로젝트의 실패 가능성을 우려하는 내용이다. 시공간의 좌표를 정확히 지정하는 건 어려운 일이며, 그에 따른 장치의 결함 가능성을 걱정하고 있다."}],
+  notes:[
+   {n:"로봇 팔",d:"로봇 팔 끝에 작은 부품이 물려 있다. 조립이 끝나기 직전에 멈춘 듯하다."},
+   {n:"관찰 기록",d:"표지판, 해치, 작업복, 고리 아래 금속판. 가는 곳마다 같은 이름이 새겨져 있다. GAIA PROJECT."}]},
+ {id:'server',n:'서버실',d:'서버 랙들이 낮게 웅웅거린다. 이 벙커에서 이곳만은 아직 살아 있다.',spots:[
+   {id:"s1",n:"서버 랙",x:0,y:0,w:0,h:0,d:"표시등 몇 개가 규칙적으로 깜빡인다. 무언가를 아직 계산하고 있다."},
+   {id:"s4",n:"누군가의 일지",x:0,y:0,w:0,h:0,d:"'미래는 예측하기 힘들다. 그러나, 그런 미래가 어긋나지 않도록 과거를 조성하는 일은 몇 억 배 더 힘들다.'"}],
+  notes:[
+   {n:"단말기",d:"‘귀환 좌표 계산 중… 진행률 --%’\n숫자는 여전히 움직이고 있었다."},
+   {n:"냉각관",d:"냉각관은 제 일을 한 지 오래다. 녹물의 흔적만 남았다."}]},
+ {id:'warp',n:'거대한 기계 장치',d:'벙커 가장 깊은 곳. 6호의 기억에서 보았던 거대한 고리가 서 있다.\n빛은 꺼져 있고, 고리 아래 받침대 하나가 비어 있다.',spots:[
+   {id:"h1",n:"문서",x:0,y:0,w:0,h:0,d:"장치에 대한 기본 설명이다. 외부 자기장에 취약하며, 작동시킬 경우 방대한 에너지가 발생하기 때문에 '침략자'를 끌어들일 가능성이 있음을 명시하고 있다."},
+   {id:"h2",n:"예비 부품",x:0,y:0,w:0,h:0,d:"6호의 기억에서 보았던 장면의 충격 때문인지, 주변이 엉망이다. 특히, 이 예비 부품이라고 적힌 간이 창고는 아예 박살이 났다. 기계의 기본 엔진에 들어가는 부품과 비슷하다."}],
+  notes:[
+   {n:"제어 콘솔",d:"‘귀환 좌표: GAIA PROJECT 출발 직후 시점. 상태: 수리 요구... .’"}]}];
+let bkPrev=false,bkRoom=null,bkSel=null,bkRaf=0;
+// the bunker opens for everyone once the 조사 이벤트 has ended (org/bunker.open), not before
+let BK_OPEN=false,bkOpening=false;const bkOn=()=>BK_OPEN||(isStaff()&&bkPrev);
+// clues are shared by the whole server: each one can be found only once, by whoever turns it up first (org/bunker.found = {clue id: {u, n, at}})
+let BKF={};
+const bkShared=()=>mode==='online'&&!!db;
+const bkGot=(r,id)=>bkShared()?!!BKF[id]:((P.bk||{})[r]||[]).includes(id);
+// claim a clue for me; if someone else got there first, the claim fails and I keep only the items
+function bkClaim(id){const ref=db.doc('org/bunker');return bossTx(ref,d=>{d=d||{};d.found=Object.assign({},d.found);if(d.found[id])return null;d.found[id]={u:uid,n:P.nick||'선원',at:Date.now()};return d}).then(r=>!!r).catch(()=>false)}
+const bkCount=r=>BK_ROOMS.find(x=>x.id===r).spots.filter(s=>bkGot(r,s.id)).length;
+// walking in the bunker, like the trails: picking a room sets off a walk of a few minutes (P.bkMv), with a log that fills as
+// I go; on arrival I stand in that room (P.bkAt) and can search it. Rooms nearer the hatch are closer.
+const BK_MIN={lounge:2,quarters:2,canteen:3,storage:3,workshop:3,archive:4,server:4,warp:6};
+const BK_WAY={lounge:['어두운 통로','#7a9ab0','해치 바로 아래의 짧은 통로. 비상등만 켜져 있어 발소리가 오래 울린다.'],quarters:['어두운 통로','#7a9ab0','침상이 있는 쪽으로 이어진 좁은 복도. 문마다 이름표 자리가 비어 있다.'],
+  canteen:['식은 복도','#8aa08a','배식 카트가 멈춰 선 복도. 바퀴 하나가 비스듬히 꺾여 있다.'],storage:['냉기 도는 복도','#8ab4d0','갈수록 공기가 차가워진다. 바닥에 성에가 얇게 깔려 있다.'],
+  workshop:['공구 냄새 나는 통로','#c8a86a','벽을 따라 공구 걸이가 늘어서 있다. 몇 자리는 비어 있다.'],archive:['붉은 비상등 구역','#c8605a','붉은 비상등이 일정한 간격으로 깜빡인다. 벽 너머에서 화면 소리가 새어 나온다.'],
+  server:['웅웅거리는 통로','#5ac88a','바닥 아래로 굵은 케이블이 지나간다. 낮은 기계음이 발끝으로 전해진다.'],warp:['가장 깊은 계단','#9a8ae0','계단이 끝없이 아래로 이어진다. 내려갈수록 공기가 무겁게 가라앉는다.']};
+const BK_SEARCH={lounge:['소파 쿠션 사이를 더듬어 본다.','테이블 밑을 들여다본다.','꺼진 화면 뒤쪽을 살펴본다.','바닥에 떨어진 것이 없는지 훑어본다.'],
+  quarters:['침상 아래를 들여다본다.','사물함 문을 하나씩 열어 본다.','베개 밑을 들춰 본다.','벽에 붙은 것들을 살펴본다.'],
+  archive:['꺼진 모니터를 하나씩 두드려 본다.','책상 서랍을 열어 본다.','바닥에 흩어진 기록지를 모은다.','되풀이되는 영상을 멈춰 본다.'],
+  workshop:['작업대 위의 공구를 치워 본다.','부품 상자들을 뒤적인다.','로봇 팔의 관절을 살펴본다.','벽에 붙은 도면을 훑어본다.'],
+  server:['랙 사이의 좁은 틈으로 들어가 본다.','깜빡이는 표시등을 따라가 본다.','단말기의 먼지를 닦아 낸다.','바닥의 케이블을 따라가 본다.'],
+  canteen:['식판을 하나씩 치워 본다.','배식기 안쪽을 들여다본다.','의자 밑을 살펴본다.','주방 쪽 문을 열어 본다.'],
+  storage:['선반의 상자 라벨을 하나씩 읽는다.','차가운 바닥을 손으로 훑어본다.','맨 위 칸까지 올라가 본다.','상자 뒤쪽 틈을 들여다본다.'],
+  warp:['고리의 표면을 천천히 따라 걷는다.','받침대 주변을 살펴본다.','콘솔의 버튼을 하나씩 눌러 본다.','고리 안쪽의 일렁임을 가만히 바라본다.']};
+const BK_SEARCH_MIN=10,BK_CLUE_P=.005;/* a clue turns up in 0.5% of searches */
+// energy per search, room by room (the deeper rooms take more out of you), and what each room tends to give up besides its clues
+const BK_EN={lounge:6,quarters:6,canteen:8,storage:8,archive:10,workshop:10,server:12,warp:15};
+const bkEn=id=>BK_EN[id]||8;
+const BK_LOOT={
+ lounge:[['소파 틈에서 뜯지 않은 에너지 음료 캔이 굴러 나왔다.','drink:1-2'],['구급함이 벽에 걸려 있다. 붕대가 아직 쓸 만하다.','bandage:1-2'],['자판기 아래로 손을 넣자 동전 대신 결정 조각이 잡혔다.','crystal:1']],
+ quarters:[['침상 아래 상자에 개인 구급품이 들어 있다.','bandage:1-2'],['사물함 구석에 누군가 아껴 둔 씨앗 봉투가 있다.','seed:1-2'],['베개 밑에 반쯤 남은 음료가 숨겨져 있다.','drink:1']],
+ canteen:[['배식기 안쪽에 아직 상하지 않은 별감자가 남아 있다.','pot:2-3'],['주방 선반에서 말린 당근 봉지를 찾았다.','carrot:1-2'],['냉장고는 꺼졌지만 맨 안쪽 음료는 그대로다.','drink:1-2']],
+ storage:[['라벨이 바랜 상자에 씨앗 봉투가 가득하다.','seed:2'],['차가운 바닥에 굴러다니던 월광호박을 주웠다.','pump:1-2'],['맨 위 칸에 비상식량이 남아 있다.','pot:2 corn:1']],
+ archive:[['기록 장치에서 저장용 결정을 빼냈다.','crystal:1-2'],['서랍 깊숙이 금속 부품이 든 봉투가 있다.','ore:2-3'],['깨진 모니터 뒤에서 결정 저장판이 나왔다.','crystal:2']],
+ workshop:[['작업대 위에 손질하다 만 금속 파편이 쌓여 있다.','ore:3-4'],['공구함에서 응급 수리 키트를 찾았다.','kit:1 ore:1'],['부품 상자 바닥에 결정 조각이 섞여 있다.','crystal:1 ore:2']],
+ server:[['식어 버린 랙에서 결정 냉각판을 떼어 냈다.','crystal:2-3'],['케이블 더미 사이로 검은 조각 하나가 빛을 삼키고 있다.','dark:1'],['예비 전원함에서 금속 부품을 챙겼다.','ore:2 crystal:1']],
+ warp:[['고리 받침대 아래에 검은 조각이 흩어져 있다.','dark:1-2'],['고리 표면에서 떨어진 결정을 주웠다.','crystal:2-3'],['콘솔 옆 상자에 금속 파편과 결정이 담겨 있다.','ore:2 crystal:1']]};
+const BK_WALK=['벽면 배관에서 물방울이 떨어진다.','비상등이 한 번 깜빡이다 다시 켜진다.','바닥에 오래된 발자국이 희미하게 남아 있다.','멀리서 기계가 낮게 웅웅거린다.','녹슨 7호의 바퀴 소리가 통로를 따라 울린다.','벽에 붙은 안내도가 반쯤 떨어져 있다.','환풍구에서 차가운 바람이 새어 나온다.','문 하나가 반쯤 열린 채 멈춰 있다.','벽에 손글씨로 화살표가 그려져 있다.','공기에서 오래된 먼지 냄새가 난다.','천장의 조명 하나가 지직거리며 꺼진다.','발밑에서 무언가가 바스락거린다. 낡은 종이 한 장이다.'];
+const bkRo=w=>{const c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+'(으)로';const f=(c-0xAC00)%28;return w+(f===0||f===8?'로':'으로')};
+const bkName=id=>(BK_ROOMS.find(r=>r.id===id)||{}).n||'';
+const bkLeft=()=>P.bkMv?Math.max(0,P.bkMv.end-Date.now()):0;
+function bkMoveLines(mv,now){const D=mv.end-mv.t0,pool=BK_SEARCH[mv.to]||BK_WALK,n=3,out=[[mv.t0,bkName(mv.to)+' 안을 뒤지기 시작했다.']];const h=(mv.k|0);for(let i=1;i<=n;i++){const t=mv.t0+D*i/(n+1);if(t<=now)out.push([t,pool[(h+i-1)%pool.length]])}return out}
+function bkArrive(){const mv=P.bkMv;if(!mv||Date.now()<mv.end)return false;const R0=BK_ROOMS.find(r=>r.id===mv.to),nx=R0&&Math.random()<BK_CLUE_P&&R0.spots.find(s=>!bkGot(R0.id,s.id));
+  // like the 기억모듈: the clue is mine only once the server says no one else has it; then the whole crew hears about it
+  if(nx&&!bkShared())P.bk=Object.assign({},P.bk,{[R0.id]:[...((P.bk||{})[R0.id]||[]),nx.id]});
+  if(nx&&bkShared()){const cid=nx.id,t0=mv.t0;bkClaim(cid).then(ok=>{if(!ok)return;BKF=Object.assign({},BKF,{[cid]:{u:uid,n:P.nick||'선원',at:Date.now()}});P.bk=Object.assign({},P.bk,{[R0.id]:[...((P.bk||{})[R0.id]||[]),cid]});if(P.bkLast&&P.bkLast.t0===t0)P.bkLast.got=cid;
+    log(`지하 벙커 ${R0.n}에서 이 세계에 단 하나뿐인 단서 「${nx.n}」를 찾았다!`,'rare');toast(`단서 「${nx.n}」 발견! 이 세계에서 처음 찾은 단서입니다.`);try{sfxFanfare(true)}catch(e){}try{xevChime()}catch(e){}
+    sys(`[공지] ${P.nick} 님이 지하 벙커 ${R0.n}에서 단서 「${nx.n}」를 찾았습니다. 조사 기록에서 확인할 수 있습니다.`,false,'mem');commit();if(tab==='scan')renderPanel()})}
+  P.bkAt=mv.to;P.bkMv=null;bkRoom=null;
+  const NT=(R0&&R0.notes)||[],pn=P.bkLast&&P.bkLast.note&&P.bkLast.note.n;let note=null;if(!nx&&NT.length){const pool=NT.length>1?NT.filter(x=>x.n!==pn):NT;const o=pool[ri(0,pool.length-1)];note={n:o.n,d:o.d}}
+  const lt=bkLoot(mv.to);P.bkLast={to:mv.to,t0:mv.t0,end:mv.end,lines:bkMoveLines(mv,mv.end).map(([t,x])=>({t,x})),got:nx&&!bkShared()?nx.id:null,note,find:lt.t,items:lt.got.map(([id,n])=>({id,n})),extra:lt.extra};
+  log(`지하 벙커 · ${bkName(mv.to)} 조사: ${lt.t.split('.')[0]}.`);commit();if(nx&&!bkShared())try{xevChime()}catch(e){}return true}
+// what a search turns up besides the clue — the same odds as a 조사 on the trails: the room's own finds, 귀중품 8%, 고대 신호 기록, 공명 촉매, 마이룸 아이템, XP
+function bkLoot(id){const L=BK_LOOT[id]||BK_LOOT.lounge,[t,spec]=L[ri(0,L.length-1)],fx=scFx(spec);let got=fx.add.slice(),extra='';
+  {const rl=relicRoll(P.lvl,id==='archive'?RELIC_SCAN_P*2:RELIC_SCAN_P);if(rl)got.push([rl,1])}
+  const lb=got.length&&lifeHit('scan');if(lb){got=got.map(([i,n])=>[i,n*2]);extra+='<span class="ichip">조사 숙련 · 보상 2배</span>'}
+  got.forEach(([i,n])=>add(i,n));
+  if(Math.random()<.12){const j=JUNK[ri(0,JUNK.length-1)][0];add(j,1);got.push([j,1]);if(!(P.jdex||[]).includes(j)){P.jdex=[...(P.jdex||[]),j];extra+=`<span class="ichip" style="color:var(--gold)">도감 등록 · ${esc(ITEMS[j].n)}</span>`}}
+  if(Math.random()<(id==='warp'?.1:.05)){add('upcat',1);got.push(['upcat',1])}
+  {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했습니다.`)}}
+  const xp=Math.round(need(P.lvl)*.08*SC_XP_K/XP_PACE);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
+  stat('scan');lxp('scan',14);return{t,got,extra}}
+let bkLogN=0;
+setInterval(()=>{if(!P||!P.bkMv||tab!=='scan'||scView==='log')return;if(bkArrive()){renderPanel();return}const el=document.getElementById('bkT');if(el)el.textContent=fmtClock(bkLeft());const n=bkMoveLines(P.bkMv,Date.now()).length;if(n!==bkLogN)renderPanel()},1000);
+function bkSideHTML(){const mv=P.bkMv,HC='<i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i>';
+  // one log box: what happens in the room, and at its foot where I am and what I can do next
+  if(mv){const L=bkMoveLines(mv,Date.now()),R0=BK_ROOMS.find(r=>r.id===mv.to)||BK_ROOMS[0];bkLogN=L.length;
+    return`<div class="sclog holo" aria-live="polite" aria-label="조사 기록">${HC}<div class="scll">${L.map(([t,x],n)=>`<p><span class="${n===L.length-1&&Date.now()-t<2500?'scnew':''}"><em class="hts">${hhmm(t)}</em>${esc(x)}</span></p>`).join('')}</div>
+     <div class="bkfoot"><span><b>${esc(R0.n)}</b> 안을 뒤지는 중 · 끝나기까지 <b id="bkT">${fmtClock(bkLeft())}</b></span><button class="btn sm alt" type="button" data-act="bkstop">그만두기</button></div></div>`}
+  const at=P.bkAt,last=P.bkLast,R0=at&&BK_ROOMS.find(r=>r.id===at),G=last&&last.got&&BK_ROOMS.flatMap(r=>r.spots).find(x=>x.id===last.got);
+  const body=!last||!last.lines?'<p class="scdim">해치 아래, 비상등이 켜진 방들이 줄지어 있다.</p><p class="scdim">왼쪽 지도에서 방을 고르면 그 방 안을 뒤져 본다.</p>'
+   :`${last.lines.map(l=>{const [t,x]=Array.isArray(l)?l:[l.t,l.x];return`<p><span><em class="hts">${hhmm(t)}</em>${esc(x)}</span></p>`}).join('')}${G?`<p class="bkfound"><b>단서 · ${esc(G.n)}</b></p><p class="bkfound" style="white-space:pre-line">${esc(G.d)}</p>`:last.note?`<p class="bkfound"><b class="bknote">${esc(last.note.n)}</b></p><p class="bkfound" style="white-space:pre-line">${esc(last.note.d)}</p>`:'<p class="scdim">새로운 단서는 없었다.</p>'}${last.find?`<p class="bkfound">${esc(last.find)}</p>`:''}${(last.items||[]).length||last.extra?`<div class="sclgot bkfound">${chipsOf((last.items||[]).filter(g=>ITEMS[g.id]).map(g=>[g.id,g.n]),last.extra||'')}</div>`:''}`;
+  return`<div class="sclog holo" aria-label="조사 기록">${HC}<div class="scll">${body}</div>
+   <div class="bkfoot">${R0?`<span>지금 여기 · <b>${esc(R0.n)}</b>${R0.spots.length?` · 단서 ${bkCount(at)}/${R0.spots.length}`:''}</span><button class="btn sm" type="button" data-act="bkgo" data-k="${at}">한 번 더 뒤진다 <small>${BK_SEARCH_MIN}분 · EN ${bkEn(at)}</small></button>`:'<span>왼쪽 지도에서 조사할 방을 누르십시오.</span>'}</div></div>`}
+const bkHead=()=>head().replace('정착지 주변 · 다섯 갈래 길 탐색','지하 벙커 · 비상등이 켜진 통로');
+function renderBunker(){const head=bkHead;const total=BK_ROOMS.reduce((n,r)=>n+r.spots.length,0),got=BK_ROOMS.reduce((n,r)=>n+bkCount(r.id),0);
+  const prev=isStaff()&&!BK_OPEN?`<div class="row" style="gap:6px;align-items:center"><button class="qchip" data-act="bkprev">← 기존 조사로</button><span class="hint">운영자 미리보기 · 조사 이벤트가 끝나면 모든 선원의 조사 탭이 이 벙커로 바뀝니다.</span></div>`:'';
+  if(false&&bkRoom){const R0=BK_ROOMS.find(r=>r.id===bkRoom),S=bkSel&&R0.spots.find(s=>s.id===bkSel&&bkGot(R0.id,s.id)),n=bkCount(R0.id);setTimeout(bkLoop,0);
+    return head()+prev+`<div class="xvbox bkbox"><div class="xvhd"><b>지하 벙커 · ${esc(R0.n)}</b><span>단서 <i>${n}</i>/${R0.spots.length}</span><span></span><span><button class="qchip" data-act="bkback">← 벙커 지도</button></span></div>
+     <div class="xvpic" id="bkPic"><canvas width="240" height="120"></canvas>${R0.spots.map(s=>`<button type="button" class="xvspot${bkGot(R0.id,s.id)?' got':''}${bkSel===s.id?' sel':''}" style="left:${s.x/2.4}%;top:${s.y/1.2}%;width:${s.w/2.4}%;height:${s.h/1.2}%" data-act="bkspot" data-k="${s.id}" aria-label="${esc(s.n)} 조사하기" title="${bkGot(R0.id,s.id)?esc(s.n):'조사하기'}">${bkGot(R0.id,s.id)?'<i>✓</i>':''}</button>`).join('')}</div>
+     <div class="xvtxt">${S?`<b class="xvt">${esc(S.n)}</b><p>${esc(S.d)}</p><span class="xvhint"><button type="button" class="xvlink" data-act="bkclue" data-k="">방으로 돌아가기</button></span>`:`<p>${esc(R0.d)}</p><span class="xvhint">${n<R0.spots.length?`그림 속 이곳저곳을 눌러 조사하십시오. 남은 단서 ${R0.spots.length-n}개`:'이 방은 모두 살펴보았다.'}</span>`}</div>
+     <div class="xvnote"><span class="xvhint">단서 수첩 ${n}/${R0.spots.length}</span>${R0.spots.map(s=>bkGot(R0.id,s.id)?`<button type="button" class="xvchip${bkSel===s.id?' on':''}" data-act="bkclue" data-k="${s.id}">${esc(s.n)}</button>`:'<span class="xvchip x">???</span>').join('')}</div></div>`}
+  bkArrive();const mv=P.bkMv;
+  const cell=r=>{const n=bkCount(r.id),all=r.spots.length,here=!mv&&P.bkAt===r.id,dest=mv&&mv.to===r.id;return`<button type="button" class="bkroom bk-${r.id}${n>=all?' done':''}${here?' here':''}${dest?' dest':''}" data-act="bkgo" data-k="${r.id}" ${mv&&!dest?'disabled':''}><b>${esc(r.n)}</b><span>${here?(all?`지금 여기 · 단서 ${n}/${all}`:'지금 여기'):dest?'조사 중…':!all?'':n?`단서 ${n}/${all}`:'아직 조사하지 않음'}${dest?'':`${here||all?' · ':''}EN ${bkEn(r.id)}`}</span></button>`};
+  return head()+prev+`<div class="scui bkui ${mv?'on':''}"><div class="xvbox bkbox"><div class="xvhd"><b>지하 벙커</b><span>단서 <i>${got}</i>/${total}</span><span></span><span></span></div>
+   <div class="bkmap">${BK_ROOMS.map(cell).join('')}<i class="bkhall" aria-hidden="true"></i></div></div><div class="scside">${bkSideHTML()}</div></div>
+  ${junkDexHTML(12)}`}
+// the room pictures: the same cold, dim bunker, each with what was left behind
+function bkDraw(g,room,t){const W=240,H=120,R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x|0,y|0,w|0,h|0)},P=(x,y,c)=>R(x,y,1,1,c),A=a=>g.globalAlpha=a;g.imageSmoothingEnabled=false;
+  const shell=(wall,floor)=>{R(0,0,W,H,wall);for(let x=0;x<W;x+=24)R(x,0,1,98,'#0c0f13');R(0,10,W,1,'#1c2229');R(0,96,W,24,floor);R(0,96,W,1,'#262c33');for(let x=0;x<W;x+=12)R(x,97,1,23,'#13161a')};
+  const lamp=(x,y)=>{const on=((t*1.1+x)|0)%5!==0;R(x,y,6,3,on?'#c8424a':'#3a1416');if(on){A(.06);R(0,0,W,H,'#c8424a');A(1)}};
+  const drip=(x,n)=>{for(let i=0;i<n;i++){const ph=(t*.6+i*.4)%1;P(x+i*5,12+ph*84,'#7a8ca0')}};
+  const dust=()=>{for(let i=0;i<14;i++){const s=XST[i],ph=(t*.08+s.p)%1;A(.25*(1-Math.abs(ph-.5)*2));P((s.x+t*3)%W,10+ph*86,'#8a96a8');A(1)}};
+  if(room==='lounge'){shell('#14171c','#121418');R(20,72,70,22,'#2a2f3a');R(20,64,70,10,'#323846');R(24,74,30,10,'#232833');R(16,64,6,30,'#2a2f3a');R(88,64,6,30,'#2a2f3a');
+    R(120,20,64,36,'#0a0d12');R(120,20,64,1,'#2e343d');if(((t*.5)|0)%7===0){A(.4);R(122,22,60,32,'#1a2a3a');A(1)}R(150,56,4,8,'#262b33');
+    R(104,84,44,4,'#2a2f37');R(108,88,2,8,'#1e232a');R(142,88,2,8,'#1e232a');R(114,79,5,5,'#9aa6b8');R(130,79,5,5,'#5a6474');P(131,80,'#3a3024');lamp(220,14)}
+  else if(room==='quarters'){shell('#13161b','#111317');for(let r=0;r<3;r++){R(12,34+r*20,86,4,'#2a3039');R(12,30+r*20,86,4,'#3a4452');R(14,31+r*20,20,2,'#5a6878')}R(10,30,2,64,'#232830');R(98,30,2,64,'#232830');
+    for(let i=0;i<3;i++){R(150+i*12,26,11,70,'#20262e');R(150+i*12,26,11,1,'#3a424e');P(158+i*12,60,'#5a6474')}A(.7);R(151,40,9,22,'#30404e');A(1);
+    R(198,36,26,20,'#8a8678');R(200,38,22,16,'#4a4a44');for(let i=0;i<4;i++){R(202+i*5,42,3,3,'#c8c4b4');R(202+i*5,45,3,6,'#5a5a52')}lamp(110,14);dust()}
+  else if(room==='archive'){R(0,0,W,H,'#08090c');R(0,96,W,24,'#101216');R(0,96,W,1,'#1e2228');lamp(10,4);lamp(226,4);
+    for(let r=0;r<3;r++)for(let c=0;c<9;c++){const x=8+c*25,y=8+r*16;R(x,y,22,13,'#14171c');R(x,y,22,1,'#262b33')}
+    A(.9);R(26,10,44,26,'#0e1822');g.fillStyle='#04060a';g.beginPath();g.ellipse(48,18+Math.sin(t*.8),18,6,0,0,7);g.fill();R(28,30,40,4,'#1a2a3a');A(1);
+    for(let i=0;i<4;i++){R(80+(i%2)*21,11+((i/2)|0)*12,18,10,'#2a2620');R(82+(i%2)*21,13+((i/2)|0)*12,14,6,'#100e0c');P(88+(i%2)*21,15+((i/2)|0)*12,'#a83a3a')}
+    R(130,10,44,26,'#0e1822');g.strokeStyle='#7a9ac0';g.beginPath();g.moveTo(138,30);g.lineTo(146,20+Math.sin(t*2)*2);g.lineTo(152,26);g.lineTo(160,14);g.lineTo(166,24);g.stroke();
+    R(176,72,42,26,'#1a1e24');R(180,76,34,12,'#0d1620');if(((t*2)|0)%2)R(182,80,20,1,'#5a8ab0');dust()}
+  else if(room==='workshop'){shell('#15161a','#121316');R(20,70,200,6,'#2e333b');R(24,76,3,20,'#22262d');R(214,76,3,20,'#22262d');
+    R(110,10,10,6,'#3a414c');g.strokeStyle='#4a5260';g.lineWidth=3;g.beginPath();g.moveTo(115,16);g.lineTo(100,40);g.lineTo(120,58);g.stroke();g.lineWidth=1;R(116,56,8,6,'#5a6270');R(119,62,3,4,'#c8a86a');
+    R(174,20,48,36,'#b8b4a4');A(.9);R(176,22,44,32,'#c8c4b4');A(1);g.strokeStyle='#3a5a8a';g.beginPath();g.ellipse(190,34,8,9,0,0,7);g.stroke();R(204,40,10,8,'#3a5a8a');P(205,49,'#3a5a8a');P(212,49,'#3a5a8a');
+    R(22,80,38,16,'#3a342c');R(22,80,38,1,'#5a5044');R(36,84,10,8,'#2a241e');g.fillStyle='#c8b48a';g.font='7px monospace';g.fillText('7',39,90);for(let i=0;i<5;i++)P(140+i*8,68,'#5a6270');drip(70,3)}
+  else if(room==='server'){shell('#0d1014','#0e1013');for(let i=0;i<4;i++){const x=10+i*21;R(x,12,19,84,'#171b21');R(x,12,19,1,'#2a313b');for(let y=16;y<92;y+=5){R(x+2,y,15,3,'#1e242c');const on=((t*3+i*1.7+y*.3)|0)%4!==0;P(x+14,y+1,on?(y%3?'#5ac88a':'#c8a84a'):'#1a2a20')}}
+    R(110,6,6,90,'#2a3440');R(126,6,6,90,'#2a3440');for(let y=10;y<96;y+=6){A(.5);P(111+((y*3)%4),y,'#cfe0f0');P(127+((y*5)%4),y+2,'#cfe0f0');A(1)}
+    R(150,56,48,34,'#1a1e24');R(154,60,40,18,'#0a1418');g.fillStyle='#5ac88a';g.font='6px monospace';g.fillText('99.97%',158,72);if(((t*1.5)|0)%2)R(186,68,3,5,'#5ac88a');
+    A(.12+.06*Math.sin(t*3));R(0,0,W,96,'#1a3a2a');A(1)}
+  else if(room==='canteen'){shell('#15151a','#131316');R(18,76,140,4,'#2e333b');R(24,80,3,16,'#22262d');R(150,80,3,16,'#22262d');for(let i=0;i<5;i++){R(24+i*28,86,10,3,'#262b33');R(26+i*28,89,2,7,'#1e232a')}
+    for(let i=0;i<3;i++){R(60+i*18,70,14,6,'#5a6270');R(62+i*18,71,4,3,'#6a5a3a');R(68+i*18,71,4,3,'#4a5a3a')}
+    R(170,24,48,58,'#22262d');R(170,24,48,1,'#3a414c');R(176,30,36,16,'#0d1418');g.fillStyle='#c8a86a';g.font='5px monospace';g.fillText('TODAY',182,40);R(180,52,28,20,'#1a1e24');R(186,72,16,4,'#3a414c');
+    R(30,88,14,6,'#c8c4b4');lamp(110,14);dust()}
+  else if(room==='storage'){shell('#121519','#101215');for(let r=0;r<4;r++){R(10,24+r*20,70,3,'#2e343d');for(let i=0;i<5;i++)R(12+i*14,14+r*20,12,10,i%2?'#3a3a34':'#33332e')}R(10,14,2,82,'#22262d');R(78,14,2,82,'#22262d');
+    R(178,24,54,3,'#2e343d');R(178,44,54,3,'#2e343d');R(178,14,2,40,'#22262d');R(230,14,2,40,'#22262d');for(let i=0;i<3;i++)R(182+i*16,34,12,10,'#33332e');
+    R(112,60,46,30,'#2a3a3a');R(112,60,46,1,'#4a6a6a');for(let i=0;i<6;i++){R(116+i*7,66,5,8,'#1a2828');P(118+i*7,68,['#e0904a','#c8b88a','#e8f0f8'][i%3])}
+    A(.2);for(let i=0;i<8;i++){g.fillStyle='#9ab8d0';g.beginPath();g.ellipse(((i*40+t*4)%(W+40))-20,100,30,4,0,0,7);g.fill()}A(1)}
+  else{// the warp room: the dead ring, its crack shimmering, the empty pedestal, the console
+    R(0,0,W,H,'#0a0d12');for(let x=0;x<W;x+=30)R(x,0,1,92,'#12161d');R(0,92,W,28,'#14171c');R(0,92,W,1,'#252a32');
+    const cx=120,cy=46;for(let y=-40;y<=40;y++)for(let x=-36;x<=36;x++){const d=Math.sqrt(x*x/1296+y*y/1600),din=Math.sqrt(x*x/676+y*y/900);if(d>1)continue;if(din>=1){const a=Math.atan2(y,x),seg=((a+Math.PI)/(Math.PI*2)*12|0)%2;P(cx+x,cy+y,seg?'#3a414c':'#2c323b')}
+      else if(Math.abs(x-Math.sin(y*.3+t*1.5)*3)<1&&Math.abs(y)<22){A(.35+.25*Math.sin(t*2+y));P(cx+x,cy+y,'#7a9ac0');A(1)}}
+    R(100,86,40,8,'#2a2f37');R(100,86,40,1,'#3d434d');R(110,88,6,3,'#14171b');R(124,88,6,3,'#14171b');R(176,70,40,28,'#1e232a');R(180,74,32,12,'#101820');if(((t*2)|0)%4===0)R(182,78,10+((t*3)|0)%14,1,'#4a6a8a')}
+  const vg=g.createRadialGradient(120,60,30,120,60,140);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,W,H)}
+function bkLoop(){cancelAnimationFrame(bkRaf);const t0=performance.now();const step=now=>{const pic=document.getElementById('bkPic');if(!pic||!bkRoom)return;const cv=pic.querySelector('canvas');try{bkDraw(cv.getContext('2d'),bkRoom,(now-t0)/1000)}catch(e){}bkRaf=requestAnimationFrame(step)};bkRaf=requestAnimationFrame(step)}
+
+/* ───────── 조사 기록: a second view of the 조사 tab (beside the title) that lists everything found so far, place by place —
+   the clues the crew found together in the 조사 이벤트, and the ones I found in the 지하 벙커 — each with a comment thread
+   the whole crew shares (kept in hchat with ch = 'clue:<clue id>'). ───────── */
+let scView='scan',clOpen=null,clDraft={},CLC=[],clSub=null,clErr=false;
+function clListen(){if(clSub||mode!=='online'||!db)return;try{clSub=db.collection('hchat').where('ch','>=','clue:').where('ch','<','clue;').onSnapshot(sn=>{clErr=false;CLC=sn.docs.map(d=>Object.assign({id:d.id},d.data()));if(tab==='scan'&&scView==='log')clPaint()},()=>{clErr=true;clSub=null})}catch(e){clErr=true}}
+const clOf=id=>CLC.filter(c=>c.ch==='clue:'+id).sort((a,b)=>(+a.at||0)-(+b.at||0));
+// the groups shown: the event's places in the order the crew went, then the bunker's rooms
+// what the crew has pieced together so far from the stories and the 조사 이벤트, written up as five records
+const CL_KEY=[
+ {id:"k_orbis",n:"단체 이주 프로젝트",d:"1호의 기억에서 엿본 장면. 사람들은 단체로 이주를 하는 것 같았다. 무슨 이유로 이곳을 떠나, 어디로 가는 걸까."},
+ {id:"k_worm",n:"의문의 잔해",d:"도시는 위쪽 절반만 남긴 채 쓸려 나갔고, 잔해는 모두 한 방향으로 누워 있다. 무언가가 한쪽에서 쓸고 지나간 것처럼."},
+ {id:"k_move",n:"미지의 침략자",d:"언제부턴가 나타나기 시작한 불청객. 어디에서, 어떻게, 왜 오는 것인지 전부 알 수 없다. 그것들이 나타나기 전에는 하늘이 일그러진다. 언젠가 보았던 것처럼…."},
+ {id:"k_gaia",n:"가이아 프로젝트",d:"1호의 기억 속, 출항하는 함선들 위로 들리던 그 이름. 지하 벙커의 문에 적힌 그 이름.‘가이아’는 우리가 타고 온 이 우주선의 이름이기도 하다. 우리가 떠난 이후로도 프로젝트가 진행되었던 걸까. 알 수 없다."},
+ {id:"k_warp",n:"거대한 기계 장치",d:"6호의 기억에서 본 거대한 기계. 녹슨 7호가 손을 대자 큰 에너지를 쏘아 올렸던 고리 모양의 장치다. 그것은 이 공터 아래, 지하 벙커에 있었다. 무엇을 위한 장치인지 아직 알 수 없다."}];
+function clGroups(){const out=[{src:'핵심 기록 · 지금까지 밝혀진 것',n:'핵심 기록',key:1,items:CL_KEY.map(k=>({id:k.id,n:k.n,d:k.d,got:true}))}];
+  // the 조사 이벤트's own clues are not listed: what the crew learned there is summed up in the 핵심 기록
+  if(false&&typeof XEV!=='undefined'&&XEV&&XEV.found&&Object.keys(XEV.found).length){(XEV.path||[0]).forEach(i=>{const sc=XEV_SC[i];if(!sc)return;const sp=xevSpots(sc,XEV.picks||{},XEV.found);out.push({src:'조사 이벤트 · 워프기계를 찾아 떠나는 여정',n:sc.ch+' · '+sc.t,tie:'k_gaia',items:sp.map(s=>({id:'x_'+s.id,n:s.n,d:xevNames(s.d)+(s.pick&&XEV.found[s.id]&&XEV.found[s.id].c!=null?'\n\n'+s.pick[XEV.found[s.id].c].r:''),got:!!XEV.found[s.id],by:(XEV.found[s.id]||{}).n}))})})}
+  if(bkOn())BK_ROOMS.forEach(r=>{if(!bkCount(r.id))return;out.push({src:'지하 벙커',n:r.n,items:r.spots.map(s=>{const f=BKF[s.id];return{id:'b_'+s.id,n:s.n,d:s.d,got:bkGot(r.id,s.id),by:f&&f.u!==uid?f.n:null,mine:!f||f.u===uid}})})});
+  return out}
+const clVis=()=>isStaff()||bkOn()||clGroups().length>1;
+const clH=id=>{let h=0;for(const c of id)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)};
+function clItemHTML(it){if(!it.got)return`<div class="clitem x"><b>?</b><span class="xvhint">아직 찾지 못한 단서</span></div>`;const cs=clOf(it.id),op=clOpen===it.id,h=clH(it.id),pin=h%3!==0;
+  return`<div class="clitem ${it.key?'kc':'c'+(h%4)}${op?' open':''}" data-pin="${it.id}" style="--r:0deg;--pin:${pin?'block':'none'};--tape:${pin?'none':'block'}"><div class="clhd"><b>${esc(it.n)}</b>${it.by?`<span class="xvhint">— ${esc(it.by)} 님이 찾음</span>`:it.mine?'<span class="xvhint">— 내가 찾음</span>':''}</div><p>${esc(it.d)}</p>
+   <button type="button" class="clcnt" data-act="clopen" data-k="${it.id}" aria-expanded="${op}">${op?'접기':'펼치기'} · 의견 ${cs.length}</button>
+   ${op?`<div class="clcms">${cs.length?cs.map(c=>{const p=c.uid===uid?P:(PLAYERS[c.uid]||{nick:c.nick});return`<div class="clcm">${headImg(2,p)}<div><div class="clcmh"><b>${esc(p.nick||c.nick||'선원')}</b><span class="xvhint">${shortAgo(c.at||Date.now())}</span>${c.uid===uid||isStaff()?`<button type="button" class="xvlink" data-act="cldel" data-k="${esc(c.id)}">삭제</button>`:''}</div><p>${esc(c.text||'')}</p></div></div>`}).join(''):'<p class="xvhint">아직 의견이 없습니다. 이 단서를 어떻게 생각하는지 남겨 보십시오.</p>'}
+     <div class="sendrow"><input id="clIn" data-k="${it.id}" maxlength="300" autocomplete="off" placeholder="의견 남기기 (Enter)" aria-label="의견" value="${esc(clDraft[it.id]||'')}"><button class="btn sm" type="button" data-act="clsend" data-k="${it.id}">남기기</button></div></div>`:''}</div>`}
+// red strings: the 핵심 기록 tied to each other, every place's clues tied in the order found, and each place tied back to the record it bears on
+const CL_TIES=[];
+function clStrings(){const bd=document.getElementById('clLog');if(!bd)return;const sv=bd.querySelector('.clstr');if(!sv)return;const br=bd.getBoundingClientRect(),pt={};
+  bd.querySelectorAll('[data-pin]').forEach(e=>{const r=e.getBoundingClientRect();pt[e.dataset.pin]=[r.left-br.left+r.width/2,r.top-br.top+11]});
+  const ties=CL_TIES.slice();bd.querySelectorAll('.clgroup').forEach(g=>{const ids=[...g.querySelectorAll('[data-pin]')].map(e=>e.dataset.pin);ids.forEach((id,i)=>{if(i)ties.push([ids[i-1],id])});});
+  let d='',dots='';const used=new Set();ties.forEach(([a,b])=>{const p=pt[a],q=pt[b];if(!p||!q)return;used.add(a);used.add(b);const mx=(p[0]+q[0])/2,my=Math.max(p[1],q[1])+Math.min(22,Math.hypot(q[0]-p[0],q[1]-p[1])*.06);d+=`M${Math.round(p[0])} ${Math.round(p[1])}Q${Math.round(mx)} ${Math.round(my)} ${Math.round(q[0])} ${Math.round(q[1])}`});
+  used.forEach(id=>{const p=pt[id];dots+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3"/>`});
+  sv.setAttribute('viewBox',`0 0 ${br.width} ${br.height}`);sv.innerHTML=`<path d="${d}"/>${dots}`}
+window.addEventListener('resize',()=>{if(tab==='scan'&&scView==='log')clStrings()});
+function clueLogHTML(){clListen();const gs=clGroups();if(!gs.length)return'<div class="xvbox"><p class="xvhint" style="margin:0">아직 조사한 것이 없습니다. 조사 이벤트나 지하 벙커에서 단서를 찾으면 여기에 모입니다.</p></div>';
+  let src='',html='';gs.forEach(gp=>{if(gp.src!==src){src=gp.src;html+=`<span class="lbl clsrc">${esc(src)}</span>`}const n=gp.items.filter(i=>i.got).length;html+=`<div class="clgroup${gp.key?' clkey':''}"${gp.tie?` data-tie="${gp.tie}"`:''}><div class="clgh"><b>${esc(gp.n)}</b><span class="xvhint">${gp.key?`${gp.items.length}건`:`단서 ${n}/${gp.items.length}`}</span></div><div class="clitems">${gp.items.map(i=>clItemHTML(gp.key?Object.assign({key:1},i):i)).join('')}</div></div>`});
+  requestAnimationFrame(()=>requestAnimationFrame(clStrings));
+  return`<div class="xvbox cllog board" id="clLog"><svg class="clstr" aria-hidden="true"></svg><div class="cltitle"><b>조사 보드</b><span>워프 기계를 찾아서 · 지금까지 모은 단서</span></div>${clErr?'<p class="xvhint">의견을 불러오지 못했습니다. 잠시 후 다시 시도해 주십시오.</p>':''}${html}</div>`}
+function clPaint(){const el=document.getElementById('clLog');if(!el)return;const ae=document.activeElement,foc=ae&&ae.id==='clIn',sc=el.parentNode&&el.closest('#stage')?document.getElementById('stage').scrollTop:0;el.outerHTML=clueLogHTML();if(foc){const i=document.getElementById('clIn');if(i){i.focus();i.selectionStart=i.selectionEnd=i.value.length}}}
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='clIn')clDraft[e.target.dataset.k]=e.target.value});
+document.addEventListener('keydown',e=>{const t=e.target;if(t&&t.id==='clIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();A.clsend({k:t.dataset.k})}});
+function scTabsHTML(){return clVis()?`<div class="dtabs sctabs" role="tablist"><button role="tab" aria-selected="${scView!=='log'}" data-act="scview" data-k="scan">조사</button><button role="tab" aria-selected="${scView==='log'}" data-act="scview" data-k="log">조사 기록</button></div>`:''}
+function renderScan(){if(scView==='log'&&!clVis())scView='scan';const h=scView==='log'?head().replace('정착지 주변 · 다섯 갈래 길 탐색','조사 기록 · 지금까지 찾은 단서')+clueLogHTML():renderScanMain();return h.replace('<h2>조사</h2>','<h2>조사</h2>'+scTabsHTML())}
+function renderScanMain(){if(bkOn())return renderBunker();const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(renderNav,0)}const on=!!sc.mv||sc.t>=0;
+  return head()+(isStaff()?'<div class="row" style="gap:6px;align-items:center"><button class="qchip" data-act="bkprev">지하 벙커 미리보기 →</button><span class="hint">운영자 미리보기 · 조사 이벤트가 끝나면 모든 선원의 조사 탭이 지하 벙커로 바뀝니다.</span></div>':'')+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 들어가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 깊이 들어갈수록 길이 험해져 에너지가 ${scEn(1)}에서 ${scEn(SC_N)}까지 듭니다. 길의 끝(${SC_N}지점)에서는 <b style="color:var(--gold)">공명 촉매</b>를 반드시 하나 얻습니다.</p>
   <div class="scui ${on?'on':''}"><div class="scleft">${scoutMapHTML()}</div><div class="scside">${on?scFpHTML(sc):scListHTML(sc)}</div></div>
   ${junkDexHTML()}`;
 }
@@ -6356,9 +6911,9 @@ function scoutSearch(){const sc=scoutSt();if(!sc.pend||sc.mv||sc.t<0)return;cons
   const xp=Math.round(need(P.lvl)*SC_XP[Math.min(SC_N,k)-1][first?1:0]*SC_XP_K/XP_PACE)+(r.xp||0);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
   memTry();stat('scan');lxp('scan',6+k*2);lastScan={t:`[${T.n} · ${T.nodes[k-1]}] `+ev.t,ev:ev.t,got,extra,acts:scLegLines&&scLegLines.length?scLegLines:scActs(sc.t),tr:sc.t,k,at:Date.now()};log(`조사: ${T.nodes[k-1]}. `+ev.t.split('.')[0]+'.',r.hp?'bad':'');commit()}
 // 귀중품 도감: every one found so far; the rest show as black silhouettes
-function junkDexHTML(){const got=new Set([...(P.jdex||[]),...JUNK.map(j=>j[0]).filter(id=>P.inv[id]>0)]);
+function junkDexHTML(pct=8){const got=new Set([...(P.jdex||[]),...JUNK.map(j=>j[0]).filter(id=>P.inv[id]>0)]);
   return`<section class="card jdex"><div class="row" style="justify-content:space-between;gap:8px"><span class="lbl">Field guide · 귀중품 도감</span><b class="jdexn">${got.size} / ${JUNK.length}</b></div>
-   <p class="hint" style="margin:4px 0 8px">조사할 때 8% 확률로 귀중품을 줍습니다. 처음 주운 귀중품은 도감에 기록되고, 상점에서 하나에 200 CR에 팔 수 있습니다.</p>
+   <p class="hint" style="margin:4px 0 8px">조사할 때 ${pct}% 확률로 귀중품을 줍습니다. 처음 주운 귀중품은 도감에 기록되고, 상점에서 하나에 200 CR에 팔 수 있습니다.</p>
    <div class="jdgrid">${JUNK.map(([id,n])=>{const k=got.has(id);return`<div class="jdc${k?'':' no'}" title="${k?esc(n)+' · 판매가 '+sellPrice(id)+' CR':'아직 찾지 못한 귀중품'}">${iicon(id,2)}<span>${k?esc(n):'???'}</span></div>`}).join('')}</div></section>`}
 function scoutTick(){const sc=scoutSt();if(sc.mv&&Date.now()>=sc.mv.e){scoutArrive();return}if(!sc.mv&&sc.pend&&sc.t>=0){scLegLines=null;scoutSearch();if(tab==='scan')renderPanel();return}if(tab==='scan'&&sc.mv){scLogTick();const e=$('#scT');if(e)e.textContent=fmtClock(scoutLeft());const me=$('#scMe');if(me){const[x,y]=scoutPos();me.style.left=(x+.5)/SC_W*100+'%';me.style.top=(y-5)/SC_H*100+'%'}scCam()}}
 /* ───────── ship: everyone pours materials into the wrecked colony ship (one shipdon doc per donation) ───────── */
@@ -6506,7 +7061,7 @@ setInterval(()=>{try{navStoryCheck()}catch(e){}},8000);
 function hullStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
   if(!STORY_ON.hull)return;const pt=SHIP.find(x=>x.id==='hull');if(!pt||!shipDone(pt)||(P.stSeen||{}).hull)return;
   if($('#story')||$('#opCrawl')||$('#unlockPop')||$('#rolePop')||$('#orbisFx')||(typeof raidLocked==='function'&&raidLocked()))return;if(STORY_ON.nav&&!(P.stSeen||{}).nav)return;
-  P.stSeen=Object.assign({},P.stSeen,{hull:Date.now()});save();playStory('hull')}
+  P.stSeen=Object.assign({},P.stSeen,{hull:Date.now()});save();playStory('hull',()=>{try{tab='scan';scView='scan';renderNav();renderPanel()}catch(e){}})}
 setInterval(()=>{try{hullStoryCheck()}catch(e){}},8000);
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
 function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 우주함선이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
@@ -7684,7 +8239,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795487182';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795513487';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -7930,8 +8485,8 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'r_off',sfx:'off',cut:1,lines:[{t:'녹슨 7호는 꺼진 모니터를 바라보고 있다.',wait:2.2},{v:'아무래도 나는 떠나는 쪽이 아니었던 모양이지.',who:'녹슨 7호',art:'r_look'},{v:'그렇다면 내가 여기에 남겨진 이유도 있을 거야.',who:'녹슨 7호',art:'r_look'}]},
   {art:'r_look',lines:[{t:'그는 모니터를 조작하더니 기억 모듈 6번의 한 장면을 띄운다.'}]},
   {art:'r_six',sfx:'monon',lines:[{v:'이 수상한 기계가 있는 곳 말인데.',who:'녹슨 7호',wait:3.4}]},
-  {art:'r_look',lines:[{v:'이제 보니 짐작이 가는 위치가 있어. 원한다면 안내해줄 수 있지만, 기계는 물에 취약하다고.',who:'녹슨 7호'},{t:'녹슨 7호는 우리에게 다음 날 출발하자고 제안해온다.'}]},
-  {art:'r_ship2',sfx:'rain',lines:[{t:'날아오를 수 있는 선체를 가졌음에도 발이 묶인 우리에게 짧은 휴식 시간이 생겼다.'},{t:'……빗소리가 여전히 외벽을 두드린다.',art:'r_drops'}]}]}};
+  {art:'r_look',lines:[{v:'이제 보니 짐작이 가는 위치가 있어. 원한다면 안내해줄 수 있지.',who:'녹슨 7호'}]},
+  {art:'r_ship2',sfx:'rain',lines:[{t:'날아오를 수 있는 선체를 가졌음에도 발이 묶인 우리에게 새로운 목적지가 생겼다.'},{t:'……빗소리가 여전히 외벽을 두드린다.',art:'r_drops'}]}]}};
 // 녹슨 7호's voice, read out like Animal Crossing's babble but through a cracked speaker: every Hangul syllable becomes a
 // tiny sped-up "syllable" — a buzzy carrier shaped by the vowel's two formants, with a tick or hiss for the consonant
 const VOW=[[800,1300],[520,1850],[800,1300],[520,1850],[620,1050],[480,1900],[620,1050],[480,1900],[460,820],[800,1300],[520,1850],[480,1900],[460,820],[360,760],[620,1050],[480,1900],[300,2250],[360,760],[420,1450],[300,2250],[300,2250]];
@@ -8706,7 +9261,7 @@ const A={
   const a=P.att||{},streak=await attStreak(day,a);P.att={last:day,streak,total:(a.total||0)+1};const r=ATT_REW[(streak-1)%7];P.cr=(P.cr||0)+r.cr;add('drink',r.d);let msg=`출석 완료! ${(streak-1)%7+1}일차 보급품 ${r.cr} CR + ${ITEMS.drink.n} ×${r.d}`;sfxCoin();log(msg,'good');toast(msg);window.attDraft='';attDay=day;commit()},
  attday(d){const n=+d.k||0,today=duelDay();let nd=attDayShift(attDay||today,n);if(nd>today)nd=today;attDay=nd;ATT=[];attSub();renderPanel()},
  attdel(d){if(!isAdmin||!d.k)return;db.doc('attend/'+d.k).delete().then(()=>toast('출석 메모를 지웠습니다.')).catch(()=>toast('지우지 못했습니다.'))},
- admtab(d){if(!isAdmin)return;admTab=['tools','story','give','boss','spres','inv','fb','rb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
+ admtab(d){if(!isAdmin)return;admTab=['tools','story','give','xev','boss','spres','inv','fb','rb','crew','del','reset'].includes(d.k)?d.k:'tools';renderAdminAll()},
  async admundel(d){if(!isAdmin||mode!=='online'||!d.k)return;const p=DELP[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:false,wt:wtNow()});await db.doc('members/'+d.k).set({id:d.k,code:'restored',at:Date.now()}).catch(()=>{});toast(`${p.nick||'선원'} 캐릭터를 되돌렸습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터 삭제를 취소했다.`,'good')}catch(e){toast('되돌리지 못했습니다.')}},
  admdelno(){admDel=null;renderAdminAll()},
  async admdelyes(d){if(!isAdmin||mode!=='online'||d.k===uid)return;const p=PLAYERS[d.k]||{};try{await db.doc('players/'+d.k).update({deleted:true,delAt:Date.now(),delBy:P.nick,wt:wtNow()});db.doc('members/'+d.k).delete().catch(()=>{});admDel=null;toast(`${p.nick||'선원'} 캐릭터를 삭제했습니다.`);log(`운영자 권한으로 ${p.nick||'선원'} 캐릭터를 삭제했다.`,'bad')}catch(e){toast('삭제하지 못했습니다.')}renderAdminAll()},
@@ -8825,6 +9380,32 @@ const A={
  bosshit(){bossHit()},
  vote(d){if(!voteOpen()||!VOTE_JOB[d.k]||!d.id||d.id===uid)return;const p=d.id===uid?P:PLAYERS[d.id];if(!p||vJob(p)!==VOTE_JOB[d.k])return;P.vote=Object.assign({},myVote(),{r:VOTE_R,[d.k]:d.id});commit();toast(`${p.nick||'선원'} 님에게 ${POSTS3.find(x=>x[0]===d.k)[1]} 표를 던졌습니다.`)},
  voteappoint(d){if(!isStaff()||!VOTE_JOB[d.k]||!d.id)return;if(!isAdmin){toast('임명은 운영자만 할 수 있습니다.');return}setRole(d.k,d.id).then(()=>renderPanel())},
+ scview(d){scView=d.k==='log'&&clVis()?'log':'scan';clOpen=null;renderPanel()},
+ clopen(d){clOpen=clOpen===d.k?null:d.k;clPaint();if(clOpen)setTimeout(()=>{const i=document.getElementById('clIn');if(i)i.focus()},30)},
+ async clsend(d){if(mode!=='online'||!d.k)return;const v=String(clDraft[d.k]||'').trim().slice(0,300);if(!v)return;clDraft[d.k]='';const i=document.getElementById('clIn');if(i)i.value='';
+  try{await db.collection('hchat').add({uid,nick:P.nick,text:v,at:Date.now(),ch:'clue:'+d.k})}catch(e){clDraft[d.k]=v;if(i)i.value=v;toast('의견을 남기지 못했습니다.')}},
+ cldel(d){const c=CLC.find(x=>x.id===d.k);if(!c||!(c.uid===uid||isStaff()))return;db.collection('hchat').doc(d.k).delete().then(()=>{CLC=CLC.filter(x=>x.id!==d.k);clPaint()}).catch(()=>toast('지우지 못했습니다.'))},
+ bkgo(d){if(!BK_ROOMS.some(r=>r.id===d.k)||P.bkMv)return;if(!spendKeep(bkEn(d.k)))return;const now=Date.now();P.bkMv={to:d.k,from:P.bkAt||'',k:bkCount(d.k),t0:now,end:now+BK_SEARCH_MIN*60e3};bkRoom=null;bkSel=null;save();renderPanel()},
+ bkstop(){if(!P.bkMv)return;P.bkMv=null;save();toast('조사를 그만두었습니다.');renderPanel()},
+ bkroom(d){if(!BK_ROOMS.some(r=>r.id===d.k)||P.bkMv||P.bkAt!==d.k)return;bkRoom=d.k;bkSel=null;renderPanel()},
+ bkback(){bkRoom=null;bkSel=null;renderPanel()},
+ bkspot(d){if(!bkRoom)return;const R0=BK_ROOMS.find(r=>r.id===bkRoom),s=R0&&R0.spots.find(x=>x.id===d.k);if(!s)return;bkSel=s.id;if(!bkGot(bkRoom,s.id)){P.bk=Object.assign({},P.bk,{[bkRoom]:[...((P.bk||{})[bkRoom]||[]),s.id]});save();try{xevChime()}catch(e){}}renderPanel()},
+ bkclue(d){bkSel=d.k&&bkGot(bkRoom,d.k)?(bkSel===d.k?null:d.k):null;renderPanel()},
+ bkprev(){if(!isStaff())return;bkPrev=!bkPrev;bkRoom=null;bkSel=null;renderPanel()},
+ xevspot(d){if(!XEV||!XEV.on||XEV.done||mode!=='online')return;const sc=xevScene(),s=sc&&xevSpots(sc).find(x=>x.id===d.k);if(!s)return;xevSel=s.id;
+  if(!xevGot(s.id)){P.xevF={eid:XEV.eid,f:Object.assign({},xevMine(),{[s.id]:{at:sNow()}})};xevChime();save()}xevPaint()},
+ xevclue(d){if(!xevGot(d.k))return;xevSel=xevSel===d.k?null:d.k;xevPaint()},
+ xevback(){xevSel=null;xevPaint()},
+ // a choice inside a clue (잔해 2's flowers): the first one made counts for everyone
+ xevpick(d){if(!XEV||!XEV.on||XEV.done||mode!=='online')return;const f=xevMine()[d.k],i=+d.i;if(!f||f.c!=null||!(i>=0&&i<3))return;
+  P.xevF={eid:XEV.eid,f:Object.assign({},xevMine(),{[d.k]:Object.assign({},f,{c:i,pat:sNow()})})};save();xevPaint()},
+ xevgo(){if(!isAdmin||!XEV||!XEV.on||XEV.done)return;const sc=xevScene();if(!sc||!sc.go||!xevSceneDone(sc))return;const eid=XEV.eid,at=XEV.sc;xevTx(cur=>cur.eid!==eid||cur.sc!==at?null:xevMove(cur,at,0))},
+ xevvote(d){if(!XEV||!XEV.on||!XEV.vk||mode!=='online')return;const c=+d.k,sc=xevScene();if(!sc||!sc.vote||!(c>=0&&c<sc.vote.o.length))return;const k=XEV.vk;XEV.votes=Object.assign({},XEV.votes,{[k]:Object.assign({},(XEV.votes||{})[k],{[uid]:c})});xevPaint();xevRef().update({votes:{[k]:{[uid]:c}}}).catch(()=>toast('투표하지 못했습니다.'))},
+ xevhide(){xevHid=XEV&&XEV.eid||'';xevPaint()},
+ xevshow(){xevHid='';xevPaint()},
+ async xevopen(){if(!isAdmin||mode!=='online')return;try{await xevRef().set({on:true,eid:'x'+Date.now(),sc:0,path:[0],prev:null,found:{},votes:{},picks:{},vk:'',vuntil:0,nv:0,done:false,at:Date.now()});xevHid='';xevSel=null;xevEndT=null;toast('조사 이벤트를 열었습니다.')}catch(e){toast('열지 못했습니다.')}},
+ xevnext(){if(!isAdmin)return;xevDrive(true)},
+ async xevend(){if(!isAdmin||mode!=='online')return;try{await xevRef().update({on:false});toast('조사 이벤트를 닫았습니다.')}catch(e){toast('닫지 못했습니다.')}},
  shipview(d){shipView=d.k==='room'?'room':d.k==='supply'?'supply':d.k==='memo'?'memo':d.k==='org'&&voteTabVis()?'org':'ship';if(shipView==='supply'){attDay=duelDay();attSub()}if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
  rslot(d){roomSlot=d.k;renderPanel()},
  pv(d){if(preview[roomSlot]===d.k)delete preview[roomSlot];else preview[roomSlot]=d.k;renderPanel()},
@@ -9376,7 +9957,7 @@ document.addEventListener('change',e=>{if(e.target.id==='gDur'){gDur=e.target.va
 let raidPd=null;addEventListener('pointerdown',e=>{const a=e.target.closest&&e.target.closest('[data-act]');raidPd=a&&/^raid(atk|def|sk|item|tgt|to|pick|bag)$/.test(a.dataset.act)?{el:a,act:a.dataset.act,k:a.dataset.k}:null},{capture:true,passive:true});
 addEventListener('pointerup',e=>{const d=raidPd;raidPd=null;if(!d||d.el.isConnected)return;setTimeout(()=>{const t=document.elementFromPoint(e.clientX,e.clientY),a=t&&t.closest('[data-act]');if(a&&a!==d.el&&a.dataset.act===d.act&&a.dataset.k===d.k&&!a.disabled)a.click()})},{capture:true,passive:true});
 // expedition actions keep working while the character is fainted: the expedition runs on its own HP
-const SAFE_ACT=new Set(['admeg','mailpg','sentcat','visithome','mailcat','padtop','anonopen','anonclose','anonsend','anondel','antab','anmore','anlike','lgmenu','sugopen','sugback','notiall','sharex','sharego','slotshare','scanshare','ttlbragx','ttlbraggo','ttlpopclose','ttlpopwear','ttlpopbrag','ttlbrag','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidbagtab','raidpick','raideatopen','raideattab','raideatpick','raidfleev','raidnext','raidfork','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','noticeopen','noticeclose','ntcpost','topen','tclose','tmode','tunpick','tpick','tsave','rbopen','rbclose','rbsend','rbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
+const SAFE_ACT=new Set(['bkgo','bkstop','scview','clopen','clsend','cldel','bkroom','bkback','bkspot','bkclue','bkprev','xevvote','xevhide','xevshow','xevspot','xevclue','xevback','xevpick','xevgo','admeg','mailpg','sentcat','visithome','mailcat','padtop','anonopen','anonclose','anonsend','anondel','antab','anmore','anlike','lgmenu','sugopen','sugback','notiall','sharex','sharego','slotshare','scanshare','ttlbragx','ttlbraggo','ttlpopclose','ttlpopwear','ttlpopbrag','ttlbrag','lgpick','socside','orgopen','orgclose','rankopen','socdock','bagtoggle','sel','raidatk','raiddef','raidsk','raiditem','raideat','raidbag','raidbagtab','raidpick','raideatopen','raideattab','raideatpick','raidfleev','raidnext','raidfork','raiddone','raidleave','raidgo','admtab','admundel','chestok','notigo','eqsuit','eqrod','metab','mltab','tickdel','admbosspick','admboss','admbossoff','raidzone','raidtgt','raidto','shipsel','wprev','wprevclr','fssel','fpsel','admgrant','admgivecr','admdel','admdelno','admdelyes','suggopen','suggclose','suggsend','fbdel','noticeopen','noticeclose','ntcpost','topen','tclose','tmode','tunpick','tpick','tsave','rbopen','rbclose','rbsend','rbdel','renameopen','renamecancel','adminopen','adminclose','adm','admpick','admstaff','admroomlink','seasonreset','admgive','admnotice','admrescue','admchat','fvisit','fsel','giftclose','giftadd','giftreset','giftcr','profile','infoclose','ttltoggle','dextoggle','dextab','sound','wtab','sel','gsite','gdur','shoptab','tool','seedsel','selpod','settitle']);
 document.addEventListener('input',e=>{if(e.target.id==='giftMsg'){giftMsg=e.target.value;const b=$('#giftGo');if(b){const sel=Object.entries(giftSel).filter(([,n])=>n>0);b.disabled=!giftGoOk(sel);b.textContent=sel.length||giftCr?'선물 보내기':'쪽지 보내기'}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='renameForm')return;e.preventDefault();const v=$('#renameIn').value.trim().slice(0,12);if(!v){toast('이름을 한 글자 이상 적어 주십시오.');return}if(v===P.nick){renaming=false;renderInfo();return}const old=P.nick;P.nick=v;renaming=false;log(`이름을 「${v}」(으)로 바꿨다.`,'good');sys(`${old} 님이 이름을 ${v}(으)로 바꿨습니다.`);save();setPresence();renderAll();renderInfo()});
 function lgClose(){const m=document.getElementById('lgMenu');if(m)m.remove()}
@@ -9740,6 +10321,58 @@ function voteOrgHTML(){const open=voteOpen(),staff=isAdmin&&mode==='online',show
    <div class="org vorg"><div class="orgdepts">${cols}</div></div>
    ${loose.length?`<p class="hint">직업을 정하지 않은 선원 ${loose.length}명은 후보가 될 수 없지만 투표는 할 수 있습니다.</p>`:''}
    ${staff?'<p class="hint">득표 수와 임명 버튼은 운영자에게만 보입니다. 임명은 조직도의 직책에 바로 반영됩니다.</p>':''}</div>`}
+/* 귀환 결정: once 선체 외벽 is repaired, the 조직도 tab turns into the crew's last choice — go back to 테라, or stay here.
+   Left (6): the two choices, kept on each player's own record (P.home) and changeable any time; only the 운영자 sees the counts.
+   Right (4): a discussion chat in its own collection (hchat). The 운영자 can preview it before 선체 외벽 is done. */
+let HOME_OPEN=false;const homeOn=()=>mode==='online'&&HOME_OPEN;   // the 운영자 opens it (org/home.open)
+const homeShow=()=>homeOn()||(mode==='online'&&isStaff()&&homePrev);
+let homePrev=false,HCHAT=[],hchatSub=null,hchatErr=false;
+const HOME_OPT=[['go','돌아간다','','우리가 떠나온 테라로 돌아갑니다.'],['stay','남는다','','이 행성에 남아, 지금까지 일군 삶을 이어 갑니다.']];
+const homeName=c=>(HOME_OPT.find(o=>o[0]===c)||[])[1]||'';
+// two little pixel pictures: the ship lifting off toward a blue planet / a lit house on this planet's ground
+const HOME_SVG={go:`<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="10" y="1" width="4" height="4" fill="#5d8fd0"/><rect x="11" y="2" width="2" height="1" fill="#8fd08a"/><rect x="10" y="1" width="1" height="1" fill="#0000"/><rect x="5" y="5" width="2" height="1" fill="#cfd6e6"/><rect x="4" y="6" width="4" height="4" fill="#cfd6e6"/><rect x="5" y="7" width="2" height="1" fill="#7fb6e8"/><rect x="3" y="9" width="1" height="2" fill="#9aa3b8"/><rect x="8" y="9" width="1" height="2" fill="#9aa3b8"/><rect x="5" y="10" width="2" height="1" fill="#ffb04a"/><rect x="5" y="11" width="2" height="2" fill="#ff7a3a"/><rect x="6" y="13" width="1" height="1" fill="#ffd27a"/><rect x="1" y="3" width="1" height="1" fill="#fff"/><rect x="13" y="8" width="1" height="1" fill="#fff"/><rect x="2" y="13" width="1" height="1" fill="#aab"/></svg>`,
+  stay:`<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="0" y="13" width="16" height="3" fill="#6a5a44"/><rect x="0" y="13" width="16" height="1" fill="#8ba790"/><rect x="7" y="3" width="2" height="1" fill="#b27d77"/><rect x="6" y="4" width="4" height="1" fill="#b27d77"/><rect x="5" y="5" width="6" height="1" fill="#b27d77"/><rect x="4" y="6" width="8" height="1" fill="#b27d77"/><rect x="5" y="7" width="6" height="6" fill="#d8cfbf"/><rect x="6" y="8" width="2" height="2" fill="#ffd27a"/><rect x="9" y="9" width="2" height="4" fill="#6a5a44"/><rect x="13" y="9" width="1" height="4" fill="#6a5a44"/><rect x="12" y="7" width="3" height="3" fill="#7d957f"/><rect x="2" y="2" width="1" height="1" fill="#fff"/><rect x="13" y="2" width="1" height="1" fill="#fff"/></svg>`};
+function hchatListen(){if(hchatSub||mode!=='online'||!db)return;try{hchatSub=db.collection('hchat').orderBy('at','desc').limit(150).onSnapshot(sn=>{hchatErr=false;HCHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();hchatPaint()},()=>{hchatErr=true;hchatSub=null;hchatPaint()})}catch(e){hchatErr=true}}
+/* a PAD-style talk board (write box, cards, ♥, threaded replies) shared by 귀환 결정 (b='h') and the 조사 이벤트 (b='x').
+   Every post lives in hchat; ch tells the boards apart ('' = 귀환 결정, 'xev:<event id>' = that event's talk). */
+const H_MAX=300,BRD={h:{draft:'',open:null,reply:'',del:null,busy:false,ch:()=>'',ok:()=>homeShow(),ph:'돌아갈지, 남을지 — 생각을 남겨 주십시오',empty:'아직 올라온 의견이 없습니다. 첫 의견을 남겨 보십시오.'},
+  x:{draft:'',open:null,reply:'',del:null,busy:false,ch:()=>typeof XEV!=='undefined'&&XEV&&XEV.eid?'xev:'+XEV.eid:'xev',ok:()=>mode==='online'&&typeof XEV!=='undefined'&&!!XEV&&!!XEV.on,ph:'어느 길로 가면 좋을까요? 함께 이야기해 보십시오',empty:'아직 나눈 이야기가 없습니다. 먼저 말을 걸어 보십시오.'}};
+const bPosts=b=>{const c=BRD[b].ch();return HCHAT.filter(m=>(m.ch||'')===c)};
+const bReps=(b,id)=>bPosts(b).filter(m=>m.re===id).sort((a,c)=>a.at-c.at);
+function bPostHTML(b,m,rep){const S=BRD[b],p=m.uid===uid?P:(PLAYERS[m.uid]||{nick:m.nick}),lk=Object.values(m.likes||{}).filter(Boolean).length,liked=!!(m.likes&&m.likes[uid]),rc=rep?0:bReps(b,m.id).length,canDel=m.uid===uid||isStaff(),k=esc(m.id);
+  return`<article class="tw"><div class="twrow"><div class="twav" data-act="profopen" data-k="${esc(m.uid||'')}" role="button" title="프로필 보기">${padAv(p,rep?2:3)}</div><div class="twbody">
+   <div class="twh"><b class="twname" style="color:${colorOf(m.uid)}">${esc(p.nick||m.nick||'선원')}</b><span class="hint">${shortAgo(m.at||Date.now())}</span>${canDel?`<button class="twbtn twdel ${S.del===m.id?'arm':''}" type="button" data-act="hdel" data-b="${b}" data-k="${k}">${S.del===m.id?'정말 삭제할까요?':'삭제'}</button>`:''}</div>
+   <p class="twtext">${esc(m.text||'')}</p>
+   <div class="twact">${rep?'':`<button class="twbtn${S.open===m.id?' hon':''}" type="button" data-act="hopen" data-b="${b}" data-k="${k}" aria-expanded="${S.open===m.id}" aria-label="답글 ${rc}개"><i>↩</i>${rc}</button>`}<button class="twbtn like ${liked?'on':''}" type="button" data-act="hlike" data-b="${b}" data-k="${k}" aria-pressed="${liked}" aria-label="좋아요 ${lk}"><i>♥</i>${lk}</button></div></div></div></article>
+  ${!rep&&S.open===m.id?`<div class="hthr">${bReps(b,m.id).map(r=>bPostHTML(b,r,1)).join('')}<div class="padc reply">${headImg(2,P)}<div class="padcb"><textarea id="${b}ReplyIn" class="suggta socta" data-b="${b}" maxlength="${H_MAX}" placeholder="@${esc(p.nick||m.nick||'선원')} 님에게 답글 달기" aria-label="답글">${esc(S.reply)}</textarea><div class="row" style="justify-content:flex-end;gap:8px"><span class="hint">Ctrl+Enter</span><button class="btn sm" type="button" data-act="hreply" data-b="${b}" data-k="${k}" ${S.busy?'disabled':''}>답글</button></div></div></div></div>`:''}`}
+function bLogHTML(b){if(hchatErr)return'<p class="empty" style="padding:14px">게시판을 아직 열 수 없습니다. 잠시 후 다시 시도해 주십시오.</p>';const roots=bPosts(b).filter(m=>!m.re).sort((a,c)=>c.at-a.at);
+  if(!roots.length)return`<p class="empty" style="padding:14px">${BRD[b].empty}</p>`;return roots.map(m=>bPostHTML(b,m)).join('')}
+function bPaint(b){const el=document.getElementById(b+'chatLog');if(!el)return;const ae=document.activeElement,refocus=ae&&ae.id===b+'ReplyIn',top=el.scrollTop;el.innerHTML=bLogHTML(b);el.scrollTop=top;
+  if(refocus){const t=document.getElementById(b+'ReplyIn');if(t){t.focus();t.selectionStart=t.selectionEnd=t.value.length}}}
+function hchatPaint(){bPaint('h');bPaint('x')}
+function boardHTML(b){hchatListen();const S=BRD[b];return`<div class="padc padnew"><div class="padavw"><div class="twav big">${padAv(P)}</div></div><div class="padcb"><b class="padwho">${esc(P.nick)}</b><textarea id="${b}chatIn" class="suggta socta" data-b="${b}" maxlength="${H_MAX}" placeholder="${S.ph}" aria-label="글 쓰기">${esc(S.draft)}</textarea><div class="row" style="justify-content:space-between"><span class="hint">Ctrl+Enter로 게시</span><span class="row" style="gap:8px"><span class="twcnt" id="${b}Cnt">${S.draft.length}/${H_MAX}</span><button class="btn sm" type="button" data-act="hsend" data-b="${b}">게시</button></span></div></div></div>
+   <div class="twfeed hfeed" id="${b}chatLog">${bLogHTML(b)}</div>`}
+function homeHTML(){hchatListen();const mine=(P.home&&P.home.c)||'',all=orgAll(),staff=isAdmin&&mode==='online',cnt={go:0,stay:0};all.forEach(([,p])=>{const c=p&&p.home&&p.home.c;if(c in cnt)cnt[c]++});const n=cnt.go+cnt.stay;
+  return`${isStaff()?`<div class="row homeadm">${homeOn()?'':'<button class="qchip" data-act="homeprev">← 조직도로 돌아가기</button>'}${isAdmin?`<button class="btn sm ${homeOn()?'ghost':'gold'}" data-act="homeopen">${homeOn()?'귀환 결정 닫기 (조직도로 되돌리기)':'귀환 결정 열기'}</button>`:''}<span class="hint">${homeOn()?'지금 모든 선원에게 귀환 결정이 열려 있습니다.':'운영자 미리보기 · 열기 전에는 선원에게 보이지 않습니다.'}</span></div>`:''}<div class="homewrap">
+  <div class="card homepick"><span class="lbl">Decision · 귀환 결정</span>
+   <p class="homeq">우리는 선택해야 합니다.<b>테라로 돌아갈 것인가, 이곳에 남을 것인가.</b></p>
+   <div class="homeopts">${HOME_OPT.map(([k,nm,sub,d])=>`<button class="homeopt ${k}${mine===k?' pick':''}" type="button" data-act="homepick" data-k="${k}" aria-pressed="${mine===k}">${mine===k?'<span class="homebadge">✓ 내 선택</span>':''}<span class="hoic">${HOME_SVG[k]}</span><b>${nm}</b><span class="hod">${d}</span>${staff?`<span class="hocnt">${cnt[k]}명</span>`:''}</button>`).join('')}</div>
+   <div class="homestat"><span>${mine?`내 선택 <b>${homeName(mine)}</b> · 언제든 바꿀 수 있습니다`:'아직 선택하지 않았습니다'}</span><span>지금까지 <b>${n}</b>명 선택</span></div></div>
+  <div class="card homechat"><span class="lbl">Discussion · 의견 나누기</span>${boardHTML('h')}</div></div>`}
+Object.assign(A,{
+  homepick(d){if(!homeShow()||!HOME_OPT.some(o=>o[0]===d.k))return;if(P.home&&P.home.c===d.k)return;P.home={c:d.k,at:Date.now()};save();renderPanel();toast(`'${homeName(d.k)}'를 선택했습니다.`)},
+  async hsend(d){const b=d&&d.b==='x'?'x':'h',S=BRD[b];if(!S.ok()||S.busy)return;const v=S.draft.trim().slice(0,H_MAX);if(!v)return;S.busy=true;
+    try{const doc={uid,nick:P.nick,text:v,at:Date.now()},c=S.ch();if(c)doc.ch=c;await db.collection('hchat').add(doc);S.draft='';const i=document.getElementById(b+'chatIn');if(i)i.value='';const n=document.getElementById(b+'Cnt');if(n)n.textContent='0/'+H_MAX}catch(e){toast('올리지 못했습니다. 잠시 후 다시 시도해 주십시오.')}S.busy=false},
+  async hreply(d){const b=d&&d.b==='x'?'x':'h',S=BRD[b];if(!S.ok()||S.busy||!d.k)return;const v=S.reply.trim().slice(0,H_MAX);if(!v)return;S.busy=true;
+    try{const doc={uid,nick:P.nick,text:v,at:Date.now(),re:d.k},c=S.ch();if(c)doc.ch=c;await db.collection('hchat').add(doc);S.reply='';const i=document.getElementById(b+'ReplyIn');if(i)i.value=''}catch(e){toast('올리지 못했습니다. 잠시 후 다시 시도해 주십시오.')}S.busy=false;bPaint(b)},
+  hopen(d){const b=d.b==='x'?'x':'h',S=BRD[b];S.open=S.open===d.k?null:d.k;S.reply='';S.del=null;bPaint(b);if(S.open)setTimeout(()=>{const t=document.getElementById(b+'ReplyIn');if(t)t.focus()},30)},
+  async hlike(d){if(mode!=='online'||!d.k)return;const m=HCHAT.find(x=>x.id===d.k);if(!m)return;const on=!!(m.likes&&m.likes[uid]);try{await db.doc('hchat/'+d.k).update({likes:{[uid]:on?0:1}})}catch(e){toast('좋아요를 누르지 못했습니다.')}},
+  hdel(d){const b=d.b==='x'?'x':'h',S=BRD[b];if(!d.k||mode!=='online')return;const m=HCHAT.find(x=>x.id===d.k);if(!m||!(isStaff()||m.uid===uid))return;if(S.del!==d.k){S.del=d.k;bPaint(b);return}S.del=null;
+    const kids=bReps(b,d.k).map(x=>x.id);db.collection('hchat').doc(d.k).delete().then(()=>{if(isStaff())kids.forEach(id=>db.collection('hchat').doc(id).delete().catch(()=>{}));HCHAT=HCHAT.filter(x=>x.id!==d.k);if(S.open===d.k)S.open=null;bPaint(b)}).catch(()=>toast('지우지 못했습니다.'))},
+  homeprev(){if(!isStaff())return;homePrev=!homePrev;renderPanel()},
+  async homeopen(){if(!isAdmin||mode!=='online')return;const on=!homeOn();try{await db.doc('org/home').set({open:on,at:Date.now()});HOME_OPEN=on;if(!on)homePrev=false;toast(on?'귀환 결정을 열었습니다. 모든 선원의 조직도 탭이 바뀝니다.':'귀환 결정을 닫았습니다. 조직도로 되돌렸습니다.');renderPanel()}catch(e){toast('바꾸지 못했습니다. 다시 시도해 주십시오.')}}});
+document.addEventListener('input',e=>{const t=e.target;if(!t||!t.dataset||!BRD[t.dataset.b])return;const b=t.dataset.b;if(t.id===b+'chatIn'){BRD[b].draft=t.value;const c=document.getElementById(b+'Cnt');if(c)c.textContent=t.value.length+'/'+H_MAX}else if(t.id===b+'ReplyIn')BRD[b].reply=t.value});
+['homepick','hsend','hreply','hopen','hlike','hdel','homeprev','homeopen'].forEach(k=>{try{SAFE_ACT.add(k)}catch(e){}});
 const isHead=(id,p)=>id===uid?(mode==='online'&&isOwnerAcct):!!(p&&p.owner);
 function orgAll(){const m=Object.assign({},PLAYERS);if(uid)m[uid]=P;return Object.entries(m).filter(([,p])=>p&&p.nick!=='새 선원')}
 const rolesNow=()=>mode==='online'?ROLES:(P.roles||{});
@@ -9968,6 +10601,7 @@ function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();pa
 function socSubscribe(){
   padListen();setTimeout(nboxBackfill,4000);
   db.collection('guest').where('to','==',uid).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
+  db.doc('org/bunker').onSnapshot(sn=>{BKF=Object.assign({},(sn.exists&&sn.data().found)||{});const wasO=BK_OPEN;BK_OPEN=!!(sn.exists&&sn.data().open);if(wasO!==BK_OPEN&&tab==='scan'&&!P.bkMv){try{renderPanel()}catch(e){}return}if(tab==='scan'&&!P.bkMv)try{if(scView==='log')clPaint();else renderPanel()}catch(e){}},()=>{});
   db.doc('org/roles').onSnapshot(sn=>{ROLES=sn.exists?Object.assign({},sn.data()):{};if(socOpen)renderPanel();setTimeout(()=>{try{rolePopCheck()}catch(e){}},800)},()=>{});
 db.doc('org/ship').onSnapshot(sn=>{SHIPOPEN=Object.assign({},(sn.exists&&sn.data().open)||{});if(tab==='ship')renderPanel()},()=>{});
   /* 귓속말 is no longer in 교류: nothing is read for it */if(false)db.collection('dm').where('users','array-contains',uid).orderBy('at','desc').limit(100).onSnapshot(sn=>{DMS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));
@@ -10042,6 +10676,9 @@ async function padWrite(raw,parent){const ctx=parent?'reply':'pad',L=imgList(ctx
 const isField=el=>el&&el.closest&&el.closest('#stage,#socStage')&&/^(TEXTAREA|INPUT)$/.test(el.tagName)&&el.type!=='file';
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='padIn'){padDraft=t.value;const c=$('#padCnt');if(c)c.textContent=t.value.length+'/'+PAD_MAX}else if(t.id==='padReply')replyDraft=t.value;else if(t.id==='bioIn')bioDraft=t.value;else if(t.id==='profBioIn')profBioDraft=t.value;else if(t.id==='affIn'){affDraft=t.value;const c=$('#affCnt');if(c)c.textContent=t.value.length}else if(t.id==='dmIn')dmDraft=t.value});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&socOpen&&!isField(e.target)){socDrawer(false);return}});
+// talk boards (귀환 결정, and the 조사 이벤트 overlay which sits outside #stage): Ctrl+Enter posts
+document.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||e.isComposing||!(e.ctrlKey||e.metaKey)||!t||!t.dataset||!BRD[t.dataset.b])return;const b=t.dataset.b;
+  if(t.id===b+'chatIn'){e.preventDefault();A.hsend({b})}else if(t.id===b+'ReplyIn'&&BRD[b].open){e.preventDefault();A.hreply({b,k:BRD[b].open})}});
 document.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||e.isComposing||!isField(t))return;
   if(t.id==='dmIn'){e.preventDefault();A.dmsend();return}
   let act=null;if(t.id==='bioIn')act='biosave';else if(e.ctrlKey||e.metaKey)act={padIn:'padpost',padReply:'padreply'}[t.id];

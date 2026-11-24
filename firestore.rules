@@ -139,6 +139,18 @@ service cloud.firestore {
       allow delete: if member() && (resource.data.uid == me() || staff());
     }
 
+    // 조사 이벤트 「워프기계를 찾아 떠나는 여정」 진행 상태(xev/cur): 운영자가 열고, 선원들이 투표하며 함께 진행해요.
+    match /xev/{id} { allow read: if member(); allow write: if member(); }
+    // 지하 벙커: 열림 여부(조사 이벤트가 끝나면 열림)와 서버 전체에서 한 번씩만 찾는 단서 기록.
+    match /org/bunker { allow write: if member(); }
+    // 조사 이벤트 '이야기 나누기'와 조사 기록의 의견.
+    match /hchat/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.uid == me() && str('text', 300);
+      allow update: if member() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+      allow delete: if member() && (resource.data.uid == me() || staff());
+    }
+
     // 귓속말: 주고받은 두 사람만 읽을 수 있어요.
     match /dm/{id} {
       allow read: if member() && me() in resource.data.users;
