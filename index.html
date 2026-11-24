@@ -6758,7 +6758,7 @@ window.addEventListener('resize',()=>{if(tab==='scan'&&scView==='log')clStrings(
 function clueLogHTML(){clListen();const gs=clGroups();if(!gs.length)return'<div class="xvbox"><p class="xvhint" style="margin:0">아직 조사한 것이 없습니다. 조사 이벤트나 지하 벙커에서 단서를 찾으면 여기에 모입니다.</p></div>';
   let src='',html='';gs.forEach(gp=>{if(gp.src!==src){src=gp.src;html+=`<span class="lbl clsrc">${esc(src)}</span>`}const n=gp.items.filter(i=>i.got).length;html+=`<div class="clgroup${gp.key?' clkey':''}"${gp.tie?` data-tie="${gp.tie}"`:''}><div class="clgh"><b>${esc(gp.n)}</b><span class="xvhint">${gp.key?`${gp.items.length}건`:`단서 ${n}/${gp.items.length}`}</span></div><div class="clitems">${gp.items.map(i=>clItemHTML(gp.key?Object.assign({key:1},i):i)).join('')}</div></div>`});
   requestAnimationFrame(()=>requestAnimationFrame(clStrings));
-  return`<div class="xvbox cllog board" id="clLog"><svg class="clstr" aria-hidden="true"></svg><div class="cltitle"><b>조사 보드</b><span>워프 기계를 찾아서 · 지금까지 모은 단서</span></div>${clErr?'<p class="xvhint">의견을 불러오지 못했습니다. 잠시 후 다시 시도해 주십시오.</p>':''}${html}</div>`}
+  return`<div class="xvbox cllog board" id="clLog"><svg class="clstr" aria-hidden="true"></svg><div class="cltitle"><b>조사 보드</b><span>지금까지 모은 단서</span></div>${clErr?'<p class="xvhint">의견을 불러오지 못했습니다. 잠시 후 다시 시도해 주십시오.</p>':''}${html}</div>`}
 function clPaint(){const el=document.getElementById('clLog');if(!el)return;const ae=document.activeElement,foc=ae&&ae.id==='clIn',sc=el.parentNode&&el.closest('#stage')?document.getElementById('stage').scrollTop:0;el.outerHTML=clueLogHTML();if(foc){const i=document.getElementById('clIn');if(i){i.focus();i.selectionStart=i.selectionEnd=i.value.length}}}
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='clIn')clDraft[e.target.dataset.k]=e.target.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t&&t.id==='clIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();A.clsend({k:t.dataset.k})}});
@@ -8239,7 +8239,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795513899';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795519094';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
