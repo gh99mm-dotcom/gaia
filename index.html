@@ -6664,7 +6664,7 @@ function bkSideHTML(){const mv=P.bkMv,HC='<i class="hc tl"></i><i class="hc tr">
   const body=!last||!last.lines?'<p class="scdim">해치 아래, 비상등이 켜진 방들이 줄지어 있다.</p><p class="scdim">왼쪽 지도에서 방을 고르면 그 방 안을 뒤져 본다.</p>'
    :`${last.lines.map(l=>{const [t,x]=Array.isArray(l)?l:[l.t,l.x];return`<p><span><em class="hts">${hhmm(t)}</em>${esc(x)}</span></p>`}).join('')}${G?`<p class="bkfound"><b>단서 · ${esc(G.n)}</b></p><p class="bkfound" style="white-space:pre-line">${esc(G.d)}</p>`:last.note?`<p class="bkfound"><b class="bknote">${esc(last.note.n)}</b></p><p class="bkfound" style="white-space:pre-line">${esc(last.note.d)}</p>`:'<p class="scdim">새로운 단서는 없었다.</p>'}${last.find?`<p class="bkfound">${esc(last.find)}</p>`:''}${(last.items||[]).length||last.extra?`<div class="sclgot bkfound">${chipsOf((last.items||[]).filter(g=>ITEMS[g.id]).map(g=>[g.id,g.n]),last.extra||'')}</div>`:''}`;
   return`<div class="sclog holo" aria-label="조사 기록">${HC}<div class="scll">${body}</div>
-   <div class="bkfoot">${R0?`<span>지금 여기 · <b>${esc(R0.n)}</b>${R0.spots.length?` · 단서 ${bkCount(at)}/${R0.spots.length}`:''}</span><button class="btn sm" type="button" data-act="bkgo" data-k="${at}">한 번 더 뒤진다 <small>${BK_SEARCH_MIN}분 · EN ${bkEn(at)}</small></button>`:'<span>왼쪽 지도에서 조사할 방을 누르십시오.</span>'}</div></div>`}
+   <div class="bkfoot">${R0?`<span>지금 여기 · <b>${esc(R0.n)}</b>${R0.spots.length?` · 발견된 단서 ${bkCount(at)}/${R0.spots.length}`:''}</span><button class="btn sm" type="button" data-act="bkgo" data-k="${at}">한 번 더 뒤진다 <small>${BK_SEARCH_MIN}분 · EN ${bkEn(at)}</small></button>`:'<span>왼쪽 지도에서 조사할 방을 누르십시오.</span>'}</div></div>`}
 const bkHead=()=>head().replace('정착지 주변 · 다섯 갈래 길 탐색','지하 벙커 · 비상등이 켜진 통로');
 function renderBunker(){const head=bkHead;const total=BK_ROOMS.reduce((n,r)=>n+r.spots.length,0),got=BK_ROOMS.reduce((n,r)=>n+bkCount(r.id),0);
   const prev=isStaff()&&!BK_OPEN?`<div class="row" style="gap:6px;align-items:center"><button class="qchip" data-act="bkprev">← 기존 조사로</button><span class="hint">운영자 미리보기 · 조사 이벤트가 끝나면 모든 선원의 조사 탭이 이 벙커로 바뀝니다.</span></div>`:'';
@@ -6674,7 +6674,7 @@ function renderBunker(){const head=bkHead;const total=BK_ROOMS.reduce((n,r)=>n+r
      <div class="xvtxt">${S?`<b class="xvt">${esc(S.n)}</b><p>${esc(S.d)}</p><span class="xvhint"><button type="button" class="xvlink" data-act="bkclue" data-k="">방으로 돌아가기</button></span>`:`<p>${esc(R0.d)}</p><span class="xvhint">${n<R0.spots.length?`그림 속 이곳저곳을 눌러 조사하십시오. 남은 단서 ${R0.spots.length-n}개`:'이 방은 모두 살펴보았다.'}</span>`}</div>
      <div class="xvnote"><span class="xvhint">단서 수첩 ${n}/${R0.spots.length}</span>${R0.spots.map(s=>bkGot(R0.id,s.id)?`<button type="button" class="xvchip${bkSel===s.id?' on':''}" data-act="bkclue" data-k="${s.id}">${esc(s.n)}</button>`:'<span class="xvchip x">???</span>').join('')}</div></div>`}
   bkArrive();const mv=P.bkMv;
-  const cell=r=>{const n=bkCount(r.id),all=r.spots.length,here=!mv&&P.bkAt===r.id,dest=mv&&mv.to===r.id;return`<button type="button" class="bkroom bk-${r.id}${n>=all?' done':''}${here?' here':''}${dest?' dest':''}" data-act="bkgo" data-k="${r.id}" ${mv&&!dest?'disabled':''}><b>${esc(r.n)}</b><span>${here?(all?`지금 여기 · 단서 ${n}/${all}`:'지금 여기'):dest?'조사 중…':!all?'':n?`단서 ${n}/${all}`:'아직 조사하지 않음'}${dest?'':`${here||all?' · ':''}EN ${bkEn(r.id)}`}</span></button>`};
+  const cell=r=>{const n=bkCount(r.id),all=r.spots.length,here=!mv&&P.bkAt===r.id,dest=mv&&mv.to===r.id;return`<button type="button" class="bkroom bk-${r.id}${n>=all?' done':''}${here?' here':''}${dest?' dest':''}" data-act="bkgo" data-k="${r.id}" ${mv&&!dest?'disabled':''}><b>${esc(r.n)}</b><span>${here?(all?`지금 여기 · 발견된 단서 ${n}/${all}`:'지금 여기'):dest?'조사 중…':all?`발견된 단서 ${n}/${all}`:''}${dest?'':`${here||all?' · ':''}EN ${bkEn(r.id)}`}</span></button>`};
   return head()+prev+`<div class="scui bkui ${mv?'on':''}"><div class="xvbox bkbox"><div class="xvhd"><b>지하 벙커</b><span>단서 <i>${got}</i>/${total}</span><span></span><span></span></div>
    <div class="bkmap">${BK_ROOMS.map(cell).join('')}<i class="bkhall" aria-hidden="true"></i></div></div><div class="scside">${bkSideHTML()}</div></div>
   ${junkDexHTML(12)}`}
@@ -8239,7 +8239,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795519094';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795519912';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
