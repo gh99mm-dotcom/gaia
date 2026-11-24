@@ -6615,7 +6615,7 @@ const BK_SEARCH={lounge:['소파 쿠션 사이를 더듬어 본다.','테이블 
   canteen:['식판을 하나씩 치워 본다.','배식기 안쪽을 들여다본다.','의자 밑을 살펴본다.','주방 쪽 문을 열어 본다.'],
   storage:['선반의 상자 라벨을 하나씩 읽는다.','차가운 바닥을 손으로 훑어본다.','맨 위 칸까지 올라가 본다.','상자 뒤쪽 틈을 들여다본다.'],
   warp:['고리의 표면을 천천히 따라 걷는다.','받침대 주변을 살펴본다.','콘솔의 버튼을 하나씩 눌러 본다.','고리 안쪽의 일렁임을 가만히 바라본다.']};
-const BK_SEARCH_MIN=10,BK_CLUE_P=.04;/* a clue turns up in 4% of searches */
+const BK_SEARCH_MIN=10,BK_CLUE_P=.08;/* a clue turns up in 8% of searches */
 // energy per search, room by room (the deeper rooms take more out of you), and what each room tends to give up besides its clues
 const BK_EN={lounge:6,quarters:6,canteen:8,storage:8,archive:10,workshop:10,server:12,warp:15};
 const bkEn=id=>BK_EN[id]||8;
@@ -6643,16 +6643,17 @@ function bkArrive(){const mv=P.bkMv;if(!mv||Date.now()<mv.end)return false;const
   const NT=(R0&&R0.notes)||[],pn=P.bkLast&&P.bkLast.note&&P.bkLast.note.n;let note=null;if(!nx&&NT.length){const pool=NT.length>1?NT.filter(x=>x.n!==pn):NT;const o=pool[ri(0,pool.length-1)];note={n:o.n,d:o.d}}
   const lt=bkLoot(mv.to);P.bkLast={to:mv.to,t0:mv.t0,end:mv.end,lines:bkMoveLines(mv,mv.end).map(([t,x])=>({t,x})),got:nx&&!bkShared()?nx.id:null,note,find:lt.t,items:lt.got.map(([id,n])=>({id,n})),extra:lt.extra};
   log(`지하 벙커 · ${bkName(mv.to)} 조사: ${lt.t.split('.')[0]}.`);commit();if(nx&&!bkShared())try{xevChime()}catch(e){}return true}
-// what a search turns up besides the clue — the same odds as a 조사 on the trails: the room's own finds, 귀중품 8%, 고대 신호 기록, 공명 촉매, 마이룸 아이템, XP
+// what a search turns up besides the clue: the room's own finds, 고대 신호 기록 8% (기록실 16%), 귀중품 15%, 25% a little extra (500 CR / drink / 고급 수리 키트), XP
+const BK_BONUS_P=.25,BK_BONUS=[['바닥에 떨어진 크레딧 칩도 주웠다.','cr'],['구석에 굴러다니던 에너지 음료 하나도 챙겼다.','drink'],['선반 위에 쓸 만한 고급 수리 키트도 남아 있었다.','kit400']];
 function bkLoot(id){const L=BK_LOOT[id]||BK_LOOT.lounge,[t,spec]=L[ri(0,L.length-1)],fx=scFx(spec);let got=fx.add.slice(),extra='';
   {const rl=relicRoll(P.lvl,id==='archive'?RELIC_SCAN_P*2:RELIC_SCAN_P);if(rl)got.push([rl,1])}
   const lb=got.length&&lifeHit('scan');if(lb){got=got.map(([i,n])=>[i,n*2]);extra+='<span class="ichip">조사 숙련 · 보상 2배</span>'}
   got.forEach(([i,n])=>add(i,n));
-  if(Math.random()<.12){const j=JUNK[ri(0,JUNK.length-1)][0];add(j,1);got.push([j,1]);if(!(P.jdex||[]).includes(j)){P.jdex=[...(P.jdex||[]),j];extra+=`<span class="ichip" style="color:var(--gold)">도감 등록 · ${esc(ITEMS[j].n)}</span>`}}
-  if(Math.random()<(id==='warp'?.1:.05)){add('upcat',1);got.push(['upcat',1])}
-  {const pool=SCAN_ITEMS().filter(f=>!(P.own||[]).includes(f.id));if(pool.length&&Math.random()<.01){const f=pool[ri(0,pool.length-1)];P.own=[...(P.own||[]),f.id];extra+=`<span class="ichip" style="color:var(--gold)">${img(IC.room,null,1)}마이룸 아이템 발견: ${esc(f.n)}</span>`;log(`조사 중 마이룸 아이템 「${f.n}」을(를) 발견했다!`,'rare');sys(`${P.nick} 님이 조사 중 희귀한 마이룸 아이템 「${f.n}」을(를) 발견했습니다.`)}}
+  if(Math.random()<.15){const j=JUNK[ri(0,JUNK.length-1)][0];add(j,1);got.push([j,1]);if(!(P.jdex||[]).includes(j)){P.jdex=[...(P.jdex||[]),j];extra+=`<span class="ichip" style="color:var(--gold)">도감 등록 · ${esc(ITEMS[j].n)}</span>`}}
+  // 25%: something small left lying around as well — 500 CR, an energy drink or a 고급 수리 키트
+  let bline='';if(Math.random()<BK_BONUS_P){const [line,k]=BK_BONUS[ri(0,BK_BONUS.length-1)];bline=' '+line;if(k==='cr'){P.cr=(+P.cr||0)+500;extra+=`<span class="ichip">${img(IC.coin,null,1)}500 CR</span>`}else{add(k,1);got.push([k,1])}}
   const xp=Math.round(need(P.lvl)*.08*SC_XP_K/XP_PACE);gainXp(xp);extra+=`<span class="ichip">${img(IC.star,null,2)}경험치 +${xp}</span>`;
-  stat('scan');lxp('scan',14);return{t,got,extra}}
+  stat('scan');lxp('scan',14);return{t:t+bline,got,extra}}
 let bkLogN=0;
 setInterval(()=>{if(!P||!P.bkMv||tab!=='scan'||scView==='log')return;if(bkArrive()){renderPanel();return}const el=document.getElementById('bkT');if(el)el.textContent=fmtClock(bkLeft());const n=bkMoveLines(P.bkMv,Date.now()).length;if(n!==bkLogN)renderPanel()},1000);
 function bkSideHTML(){const mv=P.bkMv,HC='<i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i>';
@@ -8239,7 +8240,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795520532';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795522374';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
