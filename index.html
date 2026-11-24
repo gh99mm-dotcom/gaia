@@ -10129,13 +10129,15 @@ const MEMO_MAX=1500,MEMO_CM=1500,MEMO_PG=5;let memoPage=0;let MEMOS=[],memoDraft
 // 휴게실 comments: each one is its own document in mcm ({mid, mu: memo owner, pid, pu: answered comment's owner, uid, nick, text, at}),
 // so a memo has no size or count limit. Comments written before this change stay in the memo's own cm list and show together with them.
 const memoOld=m=>(m.cm||[]).map((c,i)=>c&&Object.assign({id:'o'+i},c)).filter(Boolean);
-const MCMS={pg:[],mu:[],pu:[]},mcmRef=()=>db.collection('mcm');let mcmPgKey='',mcmPgUn=null;
+const MCMS={pg:[],mu:[],pu:[]},mcmRef=()=>db.collection('mcm');let mcmPgKey='',mcmPgUn=null,mcmErr='';
+// why a 휴게실 comment could not be read or written, in words a crew member can pass on to the 운영자
+const mcmWhy=e=>{const c=e&&e.code||'';return c==='permission_denied'?'권한 거절 · 서버 규칙 확인 필요':c==='unavailable'?'서버 연결 끊김':c==='quota_exceeded'?'서버 사용량 초과':c||String(e&&e.message||'알 수 없는 오류').slice(0,40)};
 function mcmOf(mid){const seen=new Set(),out=[];for(const k in MCMS)MCMS[k].forEach(c=>{if(c.mid===mid&&!seen.has(c.id)){seen.add(c.id);out.push(c)}});return out.sort((a,b)=>(+a.at||0)-(+b.at||0))}
 const memoCms=m=>{const o=memoOld(m),ids=new Set(o.map(c=>c.id));return o.concat(mcmOf(m.id).filter(c=>!ids.has(c.id)))};
 const mcmDocs=sn=>sn.docs.map(d=>Object.assign({},d.data(),{id:d.id,_n:1}));
 // the comments of the memos on the page being looked at (Firestore 'in' takes up to 10 values; a page holds 5 memos)
 function mcmPage(ids){if(mode!=='online'||!db)return;const k=ids.slice().sort().join(',');if(k===mcmPgKey)return;mcmPgKey=k;if(mcmPgUn){try{mcmPgUn()}catch(e){}mcmPgUn=null}MCMS.pg=[];if(!ids.length)return;
-  mcmPgUn=mcmRef().where('mid','in',ids.slice(0,10)).onSnapshot(sn=>{MCMS.pg=mcmDocs(sn);bellRefresh();if(memoShown()&&!isField(document.activeElement))renderPanel()},()=>{})}
+  mcmPgUn=mcmRef().where('mid','in',ids.slice(0,10)).onSnapshot(sn=>{mcmErr='';MCMS.pg=mcmDocs(sn);bellRefresh();if(memoShown()&&!isField(document.activeElement))renderPanel()},e=>{mcmErr=mcmWhy(e);mcmPgKey='';if(memoShown()&&!isField(document.activeElement))renderPanel()})}
 const memoRef=()=>db.collection('memos');
 // 만남 is read only while its tab is open (its alerts catch up when you visit)
 // 만남 now lives in the 우주선 tab (우주선 › 만남)
@@ -10156,7 +10158,7 @@ function socMemo(){if(mode!=='online')return'<p class="hint" style="padding:16px
       ${mine||isAdmin?`<span class="memomod">${mine?`<button class="mlink" data-act="memoedit" data-k="${esc(m.id)}" data-c="">수정</button><i>|</i>`:''}${arm?`<button class="mlink red" data-act="memodel" data-k="${esc(m.id)}" data-x="1">정말 삭제</button><i>|</i><button class="mlink" data-act="memodel" data-k="">취소</button>`:`<button class="mlink" data-act="memodel" data-k="${esc(m.id)}">삭제</button>`}</span>`:''}<time class="hint memodate">${memoStamp(m.at)}</time></div>
       ${ed?memoEditBox(m.id,'',m.text,MEMO_MAX):`<p class="memotx">${menHTML(esc(m.text))}</p>`}
       <div class="memobar"><button class="mlink memocmbtn${op?' on':''}" data-act="memocm" data-k="${esc(m.id)}" aria-expanded="${op}">${op?'⌃':'⌄'} 댓글 <b>${live}</b></button>${op?`<i>|</i><button class="mlink" data-act="memosort">${memoSort==='new'?'최신순':'등록순'} ▾</button>`:''}</div>
-      ${op?`<div class="memocms">${memoThread(m,cms)}${memoReply===null||!cms.some(c=>c.id===memoReply)?memoCmBox(m.id,'',false):''}</div>`:''}
+      ${op?`<div class="memocms">${mcmErr?`<p class="hint" style="color:var(--red)">댓글을 불러오지 못했습니다. (${esc(mcmErr)})</p>`:''}${memoThread(m,cms)}${memoReply===null||!cms.some(c=>c.id===memoReply)?memoCmBox(m.id,'',false):''}</div>`:''}
     </article>`}).join(''):'<p class="empty" style="padding:18px">아직 글이 없습니다. 첫 글을 남겨 보십시오.</p>'}</div>${pages>1?memoPager(pages):''}`}
 // page numbers under the board, cafe style: ‹ 1 2 3 … ›
 function memoPager(n){const cur=memoPage,lo=Math.max(0,Math.min(cur-2,n-5)),hi=Math.min(n,lo+5);let h=`<button class="mpg" data-act="memopage" data-k="${cur-1}" ${cur>0?'':'disabled'} aria-label="이전 쪽">‹ 이전</button>`;
@@ -10191,7 +10193,7 @@ async function memoCmDelete(mid,cid){const m=MEMOS.find(x=>x.id===mid);if(!m)ret
     else{const old=memoOld(m),out=kids?old.map(x=>x.id===cid?Object.assign({},x,{text:'',del:1}):x):old.filter(x=>x.id!==cid);await memoRef().doc(mid).update({cm:out})}}catch(e){toast('댓글을 지우지 못했습니다.')}renderPanel()}
 async function memoCmPost(id,pid=''){const m=MEMOS.find(x=>x.id===id);if(!m)return;const key=id+'|'+pid,i=$('#memoCmIn'),t=String((i&&i.value)||memoCm[key]||'').trim().slice(0,MEMO_CM);if(!t){toast('댓글을 적어 주십시오.');return}
   const cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),par=pid?memoCms(m).find(x=>x.id===pid):null,doc={mid:id,mu:m.uid||'',pid,pu:(par&&par.uid)||'',uid,nick:P.nick,text:t,at:Date.now()};if(i)i.blur();
-  try{await mcmRef().doc(cid).set(doc);if(!MCMS.pg.some(x=>x.id===cid))MCMS.pg=MCMS.pg.concat([Object.assign({},doc,{id:cid,_n:1})]);memoMention(t,id,cid);memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다.')}renderPanel();if(!pid)setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus({preventScroll:true})},30)}
+  try{await mcmRef().doc(cid).set(doc);if(!MCMS.pg.some(x=>x.id===cid))MCMS.pg=MCMS.pg.concat([Object.assign({},doc,{id:cid,_n:1})]);memoMention(t,id,cid);memoCm[key]='';memoReply=null}catch(e){toast('댓글을 남기지 못했습니다. ('+mcmWhy(e)+')')}renderPanel();if(!pid)setTimeout(()=>{const j=$('#memoCmIn');if(j)j.focus({preventScroll:true})},30)}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='memoIn'){memoDraft=t.value;const c=$('#memoCnt');if(c)c.textContent=t.value.length+'/'+MEMO_MAX}else if(t.id==='memoEdIn')memoEdTx={k:t.dataset.k+'|'+(t.dataset.c||''),v:t.value};else if(t.id==='memoCmIn')memoCm[t.dataset.k+'|'+(t.dataset.p||'')]=t.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t.id==='memoIn'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();memoPost()}else if(t.id==='memoCmIn'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();memoCmPost(t.dataset.k,t.dataset.p||'')}});
 function socDm(){const p=dmPeer&&PLAYERS[dmPeer];
