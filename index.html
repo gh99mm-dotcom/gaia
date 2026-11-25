@@ -10319,6 +10319,16 @@ const memoRef=()=>db.collection('memos');
 // 만남 is read only while its tab is open (its alerts catch up when you visit)
 // 만남 now lives in the 우주선 tab (우주선 › 만남)
 const memoShown=()=>tab==='ship'&&shipView==='memo';
+// jumping from an alert to a 휴게실 comment: the memo list and that page's comments arrive a moment after the tab opens,
+// so keep looking (for up to 10 s) — move to the memo's page once the list is in, then to the comment once it has loaded
+let memoJump=null,memoJumpT=0;
+function memoJumpStart(k,c){memoJump={k,c,until:Date.now()+10e3};clearInterval(memoJumpT);memoJumpT=setInterval(memoJumpTry,250);setTimeout(memoJumpTry,60)}
+function memoJumpTry(){const J=memoJump;if(!J||Date.now()>J.until||!memoShown()){memoJump=null;clearInterval(memoJumpT);return}
+  const A=MEMOS.filter(m=>m&&m.text),i=A.findIndex(m=>m.id===J.k);if(i<0)return;const pg=Math.floor(i/MEMO_PG);if(memoPage!==pg||memoOpen!==J.k){memoPage=pg;memoOpen=J.k;renderPanel();return}
+  const a=[...document.querySelectorAll('[data-act="memocm"]')].find(b=>b.dataset.k===J.k),mm=a&&a.closest('.memo');if(!mm)return;
+  const c=J.c&&[...mm.querySelectorAll('.mcm')].find(x=>x.dataset.cid===J.c);
+  if(c){c.scrollIntoView({block:'center',behavior:'smooth'});c.classList.remove('mcmhit');void c.offsetWidth;c.classList.add('mcmhit');memoJump=null;clearInterval(memoJumpT);return}
+  if(!J.c||Date.now()>J.until-7e3){mm.scrollIntoView({block:'start',behavior:'smooth'});if(!J.c){memoJump=null;clearInterval(memoJumpT)}}}
 tabSub(()=>!!P&&!!uid,()=>mcmRef().where('mu','==',uid).onSnapshot(sn=>{MCMS.mu=mcmDocs(sn);bellRefresh()},()=>{}));
 tabSub(()=>!!P&&!!uid,()=>mcmRef().where('pu','==',uid).onSnapshot(sn=>{MCMS.pu=mcmDocs(sn);bellRefresh()},()=>{}));
 tabSub(()=>!!P&&!!uid&&!memoShown(),()=>memoRef().where('uid','==',uid).onSnapshot(sn=>{MEMOS_MINE=sn.docs.map(d=>Object.assign({id:d.id},d.data()));bellRefresh()},()=>{}));
@@ -10808,7 +10818,7 @@ const SA={
  padmore(){padShow+=20;padNeed=Math.max(padNeed,padTop()+10);if(mode==='online'&&padMore&&(padShow*2>POSTS.length||padTop()<padNeed)){padLoad+=30;padListen()}renderPanel()},
  padtag(d){padTag=d.k||'';padShow=20;if(padThread)openThread(null);renderPanel()},
  memogo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;anonView=false;adminView=false;if(socOpen)socDrawer(false);tab='ship';shipView='memo';
-  const A=MEMOS.filter(m=>m&&m.text),i=A.findIndex(m=>m.id===d.k);if(i>=0)memoPage=Math.floor(i/MEMO_PG);memoOpen=d.k;memoReply=null;memoEdit=null;renderPanel();const go=()=>{const a=[...document.querySelectorAll('[data-act="memocm"]')].find(b=>b.dataset.k===d.k),mm=a&&a.closest('.memo'),c=d.c&&mm&&[...mm.querySelectorAll('.mcm')].find(x=>x.dataset.cid===d.c);if(c){c.scrollIntoView({block:'center',behavior:'smooth'});c.classList.remove('mcmhit');void c.offsetWidth;c.classList.add('mcmhit')}else if(mm)mm.scrollIntoView({block:'start',behavior:'smooth'})};setTimeout(go,60);setTimeout(go,450)},
+  memoOpen=d.k;memoReply=null;memoEdit=null;memoJumpStart(d.k,d.c||'');renderPanel()},
  notigo(d){if(!d.k)return;notiToggle(false);if(raidLocked()){toast('원정 중에는 다른 곳으로 갈 수 없습니다.');return}meView=false;mailView=false;orgView=false;rankView=false;profView=false;secretView=false;anonView=false;adminView=false;socTab='pad';socDrawer(true,1);padAnchor={id:d.k,until:Infinity};openThread(d.k);renderPanel();renderSoc();setTimeout(padAnchorApply,60);setTimeout(padAnchorApply,400)},
  padopen(d){if(!d.k)return;padAnchor={id:d.k,until:Infinity};openThread(d.k);renderPanel();renderSoc();setTimeout(padAnchorApply,60);setTimeout(padAnchorApply,400)},
  padback(){openThread(null);renderPanel()},
