@@ -1993,7 +1993,7 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .homeopt .hod{font-size:12px;line-height:1.55;color:var(--text);opacity:.75;word-break:keep-all}
 .homeopt .hocnt{margin-top:2px;padding:1px 10px;border:1px solid var(--c);font-size:12px;font-weight:bold;color:var(--text)}
 .homebadge{position:absolute;top:6px;right:6px;padding:1px 6px;font-size:11px;font-weight:bold;background:var(--c);color:var(--panel)}
-.homepick>.homeq{margin-top:auto}.homepick>.homestat{margin-bottom:0}.homenote{margin:auto 0;padding:14px 8px;text-align:center;font-size:12.5px;line-height:1.9;color:var(--mute)}
+.homepick>.homeq{margin-top:auto}.homepick>.homestat{margin-bottom:0}.homewhocard{margin-top:10px}.homewho{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:8px}.homewho>div{min-width:0;padding:8px 10px;border:1px dashed var(--line)}.hwhd{display:block;margin-bottom:6px;font-size:14px}.hwlist{display:flex;flex-wrap:wrap;gap:4px 10px}.hwname{background:none;border:0;padding:0;font:inherit;font-size:12px;cursor:pointer}.hwname:hover{text-decoration:underline}.homenote{margin:auto 0;padding:14px 8px;text-align:center;font-size:12.5px;line-height:1.9;color:var(--mute)}
 .homestat{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:7px 9px;border:1px dashed var(--line);font-size:12px;color:var(--text);opacity:.85}.homestat b{color:var(--text)}
 .hfeed{flex:none;min-height:200px;max-height:400px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:6px;scrollbar-width:thin;scrollbar-color:var(--dim) transparent}
 .hfeed::-webkit-scrollbar{width:6px}.hfeed::-webkit-scrollbar-thumb{background:var(--dim)}.hfeed::-webkit-scrollbar-track{background:transparent}
@@ -8332,7 +8332,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795602587';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795605041';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -10484,14 +10484,15 @@ function bPaint(b){const el=document.getElementById(b+'chatLog');if(!el)return;c
 function hchatPaint(){bPaint('h');bPaint('x')}
 function boardHTML(b){hchatListen();const S=BRD[b];return`<div class="padc padnew"><div class="padavw"><div class="twav big">${padAv(P)}</div></div><div class="padcb"><b class="padwho">${esc(P.nick)}</b><textarea id="${b}chatIn" class="suggta socta" data-b="${b}" maxlength="${H_MAX}" placeholder="${S.ph}" aria-label="글 쓰기">${esc(S.draft)}</textarea><div class="row" style="justify-content:space-between"><span class="hint">Ctrl+Enter로 게시</span><span class="row" style="gap:8px"><span class="twcnt" id="${b}Cnt">${S.draft.length}/${H_MAX}</span><button class="btn sm" type="button" data-act="hsend" data-b="${b}">게시</button></span></div></div></div>
    <div class="twfeed hfeed" id="${b}chatLog">${bLogHTML(b)}</div>`}
-function homeHTML(){hchatListen();const mine=(P.home&&P.home.c)||'',all=orgAll(),staff=isAdmin&&mode==='online',cnt={go:0,stay:0};all.forEach(([,p])=>{const c=p&&p.home&&p.home.c;if(c in cnt)cnt[c]++});const n=cnt.go+cnt.stay;
+function homeHTML(){hchatListen();const mine=(P.home&&P.home.c)||'',all=orgAll(),staff=mode==='online',cnt={go:0,stay:0},who={go:[],stay:[]};all.forEach(([u,p])=>{const c=p&&p.home&&p.home.c;if(c in cnt){cnt[c]++;who[c].push([u,p])}});const n=cnt.go+cnt.stay;
   return`${isStaff()?`<div class="row homeadm">${homeOn()?'':'<button class="qchip" data-act="homeprev">← 조직도로 돌아가기</button>'}${isAdmin?`<button class="btn sm ${homeOn()?'ghost':'gold'}" data-act="homeopen">${homeOn()?'귀환 결정 닫기 (조직도로 되돌리기)':'귀환 결정 열기'}</button>`:''}<span class="hint">${homeOn()?'지금 모든 선원에게 귀환 결정이 열려 있습니다.':'운영자 미리보기 · 열기 전에는 선원에게 보이지 않습니다.'}</span></div>`:''}<div class="homewrap">
   <div class="card homepick"><span class="lbl">Decision · 귀환 결정</span>
    <p class="homeq">우리는 선택해야 합니다.<b>테라로 돌아갈 것인가, 이곳에 남을 것인가.</b></p>
    <div class="homeopts">${HOME_OPT.map(([k,nm,sub,d])=>`<button class="homeopt ${k}${mine===k?' pick':''}" type="button" data-act="homepick" data-k="${k}" aria-pressed="${mine===k}">${mine===k?'<span class="homebadge">✓ 내 선택</span>':''}<span class="hoic">${HOME_SVG[k]}</span><b>${nm}</b><span class="hod">${d}</span>${staff?`<span class="hocnt">${cnt[k]}명</span>`:''}</button>`).join('')}</div>
    <div class="homestat"><span>${mine?`내 선택 <b>${homeName(mine)}</b> · 언제든 바꿀 수 있습니다`:'아직 선택하지 않았습니다'}</span><span>지금까지 <b>${n}</b>명 선택</span></div>
    <p class="homenote">이 선택은 우리 이야기가 갈라지는 분기점이 됩니다.<br>정해진 답은 없습니다. 어느 쪽을 고르든, 여러분의 선택은 존중받습니다.<br>서두르지 않아도 괜찮으니, 마음이 가는 쪽을 골라 주세요.</p></div>
-  <div class="card homechat"><span class="lbl">Discussion · 의견 나누기</span>${boardHTML('h')}</div></div>`}
+  <div class="card homechat"><span class="lbl">Discussion · 의견 나누기</span>${boardHTML('h')}</div></div>
+  <div class="card homewhocard"><span class="lbl">Choices · 누가 어떤 선택을 했나</span><div class="homewho">${HOME_OPT.map(([k,nm])=>`<div><b class="hwhd">${nm} <span class="hint">${cnt[k]}명</span></b><div class="hwlist">${who[k].length?who[k].map(([u,p])=>`<button type="button" class="hwname" data-act="profopen" data-k="${esc(u)}" style="color:${colorOf(u)}">${esc(u===uid?P.nick:(p.nick||'선원'))}</button>`).join(''):'<span class="hint">아직 없음</span>'}</div></div>`).join('')}</div></div>`}
 Object.assign(A,{
   homepick(d){if(!homeShow()||!HOME_OPT.some(o=>o[0]===d.k))return;if(P.home&&P.home.c===d.k)return;P.home={c:d.k,at:Date.now()};save();renderPanel();toast(`'${homeName(d.k)}'를 선택했습니다.`)},
   async hsend(d){const b=d&&d.b==='x'?'x':'h',S=BRD[b];if(!S.ok()||S.busy)return;const v=S.draft.trim().slice(0,H_MAX);if(!v)return;S.busy=true;
