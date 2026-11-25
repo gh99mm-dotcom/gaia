@@ -238,7 +238,7 @@ header:not(.joinhead){column-gap:4px}header:not(.joinhead)>.logo{margin-right:10
 .bkroom.here{border-color:#e6c98f;box-shadow:inset 0 0 0 1px #e6c98f}.bkroom.here span{color:#e6c98f}
 .bkroom.dest{border-color:#7ac8e0;animation:bkDest 1.6s ease-in-out infinite}.bkroom.dest span{color:#7ac8e0}@keyframes bkDest{50%{box-shadow:0 0 14px rgba(122,200,224,.45)}}
 .bkroom[disabled]{opacity:.45;cursor:default}
-.bkui .scside .sclog{flex:1;min-height:300px;overflow:hidden;display:flex;flex-direction:column}.bkfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:9px;border-top:1px dashed color-mix(in srgb,var(--hc) 40%,transparent);font-size:12.5px;color:#a8c4cf}.bkfoot b{color:#d6e6ec;font-weight:400}.bkfoot .btn small{opacity:.75;margin-left:4px}@media (min-width:761px){.bkui>.scside{contain:size}.bkui .scside .sclog{min-height:0}}.bkui .scside .sclog.holo .scll{flex:1 1 0;height:auto;max-height:none;min-height:0;overflow-y:auto;font-size:14px;line-height:1.75}.bkfound{animation:sclin .8s ease-out}.bkfound b{color:#e6c98f}.bkfound b.bknote{color:#cfe0e8}.bkui{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)!important}
+.bkui .scside .sclog{flex:1;min-height:300px;overflow:hidden;display:flex;flex-direction:column}.warpcard{margin-top:8px}.warpcard .warpscene{margin:8px 0 0}.warpcard .smq .btn{white-space:nowrap;flex:none}.bkfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:9px;border-top:1px dashed color-mix(in srgb,var(--hc) 40%,transparent);font-size:12.5px;color:#a8c4cf}.bkfoot b{color:#d6e6ec;font-weight:400}.bkfoot .btn small{opacity:.75;margin-left:4px}@media (min-width:761px){.bkui>.scside{contain:size}.bkui .scside .sclog{min-height:0}}.bkui .scside .sclog.holo .scll{flex:1 1 0;height:auto;max-height:none;min-height:0;overflow-y:auto;font-size:14px;line-height:1.75}.bkfound{animation:sclin .8s ease-out}.bkfound b{color:#e6c98f}.bkfound b.bknote{color:#cfe0e8}.bkui{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)!important}
 @media (max-width:760px){.bkui{grid-template-columns:minmax(0,1fr)}}
 .bkmap{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:"lounge archive workshop server" "warp warp warp warp";gap:14px;padding:14px;background:#07090d;border:1px solid #262e3a;background-image:linear-gradient(#11161d 1px,transparent 1px),linear-gradient(90deg,#11161d 1px,transparent 1px);background-size:16px 16px}
 .bkroom{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:2px;min-height:78px;padding:10px 12px;background:#0d1219;border:1px solid #2e3744;color:#cfd6df;font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
@@ -1977,6 +1977,29 @@ body:has(#joinModal:not([hidden])) .wrap{display:none}
 .rushx .rxd{margin:0 0 8px;font-size:12px;line-height:1.6;color:var(--mute)}.rushx .rxd b{color:var(--gold)}
 .rushx .rxrow{display:grid;grid-template-columns:repeat(6,minmax(0,56px)) 4px repeat(var(--rh,3),minmax(0,56px));gap:5px;margin:10px 0 8px;align-items:center;justify-content:start}
 .rushx .rxrow .rxc:nth-of-type(7){grid-column-start:8}
+.homewrap{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:10px;align-items:stretch}
+@media(max-width:760px){.homewrap{grid-template-columns:minmax(0,1fr)}}
+.homepick,.homechat{display:flex;flex-direction:column;gap:8px;min-width:0}
+.homeq{margin:6px 0 4px;text-align:center;font-size:13px;line-height:1.7;color:var(--text);opacity:.85}.homeq b{display:block;font-size:14px;opacity:1;letter-spacing:.01em;text-wrap:balance;word-break:keep-all}
+.homeopts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:6px 0 2px}
+.homeopt{--c:var(--cyan);position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 10px 16px;min-width:0;cursor:pointer;text-align:center;color:var(--text);font:inherit;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 16%,var(--panel)),var(--panel) 75%);border:2px solid color-mix(in srgb,var(--c) 45%,var(--line));transition:transform .15s,box-shadow .15s,border-color .15s}
+.homeopt.stay{--c:var(--green)}
+.homeopt:hover{transform:translateY(-2px);border-color:var(--c);box-shadow:0 4px 14px color-mix(in srgb,var(--c) 25%,transparent)}
+.homeopt.pick{border-color:var(--c);box-shadow:inset 0 0 0 2px var(--c),0 0 18px color-mix(in srgb,var(--c) 35%,transparent)}
+.homeopt .hoic{width:84px;height:84px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 32%,transparent),transparent 70%)}
+.homeopt .hoic svg{width:60px;height:60px;display:block;shape-rendering:crispEdges;filter:drop-shadow(2px 0 0 #2a3044) drop-shadow(-2px 0 0 #2a3044) drop-shadow(0 2px 0 #2a3044) drop-shadow(0 -2px 0 #2a3044)}
+.homeopt b{font-size:20px;letter-spacing:.06em;color:var(--text)}
+.homeopt .hod{font-size:12px;line-height:1.55;color:var(--text);opacity:.75;word-break:keep-all}
+.homeopt .hocnt{margin-top:2px;padding:1px 10px;border:1px solid var(--c);font-size:12px;font-weight:bold;color:var(--text)}
+.homebadge{position:absolute;top:6px;right:6px;padding:1px 6px;font-size:11px;font-weight:bold;background:var(--c);color:var(--panel)}
+.homepick>.homeq{margin-top:auto}.homepick>.homestat{margin-bottom:0}.homenote{margin:auto 0;padding:14px 8px;text-align:center;font-size:12.5px;line-height:1.9;color:var(--mute)}
+.homestat{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:7px 9px;border:1px dashed var(--line);font-size:12px;color:var(--text);opacity:.85}.homestat b{color:var(--text)}
+.hfeed{flex:none;min-height:200px;max-height:400px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:6px;scrollbar-width:thin;scrollbar-color:var(--dim) transparent}
+.hfeed::-webkit-scrollbar{width:6px}.hfeed::-webkit-scrollbar-thumb{background:var(--dim)}.hfeed::-webkit-scrollbar-track{background:transparent}
+.homechat{align-self:start}
+.homechat .padc.padnew{margin:0}.hthr{margin:-4px 0 4px 26px;display:flex;flex-direction:column;gap:6px;border-left:2px solid var(--line);padding-left:8px}
+.hthr .tw{padding:6px 8px}.twbtn.hon{opacity:1;color:var(--cyan)}
 .vbox .lead{margin:4px 0 6px}.vcols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
 .vcol{border:1px solid var(--line);background:var(--panel2);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .vcol.jb-medic{border-top:3px solid var(--job-medic)}.vcol.jb-mech{border-top:3px solid var(--job-mech)}.vcol.jb-nav{border-top:3px solid var(--job-nav)}
@@ -6763,8 +6786,11 @@ function clueLogHTML(){clListen();const gs=clGroups();if(!gs.length)return'<div 
 function clPaint(){const el=document.getElementById('clLog');if(!el)return;const ae=document.activeElement,foc=ae&&ae.id==='clIn',sc=el.parentNode&&el.closest('#stage')?document.getElementById('stage').scrollTop:0;el.outerHTML=clueLogHTML();if(foc){const i=document.getElementById('clIn');if(i){i.focus();i.selectionStart=i.selectionEnd=i.value.length}}}
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='clIn')clDraft[e.target.dataset.k]=e.target.value});
 document.addEventListener('keydown',e=>{const t=e.target;if(t&&t.id==='clIn'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();A.clsend({k:t.dataset.k})}});
-function scTabsHTML(){return clVis()?`<div class="dtabs sctabs" role="tablist"><button role="tab" aria-selected="${scView!=='log'}" data-act="scview" data-k="scan">조사</button><button role="tab" aria-selected="${scView==='log'}" data-act="scview" data-k="log">조사 기록</button></div>`:''}
-function renderScan(){if(scView==='log'&&!clVis())scView='scan';const h=scView==='log'?head().replace('정착지 주변 · 다섯 갈래 길 탐색','조사 기록 · 지금까지 찾은 단서')+clueLogHTML():renderScanMain();return h.replace('<h2>조사</h2>','<h2>조사</h2>'+scTabsHTML())}
+// 조사 · 워프 기계 수리 · 조사 기록 — the repair tab shows once the bunker is open (staff see it early)
+const warpVis=()=>mode==='online'&&(warpOpen()||isStaff());
+function scTabsHTML(){const t=[['scan','조사']];if(warpVis())t.push(['warp','기계 장치 수리']);if(clVis())t.push(['log','조사 기록']);if(t.length<2)return'';const cur=scView==='log'||scView==='warp'?scView:'scan';
+  return`<div class="dtabs sctabs" role="tablist">${t.map(([k,n])=>`<button role="tab" aria-selected="${cur===k}" data-act="scview" data-k="${k}">${n}</button>`).join('')}</div>`}
+function renderScan(){if(scView==='log'&&!clVis())scView='scan';if(scView==='warp'&&!warpVis())scView='scan';const h=scView==='log'?head().replace('정착지 주변 · 다섯 갈래 길 탐색','조사 기록 · 지금까지 찾은 단서')+clueLogHTML():scView==='warp'?head().replace('정착지 주변 · 다섯 갈래 길 탐색','기계 장치 수리 · 지하 벙커')+warpHTML():renderScanMain();return h.replace('<h2>조사</h2>','<h2>조사</h2>'+scTabsHTML())}
 function renderScanMain(){if(bkOn())return renderBunker();const sc=scoutSt();if(sc.nw){sc.nw=0;save();setTimeout(renderNav,0)}const on=!!sc.mv||sc.t>=0;
   return head()+(isStaff()?'<div class="row" style="gap:6px;align-items:center"><button class="qchip" data-act="bkprev">지하 벙커 미리보기 →</button><span class="hint">운영자 미리보기 · 조사 이벤트가 끝나면 모든 선원의 조사 탭이 지하 벙커로 바뀝니다.</span></div>':'')+`<p class="lead">정착지에서 다섯 갈래 길이 뻗어 있습니다. 한 지점씩 걸어 들어가며 주변을 조사하십시오. 구간마다 ${SC_MIN}분씩 걸리고, 깊이 들어갈수록 길이 험해져 에너지가 ${scEn(1)}에서 ${scEn(SC_N)}까지 듭니다. 길의 끝(${SC_N}지점)에서는 <b style="color:var(--gold)">공명 촉매</b>를 반드시 하나 얻습니다.</p>
   <div class="scui ${on?'on':''}"><div class="scleft">${scoutMapHTML()}</div><div class="scside">${on?scFpHTML(sc):scListHTML(sc)}</div></div>
@@ -6930,6 +6956,11 @@ const SHIP=[
  {id:'nav',n:'항법 장치',d:'별자리를 읽는 계기판. 회로와 렌즈가 모두 깨졌습니다.',need:[['oldBoard',500],['brokenLens',500],['impactGlass',500],['abyssPrism',5000],['pump',1000],['berry',1000],['frozenTomato',500],['shadeShroom',500]]},
  {id:'hull',n:'선체 외벽',d:'운석에 뚫린 구멍투성이 외벽. 철판을 덧대고 볼트로 조여야 합니다.',need:[['ore',10000],['dark',10000],['craterIron',1000],['rustBolt',1000],['sandSlate',1000],['starHeart',10000],['carrot',1000],['dustPot',1000],['iceRadish',1000],['mistLotus',1000]]},
 ];
+// the last repair before the ending: the 워프 기계 in the bunker, mended from the 조사 tab (not one of the ship's sections).
+// It takes every 원정 material, and its totals sit with the ship's (boss/ship p.warp), so the same giving and ranking work for it.
+const WARP={id:'warp',n:'워프 기계',d:'지하 벙커 깊은 곳에 잠든 거대한 고리. 원정에서 모아 온 모든 재료를 쏟아부어야 다시 움직입니다.',need:[['plainSpore',5000],['mazeCore',5000],['bogResin',5000],['wreckNozzle',5000],['abyssPrism',5000],['starHeart',5000]]};
+// the repair opens for a crew member once they have watched 장치 수리 · 선택의 순간 (the same moment the 귀환 결정 vote opens)
+const warpOpen=()=>!!(P&&(P.stSeen||{}).warp&&typeof STORY_ON!=='undefined'&&STORY_ON.warp);
 let SHIPDON=[],shipSel=null;
 /* repair totals live in one shared record (boss/ship: p = part → material → count, u = member → {n, nick}) kept with counters,
    so nobody has to download every donation slip. The slips in shipdon are still written as a log. Until the admin's client has
@@ -7013,7 +7044,7 @@ function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||'
   if(k==='opening'){OP_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')});add('[조우]','ttl')}
   const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
   return out.join('')}
-var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호'],['engine','주 엔진 · 6호의 기억'],['nav','항법 장치 · 3호의 기억'],['hull','선체 외벽 · 1호의 기억']];
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호'],['engine','주 엔진 · 6호의 기억'],['nav','항법 장치 · 3호의 기억'],['hull','선체 외벽 · 1호의 기억'],['warp','장치 수리 · 선택의 순간']];
 // 통신 장치 · 첫 신호 opens for each crew member right after they first meet 오르비스 in the real (operator-started) visit
 const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k]||(k==='comm'&&!!ORB_GO&&(+(P&&P.orbis)||0)>=1&&(+(P&&P.orbisAt)||0)>=ORB_GO);
 // once 생명 유지 장치 is repaired every crew member sees its story one time (the next time they are in the game), then the 마이룸 popup
@@ -7064,6 +7095,16 @@ function hullStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 �
   if($('#story')||$('#opCrawl')||$('#unlockPop')||$('#rolePop')||$('#orbisFx')||(typeof raidLocked==='function'&&raidLocked()))return;if(STORY_ON.nav&&!(P.stSeen||{}).nav)return;
   P.stSeen=Object.assign({},P.stSeen,{hull:Date.now()});save();playStory('hull',()=>{try{tab='scan';scView='scan';renderNav();renderPanel()}catch(e){}})}
 setInterval(()=>{try{hullStoryCheck()}catch(e){}},8000);
+// 장치 수리 · 선택의 순간: plays once the 운영자 opens it in 이야기 공개; afterwards the 우주선 tab's vote (귀환 결정) is open for that crew member
+function warpStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
+  if(!STORY_ON.warp||(P.stSeen||{}).warp)return;if(STORY_ON.hull&&!(P.stSeen||{}).hull)return;
+  if($('#story')||$('#opCrawl')||$('#unlockPop')||$('#rolePop')||$('#orbisFx')||$('#xevFx')||(typeof raidLocked==='function'&&raidLocked()))return;
+  P.stSeen=Object.assign({},P.stSeen,{warp:Date.now()});save();playStory('warp',()=>{try{warpVotePop()}catch(e){}})}
+function warpVotePop(){const old=$('#unlockPop');if(old)old.remove();const el=document.createElement('div');el.id='unlockPop';el.className='modal';el.style.zIndex=230;
+  el.innerHTML=`<div class="px infobox unlockbox" role="dialog" aria-label="투표 탭 열림"><span class="lbl">Vote · 투표</span><b class="unlockt">우주선에 투표 탭이 열렸습니다.</b><button class="btn gold" type="button" id="unlockOk">확인</button></div>`;
+  document.body.appendChild(el);const close=()=>{el.remove();document.removeEventListener('keydown',kk,true);try{tab='ship';shipView='org';renderNav();renderPanel()}catch(e){}},kk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.code==='Space'){e.preventDefault();close()}};el.querySelector('#unlockOk').addEventListener('click',close);document.addEventListener('keydown',kk,true);try{sfxFanfare(false)}catch(e){}}
+setInterval(()=>{try{warpStoryCheck()}catch(e){}},8000);
+
 var PREOPEN=false;const preLock=()=>mode==='online'&&PREOPEN&&!isStaff();
 function preopenHTML(){return`<div class="card preopen"><span class="lbl">Coming soon · 오픈 준비 중</span><h2>가이아 우주함선이 출항 준비를 하고 있습니다</h2><p class="hint">지금은 교류 › PAD만 이용할 수 있습니다. 정식 오픈을 조금만 기다려 주십시오.</p><button class="btn" type="button" data-act="preopenpad">PAD 열기</button></div>`}
 const tabGateRaw=id=>{const pid=TAB_GATE[id];if(!pid||mode!=='online')return null;const q=SHIP.find(x=>x.id===pid);return q&&!shipDone(q)?q:null};
@@ -7670,7 +7711,7 @@ function roomMigrate(){roomDropGone();
   const r=P.room;if(!r||!Array.isArray(r.put))return;const FP={bed:900,sofa:800,desk:600,aqua:1000,chair:200,plant:150,trunk:250,lamp:300,rocket:400,robo:350,poster:150,clock:250,shelf:300,starmap:400,neon:500,monitor:650},WP={w1:300,w2:400,w3:500,w4:400},FL={f1:300,f2:400,f3:500};
   let cr=0;Object.entries(r.own||{}).forEach(([k,n])=>cr+=(FP[k]||0)*(+n||0));(r.ws||[]).forEach(k=>cr+=WP[k]||0);(r.fs||[]).forEach(k=>cr+=FL[k]||0);
   P.room={};if(cr>0){P.cr=(P.cr||0)+cr;log(`마이룸이 새 모습으로 바뀌어, 전에 산 가구 값 ${cr.toLocaleString()} CR을 돌려받았다.`,'good')}save()}
-function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button>${mode==='online'&&!preLock()?`<button role="tab" aria-selected="${shipView==='memo'}" data-act="shipview" data-k="memo">휴게실${socDot('memo')}</button>`:''}${voteTabVis()?`<button role="tab" aria-selected="${shipView==='org'}" data-act="shipview" data-k="org">조직도${voteOpen()&&!voteDoneAll()?' <em class="attdot">!</em>':''}</button>`:''}<button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button><button role="tab" aria-selected="${shipView==='supply'}" data-act="shipview" data-k="supply">보급${attDoneToday()?'':' <em class="attdot">!</em>'}</button></div>`}
+function shipSubTabs(){return`<div class="dtabs shiptabs" role="tablist"><button role="tab" aria-selected="${shipView==='ship'}" data-act="shipview" data-k="ship">우주선</button>${mode==='online'&&!preLock()?`<button role="tab" aria-selected="${shipView==='memo'}" data-act="shipview" data-k="memo">휴게실${socDot('memo')}</button>`:''}${voteTabVis()||homeOn()?`<button role="tab" aria-selected="${shipView==='org'}" data-act="shipview" data-k="org">${homeOn()?'귀환 결정':'조직도'}${(voteOpen()&&!voteDoneAll())||(homeOn()&&!(P.home&&P.home.c))?' <em class="attdot">!</em>':''}</button>`:''}<button role="tab" aria-selected="${shipView==='room'}" data-act="shipview" data-k="room">${canRoom()?'':'🔒 '}마이룸</button><button role="tab" aria-selected="${shipView==='supply'}" data-act="shipview" data-k="supply">보급${attDoneToday()?'':' <em class="attdot">!</em>'}</button></div>`}
 /* 보급 (우주선 › 보급): daily attendance by leaving a short note; attend/{day_uid} = {day, uid, nick, text, at}
    the first note of the day (KST) hands out the day's supplies, with a bonus every 7 days in a row */
 const ATT_REW=[{cr:100,d:1},{cr:100,d:1},{cr:150,d:1},{cr:100,d:1},{cr:150,d:2},{cr:100,d:1},{cr:300,d:2}];let ATT=[],attDay='',attUn=null;
@@ -7690,7 +7731,7 @@ function supplyHTML(){if(mode!=='online')return'<div class="note">보급은 온�
    <p class="hint" style="margin:0">7일을 연속으로 출석하면 7일차 특별 보급을 받고, 다음 날부터 1일차로 다시 시작합니다. 하루라도 빠지면 1일차부터 다시 셉니다.</p></div>
   <div class="card attlist"><div class="row" style="justify-content:space-between;align-items:center"><button class="qchip" data-act="attday" data-k="-1">◀ 전날</button><b>${isToday?'오늘의 출석부':attDay.replace(/-/g,'.')+' 출석부'} · ${ATT.length}명</b><button class="qchip" data-act="attday" data-k="1" ${isToday?'disabled':''}>다음날 ▶</button></div>
    ${ATT.length?ATT.map((x,i)=>`<div class="attrow${x.uid===uid?' mine':''}"><span class="attno">${i+1}</span><span class="twav attav" data-act="profopen" data-k="${esc(x.uid)}" role="button">${padAv(whoP(x.uid))}</span><div><div class="row" style="gap:6px"><button type="button" class="twname" data-act="profopen" data-k="${esc(x.uid)}" style="color:${colorOf(x.uid)}">${esc(x.nick||'선원')}</button><time class="hint">${hhmm(+x.at||0)}</time>${isAdmin?`<button class="qchip" data-act="attdel" data-k="${esc(x.id)}" style="margin-left:auto">삭제</button>`:''}</div><p>${esc(x.text||'')}</p></div></div>`).join(''):'<p class="empty">아직 출석한 선원이 없습니다.</p>'}</div>`}
-function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='memo'){if(mode!=='online'||preLock())shipView='ship';else{markMemo();return head()+shipSubTabs()+`<div class="shipmemo">${socMemo()}</div>`}}if(shipView==='org'){if(!voteTabVis())shipView='ship';else return head()+shipSubTabs()+voteOrgHTML()}if(shipView==='supply')return head()+shipSubTabs()+supplyHTML();if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 선원에게는 아직 잠겨 있습니다.</div>')}
+function renderShip(){if(shipView==='bench')shipView='ship';if(shipView==='memo'){if(mode!=='online'||preLock())shipView='ship';else{markMemo();return head()+shipSubTabs()+`<div class="shipmemo">${socMemo()}</div>`}}if(shipView==='org'){if(!voteTabVis()&&!homeOn())shipView='ship';else return head()+shipSubTabs()+(homeShow()?homeHTML():(isStaff()&&!homeOn()?`<div class="row homeadm"><button class="qchip" data-act="homeprev">귀환 결정 화면 미리보기 →</button>${isAdmin?'<button class="btn sm gold" data-act="homeopen">귀환 결정 열기</button>':''}<span class="hint">운영자가 열면 모든 선원의 조직도 탭이 귀환 결정으로 바뀝니다.</span></div>`:'')+voteOrgHTML())}if(shipView==='supply')return head()+shipSubTabs()+supplyHTML();if(shipView==='room'){if(!canRoom()){visit=null;preview={};return roomLockHTML()}roomMigrate();const h=renderRoom();return !ROOM_LINK||roomOpen()?h:h.replace(shipSubTabs(),shipSubTabs()+'<div class="note roomstaff">운영자·관리자 미리보기 · 생명 유지 장치를 고치기 전이라 다른 선원에게는 아직 잠겨 있습니다.</div>')}
   if(mode!=='online')return head()+shipSubTabs()+`<div class="note">우주선 수리는 선원 모두가 함께하는 작업입니다. 온라인에 접속하면 참여할 수 있습니다.</div>`;
   const all=shipAll(),pt=SHIP.find(x=>x.id===shipSel)||SHIP.find(x=>!shipDone(x))||SHIP[SHIP.length-1],open=shipOpen(pt),g=shipGot(pt.id),done=SHIP.filter(shipDone).length;
   const rank=shipTotals().u;
@@ -7836,6 +7877,57 @@ function shipSceneDraw(cv,t){
   // the blue pool under the exhaust flickers with the flame
   if(st.engine){const f=(t/120|0)%3;g.fillStyle=`rgba(95,216,255,${.08+f*.04})`;g.fillRect(B.GX-14,B.GY-3,28,7);g.fillRect(B.GX-8,B.GY-5,16,11)}
 }
+// 워프 기계: the great ring in the bunker. Its 16 ring segments light up as the repair fills, the six lamps on the base each
+// stand for one 원정 material (lit in that material's colour once it is all in), and when every one is in, the ring opens.
+function warpSceneDraw(cv,t,o){const g=cv.getContext?cv.getContext('2d'):cv,W=SW,H=SH,R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x|0,y|0,w|0,h|0)},px=(x,y,c)=>R(x,y,1,1,c),A=a=>g.globalAlpha=a;g.imageSmoothingEnabled=false;
+  const pt=WARP;const got=o?o.got:shipGot('warp'),pct=o?o.pct:Math.min(1,shipPct(pt)),open=pct>=1,s=t/1000;
+  // the hall: cold panelled wall, a gridded floor, red emergency lamps
+  R(0,0,W,H,'#0a0d13');for(let x=0;x<W;x+=20){R(x,0,1,92,'#11161e');R(x+1,0,1,92,'#070a0e')}R(0,14,W,1,'#151b24');R(0,40,W,1,'#0e131a');
+  R(0,92,W,28,'#10141a');R(0,92,W,1,'#232a34');for(let x=0;x<W;x+=12)R(x,93,1,27,'#0b0e13');for(let y=98;y<H;y+=6)R(0,y,W,1,'#0d1116');
+  [[14,10],[W-20,10]].forEach(([x,y],i)=>{const on=((s*1.3+i)|0)%4!==0;R(x,y,6,3,on?'#c8424a':'#3a1416');if(on){A(.07);R(x-10,y-4,26,12,'#c8424a');A(1)}});
+  const cx=120,cy=52,ro=42,ri=33;
+  // cables from the ring down to the consoles
+  g.strokeStyle='#1b2028';g.lineWidth=2;[[cx-ro+2,cy+16,28,96],[cx+ro-2,cy+16,212,96],[cx-20,cy+ro-4,58,99],[cx+20,cy+ro-4,182,99]].forEach(([x1,y1,x2,y2])=>{g.beginPath();g.moveTo(x1,y1);g.quadraticCurveTo((x1+x2)/2,y2+6,x2,y2);g.stroke()});
+  // consoles left and right
+  [[12,78],[202,78]].forEach(([x,y],i)=>{R(x,y,26,18,'#1e232b');R(x,y,26,1,'#3a414c');R(x+3,y+3,20,7,'#0a1018');const live=open||pct>0;if(live){const n=Math.ceil(pct*18);for(let k=0;k<n;k++)if((k+((s*4)|0)+i)%5)px(x+4+k,y+5+(k%3),open?'#7fe8ff':'#4a8aa8')}R(x+4,y+12,4,3,pct>0?'#e0b860':'#3a3424');R(x+11,y+12,4,3,'#2a2f37');R(x+18,y+12,4,3,open?'#7dff9b':'#2a2f37')});
+  // inside the ring: dark and cracked until it is whole, then a turning wormhole
+  for(let y=-ri;y<=ri;y++)for(let x=-ri;x<=ri;x++){const d=Math.hypot(x,y);if(d>ri)continue;let c;
+    if(open){const fr=(t/70)|0,n=((x*73856093)^(y*19349663)^(fr*83492791))>>>0,r=(n%1000)/1000,band=((y+fr*3)%11+11)%11<2;c=r>.93?'#e8f4ff':r>.8?'#6a7ab8':band?'#1c2a4a':r>.5?'#10162a':'#070a14'}
+    else{c=d>ri-2?'#05070a':'#07090d';if(Math.abs(x-Math.sin(y*.35+s*1.4)*2.5)<.8&&Math.abs(y)<ri*.7&&pct>0){A(.25+.5*pct);px(cx+x,cy+y,'#6a86b8');A(1);continue}}
+    px(cx+x,cy+y,c)}
+  // the ring: 16 metal segments; lit ones glow cyan, pulsing
+  const lit=Math.floor(pct*16+1e-6);
+  for(let y=-ro;y<=ro;y++)for(let x=-ro;x<=ro;x++){const d=Math.hypot(x,y);if(d>ro||d<ri)continue;const a=(Math.atan2(y,x)+Math.PI*2.5)%(Math.PI*2),seg=(a/(Math.PI*2)*16)|0,edge=d>ro-1.2||d<ri+1.2,gap=((a/(Math.PI*2)*16)%1)<.06;
+    let c=gap?'#0d1015':edge?'#4a525e':seg%2?'#353c47':'#2b313a';
+    if(seg<lit&&!gap&&!edge){const pu=.5+.5*Math.sin(s*2.4-seg*.6);c=open?(pu>.5?'#9ff4ff':'#5fd8ff'):(pu>.6?'#5fd8ff':'#3a8aa8')}
+    px(cx+x,cy+y,c)}
+  for(let k=0;k<16;k++){const a=k/16*Math.PI*2-Math.PI/2+Math.PI/16,r=(ro+ri)/2;px(cx+Math.round(Math.cos(a)*r),cy+Math.round(Math.sin(a)*r),'#5a626e')}
+  // base and its six lamps, one per material
+  R(cx-30,cy+ro-2,60,6,'#2a2f37');R(cx-30,cy+ro-2,60,1,'#4a525e');R(cx-40,cy+ro+4,80,6,'#22272f');R(cx-40,cy+ro+4,80,1,'#3a414c');R(cx-46,cy+ro+10,92,4,'#1a1e25');
+  pt.need.forEach(([id,n],k)=>{const done=(got[id]||0)>=n,part=(got[id]||0)/n,x=cx-33+k*12,y=cy+ro+6,col=(ITEMS[id]&&ITEMS[id].t)||'#8a9bb0';R(x,y,6,3,'#0b0e12');if(done){R(x,y,6,3,col);A(.18+.1*Math.sin(s*3+k));R(x-2,y-2,10,7,col);A(1)}else if(part>0)R(x,y,Math.max(1,Math.round(part*6)),3,'#4a5664')});
+  // drifting dust, and sparks off the ring while it is being repaired
+  for(let i=0;i<14;i++){const q=XST[i],ph=(s*.08+q.p)%1;A(.22*(1-Math.abs(ph-.5)*2));px((q.x+s*3)%W,10+ph*80,'#8a96a8');A(1)}
+  if(pct>0&&!open){const k=((s*2)|0)%16,a=k/16*Math.PI*2-Math.PI/2,ph=(s*2)%1;if(ph<.4)for(let j=0;j<4;j++)px(cx+Math.cos(a)*(ro+1)+j*(ph*6-1),cy+Math.sin(a)*(ro+1)+j*ph*4,j%2?'#ffd27a':'#fff2c4')}
+  if(open){const fr=(t/70)|0,rnd=k=>{const n=((fr*2654435761)^(k*40503))>>>0;return (n%10000)/10000};
+    // a jagged tear across the ring, re-cut every few frames
+    const tear=(x0,y0,x1,y1,seed,col)=>{let px0=x0,py0=y0;const N=10;for(let i=1;i<=N;i++){const f=i/N,nx=x0+(x1-x0)*f+(i<N?(rnd(seed+i)-.5)*10:0),ny=y0+(y1-y0)*f+(i<N?(rnd(seed+i+50)-.5)*6:0);g.strokeStyle=col;g.lineWidth=1;g.beginPath();g.moveTo(px0|0,py0|0);g.lineTo(nx|0,ny|0);g.stroke();px0=nx;py0=ny}};
+    tear(cx,cy-ri+2,cx+(rnd(1)-.5)*16,cy+ri-2,10,'#f2fbff');tear(cx-ri+4,cy+(rnd(2)-.5)*20,cx+ri-4,cy+(rnd(3)-.5)*20,30,'#9fe4ff');
+    // arcs crackling off the ring
+    for(let k=0;k<5;k++){if(rnd(100+k)<.45)continue;const a=rnd(120+k)*Math.PI*2,r0=ro-1,L=6+rnd(140+k)*10;let ax=cx+Math.cos(a)*r0,ay=cy+Math.sin(a)*r0;for(let j=0;j<5;j++){const bx=ax+Math.cos(a)*L/5+(rnd(160+k*7+j)-.5)*5,by=ay+Math.sin(a)*L/5+(rnd(190+k*7+j)-.5)*5;g.strokeStyle=j%2?'#7fe8ff':'#e8f8ff';g.beginPath();g.moveTo(ax|0,ay|0);g.lineTo(bx|0,by|0);g.stroke();ax=bx;ay=by}}
+    // the tear reaches up through the ceiling toward the sky
+    const bw=3+((fr%3)?0:2);R(cx-bw/2,0,bw,cy-ro,'rgba(160,220,255,.55)');for(let y=0;y<cy-ro;y+=2)if(rnd(300+y)>.6)px(cx+((rnd(400+y)-.5)*10|0),y,'#e8f8ff');
+    for(let k=0;k<6;k++){const x0=cx+(rnd(500+k)-.5)*60;g.strokeStyle='rgba(200,235,255,.7)';g.beginPath();g.moveTo(cx,0);g.lineTo(x0|0,(rnd(520+k)*8)|0);g.lineTo((x0+(rnd(540+k)-.5)*14)|0,(6+rnd(560+k)*10)|0);g.stroke()}
+    // the room itself stays still; only a faint blue light from the tear
+    A(.07);R(0,0,W,H,'#5f9aff');A(1)}
+  const vg=g.createRadialGradient(cx,cy,30,cx,cy,150);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.5)');g.fillStyle=vg;g.fillRect(0,0,W,H)}
+let warpTimer=0;function startWarpScene(){clearInterval(warpTimer);const cv=document.getElementById('warpCv');if(!cv)return;const tick=()=>{if(!cv.isConnected){clearInterval(warpTimer);return}warpSceneDraw(cv,performance.now())};tick();warpTimer=setInterval(tick,110)}
+// the 워프 기계 card under the bunker: the ring, how far along it is, and the six 원정 materials to hand in
+function warpHTML(){if(mode!=='online')return'';const pt=WARP,g=shipGot('warp'),v=Math.min(1,shipPct(pt)),done=v>=1,can=pt.need.some(([id])=>shipLeft(pt,id)>0&&(P.inv[id]||0)>0);setTimeout(startWarpScene,0);
+  return`<div class="card warpcard"><div class="row" style="justify-content:space-between;align-items:baseline;gap:8px"><span class="lbl">Machine · 기계 장치 수리</span><b>${Math.floor(v*100)}%</b></div>
+   <div class="shipscene warpscene"><canvas id="warpCv" width="${SW}" height="${SH}" aria-label="지하 벙커의 워프 기계"></canvas></div>
+   <p class="hint" style="margin:6px 0">${done?'원정 재료가 모두 모였습니다. 고리가 다시 빛나고 있습니다.':esc(pt.d)+' 재료를 넣을 때마다 넣은 개수만큼 경험치를 받습니다.'}</p><div class="bar"><i style="--c:${done?'var(--green)':'var(--cyan)'};width:${v*100}%"></i></div>
+   ${done?'':`<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn sm" data-act="shipgive" data-k="warp" ${can?'':'disabled'}>가진 재료 모두 넣기</button></div>`}
+   <ul class="shipmats">${pt.need.map(([id,n])=>{const h=Math.min(n,g[id]||0),left=n-h,my=P.inv[id]||0;return`<li>${iicon(id,1)}<span class="smn">${ITEMS[id].n}</span><div class="bar"><i style="--c:${left?'var(--cyan)':'var(--green)'};width:${h/n*100}%"></i></div><span class="smc">${h}/${n}</span><span class="hint">내 가방 ${my}</span>${left?(()=>{const mx=Math.min(left,my,1000),q=Math.max(1,Math.min(mx||1,shipQty[id]||mx||1));return`<span class="smq"><input class="sel" type="number" min="1" max="${mx||1}" value="${q}" data-shipq="${id}" aria-label="${esc(ITEMS[id].n)} 넣을 개수" ${my?'':'disabled'}><button class="btn sm alt" data-act="shipgive" data-k="warp" data-i="${id}" ${my?'':'disabled'}>넣기</button></span>`})():'<span class="smok">완료</span>'}</li>`}).join('')}</ul></div>`}
 function startShipScene(){
   clearInterval(shipTimer);const cv=$('#shipCv');if(!cv)return;
   const tick=()=>{if(!cv.isConnected){clearInterval(shipTimer);return}shipSceneDraw(cv,performance.now())};
@@ -7844,7 +7936,7 @@ function startShipScene(){
 // how many of each material to hand in (typed per row; unset means everything that still fits)
 let shipQty={};
 function shipGive(partId,only,qty){
-  const pt=SHIP.find(x=>x.id===partId);if(!pt||mode!=='online')return;if(!shipOpen(pt)){toast('앞 구역을 먼저 고쳐야 합니다.');return}
+  const W0=partId==='warp',pt=W0?WARP:SHIP.find(x=>x.id===partId);if(!pt||mode!=='online')return;if(W0?!warpVis():!shipOpen(pt)){toast(W0?'아직 워프 기계에 다가갈 수 없습니다.':'앞 구역을 먼저 고쳐야 합니다.');return}
   const list=[];
   let lockedHit=false;pt.need.forEach(([id])=>{if(only&&id!==only)return;if(isLocked(id)&&(P.inv[id]||0)>0){lockedHit=true;return}const n=Math.min(shipLeft(pt,id),P.inv[id]||0,1000,qty>0?qty:Infinity);if(n>0)list.push([id,n])});if(only)delete shipQty[only];
   if(!list.length){if(lockedHit)lockMsg();else toast('넣을 수 있는 재료가 없습니다.');return}
@@ -7856,9 +7948,9 @@ function shipGive(partId,only,qty){
   // bio-fuel crops fill the section but do not count toward the giver's contribution (기여도)
   const ctb=list.reduce((a,[id,n])=>a+(isCropId(id)?0:n),0),tm=ctb?{['u.'+uid+'.n']:ctb}:{};list.forEach(([id,n])=>{tm['p.'+pt.id+'.'+id]=n});
   Promise.all([...list.map(([id,n])=>db.collection('shipdon').add({part:pt.id,id,n,uid,nick:P.nick,at})),docInc(shipTRef(),tm,{['u.'+uid+'.nick']:P.nick})]).then(()=>{
-    sfxCoin();log(`가이아 ${pt.n}에 ${list.map(([id,n])=>ITEMS[id].n+' '+n).join(', ')}을(를) 넣었다. 경험치 +${cnt*2}.`,'good');
-    if(finish){sys(`[공지] 가이아 ${pt.n}의 재료가 모두 모였습니다! 20:00에 수리가 끝납니다.`,true)}
-    if(tab==='ship')renderPanel()
+    sfxCoin();log(`${W0?'':'가이아 '}${pt.n}에 ${list.map(([id,n])=>ITEMS[id].n+' '+n).join(', ')}을(를) 넣었다. 경험치 +${cnt*2}.`,'good');
+    if(finish){sys(W0?'[공지] 워프 기계에 원정 재료가 모두 모였습니다! 고리가 다시 빛나기 시작합니다.':`[공지] 가이아 ${pt.n}의 재료가 모두 모였습니다! 20:00에 수리가 끝납니다.`,true)}
+    if(tab==='ship'||tab==='scan')renderPanel()
   }).catch(()=>{list.forEach(([id,n])=>add(id,n));P.cr-=cr;commit();toast('재료를 넣지 못했습니다. 잠시 뒤 다시 시도해 주십시오.')})
 }
 const BUY=[['seed_pot',15],['seed_berry',30],['seed_carrot',40],['seed_corn',50],['seed_pump',60],['seed_melon',90],['drink',30],['drink2',70],['drink1',140],['bandage',20],['kit',50],['kitpro',100],['kit400',250],['kit600',400]];
@@ -8240,7 +8332,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795523205';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795602587';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -8472,6 +8564,16 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'n_dest',lines:[{t:'DESTINATION : TERRA',sys:1,wait:1.4},{t:'목적지 : 테라.'}]},
   {art:'n_arrive',lines:[{t:'그리고 항법장치가 응답했다.',wait:.8},{t:'우리는 이미 목적지에 도착했다고.'}]}]},
   // 선체 외벽 repaired: a rainy day, 1호's memory (the city before, a fleet leaving under the name 가이아 프로젝트), and 6호's machine again
+  // the 워프 기계 story: what the 조사 turned up, the dead ring, 6호's memory of it working, and 7호 leaving the choice to us; it opens the 귀환 결정 vote
+  warp:{n:'장치 수리 · 선택의 순간',anyKey:1,fadeOut:4,scenes:[
+  {art:'w_rec1',sfx:'monon',lines:[{t:'단체 이주 프로젝트.',wait:1.4},{t:'의문의 잔해.',art:'w_rec2'},{t:'미지의 침략자.',art:'w_rec3'},{t:'가이아 프로젝트.',art:'w_rec4'},{t:'7호의 존재와, 그리고 거대한 기계 장치.',art:'w_rec5'},{t:'우리가 모은 단서들은 조금씩 방향을 좁혀가고 있었다.',art:'w_rec6'},{t:'만약 우리가 어떤 경위로든 미래로 온 것이라면, 이 기계를 통해 과거로 건너갈 수 있을까.',art:'w_rec6'}]},
+  {art:'w_ring',cut:1,lines:[{t:'한때 거대한 에너지를 뿜어냈던 흔적은 남아 있지만, 지금은 아무런 반응도 없다.',wait:1.6},{t:'조심히 살펴본 결과, 수리가 필요한 것은 명확해 보인다.'}]},
+  {art:'w_plan',lines:[{t:'얻은 설계도와 보고서를 기반으로 수리할 부분을 찾아냈다.'},{t:'녹슨 7호가 장치 주변을 천천히 돌기 시작한다.',art:'w_circle'}]},
+  {art:'w_mem',sfx:'monon',lines:[{v:'내 기억 속에서는 이 장치가 작동했었지.',who:'녹슨 7호',wait:1.6},{v:'거대한 에너지를 위로 쏘아올려 문을 만드는 것 같아.',who:'녹슨 7호'},{v:'이걸 고치면 무슨 일이 일어날지, 어디로 이어질지. 나도 모르겠어.',who:'녹슨 7호'}]},
+  {art:'w_bot',cut:1,lines:[{t:'7호는 우리를 돌아본다.',wait:1.2},{v:'그래도 한 가지는 분명하지.',who:'녹슨 7호'},{v:'돌아갈 수 있을지도 모른다는 거야.',who:'녹슨 7호'}]},
+  {art:'w_ring',lines:[{t:'이 장치를 복구한다면 어쩌면 돌아갈 길을 찾을 수도 있고,\n어쩌면 지금까지 지켜온 모든 것이 무너질 수도 있다.'},{t:'그러나 지금이 선택해야 하는 순간임은 정확하다.'},{t:'불확실한 가능성을 선택할 것인가, 남아서 새로운 가능성을 개척할 것인가.'}]},
+  {art:'w_bot',lines:[{v:'……결정은 너희 몫이야.',who:'녹슨 7호'},{v:'나는 이미 너무 오래 기다렸으니까.',who:'녹슨 7호'}]},
+  {art:'w_hall',lines:[{t:'7호의 음성만이 넓은 공간을 울린다.',wait:1.2},{t:'빗소리는 더이상 들리지 않는다…….'}]}]},
   hull:{n:'선체 외벽 · 1호의 기억',anyKey:1,fadeOut:4,scenes:[
   {art:'r_ship',sfx:'rain',lines:[{t:'오늘은 아침부터 멈추지 않고 비가 내린다.',wait:1.4},{t:'우주선을 고치면서, 모든 게 의미가 있는 행동인지 헷갈렸다.'},{t:'우리는 어디로 돌아가야 하는가?'},{t:'…그러나 고민과 별개로 함선은 빠르게 수리가 완료됐다.'}]},
   {art:'r_nav',lines:[{v:'기계는 가끔 헛소리를 해. 나도 그러니까 잘 알지.',who:'녹슨 7호',wait:2}]},
@@ -8851,6 +8953,31 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     g.globalAlpha=.6;R(0,0,W,H,'#030612');g.globalAlpha=1;for(let i=0;i<24;i++){const s=ST[i],x=Math.round(s.x*W),sp=8+s.b*14,y=((s.y*H+t*sp)%(H+20))-10;R(x,y-6,1,6,'#3e6cc4');R(x,y,1,2,'#9fbcff')}
     for(let i=0;i<10;i++){const q=t*1.6+i*.29,ph=q%1,x=(i*47+(q|0)*61)%W,y=(i*31+(q|0)*17)%H;if(ph<.4){g.globalAlpha=1-ph/.4;g.strokeStyle='#9fbcff';g.beginPath();g.arc(x+.5,y+.5,1+ph*8,0,7);g.stroke();g.globalAlpha=1}}rainFx(t,.6)}
 
+
+  // ── 워프 기계 story ──
+  const wRing=(t,o)=>warpSceneDraw(g,t*1000,Object.assign({pct:0,got:{}},o||{}));
+  // the bunker wall where the five records light up one by one (n lit; the newest flickers in)
+  function wRecs(t,n){R(0,0,W,H,'#070a10');for(let x=0;x<W;x+=20){R(x,0,1,H,'#0d1219')}R(0,86,W,34,'#0b0f15');R(0,86,W,1,'#1c2430');
+    const HC='#5fd8ff',HD='#1a3a4a';
+    for(let i=0;i<5;i++){const x=10+i*45,y=20,w=40,h=48,on=i<n,nw=i===n-1,a=on?(nw?Math.min(1,t/.7)*(((t*14)|0)%5||t>1?1:.4):1):.18;
+      g.globalAlpha=a;R(x,y,w,h,'#0a1a24');R(x,y,w,1,HC);R(x,y+h-1,w,1,HC);R(x,y,1,h,HD);R(x+w-1,y,1,h,HD);
+      const cx=x+w/2,cy=y+h/2;g.fillStyle=HC;
+      if(i===0){for(let k=0;k<4;k++){R(cx-14+k*8,cy-2,3,3,HC);R(cx-14+k*8,cy+1,3,6,HC)}R(cx-16,cy-12,32,1,HC);R(cx+14,cy-14,2,5,HC)}
+      if(i===1){for(let k=0;k<5;k++)R(cx-15+k*2,cy+6-k*3,22,2,k%2?HC:HD)}
+      if(i===2){for(let k=0;k<7;k++){R(cx-12+k*4,cy-6+((k*5)%7),3,3,HC)}R(cx-10,cy+8,20,1,HC)}
+      if(i===3){R(cx-12,cy-8,24,16,HD);R(cx-12,cy-8,24,1,HC);R(cx-8,cy-3,16,2,HC);R(cx-8,cy+2,10,2,HC)}
+      if(i===4){g.strokeStyle=HC;g.lineWidth=2;g.beginPath();g.arc(cx,cy-2,11,0,7);g.stroke();R(cx-3,cy+12,6,4,HC)}
+      g.globalAlpha=1;if(on){g.globalAlpha=.08;R(x-4,y-4,w+8,h+8,HC);g.globalAlpha=1}}
+    if(n>5){g.globalAlpha=.25+.15*Math.sin(t*2);g.strokeStyle=HC;g.lineWidth=1;g.beginPath();for(let i=0;i<5;i++){g.moveTo(30+i*45,68);g.lineTo(120,98)}g.stroke();g.globalAlpha=1;R(116,96,8,4,HC)}
+    for(let i=0;i<12;i++){const q=XST[i],ph=(t*.06+q.p)%1;g.globalAlpha=.2*(1-Math.abs(ph-.5)*2);P((q.x+t*3)%W,8+ph*80,'#8a96a8');g.globalAlpha=1}}
+  // 녹슨 7호 drawn at a spot and size, with a small bob
+  const wBot=(x,gy,bw,t)=>{g.fillStyle='rgba(3,6,15,.6)';g.fillRect(x+6,gy-2,bw-12,4);if(BOT)g.drawImage(BOT,x|0,(gy-bw+Math.round(Math.sin(t*2)*1))|0,bw,bw)};
+  function wPlan(t){wRing(t);const cx=120,cy=52,ro=42;[2,5,9,13].forEach((k,i)=>{const a=k/16*Math.PI*2-Math.PI/2+Math.PI/16,x=cx+Math.cos(a)*(ro-4),y=cy+Math.sin(a)*(ro-4),on=((t*2.4+i*.5)|0)%2;g.strokeStyle=on?'#ff5a5a':'#7a2a2a';g.lineWidth=1;g.strokeRect((x-6)|0,(y-6)|0,12,12);if(on){R(x+7,y-7,8,1,'#ff5a5a')}});
+    const sy=8+((t*30)%96);g.globalAlpha=.35;R(60,sy,120,1,'#7fe8ff');g.globalAlpha=1}
+  function wCircle(t){wRing(t);const a=t*.7,d=Math.sin(a),x=120+Math.cos(a)*78,bw=Math.round(30+d*10),gy=Math.round(106+d*6);if(d<0){g.globalAlpha=.55}wBot(x-bw/2,gy,bw,t);g.globalAlpha=1}
+  function wMem(t){wRing(t);g.globalAlpha=Math.min(.8,t/1.4);memHall(t+2,.55,Math.min(1,Math.max(0,(t-1.6)/2.2)));g.globalAlpha=1;crt(t,'MEMORY  06')}
+  function wBotNear(t){wRing(t*.6);g.globalAlpha=.55;R(0,0,W,H,'#03060c');g.globalAlpha=1;wBot(78,H-6,84,t)}
+  function wHall(t){wRing(t*.5);g.globalAlpha=.5;R(0,0,W,H,'#020408');g.globalAlpha=1;wBot(24,110,22,t*.4);const e=Math.min(1,t/6);g.globalAlpha=e*.35;R(0,0,W,H,'#000');g.globalAlpha=1}
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
     // ── the opening's own pictures, drawn fresh: a dusk-purple desert seen from afar, a small crashed ship, a small 녹슨 7호 ──
@@ -9050,7 +9177,9 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     r_look:t=>{hullLook(t,t>.6&&t<2?t-.6:0)},
     r_six:t=>{sixZoom(t)},
     r_ship2:t=>{hullRain(t*.7,.8)},
-    r_drops:t=>{hullDrops(t)}};
+    r_drops:t=>{hullDrops(t)},
+    w_rec1:t=>wRecs(t,1),w_rec2:t=>wRecs(t,2),w_rec3:t=>wRecs(t,3),w_rec4:t=>wRecs(t,4),w_rec5:t=>wRecs(t,5),w_rec6:t=>wRecs(t,6),
+    w_ring:t=>wRing(t),w_plan:t=>wPlan(t),w_circle:t=>wCircle(t),w_mem:t=>wMem(t),w_bot:t=>wBotNear(t),w_hall:t=>wHall(t)};
   function drawBg(t){const w=bg.width=innerWidth,h=bg.height=innerHeight;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0,fading=false;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'')+(L.sys?' sys':'');shown=L.pre||0;q('.stv-txt').textContent=(L.v?'':L.t||'').slice(0,shown);full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
@@ -9381,7 +9510,7 @@ const A={
  bosshit(){bossHit()},
  vote(d){if(!voteOpen()||!VOTE_JOB[d.k]||!d.id||d.id===uid)return;const p=d.id===uid?P:PLAYERS[d.id];if(!p||vJob(p)!==VOTE_JOB[d.k])return;P.vote=Object.assign({},myVote(),{r:VOTE_R,[d.k]:d.id});commit();toast(`${p.nick||'선원'} 님에게 ${POSTS3.find(x=>x[0]===d.k)[1]} 표를 던졌습니다.`)},
  voteappoint(d){if(!isStaff()||!VOTE_JOB[d.k]||!d.id)return;if(!isAdmin){toast('임명은 운영자만 할 수 있습니다.');return}setRole(d.k,d.id).then(()=>renderPanel())},
- scview(d){scView=d.k==='log'&&clVis()?'log':'scan';clOpen=null;renderPanel()},
+ scview(d){scView=d.k==='log'&&clVis()?'log':d.k==='warp'&&warpVis()?'warp':'scan';clOpen=null;renderPanel()},
  clopen(d){clOpen=clOpen===d.k?null:d.k;clPaint();if(clOpen)setTimeout(()=>{const i=document.getElementById('clIn');if(i)i.focus()},30)},
  async clsend(d){if(mode!=='online'||!d.k)return;const v=String(clDraft[d.k]||'').trim().slice(0,300);if(!v)return;clDraft[d.k]='';const i=document.getElementById('clIn');if(i)i.value='';
   try{await db.collection('hchat').add({uid,nick:P.nick,text:v,at:Date.now(),ch:'clue:'+d.k})}catch(e){clDraft[d.k]=v;if(i)i.value=v;toast('의견을 남기지 못했습니다.')}},
@@ -9407,7 +9536,7 @@ const A={
  async xevopen(){if(!isAdmin||mode!=='online')return;try{await xevRef().set({on:true,eid:'x'+Date.now(),sc:0,path:[0],prev:null,found:{},votes:{},picks:{},vk:'',vuntil:0,nv:0,done:false,at:Date.now()});xevHid='';xevSel=null;xevEndT=null;toast('조사 이벤트를 열었습니다.')}catch(e){toast('열지 못했습니다.')}},
  xevnext(){if(!isAdmin)return;xevDrive(true)},
  async xevend(){if(!isAdmin||mode!=='online')return;try{await xevRef().update({on:false});toast('조사 이벤트를 닫았습니다.')}catch(e){toast('닫지 못했습니다.')}},
- shipview(d){shipView=d.k==='room'?'room':d.k==='supply'?'supply':d.k==='memo'?'memo':d.k==='org'&&voteTabVis()?'org':'ship';if(shipView==='supply'){attDay=duelDay();attSub()}if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
+ shipview(d){shipView=d.k==='room'?'room':d.k==='supply'?'supply':d.k==='memo'?'memo':d.k==='org'&&(voteTabVis()||homeOn())?'org':'ship';if(shipView==='supply'){attDay=duelDay();attSub()}if(shipView==='ship'){visit=null;preview={};leaveRoomSpace()}renderPanel()},
  rslot(d){roomSlot=d.k;renderPanel()},
  pv(d){if(preview[roomSlot]===d.k)delete preview[roomSlot];else preview[roomSlot]=d.k;renderPanel()},
  pvone(d){delete preview[d.k];renderPanel()},
@@ -10327,7 +10456,7 @@ function voteOrgHTML(){const open=voteOpen(),staff=isAdmin&&mode==='online',show
 /* 귀환 결정: once 선체 외벽 is repaired, the 조직도 tab turns into the crew's last choice — go back to 테라, or stay here.
    Left (6): the two choices, kept on each player's own record (P.home) and changeable any time; only the 운영자 sees the counts.
    Right (4): a discussion chat in its own collection (hchat). The 운영자 can preview it before 선체 외벽 is done. */
-let HOME_OPEN=false;const homeOn=()=>mode==='online'&&HOME_OPEN;   // the 운영자 opens it (org/home.open)
+let HOME_OPEN=false;const homeOn=()=>mode==='online'&&(HOME_OPEN||!!(P&&(P.stSeen||{}).warp&&typeof STORY_ON!=='undefined'&&STORY_ON.warp));   // the 운영자 opens it (org/home.open)
 const homeShow=()=>homeOn()||(mode==='online'&&isStaff()&&homePrev);
 let homePrev=false,HCHAT=[],hchatSub=null,hchatErr=false;
 const HOME_OPT=[['go','돌아간다','','우리가 떠나온 테라로 돌아갑니다.'],['stay','남는다','','이 행성에 남아, 지금까지 일군 삶을 이어 갑니다.']];
@@ -10360,7 +10489,8 @@ function homeHTML(){hchatListen();const mine=(P.home&&P.home.c)||'',all=orgAll()
   <div class="card homepick"><span class="lbl">Decision · 귀환 결정</span>
    <p class="homeq">우리는 선택해야 합니다.<b>테라로 돌아갈 것인가, 이곳에 남을 것인가.</b></p>
    <div class="homeopts">${HOME_OPT.map(([k,nm,sub,d])=>`<button class="homeopt ${k}${mine===k?' pick':''}" type="button" data-act="homepick" data-k="${k}" aria-pressed="${mine===k}">${mine===k?'<span class="homebadge">✓ 내 선택</span>':''}<span class="hoic">${HOME_SVG[k]}</span><b>${nm}</b><span class="hod">${d}</span>${staff?`<span class="hocnt">${cnt[k]}명</span>`:''}</button>`).join('')}</div>
-   <div class="homestat"><span>${mine?`내 선택 <b>${homeName(mine)}</b> · 언제든 바꿀 수 있습니다`:'아직 선택하지 않았습니다'}</span><span>지금까지 <b>${n}</b>명 선택</span></div></div>
+   <div class="homestat"><span>${mine?`내 선택 <b>${homeName(mine)}</b> · 언제든 바꿀 수 있습니다`:'아직 선택하지 않았습니다'}</span><span>지금까지 <b>${n}</b>명 선택</span></div>
+   <p class="homenote">이 선택은 우리 이야기가 갈라지는 분기점이 됩니다.<br>정해진 답은 없습니다. 어느 쪽을 고르든, 여러분의 선택은 존중받습니다.<br>서두르지 않아도 괜찮으니, 마음이 가는 쪽을 골라 주세요.</p></div>
   <div class="card homechat"><span class="lbl">Discussion · 의견 나누기</span>${boardHTML('h')}</div></div>`}
 Object.assign(A,{
   homepick(d){if(!homeShow()||!HOME_OPT.some(o=>o[0]===d.k))return;if(P.home&&P.home.c===d.k)return;P.home={c:d.k,at:Date.now()};save();renderPanel();toast(`'${homeName(d.k)}'를 선택했습니다.`)},
@@ -10605,6 +10735,7 @@ function socSubscribe(){
   padListen();setTimeout(nboxBackfill,4000);
   db.collection('guest').where('to','==',uid).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
   db.doc('org/bunker').onSnapshot(sn=>{BKF=Object.assign({},(sn.exists&&sn.data().found)||{});const wasO=BK_OPEN;BK_OPEN=!!(sn.exists&&sn.data().open);if(wasO!==BK_OPEN&&tab==='scan'&&!P.bkMv){try{renderPanel()}catch(e){}return}if(tab==='scan'&&!P.bkMv)try{if(scView==='log')clPaint();else renderPanel()}catch(e){}},()=>{});
+  db.doc('org/home').onSnapshot(sn=>{const was=HOME_OPEN;HOME_OPEN=!!(sn.exists&&sn.data().open);if(was!==HOME_OPEN&&typeof renderPanel==='function')try{renderPanel()}catch(e){}},()=>{});
   db.doc('org/roles').onSnapshot(sn=>{ROLES=sn.exists?Object.assign({},sn.data()):{};if(socOpen)renderPanel();setTimeout(()=>{try{rolePopCheck()}catch(e){}},800)},()=>{});
 db.doc('org/ship').onSnapshot(sn=>{SHIPOPEN=Object.assign({},(sn.exists&&sn.data().open)||{});if(tab==='ship')renderPanel()},()=>{});
   /* 귓속말 is no longer in 교류: nothing is read for it */if(false)db.collection('dm').where('users','array-contains',uid).orderBy('at','desc').limit(100).onSnapshot(sn=>{DMS=sn.docs.map(d=>Object.assign({id:d.id},d.data()));
