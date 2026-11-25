@@ -3950,6 +3950,11 @@ async function connect(){
     if(!r.adm&&r.by&&r.by!==uid&&r.at!==P.rescueSeen&&(!P.faintAt||r.at>=P.faintAt)){P.rescueSeen=r.at;P.rescuedAt=r.at;addAff(r.by,AFF.rescue,'구조');P.rnoti=[{by:r.by,nick:r.nick||'선원',at:r.at},...(P.rnoti||[])].slice(0,20);if(isFaint())wake(r.nick||'누군가',r.med);else{log(`${r.nick||'누군가'} 님이 구조해 줬다.`,'good');commit()}bellRefresh()}
     else if(r.adm&&isFaint()&&r.at>=(P.faintAt||0))wake(r.nick||'누군가',r.med);
     db.doc('rescues/'+uid).delete().catch(()=>{})},()=>{});
+  // 운영자 회수: an adjustment the 운영자 sends (adjust/<id>, to = me) — taken out of my own record by my own client, so a save of mine cannot undo it
+  db.collection('adjust').where('to','==',uid).onSnapshot(sn=>{sn.docs.forEach(d=>{const a=d.data();if(!a||(P.adj||[]).includes(d.id))return;P.adj=[...(P.adj||[]),d.id].slice(-50);
+    let xp=+a.xp||0,cr=+a.cr||0;(a.items||[]).forEach(x=>{const n=Math.min(+x.n||0,P.inv[x.id]||0);if(n>0)take(x.id,n)});P.cr=Math.max(0,(+P.cr||0)-cr);
+    if(xp>0){P.xp=(+P.xp||0)-xp;while(P.xp<0&&P.lvl>1){P.lvl--;P.xp+=need(P.lvl)}if(P.xp<0)P.xp=0;P.hp=Math.min(P.hp,maxHp());P.en=Math.min(P.en,maxEn())}
+    log(`운영자 회수: ${a.msg||'잘못 지급된 보상'}`,'bad');commit();flushNow();db.collection('adjust').doc(d.id).delete().catch(()=>{});renderAll()})},()=>{});
   db.collection('gifts').where('to','==',uid).onSnapshot(receiveGifts,()=>{});
   db.collection('gifts').where('from','==',uid).onSnapshot(sn=>{MYTR=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(g=>g.kind==='trade').sort((a,b)=>(+b.at||0)-(+a.at||0));MYOUT=new Set(sn.docs.filter(d=>!/^trade/.test(d.data().kind||'')).map(d=>d.id))/* letters AND gifts still waiting in their inbox: once the other side presses 받기/확인 the doc is gone and mine turns 읽음 */;sentSync();if(mailView)renderPanel()},()=>{});
   farmLoad();
@@ -4444,7 +4449,7 @@ const raidRef=id=>db.doc('parties/'+id);
 // 운영자 · a crew member stuck in an expedition (a run that will not end or pay out): mark them out of every run they are still in, so they are back at camp
 function raidFreeHTML(){if(mode!=='online')return'';const L=Object.entries(PLAYERS).filter(([,p])=>p&&p.nick).sort((a,b)=>String(a[1].nick).localeCompare(String(b[1].nick)));
   return`<div class="info-sec" data-adm="crew"><span class="lbl">Expedition · 원정에서 빠져나오지 못한 선원 꺼내기</span><span class="hint">원정이 끝나지 않거나 베이스캠프로 돌아가지 못하는 선원을 그 원정에서 빼냅니다. 그 원정의 보상은 받지 못하니, 필요하면 운영자 지급으로 따로 챙겨 주십시오.</span>
-   <div class="row" style="gap:6px;margin-top:6px"><select class="sel" id="raidFreeSel">${L.map(([id,p])=>`<option value="${esc(id)}">${esc(p.nick)}</option>`).join('')}</select><button class="btn sm gold" type="button" data-act="raidfree">꺼내기</button><button class="btn sm ghost" type="button" data-act="raidmailback">잘못 보낸 원정 보상 우편 회수</button></div>${raidMailNote?`<p class="hint" style="margin-top:6px">${esc(raidMailNote)}</p>`:''}</div>`}
+   <div class="row" style="gap:6px;margin-top:6px"><select class="sel" id="raidFreeSel">${L.map(([id,p])=>`<option value="${esc(id)}">${esc(p.nick)}</option>`).join('')}</select><button class="btn sm gold" type="button" data-act="raidfree">꺼내기</button><button class="btn sm ghost" type="button" data-act="raidmailback">잘못 보낸 원정 보상 우편 회수</button><button class="btn sm ghost" type="button" data-act="raidclaw">이미 받은 원정 보상 가방에서 회수</button></div>${raidMailNote?`<p class="hint" style="margin-top:6px">${esc(raidMailNote)}</p>`:''}</div>`}
 let raidMailNote='';
 queueMicrotask(()=>Object.assign(A,{async raidfree(){if(!isAdmin||mode!=='online')return;const sel=document.getElementById('raidFreeSel'),who=sel&&sel.value;if(!who)return;
   try{// only runs that are really still open for them: not finished, not already paid out to them (their own raidDone list), not claimed
@@ -4453,6 +4458,17 @@ queueMicrotask(()=>Object.assign(A,{async raidfree(){if(!isAdmin||mode!=='online
     const open=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!done.has(v.id)&&!(v.claimed||{})[who]&&!(v.left||{})[who]).sort((x,y)=>(+y.at||0)-(+x.at||0));
     for(const v of open)await raidTx(v.id,r=>{if(!r)return null;r.left=Object.assign({},r.left,{[who]:1});r.claimed=Object.assign({},r.claimed,{[who]:Date.now()});const still=(r.ids||[]).filter(u=>!(r.left||{})[u]);if(!still.length){r.state='done';r.phase='end'}r.seq=(+r.seq||0)+1;return r});
     toast(open.length?`${(PLAYERS[who]||{}).nick||'선원'} 님을 원정에서 꺼냈습니다. 그 선원에게 새로고침을 부탁해 주십시오.`:'그 선원이 들어가 있는 원정이 없습니다.')}catch(e){toast('꺼내지 못했습니다. ('+(e&&(e.code||e.message)||'')+')')}},
+
+ // take back from their bag what the first 꺼내기 mailed by mistake and they already opened (each such letter is marked so it is taken back once)
+ async raidclaw(){if(!isAdmin||mode!=='online')return;const sel=document.getElementById('raidFreeSel'),who=sel&&sel.value;if(!who)return;
+  try{const pd=await db.doc('players/'+who).get(),pv=pd&&pd.exists?pd.data():(PLAYERS[who]||{}),got=new Set(pv.gr||[]);
+    const sn=await db.collection('grants').where('to','==',who).get();let xp=0,cr=0,n=0;const its={},ids=[];
+    sn.docs.forEach(d=>{const g=d.data();if(!String(g.msg||'').startsWith('원정에서 받지 못한 보상')||!got.has(d.id)||g.clawed)return;n++;ids.push(d.id);xp+=+g.xp||0;cr+=+g.cr||0;(g.items||[]).forEach(x=>{its[x.id]=(its[x.id]||0)+(+x.n||0)})});
+    if(!n){raidMailNote=`${(PLAYERS[who]||{}).nick||'선원'}: 가방에서 회수할 원정 보상 우편이 없습니다.`;renderAdminAll();return}
+    await db.collection('adjust').add({to:who,xp,cr,items:Object.entries(its).map(([id,k])=>({id,n:k})),msg:`잘못 지급된 원정 보상 ${n}통 회수`,at:Date.now(),by:P.nick});
+    for(const id of ids)await db.collection('grants').doc(id).update({clawed:Date.now()});
+    const it=Object.entries(its).map(([i,k])=>(ITEMS[i]?ITEMS[i].n:i)+' '+k).join(', ');
+    raidMailNote=`${(PLAYERS[who]||{}).nick||'선원'}: 받은 우편 ${n}통 회수 요청 — 경험치 ${xp.toLocaleString()}, 크레딧 ${cr.toLocaleString()}${it?', '+it:''}. 그 선원이 접속하면 가방에서 빠집니다(가진 만큼만).`;renderAdminAll()}catch(e){toast('회수하지 못했습니다. ('+(e&&(e.code||e.message)||'')+')')}},
  // undo for the first version of 꺼내기, which mailed the share of old, already-paid runs: take back every such letter not yet opened
  async raidmailback(){if(!isAdmin||mode!=='online')return;const sel=document.getElementById('raidFreeSel'),who=sel&&sel.value;if(!who)return;
   try{const pd=await db.doc('players/'+who).get(),pv=pd&&pd.exists?pd.data():(PLAYERS[who]||{}),got=new Set(pv.gr||[]);

@@ -186,6 +186,12 @@ service cloud.firestore {
     }
 
     // 기절 구조 신호: 누구나 보내고, 당사자만 읽고 지움.
+    // 운영자 회수: 운영진이 보내고, 받는 선원의 화면이 자기 기록에서 직접 빼고 지워요.
+    match /adjust/{id} {
+      allow read: if member() && (resource.data.to == me() || staff());
+      allow create: if staff();
+      allow delete: if member() && (resource.data.to == me() || staff());
+    }
     match /rescues/{uid} {
       allow read, delete: if member() && me() == uid;
       allow create, update: if member();
