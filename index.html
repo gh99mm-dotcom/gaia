@@ -5742,7 +5742,7 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
 function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">${endFirst()?'First Contact · 오르비스 첫 등장':'Final Raid · 최종 레이드'}</span><b>${esc(END_NAME)} <small>Lv.???</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
-   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button>${endUlt()&&!endFirst()?`<button class="btn gold endult" type="button" data-act="endult" id="endUltB" title="${endUlt()[1]}">★ ${endUlt()[0]}</button>`:''}</div><span class="hint">스킬 · ${endSkill()[1]}${endUlt()&&!endFirst()?` · 비기 · ${endUlt()[1]}`:''}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
+   <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button>${endUlt()&&!endFirst()&&riteHas(1)?`<button class="btn gold endult" type="button" data-act="endult" id="endUltB" title="${endUlt()[1]}">★ ${endUlt()[0]}</button>`:''}</div><span class="hint">스킬 · ${endSkill()[1]}${endUlt()&&!endFirst()&&riteHas(1)?` · 비기 · ${endUlt()[1]}`:''}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
    <div class="endme" id="endMe"></div><div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div>
    <form class="endchat" id="endChatF" autocomplete="off"><input id="endChatIn" class="sel" maxlength="${ECH_MAX}" placeholder="함께 싸우는 선원에게 외치기 (Enter)" aria-label="레이드 채팅"><button class="btn sm" type="submit">보내기</button></form></div>`}
 function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
@@ -5791,11 +5791,11 @@ setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;
     if(i===2||i===3){try{sfxFanfare(i===3)}catch(e){}}
     if(i===3&&!riteHalfBusy){riteHalfBusy=true;bossTx(endRef(),c=>{if(!c||c.gen!==g||c.done||c.halved)return null;c.hp=Math.min(+c.hp||0,Math.round((+c.max||0)/2));c.halved=1;return c}).catch(()=>{}).finally(()=>{riteHalfBusy=false})}
     if(!late)riteBanner(r);log(`${r.t} ${r.s}`,i?'good':'bad')}
-  P.endRite={g,k};renderPilot();renderAll()},500);
+  P.endRite={g,k};if(cur<1&&k>=1){const h=document.getElementById('endHud');if(h)h.remove();try{endRender()}catch(e){}}renderPilot();renderAll()},500);
 // 의무원들의 기원: +20 HP every second while this raid lasts (kept on my screen; it is saved with my next save as usual)
 setInterval(()=>{if(!P||!riteHas(1)||isFaint())return;const mh=maxHp();if(P.hp>=mh)return;P.hp=Math.min(mh,P.hp+20);renderPilot();try{endPaint()}catch(e){}},1000);
 const EA={
- async endult(){if(!endOn()||endFirst()||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
+ async endult(){if(!endOn()||endFirst()||!riteHas(1)||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
   if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);echSay(`★ ${u[0]}!`)}return}
   const tick=Math.floor((sNow()-END.startAt)/END_AOE)+1;
   if(j==='nav'){try{await endRef().update({shield:{k:END.gen+':'+tick,u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}! 다음 시선은 내가 막는다!`);return}
