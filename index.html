@@ -1477,6 +1477,7 @@ body:has(#endHud) .toast{bottom:290px!important;z-index:48}
 @keyframes echIn{from{opacity:0;transform:translateY(6px) scale(.9)}}@keyframes echOut{to{opacity:0;transform:translateY(-8px)}}
 body:has(#endHud){padding-bottom:200px}
 .endwarn{font-size:12px;color:var(--mute)}.endwarn.on{color:#ff6a6a;font-weight:700;animation:wafblink .5s steps(1) infinite}
+.riteban{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);z-index:260;max-width:min(560px,92vw);padding:18px 24px;background:rgba(6,8,14,.92);border:2px solid var(--gold);box-shadow:0 0 30px rgba(191,174,128,.35);text-align:center;display:flex;flex-direction:column;gap:8px;pointer-events:none;animation:riteIn .5s ease-out}.riteban b{font-family:var(--f-display);font-size:22px;color:var(--gold);font-weight:400}.riteban span{font-size:13px;line-height:1.7;color:#dfe5ee}.riteban.out{opacity:0;transition:opacity .8s}@keyframes riteIn{from{opacity:0;transform:translate(-50%,-40%)}}
 .endflash{position:fixed;inset:0;z-index:48;pointer-events:none;background:rgba(232,72,72,.35);animation:endfl .7s steps(4) forwards}
 @keyframes endfl{to{opacity:0}}.endhud .endch b{font-size:17px}
 .endch{display:flex;flex-direction:column;gap:3px}.endch b{font-family:var(--f-display);font-weight:400;font-size:20px;color:#e8b4b0}
@@ -3342,7 +3343,7 @@ const GF=k=>{let v=0;for(const id of accOf()){const f=accById(id);if(f&&f.fx[k])
 const petX=k=>1+PF(k)/100;
 // 항해사 (tank): +20% max HP and +30% DEF, never less than the old flat +30 HP / +6 DEF
 const NAV_HP=.2,NAV_DEF=.3,navAdd=(base,pct,min)=>P.job==='nav'?Math.max(min,Math.round(base*pct)):0;
-const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+navAdd(b,NAV_HP,30))*petX('hp')*(1+WA('hpP')/100))}, maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')*(1+((SUITS[P.suit||0]||{}).en||0))), atk=()=>Math.round((6+P.lvl*2+wAtk(P.wlv)+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')*(1+(BUFF('atkP')+WA('atkP'))/100)), def=()=>{const b=Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+GF('def')+BUFF('def');return Math.floor((b+navAdd(b,NAV_DEF,6))*petX('def')*(1+(BUFF('defP')+WA('defP'))/100))},
+const maxHp=()=>{const b=60+P.lvl*12+AS('vit')*8+GF('hp');return Math.round((b+navAdd(b,NAV_HP,30))*petX('hp')*(1+WA('hpP')/100))}, maxEn=()=>Math.round((30+P.lvl*2+AS('end')*2+GF('en'))*petX('en')*(1+((SUITS[P.suit||0]||{}).en||0))), atk=()=>Math.round((6+P.lvl*2+wAtk(P.wlv)+AS('str')*2+GF('atk')+BUFF('atk'))*(P.job==='mech'?1.15:1)*petX('atk')*(1+(BUFF('atkP')+WA('atkP')+(typeof riteHas==='function'&&riteHas(3)?200:0))/100)), def=()=>{const b=Math.floor(P.lvl*1.5)+AS('end')+P.wlv+(SUITS[P.suit||0]||SUITS[0]).def+GF('def')+BUFF('def');return Math.floor((b+navAdd(b,NAV_DEF,6))*petX('def')*(1+(BUFF('defP')+WA('defP')+(typeof riteHas==='function'&&riteHas(2)?200:0))/100))},
 // critical chance in %: agility, gear and pet
 critPct=()=>AS('agi')+GF('crit')+PF('crit')+BUFF('crit')+WA('crit'),critMul=()=>1.5+(BUFF('critD')+WA('critD'))/100, xpBase=l=>Math.round(290+8*l-250*Math.exp(-l/2.5));
 function regen(){const now=Date.now();const st=Math.floor((now-P.t)/TICK);if(st>0){P.en=Math.min(maxEn(),P.en+st);if(!raidLocked())P.hp=Math.min(maxHp(),P.hp+st*3);P.t+=st*TICK}if(P.en>=maxEn()&&P.hp>=maxHp())P.t=now}
@@ -5761,6 +5762,8 @@ let endFlashT=0;
 setInterval(()=>{if(!endOn()||!P||!P.joined)return;const n=Math.floor((sNow()-END.startAt)/END_AOE),k=END.gen+':'+n;
   // no gaze in the first 20 s after 오르비스 appears, and none the moment I first see this 오르비스 (a mark from an earlier one doesn't count)
   if(n<1||!P.endHitK||String(P.endHitK).split(':')[0]!==String(END.gen)){P.endHitK=k;return}if(P.endHitK===k)return;P.endHitK=k;
+  // no gaze while the 90-second rite plays out (everyone is down, then the blessings come one by one)
+  if(!endFirst()){const dt=sNow()-END.startAt;if(dt>=RITE_AT-1500&&dt<RITE_AT+RITE[RITE.length-1].at+1500)return}
   if(isFaint())return;
   {const sh=END.shield;if(sh&&sh.k===k&&sh.u!==uid){toast(`${sh.n} 님이 수호의 방패로 시선을 대신 막았습니다!`);log(`${sh.n} 님이 수호의 방패로 오르비스의 시선을 대신 맞았다.`,'good');return}}
   endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
@@ -5768,6 +5771,29 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const n=Math.floor((sNow()-EN
   if(dodge){toast(`${END_NAME}의 시선을 피했다!`);log(`${END_NAME}의 시선을 피했다.`,'good');return}
   const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=defCut(raw,def());heal(-hit,0);sfxStatic&&sfxStatic();
   toast(`${END_NAME}의 시선! 선원 모두가 체력 -${hit}`);log(`${END_NAME}의 시선이 베이스캠프를 훑었다. 체력 -${hit}`,'bad');checkFaint();commit()},400);
+/* 최종 레이드 90초: 오르비스가 모든 눈을 떠 베이스캠프 전원이 쓰러지고, 이어서 세 직업의 기원이 차례로 모두에게 닿는다.
+   Every screen runs the same timeline from the raid's start on the server clock, so nobody has to write anything for it,
+   except the one 오르비스 HP cut (a transaction, once per raid). Blessings last until this raid ends. */
+const RITE_AT=90e3,RITE=[
+ {at:0,t:'오르비스의 모든 눈이 뜨였다.',s:'짓누르는 시선에 베이스캠프의 모두가 쓰러진다…'},
+ {at:6e3,t:'의무원들의 기원이 모두에게 닿습니다.',s:'모든 사람들이 기절에서 깨어납니다. HP가 초당 20씩 올라갑니다.'},
+ {at:12e3,t:'항해사들의 기원이 모두에게 닿습니다.',s:'방어력이 대폭 상승합니다.(방어력 +200%) 굳건하게 의지를 다잡습니다.(HP가 1이 되어도 기절하지 않음)'},
+ {at:18e3,t:'기관사들의 기원이 모두에게 닿습니다.',s:'공격력이 대폭 상승합니다.(공격력 +200%) 오르비스에게 치명적인 일격을 가합니다.'}];
+const riteStep=()=>{if(!endOn()||endFirst()||!END.startAt)return -1;const dt=sNow()-END.startAt-RITE_AT;if(dt<0)return -1;let k=-1;RITE.forEach((r,i)=>{if(dt>=r.at)k=i});return k};
+// what I have from the rite in this raid: 1 woken + regen, 2 +200% defence and no fainting, 3 +200% attack
+const riteHas=n=>!!(P&&P.endRite&&END&&P.endRite.g===END.gen&&P.endRite.k>=n&&endOn());
+function riteBanner(r){let el=document.getElementById('riteBan');if(el)el.remove();el=document.createElement('div');el.id='riteBan';el.className='riteban';el.innerHTML=`<b>${esc(r.t)}</b><span>${esc(r.s)}</span>`;document.body.appendChild(el);setTimeout(()=>{if(el.isConnected)el.classList.add('out')},5200);setTimeout(()=>el.remove(),6000)}
+let riteHalfBusy=false;
+setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;const g=END.gen,cur=P.endRite&&P.endRite.g===g?P.endRite.k:-1;if(cur>=k)return;
+  for(let i=cur+1;i<=k;i++){const r=RITE[i],late=sNow()-END.startAt-RITE_AT-r.at>8e3;
+    if(i===0){if(!late){P.hp=0;P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};try{sfxStatic()}catch(e){}const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700)}}
+    if(i===1){if(isFaint()||P.hp<=0){P.faint=0;P.faintAt=0;P.hp=Math.max(P.hp,Math.round(maxHp()*.3))}try{sfxFanfare(false)}catch(e){}}
+    if(i===2||i===3){try{sfxFanfare(i===3)}catch(e){}}
+    if(i===3&&!riteHalfBusy){riteHalfBusy=true;bossTx(endRef(),c=>{if(!c||c.gen!==g||c.done||c.halved)return null;c.hp=Math.min(+c.hp||0,Math.round((+c.max||0)/2));c.halved=1;return c}).catch(()=>{}).finally(()=>{riteHalfBusy=false})}
+    if(!late)riteBanner(r);log(`${r.t} ${r.s}`,i?'good':'bad')}
+  P.endRite={g,k};renderPilot();renderAll()},500);
+// 의무원들의 기원: +20 HP every second while this raid lasts (kept on my screen; it is saved with my next save as usual)
+setInterval(()=>{if(!P||!riteHas(1)||isFaint())return;const mh=maxHp();if(P.hp>=mh)return;P.hp=Math.min(mh,P.hp+20);renderPilot();try{endPaint()}catch(e){}},1000);
 const EA={
  async endult(){if(!endOn()||endFirst()||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
   if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);echSay(`★ ${u[0]}!`)}return}
@@ -9402,7 +9428,7 @@ document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(i
 /* ───────── actions ───────── */
 const FAINT_MS=10*60e3;
 const isFaint=()=>P.faint&&Date.now()<P.faint;
-function checkFaint(){if(isFaint())return;if(P.hp<=0||P.en<=0){const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했습니다! 선원 목록에서 구조할 수 있습니다.`)}}
+function checkFaint(){if(isFaint())return;if(P.hp<=0&&typeof riteHas==='function'&&riteHas(2)){P.hp=1}if(P.hp<=0||P.en<=0){const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했습니다! 선원 목록에서 구조할 수 있습니다.`)}}
 // rescue cooldown: once someone is rescued they can't be rescued again for 30 minutes
 const RESCUE_CD=30*60e3,rescueCd=(p,id)=>Math.max(0,Math.max(+(p&&p.rescuedAt)||0,+(id&&RESCUED[id]&&RESCUED[id].at)||0)+RESCUE_CD-Date.now());
 // someone else is down until their faint runs out, unless a rescue for this very faint is already on record
