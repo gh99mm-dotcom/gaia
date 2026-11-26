@@ -5804,8 +5804,8 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const n=Math.floor((sNow()-EN
 const RITE_AT=90e3,RITE=[
  {at:0,t:'오르비스의 모든 눈이 뜨였다.',s:'짓누르는 시선에 베이스캠프의 모두가 쓰러진다…'},
  {at:6e3,t:'의무원들의 기원이 모두에게 닿습니다.',s:'모든 사람들이 기절에서 깨어납니다. HP가 초당 20씩 올라갑니다.'},
- {at:12e3,t:'항해사들의 기원이 모두에게 닿습니다.',s:'방어력이 대폭 상승합니다.(방어력 +200%) 굳건하게 의지를 다잡습니다.(HP가 1이 되어도 기절하지 않음)'},
- {at:18e3,t:'기관사들의 기원이 모두에게 닿습니다.',s:'공격력이 대폭 상승합니다.(공격력 +200%) 오르비스에게 치명적인 일격을 가합니다.'}];
+ {at:12e3,t:'항해사들의 기원이 모두에게 닿습니다.',s:'방어력이 대폭 상승합니다. 굳건하게 의지를 다잡습니다.'},
+ {at:18e3,t:'기관사들의 기원이 모두에게 닿습니다.',s:'공격력이 대폭 상승합니다. 오르비스에게 치명적인 일격을 가합니다.'}];
 const riteStep=()=>{if(!endOn()||endFirst()||!END.startAt)return -1;const dt=sNow()-END.startAt-RITE_AT;if(dt<0)return -1;let k=-1;RITE.forEach((r,i)=>{if(dt>=r.at)k=i});return k};
 // what I have from the rite in this raid: 1 woken + regen, 2 +200% defence and no fainting, 3 +200% attack
 const riteHas=n=>!!(P&&P.endRite&&END&&P.endRite.g===END.gen&&P.endRite.k>=n&&endOn());
