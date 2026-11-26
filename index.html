@@ -5617,6 +5617,8 @@ function liveSub(){if(liveSubbed)return;const L=liveCh();if(!L)return;liveSubbed
   L.on('endhit',(d,by)=>{const u=(d&&d.u)||by;if(!u||u===uid||!END||+d.g!==+END.gen||!endOn())return;const ds=(Array.isArray(d.ds)?d.ds:[]).map(Number).filter(x=>x>0&&x<1e9).slice(0,6);if(!ds.length)return;
     liveO[u]=(liveO[u]||0)+ds.reduce((a,b)=>a+b,0);liveAt[u]=Date.now();ds.forEach((x,k)=>setTimeout(()=>endFloat(x,false,!!(d.cs||[])[k]),k*160));endPaint()})}
 const END_FLUSH_LIVE=10000;
+// with many crew on the one raid record, each screen writes less often (30 crew → every 45 s, ≈0.7 writes/s in all); others still see every hit live
+const endFlushMs=()=>Math.max(END_FLUSH_LIVE,Math.min(60e3,Object.keys((END&&END.dmg)||{}).length*1500));
 const endShow=()=>Math.max(0,endHpS()-endPend-endUnseen-liveOSum());
 // 직업 비기 (once a minute): 항해사 shields everyone from the next gaze and takes it alone, 의무원 heals the whole crew (waking the fallen), 기관사 hits far harder
 const END_ULTCD=60000;let endUltAt=0,endHealSeen='';
@@ -5628,7 +5630,7 @@ function endSub(){liveSub();endRef().onSnapshot(sn=>{const was=END;END=sn.exists
     if(rest>0)endFloat(rest,false)}}
   else{endUnseen=0;endPend=0;liveO={}}
   endPrevHp=END?endHpS():null;
-  if(END&&END.on&&!END.done&&endHpS()<=0)endFinish();
+  if(END&&END.on&&!END.done&&endHpS()<=0)setTimeout(endFinish,Math.random()*2500);
   // 의무원's 생명의 파동 reaches everyone in the fight once
   if(END&&END.heal&&END.heal.id!==endHealSeen&&sNow()-(+END.heal.at||0)<15e3&&P&&P.joined){endHealSeen=END.heal.id;const by=END.heal.u===uid?'':END.heal.n;
     if(isFaint())wake(by||P.nick,true);P.hp=Math.min(maxHp(),Math.max(P.hp,0)+Math.round(maxHp()*.5));toast(`${by?by+' 님의 ':''}생명의 파동! 체력이 회복됐습니다.`);commit()}
@@ -5763,7 +5765,7 @@ function endHit(mul,times){if(!endOn()||isFaint()||endShow()<=0)return false;let
   for(let k=0;k<(times||1);k++){const c=Math.random()*100<critPct();let d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(c?critMul():1)*mul));d=Math.min(d,endShow()-(endFirst()?1:0));if(d<=0)break;endPend+=d;tot+=d;hs.push(d);cs.push(c?1:0);setTimeout(()=>{endFloat(d,true,c)},k*160)}
   const L=liveCh();if(hs.length&&L&&END)L.send('endhit',{g:END.gen,u:uid,n:P.nick,ds:hs,cs});
   // with a live channel the record is written every 10 s; the moment the boss would fall it is written at once
-  if(endShow()<=(endFirst()?1:0)||!L){clearTimeout(endFlushT);endFlushT=setTimeout(()=>{endFlushT=0;endFlush()},L?0:600)}else if(!endFlushT)endFlushT=setTimeout(()=>{endFlushT=0;endFlush()},END_FLUSH_LIVE);
+  if(endShow()<=(endFirst()?1:0)||!L){clearTimeout(endFlushT);endFlushT=setTimeout(()=>{endFlushT=0;endFlush()},L?0:600)}else if(!endFlushT)endFlushT=setTimeout(()=>{endFlushT=0;endFlush()},endFlushMs());
   endPaint();return tot>0}
 addEventListener('pagehide',()=>{if(endPend>0)endFlush()});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&endPend>0)endFlush()});
 async function endFlush(){if(endBusy||endPend<=0)return;const d=endPend;endPend=0;endUnseen+=d;endBusy=true;
@@ -5838,7 +5840,7 @@ setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;
     if(i===0){if(!late){P.hp=0;P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700)}}
     if(i===1){if(isFaint()||P.hp<=0){P.faint=0;P.faintAt=0;P.hp=Math.max(P.hp,Math.round(maxHp()*.3))}}
     if(i===2||i===3){}
-    if(i===3&&!riteHalfBusy){riteHalfBusy=true;bossTx(endRef(),c=>{if(!c||c.gen!==g||c.done||c.halved)return null;c.hp=Math.min(+c.hp||0,Math.round((+c.max||0)/2));c.halved=1;return c}).catch(()=>{}).finally(()=>{riteHalfBusy=false})}
+    if(i===3&&!riteHalfBusy){riteHalfBusy=true;setTimeout(()=>{if(!END||END.gen!==g||END.halved||END.done){riteHalfBusy=false;return}bossTx(endRef(),c=>{if(!c||c.gen!==g||c.done||c.halved)return null;c.hp=Math.min(+c.hp||0,Math.round((+c.max||0)/2));c.halved=1;return c}).catch(()=>{}).finally(()=>{riteHalfBusy=false})},Math.random()*3000)}
     if(!late)riteBanner(r);log(`${r.t} ${r.s}`,i?'good':'bad')}
   P.endRite={g,k};if(cur<1&&k>=1){const h=document.getElementById('endHud');if(h)h.remove();try{endRender()}catch(e){}}renderPilot();renderAll()},500);
 // 의무원들의 기원: +20 HP every second while this raid lasts (kept on my screen; it is saved with my next save as usual)
