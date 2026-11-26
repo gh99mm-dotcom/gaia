@@ -1512,6 +1512,17 @@ body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
 .endmeta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute)}.endmeta b{color:var(--gold)}.endmeta .me{color:var(--cyan)}
 /* the victory card keeps its own dark look in every theme so the gold reads clearly */
 #endWin .endwin{max-width:440px;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center;background:#0d0f1c;color:#eef2fa;border-color:#e0b860;box-shadow:0 0 0 2px #000,0 0 40px rgba(224,184,96,.25)}#endWin .endwin h2{margin:0;font-size:24px;color:#ffd65f;text-shadow:0 2px 0 #000}#endWin .endwin .lbl{color:#e0b860}#endWin .endwin .hint{color:#c9d1e2;font-size:13px}
+#credFx{position:fixed;inset:0;z-index:260;background:#020308;overflow:hidden;color:#eef2fa;animation:rfIn 1.2s ease-out both}#credFx.out{animation:rfOut .9s ease-in forwards}
+#credFx .credstars{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 12% 20%,#fff8,transparent),radial-gradient(1px 1px at 68% 35%,#fff6,transparent),radial-gradient(1px 1px at 40% 70%,#fff7,transparent),radial-gradient(1px 1px at 85% 82%,#fff5,transparent),radial-gradient(1px 1px at 25% 90%,#fff6,transparent),radial-gradient(1px 1px at 55% 10%,#fff7,transparent);background-size:240px 240px}
+#credFx .credroll{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:center;gap:56px;padding:0 max(16px,env(safe-area-inset-left,0px));will-change:transform}
+#credFx .credhead{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}#credFx .credhead b{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,7vw,44px);letter-spacing:.12em;color:#ffd65f;text-shadow:0 3px 0 #000}#credFx .credhead span:last-child{font-size:15px;color:#c9d1e2;letter-spacing:.2em}
+#credFx .lbl{color:#e0b860;letter-spacing:.2em}
+#credFx .credgrid{display:grid;grid-template-columns:repeat(3,minmax(0,150px));gap:34px 22px;justify-content:center;width:100%}
+@media (max-width:520px){#credFx .credgrid{grid-template-columns:repeat(2,minmax(0,150px))}}
+#credFx .credp{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}#credFx .credp canvas{width:96px;height:96px;image-rendering:pixelated}#credFx .credp b{font-size:14px;font-weight:700;color:#eef2fa;text-align:center;overflow-wrap:anywhere}
+#credFx .credbot{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:40px}#credFx .credbotimg canvas{width:120px;height:auto;image-rendering:pixelated}#credFx .credbot b{font-size:22px;color:#ffe08a;text-shadow:0 2px 0 #000}
+#credFx .credx{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));font:inherit;font-size:12px;padding:6px 12px;background:rgba(255,255,255,.08);color:#c9d1e2;border:1px solid rgba(255,255,255,.2);cursor:pointer}
+@media (prefers-reduced-motion:reduce){#credFx .credroll{transition:none!important}}
 .endttl{display:flex;flex-direction:column;gap:4px;padding:12px 20px;border:2px solid #e0b860;background:#1c1808}.endttl b{font-size:19px;color:#ffe08a;text-shadow:0 2px 0 #000}#endWin .endttl .hint{font-size:12px}
 .endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:5px 10px;background:#181b2c;color:#e8ecf6}.endrank li.me{color:#7fe0ff;background:#16263a}.endrank em{font-style:normal;color:#9aa3b8}
 @media (max-width:600px){.endbtns{width:100%}.endbtns .btn{flex:1}}
@@ -5890,7 +5901,7 @@ const EA={
  async memreset(){if(!isAdmin||mode!=='online')return;try{await memRef().delete();toast('기억모듈 발견 기록을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async endreset(){if(!isAdmin||mode!=='online')return;try{await endRef().delete();toast('최종 레이드를 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
 };
-function endAdminHTML(){if(mode!=='online')return'';return endAdminHTML0()+memAdminHTML()+rankAdminHTML()}
+function endAdminHTML(){if(mode!=='online')return'';return endAdminHTML0()+credAdminHTML()+memAdminHTML()+rankAdminHTML()}
 function rankAdminHTML(){const n=Object.keys(shipTotals().u||{}).length;return`<div class="info-sec" data-adm="boss"><span class="lbl">Ranking · 랭킹 초기화</span><span class="hint">기여도 랭킹(우주선 수리에 넣은 재료 수)을 0부터 다시 셉니다. 수리 진행률은 그대로 둡니다. 레벨·생활레벨 랭킹은 선원의 실제 레벨이라 따로 지울 것이 없습니다. 랭킹에는 LV.${RANK_MIN_LV} 이상 선원만 오릅니다.</span>
    <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="rankreset" ${n?'':'disabled'}>기여도 랭킹 초기화</button><span class="hint">지금 기여 기록 ${n}명</span></div></div>`}
 function endAdminHTML0(){const e=END;
@@ -10904,7 +10915,7 @@ function padListen(){if(padUnsub)try{padUnsub()}catch(e){}padLim=padWantLim();pa
 function socSubscribe(){
   padListen();setTimeout(nboxBackfill,4000);
   db.collection('guest').where('to','==',uid).onSnapshot(sn=>{GUEST=sn.docs.map(d=>Object.assign({id:d.id},d.data()));receiveGuest();renderNav();if(socOpen)renderPanel()},()=>{});
-  db.doc('org/bunker').onSnapshot(sn=>{BKF=Object.assign({},(sn.exists&&sn.data().found)||{});const wasO=BK_OPEN;BK_OPEN=!!(sn.exists&&sn.data().open);if(wasO!==BK_OPEN&&tab==='scan'&&!P.bkMv){try{renderPanel()}catch(e){}return}if(tab==='scan'&&!P.bkMv)try{if(scView==='log')clPaint();else renderPanel()}catch(e){}},()=>{});
+  db.doc('org/bunker').onSnapshot(sn=>{BKF=Object.assign({},(sn.exists&&sn.data().found)||{});try{credCheck(sn.exists&&sn.data().credits)}catch(e){}const wasO=BK_OPEN;BK_OPEN=!!(sn.exists&&sn.data().open);if(wasO!==BK_OPEN&&tab==='scan'&&!P.bkMv){try{renderPanel()}catch(e){}return}if(tab==='scan'&&!P.bkMv)try{if(scView==='log')clPaint();else renderPanel()}catch(e){}},()=>{});
   db.doc('org/home').onSnapshot(sn=>{const was=HOME_OPEN;HOME_OPEN=!!(sn.exists&&sn.data().open);if(was!==HOME_OPEN&&typeof renderPanel==='function')try{renderPanel()}catch(e){}},()=>{});
   db.doc('org/roles').onSnapshot(sn=>{ROLES=sn.exists?Object.assign({},sn.data()):{};if(socOpen)renderPanel();setTimeout(()=>{try{rolePopCheck()}catch(e){}},800)},()=>{});
 db.doc('org/ship').onSnapshot(sn=>{SHIPOPEN=Object.assign({},(sn.exists&&sn.data().open)||{});if(tab==='ship')renderPanel()},()=>{});
@@ -11038,6 +11049,30 @@ const JA={
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
 };
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
+/* 엔딩 크레딧: the operator rolls it for everyone (org/bunker.credits = {id, at}; that doc is already watched, so no extra reads).
+   Thirty registered crew, most recently seen first, each with their own character, then 녹슨 7호 last. */
+let credArm=false;
+function credCrew(){const all=Object.entries(PLAYERS||{}).filter(([id,p])=>p&&p.nick&&p.nick!=='새 선원'&&!p.deleted&&!(DELP||{})[id]).map(([id,p])=>id===uid&&P?P:p);
+  if(P&&P.nick&&P.nick!=='새 선원'&&!all.includes(P))all.push(P);return all.sort((a,b)=>(+b.seen||0)-(+a.seen||0)).slice(0,30)}
+function credAva(p){const c=document.createElement('canvas');c.width=40;c.height=40;try{gridOnS(c.getContext('2d'),avatarGrid(p),0,0,1,lookPal(p))}catch(e){}return c}
+function playCredits(){const old=document.getElementById('credFx');if(old)old.remove();
+  const M=document.createElement('div');M.id='credFx';M.setAttribute('role','dialog');M.setAttribute('aria-label','엔딩 크레딧');
+  M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credx">닫기</button>`;
+  const gr=M.querySelector('.credgrid');credCrew().forEach(p=>{const d=document.createElement('div');d.className='credp';d.appendChild(credAva(p));const n=document.createElement('b');n.textContent=p.nick;d.appendChild(n);gr.appendChild(d)});
+  try{const bc=xevBot();if(bc){const c=document.createElement('canvas');c.width=bc.width;c.height=bc.height;c.getContext('2d').drawImage(bc,0,0);M.querySelector('.credbotimg').appendChild(c)}}catch(e){}
+  document.body.appendChild(M);const close=()=>{M.classList.add('out');setTimeout(()=>M.remove(),900)};M.querySelector('.credx').onclick=close;
+  // roll from below the screen until 녹슨 7호 sits in the middle, then stay there
+  requestAnimationFrame(()=>{const R=M.querySelector('.credroll'),H=innerHeight,end=-(R.offsetHeight-H/2-M.querySelector('.credbot').offsetHeight/2),dist=H-end,sec=Math.max(25,dist/45);
+    R.style.transform=`translateY(${H}px)`;R.getBoundingClientRect();R.style.transition=`transform ${sec}s linear`;R.style.transform=`translateY(${end}px)`})}
+function credCheck(c){if(!c||!c.id||!P||!P.joined||mode!=='online')return;if(P.credSeen===c.id)return;P.credSeen=c.id;save();if(sNow()-(+c.at||0)>15*60e3)return;
+  const go=()=>{if($('#orbisFx')||$('#story')){setTimeout(go,1500);return}const w=$('#endWin');if(w)w.hidden=true;playCredits()};go()}
+Object.assign(EA,{
+ async creditsgo(d){if(!isAdmin||mode!=='online')return;if(!(d&&d.x==='1')){credArm=true;renderAdminAll();return}credArm=false;
+  try{await bossTx(db.doc('org/bunker'),d=>Object.assign({},d||{},{credits:{id:uid+':'+Date.now(),at:sNow()}}));toast('엔딩 크레딧을 모두에게 띄웠습니다.')}catch(e){toast('띄우지 못했습니다.')}renderAdminAll()},
+ creditsno(){credArm=false;renderAdminAll()},
+ creditsme(){playCredits()}});
+function credAdminHTML(){return`<div class="info-sec" data-adm="boss"><span class="lbl">Ending · 엔딩 크레딧</span><span class="hint">누르는 순간 접속 중인 모든 선원의 화면에 엔딩 크레딧이 흐릅니다. 최근 접속한 등록 선원 30명이 캐릭터와 함께 나오고, 마지막에 「감사한 로봇 - 녹슨 7호」가 나옵니다. 15분 안에 접속한 선원도 한 번 보게 됩니다.</span>
+   <div class="row" style="gap:6px;flex-wrap:wrap">${credArm?'<button class="btn sm alt" data-act="creditsgo" data-x="1">정말 띄우기</button><button class="btn sm ghost" data-act="creditsno">취소</button>':'<button class="btn sm gold" data-act="creditsgo">모두에게 엔딩 크레딧 띄우기</button>'}<button class="btn sm ghost" data-act="creditsme">나만 미리보기</button></div></div>`}
 Object.assign(A,EA);SAFE_ACT.add('endreset');   // the admin can always call the raid off, even knocked out
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},600e3);
