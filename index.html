@@ -1522,7 +1522,7 @@ body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
 #credFx .credphoto{padding:5px 5px 14px;background:#f1ede4;box-shadow:0 4px 0 #000,0 0 0 1px #000}#credFx .credphoto canvas{display:block;width:84px;height:auto;image-rendering:pixelated}
 #credFx .credname{display:flex;flex-direction:column;gap:6px;min-width:0}#credFx .credname span{font-size:11px;letter-spacing:.2em;color:#e0b860}#credFx .credname b{font-size:18px;font-weight:700;color:#eef2fa;overflow-wrap:anywhere;text-shadow:0 2px 0 #000}
 #credFx .credbot{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:40px}#credFx .credbotimg canvas{width:120px;height:auto;image-rendering:pixelated}#credFx .credbot b{font-size:22px;color:#ffe08a;text-shadow:0 2px 0 #000}
-#credFx .credx{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));font:inherit;font-size:12px;padding:6px 12px;background:rgba(255,255,255,.08);color:#c9d1e2;border:1px solid rgba(255,255,255,.2);cursor:pointer}
+#credFx .credok{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(40px + env(safe-area-inset-bottom,0px));font:inherit;font-size:15px;padding:8px 18px;background:#1c1808;color:#ffe08a;border:2px solid #e0b860;cursor:pointer}#credFx .credx{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));font:inherit;font-size:12px;padding:6px 12px;background:rgba(255,255,255,.08);color:#c9d1e2;border:1px solid rgba(255,255,255,.2);cursor:pointer}
 @media (prefers-reduced-motion:reduce){#credFx .credroll{transition:none!important}}
 .endttl{display:flex;flex-direction:column;gap:4px;padding:12px 20px;border:2px solid #e0b860;background:#1c1808}.endttl b{font-size:19px;color:#ffe08a;text-shadow:0 2px 0 #000}#endWin .endttl .hint{font-size:12px}
 .endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:5px 10px;background:#181b2c;color:#e8ecf6}.endrank li.me{color:#7fe0ff;background:#16263a}.endrank em{font-style:normal;color:#9aa3b8}
@@ -11129,16 +11129,16 @@ function credCrew(){const all=Object.entries(PLAYERS||{}).filter(([id,p])=>p&&p.
 function credAva(p){const c=document.createElement('canvas'),W=26,H=32;c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#9fb6cc';x.fillRect(0,0,W,H);x.fillStyle='#b4c8db';x.fillRect(0,0,W,Math.round(H*.45));
   try{const g=avatarGrid(p);let top=0;while(top<20&&![...g[top]].some(q=>q!=='.'))top++;let l=40,r=0;for(let j=top;j<Math.min(40,top+14);j++)[...g[j]].forEach((q,k)=>{if(q!=='.'){l=Math.min(l,k);r=Math.max(r,k)}});
     const cx=Math.round((l+r)/2),ox=cx-Math.floor(W/2),oy=top-3;gridOnS(x,g.slice(Math.max(0,oy),oy+H).map(row=>row.slice(Math.max(0,ox),ox+W)),Math.max(0,-ox),Math.max(0,-oy),1,lookPal(p))}catch(e){}return c}
-function playCredits(){const old=document.getElementById('credFx');if(old)old.remove();
+function playCredits(after){const old=document.getElementById('credFx');if(old)old.remove();
   const M=document.createElement('div');M.id='credFx';M.setAttribute('role','dialog');M.setAttribute('aria-label','엔딩 크레딧');
-  M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credx">닫기</button>`;
+  M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credx">닫기</button><button type="button" class="credok" hidden>확인 ▶</button>`;
   const gr=M.querySelector('.credgrid');credCrew().forEach((p,i)=>{const d=document.createElement('div');d.className='credp'+(i%2?' r':'');const f=document.createElement('div');f.className='credphoto';f.appendChild(credAva(p));d.appendChild(f);
     const t=document.createElement('div');t.className='credname';t.innerHTML=`<span>CREW · ${String(i+1).padStart(2,'0')}</span>`;const n=document.createElement('b');n.textContent=p.nick;t.appendChild(n);d.appendChild(t);gr.appendChild(d)});
   try{const bc=xevBot();if(bc){const c=document.createElement('canvas');c.width=bc.width;c.height=bc.height;c.getContext('2d').drawImage(bc,0,0);M.querySelector('.credbotimg').appendChild(c)}}catch(e){}
-  document.body.appendChild(M);const close=()=>{M.classList.add('out');setTimeout(()=>M.remove(),900)};M.querySelector('.credx').onclick=close;
+  document.body.appendChild(M);let shut=false;const close=()=>{if(shut)return;shut=true;M.classList.add('out');setTimeout(()=>{M.remove();if(after)after()},900)};M.querySelector('.credx').onclick=close;const okB=M.querySelector('.credok');okB.onclick=close;
   // roll from below the screen until 녹슨 7호 sits in the middle, then stay there
   requestAnimationFrame(()=>{const R=M.querySelector('.credroll'),H=innerHeight,end=-(R.offsetHeight-H/2-M.querySelector('.credbot').offsetHeight/2),dist=H-end,sec=Math.max(25,dist/45);
-    R.style.transform=`translateY(${H}px)`;R.getBoundingClientRect();R.style.transition=`transform ${sec}s linear`;R.style.transform=`translateY(${end}px)`})}
+    R.style.transform=`translateY(${H}px)`;R.getBoundingClientRect();R.style.transition=`transform ${sec}s linear`;R.style.transform=`translateY(${end}px)`;if(after)setTimeout(()=>{okB.hidden=false},sec*1000+600)})}
 function credCheck(c){if(!c||!c.id||!P||!P.joined||mode!=='online')return;if(P.credSeen===c.id)return;P.credSeen=c.id;save();if(sNow()-(+c.at||0)>15*60e3)return;
   const go=()=>{if($('#orbisFx')||$('#story')){setTimeout(go,1500);return}const w=$('#endWin');if(w)w.hidden=true;playCredits()};go()}
 Object.assign(EA,{
@@ -11158,10 +11158,10 @@ setInterval(()=>{if(mode!=='online'||!P||!P.joined||P.nick==='새 선원')return
   if(sNow()>(+END.startAt||0)+30e3){P.finSt=END.gen;return}
   if($('#story')||$('#orbisFx')||!$('#joinModal').hidden)return;P.finSt=END.gen;save();
   playStory('final',()=>{syncBgm();try{endRender();endPaint()}catch(e){}if(!endOn()&&END&&sNow()<(+END.startAt||0))toast('하늘이 일그러진다… 곧 「오르비스」가 눈을 뜹니다.')})},1000);
-/* 엔딩: right after the raid (fallen or gone) everyone who is there sees the 'ending' story, then the intro-style crawl, then the results */
+/* 엔딩: right after the raid (fallen or gone) everyone who is there sees the 'ending' story, then the intro-style crawl, then the ending credits, then the results */
 const END_CRAWL=[['쿵!','big'],null,['이 우주가 태어날 때 커다란 폭발이 있었다고 합니다.'],['아무 것도 존재하지 않던 공간에서 모든 것들이 만들어지기까지.'],['그 최초의 울림이 얼마나 컸을지, 감히 누구도 짐작할 수 없겠지만,'],['지금 이 순간 우리는 또다시 거대한 흔들림을 겪고 있습니다.'],null,['익숙한 것이 반복되고 있습니다.'],['나의 낯선 얼굴을 마주볼 수 있었다가,'],['일그러진 은하단이 번쩍이며 발 밑을 스쳐 지나갑니다.'],['압착된 성간을 지나며 보아서는 안 될 것을 본 듯도 합니다.'],['그것이, 그러니까 그것이······.']];
 function endEnding(after){if($('#story')||$('#opCrawl')){setTimeout(()=>endEnding(after),1500);return}const w=$('#endWin');if(w)w.hidden=true;
-  playStory('ending',()=>storyCrawl(()=>{try{syncBgm()}catch(e){}after&&after()},END_CRAWL,''))}
+  playStory('ending',()=>storyCrawl(()=>{try{syncBgm()}catch(e){}playCredits(()=>{after&&after()})},END_CRAWL,''))}
 Object.assign(A,EA);SAFE_ACT.add('endreset');   // the admin can always call the raid off, even knocked out
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},600e3);
