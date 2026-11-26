@@ -5859,10 +5859,10 @@ setInterval(()=>{if(mode!=='online'||!P||!P.joined||endGoneBusy||!endGoneNow())r
   orbisPlay(ORB_GONE,()=>{endGoneBusy=false;P.endGone=g;log('「오르비스」는 우리를 가만히 내려다보다, 그대로 하늘 너머로 사라졌다.','');save();try{endReward()}catch(e){}try{endRender()}catch(e){}syncBgm()},2)},1000);
 /* 최종 레이드 후반 패턴 (after the rite): what 오르비스 does as its HP falls. Like the gaze, each screen works it out
    from the raid's start on the server clock and the shared HP, so no extra reads or writes.
-   ≤50% 집중 시선: every 30 s about a quarter of the crew are stared down (heavy hit; 수호의 방패 blocks it)
+   ≤45% 집중 시선: every 30 s about a quarter of the crew are stared down (heavy hit; 수호의 방패 blocks it)
    ≤30% 시선 가속: the gaze sweeps every 12 s instead of 20 s
    ≤10% 모든 눈 개방: every eye opens, the sky turns red and a small gaze rains down every 3 s */
-const END_PH=[{at:.5,t:'오르비스의 눈이 선원들을 노려봅니다.',s:'30초마다 몇몇 선원에게 집중 시선이 꽂힙니다. 항해사의 수호의 방패로 막을 수 있습니다.',th:['#ff8a3a','◎']},
+const END_PH=[{at:.45,t:'오르비스의 눈이 선원들을 노려봅니다.',s:'30초마다 몇몇 선원에게 집중 시선이 꽂힙니다. 항해사의 수호의 방패로 막을 수 있습니다.',th:['#ff8a3a','◎']},
  {at:.3,t:'오르비스의 눈이 분노로 붉어집니다.',s:'시선이 더 빠르게 베이스캠프를 훑습니다. (20초 → 12초)',th:['#ff3a5a','◉']},
  {at:.1,t:'오르비스가 모든 눈을 개방합니다.',s:'하늘이 붉게 물듭니다. 3초마다 시선이 쏟아집니다.',th:['#ff2020','✺',1]}];
 const END_FOCUS=30000;
