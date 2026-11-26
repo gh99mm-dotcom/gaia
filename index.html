@@ -5772,7 +5772,7 @@ async function endFlush(){if(endBusy||endPend<=0)return;const d=endPend;endPend=
 function endFinish(){if(!END||END.done||endFirst())return;const g=END.gen;bossTx(endRef(),cur=>{if(!cur||cur.done||cur.gen!==g||(+cur.hp||0)>0)return null;cur.done=true;cur.doneAt=Date.now();cur.on=false;return cur})
   .then(nx=>{if(nx)sys(`[공지] 최종 레이드 승리! ${END_NAME}이(가) 쓰러졌습니다. 선원 모두의 힘으로 가이아를 지켜냈습니다.`,true,'quiet')}).catch(()=>{})}
 function endReward(){const e=END;if(!e||!e.done||P.endGen===e.gen)return;if(e.left&&P.endGone!==e.gen&&(!!((e.dmg||{})[uid])||!!(P.endRite&&P.endRite.g===e.gen)))return;/* left after 20 minutes: the victory comes after the leaving scene */const me=(e.dmg||{})[uid];P.endGen=e.gen;
-  if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「테라의 마지막 수호자」를 얻었다.','rare')}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
+  if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「테라의 마지막 수호자」를 얻었다.','rare')}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endEnding(endWin)}}
 function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)),me=(e.dmg||{})[uid];
   let M=$('#endWin');if(!M){M=document.createElement('div');M.id='endWin';M.className='modal';document.body.appendChild(M)}M.hidden=false;
   M.innerHTML=`<div class="px infobox endwin" role="dialog" aria-label="최종 레이드 승리"><span class="lbl">Final Raid · 가이아 수호전</span><h2>오르비스가 물러났습니다!</h2>
@@ -8712,6 +8712,14 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'black',noart:1,lines:[{t:'동력로를 고치도록 하자.',btn:'▶'}]}]},
   // played once for everyone when 동력로 is repaired, then 의뢰판 opens
   // 통신 장치 repaired: the lead-in to 오르비스's first visit (it plays right before the great eye opens)
+  // 엔딩: plays by itself right after the final raid, then the intro-style crawl
+  ending:{n:'엔딩 · 그렇게 다시, 한번 더',auto:1,fadeOut:3,scenes:[
+  {art:'x_gone',lines:[{t:'‘오르비스’는 물러났다.',wait:1.6},{t:'우리는 적어도 그것을 쫓아내는 것에 성공했다.'},{t:'만들어낸 ‘문’이 남아있는 지금만이 떠날 기회다.'}]},
+  {art:'e_engine',lines:[{t:'함선을 다시 띄워올리기 위해 엔진을 달구고, 인원을 정비한다.',wait:1.4}]},
+  {art:'l_cabin',lines:[{t:'이곳에 남기를 선택한 인원과 떠나기로 선택한 인원이 마지막 인사를 나눈다.',wait:3.4},{t:'서로의 무탈을 빌고, 포옹을 나눈다.'},{t:'이제 더이상의 구조 신호는 울리지 않을 것임을 예감한다.',art:'c_antenna'}]},
+  {art:'x_wave',lines:[{t:'7호는 땅을 밟고 서서 함선에 오르는 우리에게 손을 흔든다.',wait:1.4},{v:'손님이 남아있는 한 안내자의 역할은 끝나지 않으니까.',who:'녹슨 7호'}]},
+  {art:'r_city',lines:[{t:'…만약 이 함선이 우리가 아는 테라로 돌아간다면, 그간 겪은 일에 대해 보고해야 할 것이다.',wait:1.4},{t:'테라는 앞으로 벌어질 사건에 준비해야 할 것이고,'},{t:'우리의 노력은 어떠한 형태로든 이어져, 우리의 미래에 닿을 것이다.'},{t:'그 명확한 사실만이 우리를 인도하고, 이 자리에 있게 했다.'}]},
+  {art:'x_launch',cut:1,lines:[{t:'엔진이 점화되고, 푸른 불꽃이 다시 타오른다.',wait:1.2},{t:'갈라진 공간을 향해 힘차게 뛰어든다.'},{t:'그렇게 다시, 한번 더.',wait:1.6}]}]},
   // 최종 레이드 직전: plays by itself for everyone at once (no next, no skip), and the raid opens as it ends
   final:{n:'워프 기계 가동 · 다시, 눈을 뜨다',auto:1,scenes:[
   {art:'f_wake',lines:[{t:'기계의 표면을 따라 빛이 번져나간다.',wait:1.4},{t:'오랫동안 멈춰 있던 장치가 천천히 숨을 되찾듯, 낮고 둔탁한 진동이 공간을 채운다.'}]},
@@ -9192,6 +9200,18 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     R(cx-r,cy,r*2,1,'#0e3a22');R(cx,cy-r,1,r*2,'#0e3a22');const sw=t*2.2;for(let i=0;i<r;i++){for(let j=0;j<6;j++){const q=sw-j*.06;g.globalAlpha=1-j/6;R(cx+Math.cos(q)*i,cy+Math.sin(q)*i,1,1,'#3dff8a')}}g.globalAlpha=1;
     const bx=cx+30,by=cy-22,bs=Math.min(1,t/2.2)*14,on=(Math.floor(t*3)%2)||t<2.2;const dot=(rr,c,al)=>{g.globalAlpha=al;for(let j=-rr;j<=rr;j++){const w=Math.round(Math.sqrt(Math.max(0,rr*rr-j*j)));R(bx-w,by+j,w*2+1,1,c)}g.globalAlpha=1};if(bs>0){dot(Math.round(bs),'#ff4a5a',on?.3:.15);dot(Math.round(bs*.6),'#ff6a6a',on?.9:.5);const pr=Math.round(bs+((t*10)%10));for(let a2=0;a2<48;a2++){const q=a2/48*Math.PI*2;g.globalAlpha=.6*(1-((t*10)%10)/10);R(bx+Math.cos(q)*pr,by+Math.sin(q)*pr,1,1,'#ff8a8a')}g.globalAlpha=1}}
   function fEye(t){R(0,0,W,H,'#05030a');for(let i=0;i<30;i++){const x=(i*61)%W,y=(i*29)%H;if(((t*2+i)|0)%6)R(x,y,1,1,'#8a80b0')}const k=Math.min(1,t/3),gl=.25+.35*k*(.5+.5*Math.sin(t*5));g.globalAlpha=gl;R(120-46,57,92,3,'#c84a8a');g.globalAlpha=gl*.5;R(120-54,55,108,7,'#7a2a6a');g.globalAlpha=1;const sh=t>2?Math.round(Math.sin(t*30)*.6):0;try{endEye(g,120,58+sh,24,0,[0,0],false,t)}catch(e){}}
+  // ── 엔딩 · 다시 한번: the tear left in the sky, 7호 waving from the ground, the ship's blue flame leaping into the tear ──
+  function xTear(t,cx,cy,rw){for(let x=-rw;x<=rw;x++){const k=1-Math.abs(x)/Math.max(1,rw),yy=cy+Math.round(Math.sin(x*.35+t*3)*2*k);g.globalAlpha=.3*k;R(cx+x,yy-3,1,7,'#c88aff');g.globalAlpha=1;R(cx+x,yy,1,1,Math.abs(x)%5<2?'#ffd0e0':'#c88aff')}}
+  function xSky(t){R(0,0,W,H,'#0c0820');for(let i=0;i<40;i++){const x=(i*53)%W,y=(i*29)%(H-30);if(((t*2+i)|0)%6)R(x,y,1,1,'#c8d0ff')}}
+  function xGone(t){xSky(t);xTear(t,120,34,70);R(0,92,W,28,'#07060c');R(0,92,W,1,'#1a1630');const k=Math.min(1,t/4);g.globalAlpha=.25*(1-k);R(150,4,90,46,'#3a1030');g.globalAlpha=1}
+  function xShip(x,y,s,fl,t){g.save();g.translate(Math.round(x),Math.round(y));
+    if(fl>0){const fh=Math.round((10+Math.sin(t*30)*3)*fl*s);g.globalAlpha=.45;R(-4*s,8*s,8*s,fh+3,'#5fd8ff');g.globalAlpha=1;R(-2*s,8*s,4*s,fh,'#aef0ff');R(-1*s,8*s,2*s,Math.round(fh*.6),'#ffffff')}
+    R(-5*s,-6*s,10*s,14*s,'#8a96a8');R(-5*s,-6*s,2*s,14*s,'#b4c0d0');R(-3*s,-12*s,6*s,6*s,'#9aa6b8');R(-1*s,-15*s,2*s,3*s,'#c8d2e0');R(-2*s,-4*s,4*s,3*s,'#5fd8ff');R(-8*s,3*s,3*s,5*s,'#6a7488');R(5*s,3*s,3*s,5*s,'#6a7488');g.restore()}
+  function xWave(t){xSky(t);xTear(t,120,24,46);R(0,90,W,30,'#100c1c');R(0,90,W,1,'#2a2440');for(let x=0;x<W;x+=7)if((x*13)%5===0)R(x,93+(x%5),1,1,'#2a2440');
+    xShip(170,60,2,.25,t);R(150,84,22,2,'#5a6478');
+    g.save();const sw=Math.sin(t*3)*.12;g.translate(66,110);g.rotate(sw);g.translate(-66,-110);wBot(42,110,48,t);g.restore()}
+  function xLaunch(t){xSky(t);const k=Math.min(1,t/11),e=k*k;xTear(t,120,22,Math.round(50+k*30));R(0,96,W,24,'#07060c');
+    const y=82-e*70,s=Math.max(1,2-Math.round(e));xShip(120,y,s,1,t);if(k>.85){g.globalAlpha=(k-.85)/.15*.8;R(0,0,W,H,'#e8f4ff');g.globalAlpha=1}}
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
     // ── the opening's own pictures, drawn fresh: a dusk-purple desert seen from afar, a small crashed ship, a small 녹슨 7호 ──
@@ -9394,7 +9414,8 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     r_drops:t=>{hullDrops(t)},
     w_rec1:t=>wRecs(t,1),w_rec2:t=>wRecs(t,2),w_rec3:t=>wRecs(t,3),w_rec4:t=>wRecs(t,4),w_rec5:t=>wRecs(t,5),w_rec6:t=>wRecs(t,6),
     w_ring:t=>wRing(t),w_plan:t=>wPlan(t),w_circle:t=>wCircle(t),w_mem:t=>wMem(t),w_bot:t=>wBotNear(t),w_hall:t=>wHall(t),
-    f_wake:t=>fWake(t),f_tense:t=>fTense(t),f_dome:t=>fDome(t),f_fire:t=>fFire(t),f_sky:t=>fRift(t),f_radar:t=>fRadar(t),f_eye:t=>fEye(t)};
+    f_wake:t=>fWake(t),f_tense:t=>fTense(t),f_dome:t=>fDome(t),f_fire:t=>fFire(t),f_sky:t=>fRift(t),f_radar:t=>fRadar(t),f_eye:t=>fEye(t),
+    x_gone:t=>xGone(t),x_wave:t=>xWave(t),x_launch:t=>xLaunch(t)};
   function drawBg(t){if(bg.width!==innerWidth)bg.width=innerWidth;if(bg.height!==innerHeight)bg.height=innerHeight;const w=bg.width,h=bg.height;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0,fading=false;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'')+(L.sys?' sys':'');shown=L.pre||0;q('.stv-txt').textContent=(L.v?'':L.t||'').slice(0,shown);full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
@@ -9419,7 +9440,7 @@ const OP_CRAWL=[['쿵!','big'],null,['이 우주가 태어날 때 커다란 폭�
 const OPB=['#03060f','#0a1530','#16295a','#25458c','#3e6cc4','#7ea6f0','#cfe0ff','#f2f7ff'];
 function opBlueBot(){try{const T=IC.robot,c=document.createElement('canvas');c.width=T[0].length;c.height=T.length;const x=c.getContext('2d');T.forEach((row,y)=>[...row].forEach((ch,xx)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(xx,y,1,1)}}));
   const d=x.getImageData(0,0,c.width,c.height),a=d.data,pal=OPB.map(h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)));for(let i=0;i<a.length;i+=4){if(!a[i+3])continue;const L=(a[i]*.3+a[i+1]*.59+a[i+2]*.11)/255,k=Math.min(7,Math.round(Math.pow(L,.8)*7.4));[a[i],a[i+1],a[i+2]]=pal[k]}x.putImageData(d,0,0);return c}catch(e){return null}}
-function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M.setAttribute('role','dialog');M.setAttribute('aria-label','조우');
+function storyCrawl(done,LINES,TTL){LINES=LINES||OP_CRAWL;if(TTL==null)TTL='[조우]';const M=document.createElement('div');M.id='opCrawl';M.setAttribute('role','dialog');M.setAttribute('aria-label','조우');
   M.innerHTML='<canvas class="osbg"></canvas><div class="osroll"><div class="oslines"></div></div><div class="ostitle"><span class="ost"></span><i class="osc"></i></div><button type="button" class="osok" hidden>확인 ▶</button><button type="button" class="osskip">건너뛰기 ▶▶</button>';document.body.appendChild(M);
   const L=M.querySelector('.oslines'),roll=M.querySelector('.osroll'),T=M.querySelector('.ost'),ok=M.querySelector('.osok');let dead=false;
   const end=()=>{if(dead)return;dead=true;M.classList.add('out');setTimeout(()=>{if(done){done();setTimeout(()=>M.remove(),900)}else M.remove()},1100)};M.querySelector('.osskip').onclick=end;ok.onclick=end;
@@ -9502,16 +9523,16 @@ function storyCrawl(done){const M=document.createElement('div');M.id='opCrawl';M
     requestAnimationFrame(draw)};requestAnimationFrame(draw);
   const follow=()=>{const h=L.scrollHeight;roll.style.transform=`translateY(${Math.round(innerHeight*.5-h)}px)`};
   (async()=>{await wait(700);
-    for(const it of OP_CRAWL){if(dead)return;
+    for(const it of LINES){if(dead)return;
       if(!it){const g=document.createElement('p');g.className='osgap';L.appendChild(g);follow();await wait(700);continue}
       const p=document.createElement('p');p.className='osl'+(it[1]?' '+it[1]:'');L.appendChild(p);follow();
       if(it[1]==='big'){p.textContent=it[0];M.classList.add('shake');try{sfxStatic()}catch(e){}await wait(1000);M.classList.remove('shake');continue}
       for(const ch of it[0]){if(dead)return;p.textContent+=ch;await wait(ch===' '?22:ch===','||ch==='.'?150:45)}
       await wait(650)}
-    await wait(1400);if(dead)return;
+    await wait(1400);if(dead)return;if(!TTL){ok.hidden=false;return}
     // the text fades as it rolls away, then the title is typed big at the end of the scroll, cursor blinking, and 확인 appears
     roll.style.transition='transform 2.6s ease-in, opacity 2.6s';roll.style.transform=`translateY(${-L.scrollHeight-120}px)`;roll.style.opacity='0';await wait(2600);
-    M.classList.add('titled');for(const ch of '[조우]'){if(dead)return;T.textContent+=ch;try{sfxBeep()}catch(e){}await wait(320)}
+    M.classList.add('titled');for(const ch of TTL){if(dead)return;T.textContent+=ch;try{sfxBeep()}catch(e){}await wait(320)}
     await wait(600);ok.hidden=false})()}
 function openingOnce(){if(!P||(P.opSeen||0)>=4||!$('#joinModal').hidden||preLock()||(mode==='online'&&!STORY_ON.opening))return;   // nobody (운영진 included) gets it on entry until it is released   // held back during 오픈 준비; it plays once the game opens
 storyCrawl(()=>playStory('opening',()=>{P.opSeen=4;save()}))}
@@ -11136,6 +11157,10 @@ setInterval(()=>{if(mode!=='online'||!P||!P.joined||P.nick==='새 선원')return
   if(sNow()>(+END.startAt||0)+30e3){P.finSt=END.gen;return}
   if($('#story')||$('#orbisFx')||!$('#joinModal').hidden)return;P.finSt=END.gen;save();
   playStory('final',()=>{syncBgm();try{endRender();endPaint()}catch(e){}if(!endOn()&&END&&sNow()<(+END.startAt||0))toast('하늘이 일그러진다… 곧 「오르비스」가 눈을 뜹니다.')})},1000);
+/* 엔딩: right after the raid (fallen or gone) everyone who is there sees the 'ending' story, then the intro-style crawl, then the results */
+const END_CRAWL=[['쿵!','big'],null,['이 우주가 태어날 때 커다란 폭발이 있었다고 합니다.'],['아무 것도 존재하지 않던 공간에서 모든 것들이 만들어지기까지.'],['그 최초의 울림이 얼마나 컸을지, 감히 누구도 짐작할 수 없겠지만,'],['지금 이 순간 우리는 또다시 거대한 흔들림을 겪고 있습니다.'],null,['익숙한 것이 반복되고 있습니다.'],['나의 낯선 얼굴을 마주볼 수 있었다가,'],['일그러진 은하단이 번쩍이며 발 밑을 스쳐 지나갑니다.'],['압착된 성간을 지나며 보아서는 안 될 것을 본 듯도 합니다.'],['그것이, 그러니까 그것이······.']];
+function endEnding(after){if($('#story')||$('#opCrawl')){setTimeout(()=>endEnding(after),1500);return}const w=$('#endWin');if(w)w.hidden=true;
+  playStory('ending',()=>storyCrawl(()=>{try{syncBgm()}catch(e){}after&&after()},END_CRAWL,''))}
 Object.assign(A,EA);SAFE_ACT.add('endreset');   // the admin can always call the raid off, even knocked out
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},600e3);
