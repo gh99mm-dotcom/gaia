@@ -1508,7 +1508,7 @@ body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
 .endbar{position:relative;height:18px;background:#2a0a10;border:2px solid var(--ink)}.endbar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,#e85a5a 0 6px,#c04848 6px 8px)}
 .endbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:#fff;text-shadow:1px 1px 0 #000}
 .endrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.endbtns{display:flex;gap:8px;flex-wrap:wrap}.endbtns .endult{background:#e0b860;color:#1a1200}.endbtns .btn{min-width:110px;justify-content:center;font-size:15px;padding:10px 14px}
+.endbtns{display:flex;gap:8px;flex-wrap:wrap}.endbtns .endult{background:#e0b860;color:#1a1200}.endbtns .btn:disabled,.endbtns .endult:disabled{background:var(--dim);color:var(--deep);border-color:var(--dim);box-shadow:0 3px 0 var(--ink);opacity:.75}.endbtns .btn{min-width:110px;justify-content:center;font-size:15px;padding:10px 14px}
 .endmeta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute)}.endmeta b{color:var(--gold)}.endmeta .me{color:var(--cyan)}
 /* the victory card keeps its own dark look in every theme so the gold reads clearly */
 #endWin .endwin{max-width:440px;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center;background:#0d0f1c;color:#eef2fa;border-color:#e0b860;box-shadow:0 0 0 2px #000,0 0 40px rgba(224,184,96,.25)}#endWin .endwin h2{margin:0;font-size:24px;color:#ffd65f;text-shadow:0 2px 0 #000}#endWin .endwin .lbl{color:#e0b860}#endWin .endwin .hint{color:#c9d1e2;font-size:13px}
@@ -5877,23 +5877,23 @@ setInterval(()=>{const ph=endPh(),rg=document.getElementById('endRage');
   if(ph>=3&&!rg){const d=document.createElement('div');d.id='endRage';d.className='endrage';document.body.appendChild(d)}else if(ph<3&&rg)rg.remove();
   if(!ph||!P||!P.joined)return;const g=END.gen;
   // phase banner once per raid per phase
-  const seen=P.endPh&&P.endPh.g===g?P.endPh.k:0;if(ph>seen){const q=END_PH[ph-1];riteBanner(q,q.th);log(`${q.t} ${q.s}`,'bad');try{sfxStatic()}catch(e){}P.endPh={g,k:ph}}
+  const seen=P.endPh&&P.endPh.g===g?P.endPh.k:0;if(ph>seen){const q=END_PH[ph-1];riteBanner(q,q.th);log(`${q.t} ${q.s}`,'bad');P.endPh={g,k:ph}}
   const dt=sNow()-END.startAt,gaze=(mul,what)=>{const raw=(20+END_LV*6.5)*endAtkK()*mul*(.85+Math.random()*.3),hit=defCut(raw,def());heal(-hit,0);return hit};
   // 집중 시선
   {const m=Math.floor(dt/END_FOCUS),k=g+':'+m;if(endFocusK!==k){const first=!endFocusK;endFocusK=k;
     if(!first&&endFocusMe(m)&&!isFaint()){const sh=END.shield;
       if(sh&&sh.u!==uid&&Date.now()-(+sh.at||0)<END_AOE){toast(`${sh.n} 님이 수호의 방패로 집중 시선을 대신 막았습니다!`);log(`${sh.n} 님이 수호의 방패로 오르비스의 집중 시선을 막았다.`,'good')}
       else if(Math.random()*100<Math.min(40,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')))){toast('집중 시선을 피했다!');log('오르비스의 집중 시선을 피했다.','good')}
-      else{endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);try{sfxStatic()}catch(e){}
+      else{endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
         const hit=gaze(2.5);toast(`오르비스의 집중 시선! 체력 -${hit}`);log(`오르비스의 눈이 나를 꿰뚫어 보았다. 체력 -${hit}`,'bad');commit()}}}}
   // 모든 눈 개방: a small gaze every 3 s (kept on my screen; saved with my next save as usual)
   if(ph>=3&&!isFaint()){const n=Math.floor(dt/3000);if(endRainK!==g){endRainK=g;endRainKn=n}else if(n>endRainKn){endRainKn=n;
     const hit=gaze(.12);if(P.hp<=0)checkFaint();renderPilot();try{endPaint()}catch(e){}if(isFaint())commit()}}},500);
 const EA={
  async endult(){if(!endOn()||endFirst()||!riteHas(1)||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
-  if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);toast(`★ ${u[0]}!`)}return}
-  if(j==='nav'){try{await endRef().update({shield:{k:endGzKey(1),u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);toast(`★ ${u[0]}! 다음 시선을 대신 막습니다.`);return}
-  if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:sNow()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);toast(`★ ${u[0]}!`)}},
+  if(j==='mech'){if(endHit(10)){endUltAt=Date.now();toast(`★ ${u[0]}!`)}return}
+  if(j==='nav'){try{await endRef().update({shield:{k:endGzKey(1),u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();toast(`★ ${u[0]}! 다음 시선을 대신 막습니다.`);return}
+  if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:sNow()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();toast(`★ ${u[0]}!`)}},
  endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1))endAt=Date.now()},
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok)endSkAt=Date.now()},
  orbisgo(d){if(!isAdmin||mode!=='online')return;if(d.x!=='1'){orbGoArm=!!d.k;renderAdminAll();return}orbGoArm=false;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{orbisGo:sNow()})).then(()=>toast('오르비스 첫 등장을 시작했습니다.')).catch(()=>toast('시작하지 못했습니다.'))},
