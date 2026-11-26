@@ -8522,7 +8522,7 @@ function renderPanel(){if(waitScroll(renderPanel))return;if(tab==='raid'&&MYRAID
 /* ---- new version notice: each deploy stamps GAIA_VER into the page and writes the same stamp to version.json;
    the page asks for that tiny file now and then and, when it differs, shows a small bar at the top (no notice post needed).
    Coming back to a tab that sat in the background for 10+ minutes with an update waiting reloads it by itself (never during an expedition). ---- */
-const GAIA_VER='1795695237';let verNew='',verHidAt=0,verShut=false;
+const GAIA_VER='1795711404';let verNew='',verHidAt=0,verShut=false;
 function verReload(){try{flushNow()}catch(e){}const u=new URL(location.href);u.searchParams.set('v',verNew||String(Date.now()));setTimeout(()=>location.replace(u.toString()),300)}
 function verBar(){let b=$('#verBar');if(!verNew||verShut){if(b)b.remove();return}if(b)return;b=document.createElement('div');b.id='verBar';b.setAttribute('role','status');
   b.innerHTML='<span>✦ 새 버전이 나왔습니다</span><button type="button" class="verbtn" onclick="window.__verReload()">새로고침</button><button type="button" class="verx" aria-label="닫기" onclick="window.__verShut()">✕</button>';document.body.appendChild(b)}
@@ -11229,7 +11229,9 @@ const bgm=new Audio('bgm.mp3?v=storm');bgm.loop=true;bgm.preload='auto';
 const bgm2=new Audio('fireflies.mp3');bgm2.loop=true;bgm2.preload='none';
 // …and only once I've lived through 오르비스's first visit (P.orbis 2: it looked down, everyone fell, it left)
 const bgmNewWant=()=>{try{const c=SHIP.find(x=>x.id==='comm');return mode==='online'&&!!c&&shipDone(c)&&(+(P&&P.orbis)||0)>=2}catch(e){return false}};
-let bgmFade=0;const bgmMain=()=>bgmNewWant()?bgm2:bgm;
+// once 오르비스 has been beaten (or has left) in the final raid, the very first theme comes back as the main one
+const bgmFinWon=()=>!!(P&&P.endGen)||!!(typeof END!=='undefined'&&END&&END.mode!=='first'&&END.done);
+let bgmFade=0;const bgmMain=()=>bgmNewWant()&&!bgmFinWon()?bgm2:bgm;
 function bgmPauseAll(){clearInterval(bgmFade);bgmFade=0;bgm.pause();bgm2.pause()}
 // play m; if its pair o is still playing, fade o out while m comes up (3 s). F holds the running fade's timer
 function bgmXfade(m,o,F){const v=bgmVol/100,go=a=>{const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{})};
