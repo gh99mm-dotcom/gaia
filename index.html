@@ -1522,6 +1522,7 @@ body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
 #credFx .credphoto{padding:5px 5px 14px;background:#f1ede4;box-shadow:0 4px 0 #000,0 0 0 1px #000}#credFx .credphoto canvas{display:block;width:84px;height:auto;image-rendering:pixelated}
 #credFx .credname{display:flex;flex-direction:column;gap:6px;min-width:0}#credFx .credname span{font-size:11px;letter-spacing:.2em;color:#e0b860}#credFx .credname b{font-size:18px;font-weight:700;color:#eef2fa;overflow-wrap:anywhere;text-shadow:0 2px 0 #000}
 #credFx .credbot{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:40px}#credFx .credbotimg canvas{width:120px;height:auto;image-rendering:pixelated}#credFx .credbot b{font-size:22px;color:#ffe08a;text-shadow:0 2px 0 #000}
+#credFx .credscene{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;width:min(560px,100%)}#credFx .credscene canvas{width:100%;height:auto;image-rendering:pixelated;border:3px solid #f1ede4;box-shadow:0 4px 0 #000}#credFx .credscene figcaption{font-size:13px;letter-spacing:.2em;color:#e0b860}
 #credFx .credok{position:absolute;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(40px + env(safe-area-inset-bottom,0px));font:inherit;font-size:15px;padding:8px 18px;background:#1c1808;color:#ffe08a;border:2px solid #e0b860;cursor:pointer}#credFx .credx{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));font:inherit;font-size:12px;padding:6px 12px;background:rgba(255,255,255,.08);color:#c9d1e2;border:1px solid rgba(255,255,255,.2);cursor:pointer}
 @media (prefers-reduced-motion:reduce){#credFx .credroll{transition:none!important}}
 .endttl{display:flex;flex-direction:column;gap:4px;padding:12px 20px;border:2px solid #e0b860;background:#1c1808}.endttl b{font-size:19px;color:#ffe08a;text-shadow:0 2px 0 #000}#endWin .endttl .hint{font-size:12px}
@@ -11127,6 +11128,40 @@ const JA={
  jreset(){if(J){J.as=Object.fromEntries(ABIL.map(([k])=>[k,J_START]));renderJoin()}},
 };
 Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
+/* 엔딩 크레딧 음악 (Long night drive): plays while the credits are up, in place of every other track; fades out when they close */
+const CRED_SRC='credits.mp3';let credAu=null,credOn=false,credFadeT=0;
+const credMusic=()=>{if(!credAu){credAu=new Audio(CRED_SRC);credAu.loop=true;credAu.preload='auto'}return credAu};
+function credMusicOn(){clearInterval(credFadeT);credOn=true;syncBgm()}
+function credMusicOff(){if(!credOn)return;const m=credAu;clearInterval(credFadeT);if(!m||m.paused){credOn=false;syncBgm();return}const v0=m.volume;let k=0;
+  credFadeT=setInterval(()=>{k++;m.volume=Math.max(0,v0*(1-k/15));if(k>=15){clearInterval(credFadeT);m.pause();m.currentTime=0;credOn=false;syncBgm()}},100)}
+/* 크레딧 사이사이 장면: the crew themselves at a party, fishing, fighting an alien, farming and fixing the ship (low-res canvas, scaled up) */
+const CS_W=320,CS_H=140;
+function credFullAva(p){const c=document.createElement('canvas');c.width=40;c.height=40;try{gridOnS(c.getContext('2d'),avatarGrid(p),0,0,1,lookPal(p))}catch(e){}return c}
+let CS_SHIP=null;const csShip=()=>{if(CS_SHIP)return CS_SHIP;const c=document.createElement('canvas');c.width=c.height=40;const q=c.getContext('2d');try{for(let j=0;j<40;j++)for(let i=0;i<40;i++){const col=shipColorAt(i+.5,j+.5,SHIP_ALL);if(col){q.fillStyle=col;q.fillRect(i,j,1,1)}}}catch(e){}return CS_SHIP=c};
+const CRED_SCENES=[['party','함께 웃던 밤'],['fish','성운 호수의 낚시꾼들'],['hunt','외계 생물체 토벌'],['farm','유리 돔 농장의 아침'],['repair','가이아를 고치던 날들']];
+function credSceneDraw(cv,kind,av,t){const x=cv.getContext('2d'),R=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(a|0,b|0,w|0,h|0)},W=CS_W,H=CS_H,A=a=>x.globalAlpha=a;x.imageSmoothingEnabled=false;
+  const put=(i,px,py,flip)=>{const a=av[i%av.length];if(!a)return;if(flip){x.save();x.translate(px+40,py);x.scale(-1,1);x.drawImage(a,0,0);x.restore()}else x.drawImage(a,px|0,py|0)};
+  const stars=(n,h)=>{for(let i=0;i<n;i++){const sx=(i*67)%W,sy=(i*31)%h;if(((t*2+i)|0)%7)R(sx,sy,1,1,'#c8d0ff')}};
+  if(kind==='party'){R(0,0,W,H,'#1c1428');for(let i=0;i<W;i+=20)R(i,0,1,104,'#241a34');R(0,104,W,36,'#2a2034');R(0,104,W,1,'#3c2e4a');
+    for(let i=0;i<16;i++){const bx=i*20+10,by=10+Math.round(Math.sin(i*.8)*4);R(bx-10,by-1,20,1,'#4a3a5a');const on=((t*3+i)|0)%3;R(bx-1,by,3,3,['#ff6a8a','#ffd65f','#7fe0ff'][(i+on)%3])}
+    R(120,92,80,16,'#6a4a3a');R(120,92,80,2,'#8a6a4a');R(146,80,28,12,'#f2e6d8');R(146,80,28,3,'#ff8aa8');R(159,74,2,6,'#fff');if(((t*8)|0)%2)R(158,71,4,3,'#ffd65f');
+    [[24,0],[70,1],[206,2],[252,3]].forEach(([px,i],k)=>put(i,px,66+(Math.sin(t*5+k*1.7)>.4?-4:0),k>1));
+    for(let i=0;i<46;i++){const cx=(i*41+Math.sin(t+i)*8)%W,cy=((t*28+i*23)%(H+10))-10;R(cx,cy,2,2,['#ff6a8a','#ffd65f','#7fe0ff','#8bff9a'][i%4])}}
+  else if(kind==='fish'){for(let y=0;y<86;y++){const k=y/86;R(0,y,W,1,`rgb(${12+k*10|0},${10+k*14|0},${36+k*30|0})`)}stars(40,70);R(262,14,14,14,'#e8ecff');R(266,14,10,10,'#d4daf4');
+    R(0,86,W,54,'#0b1a3a');for(let i=0;i<14;i++){const ry=92+(i*7)%44,rx=((i*53+t*12)%(W+40))-20;A(.5);R(rx,ry,18,1,'#3a5a9a');A(1)}
+    R(0,82,150,6,'#5a4030');for(let i=0;i<150;i+=12)R(i,82,1,6,'#3a2a20');R(20,88,4,30,'#3a2a20');R(120,88,4,30,'#3a2a20');
+    put(0,30,44);put(1,92,44);const bob=Math.round(Math.sin(t*3)*2);A(.8);x.strokeStyle='#c8d0e0';x.lineWidth=1;x.beginPath();x.moveTo(126,52);x.lineTo(200,104+bob);x.stroke();x.beginPath();x.moveTo(64,52);x.lineTo(170,98+bob);x.stroke();A(1);R(198,102+bob,4,4,'#ff5a5a');R(168,96+bob,4,4,'#ff5a5a');
+    const jp=(t*.5)%1;if(jp<.3){const fx=220+jp*140,fy=100-Math.sin(jp/.3*Math.PI)*26;R(fx,fy,8,4,'#7fe0ff');R(fx-3,fy+1,3,2,'#5fb8d8')}}
+  else if(kind==='hunt'){R(0,0,W,H,'#150c22');stars(30,60);R(0,100,W,40,'#2a1a30');for(let i=0;i<W;i+=9)R(i,100+(i*7)%5,5,2,'#3a2640');
+    const mx=226,my=58+Math.round(Math.sin(t*2)*3);for(let j=0;j<44;j++){const w=Math.round(36*Math.sqrt(Math.max(0,1-((j-22)/22)**2)));R(mx-w,my+j,w*2,1,j<6?'#7ad07a':'#4a9a4a')}
+    for(let k=0;k<5;k++){const tx=mx-30+k*15,sw=Math.round(Math.sin(t*4+k)*4);R(tx+sw,my+40,4,14,'#3a7a3a')}R(mx-16,my+12,10,10,'#fff');R(mx+6,my+12,10,10,'#fff');R(mx-12+Math.round(Math.sin(t)*2),my+15,5,5,'#c8203a');R(mx+10+Math.round(Math.sin(t)*2),my+15,5,5,'#c8203a');R(mx-10,my+30,20,3,'#1a3a1a');
+    [[14,0],[64,1],[114,2]].forEach(([px,i],k)=>{put(i,px,62);const on=((t*4+k*1.3)|0)%3===0;if(on){A(.9);R(px+38,82-k*2,mx-40-px-38,2,'#7fe0ff');A(.4);R(px+38,81-k*2,mx-40-px-38,4,'#7fe0ff');A(1);for(let s=0;s<4;s++)R(mx-40+Math.random()*12,74+Math.random()*14-k*2,2,2,'#ffd65f')}})}
+  else if(kind==='farm'){R(0,0,W,H,'#0e1a24');A(.35);x.strokeStyle='#9ad8ff';x.beginPath();x.ellipse(W/2,128,150,120,0,Math.PI,2*Math.PI);x.stroke();A(1);for(let i=0;i<6;i++){A(.18);R(20+i*50,14,1,114,'#9ad8ff');A(1)}
+    R(0,108,W,32,'#3a2a1c');for(let r=0;r<3;r++)R(10,112+r*9,W-20,4,'#4e3a26');
+    for(let i=0;i<14;i++){const px=22+i*21,h=6+((i*5)%7)+Math.round(Math.sin(t*1.5+i)*1);R(px,108-h,2,h,'#4a9a4a');R(px-3,108-h,4,3,'#7ad07a');R(px+1,108-h+2,4,3,'#7ad07a');if(i%4===1)R(px-1,108-h-3,4,4,'#ff8a4a')}
+    put(0,60,66);put(1,180,66,true);const dt=(t*1.4)%1;for(let k=0;k<5;k++){const dy=(dt+k*.2)%1;A(.8);R(104+k*3,84+dy*22,2,3,'#7fd0ff');A(1)}R(96,80,10,6,'#8a96a8')}
+  else if(kind==='repair'){R(0,0,W,H,'#0a0e18');stars(30,50);R(0,112,W,28,'#1a1a24');R(0,112,W,1,'#2a2a38');x.drawImage(csShip(),110,22,100,100);
+    put(0,40,72);put(1,236,72,true);put(2,140,2);for(let i=0;i<10;i++){const ph=(t*1.8+i/10)%1;A(1-ph);R(102+Math.cos(i*2.3)*ph*14,86-ph*12,2,2,'#ffd65f');R(222+Math.cos(i*1.7)*ph*14,90-ph*12,2,2,'#ffb35a');A(1)}}}
 /* 엔딩 크레딧: the operator rolls it for everyone (org/bunker.credits = {id, at}; that doc is already watched, so no extra reads).
    Thirty registered crew, most recently seen first, each with their own character, then 녹슨 7호 last. */
 let credArm=false;
@@ -11139,10 +11174,15 @@ function credAva(p){const c=document.createElement('canvas'),W=26,H=32;c.width=W
 function playCredits(after){const old=document.getElementById('credFx');if(old)old.remove();
   const M=document.createElement('div');M.id='credFx';M.setAttribute('role','dialog');M.setAttribute('aria-label','엔딩 크레딧');
   M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credx">닫기</button><button type="button" class="credok" hidden>확인 ▶</button>`;
-  const gr=M.querySelector('.credgrid');credCrew().forEach((p,i)=>{const d=document.createElement('div');d.className='credp'+(i%2?' r':'');const f=document.createElement('div');f.className='credphoto';f.appendChild(credAva(p));d.appendChild(f);
-    const t=document.createElement('div');t.className='credname';t.innerHTML=`<span>CREW · ${String(i+1).padStart(2,'0')}</span>`;const n=document.createElement('b');n.textContent=p.nick;t.appendChild(n);d.appendChild(t);gr.appendChild(d)});
+  const gr=M.querySelector('.credgrid'),crew=credCrew(),avs=crew.map(credFullAva),scs=[];let si=0;
+  const scene=()=>{if(si>=CRED_SCENES.length||!avs.length)return;const [kind,cap]=CRED_SCENES[si],off=si*3;si++;const d=document.createElement('figure');d.className='credscene';const c=document.createElement('canvas');c.width=CS_W;c.height=CS_H;d.appendChild(c);const fc=document.createElement('figcaption');fc.textContent=cap;d.appendChild(fc);gr.appendChild(d);
+    const av=avs.map((_,k)=>avs[(k+off)%avs.length]);scs.push([c,kind,av]);credSceneDraw(c,kind,av,0)};
+  const every=Math.max(2,Math.ceil(crew.length/(CRED_SCENES.length+1)));
+  crew.forEach((p,i)=>{if(i&&i%every===0)scene();const d=document.createElement('div');d.className='credp'+(i%2?' r':'');const f=document.createElement('div');f.className='credphoto';f.appendChild(credAva(p));d.appendChild(f);
+    const t=document.createElement('div');t.className='credname';t.innerHTML=`<span>CREW · ${String(i+1).padStart(2,'0')}</span>`;const n=document.createElement('b');n.textContent=p.nick;t.appendChild(n);d.appendChild(t);gr.appendChild(d)});while(si<Math.min(CRED_SCENES.length,Math.max(1,Math.floor(crew.length/every))))scene();
   try{const bc=xevBot();if(bc){const c=document.createElement('canvas');c.width=bc.width;c.height=bc.height;c.getContext('2d').drawImage(bc,0,0);M.querySelector('.credbotimg').appendChild(c)}}catch(e){}
-  document.body.appendChild(M);let shut=false;const close=()=>{if(shut)return;shut=true;M.classList.add('out');setTimeout(()=>{M.remove();if(after)after()},900)};M.querySelector('.credx').onclick=close;const okB=M.querySelector('.credok');okB.onclick=close;
+  document.body.appendChild(M);credMusicOn();const t0=performance.now(),anim=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000;scs.forEach(([c,kind,av])=>{const r=c.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)credSceneDraw(c,kind,av,t)});requestAnimationFrame(anim)};requestAnimationFrame(anim);
+  let shut=false;const close=()=>{if(shut)return;shut=true;credMusicOff();M.classList.add('out');setTimeout(()=>{M.remove();if(after)after()},900)};M.querySelector('.credx').onclick=close;const okB=M.querySelector('.credok');okB.onclick=close;
   // roll from below the screen until 녹슨 7호 sits in the middle, then stay there
   requestAnimationFrame(()=>{const R=M.querySelector('.credroll'),H=innerHeight,end=-(R.offsetHeight-H/2-M.querySelector('.credbot').offsetHeight/2),dist=H-end,sec=Math.max(25,dist/45);
     R.style.transform=`translateY(${H}px)`;R.getBoundingClientRect();R.style.transition=`transform ${sec}s linear`;R.style.transform=`translateY(${end}px)`;if(after)setTimeout(()=>{okB.hidden=false},sec*1000+600)})}
@@ -11221,6 +11261,7 @@ function finToMain(){if(FIN_OUT)return;const f=finBgm,t0=Date.now()+1500;let m=n
     if(!m){m=bgmMain();m.volume=0;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{})}const k=Math.min(1,(now-t0)/3000),w=bgmVol/100;f.volume=w*(1-k);m.volume=w*k;
     if(k>=1){clearInterval(FIN_OUT);FIN_OUT=0;f.pause();f.volume=w;syncBgm()}},60)}
 function syncBgm(){if(!bgmFade&&!FIN_OUT){bgm.volume=bgmVol/100;bgm2.volume=bgmVol/100}
+  if(typeof credOn!=='undefined'&&credOn){try{bossBgmStop();bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll();if(finBgm)finBgm.pause()}catch(e){}const m=credMusic();if(bgmOn&&bgmVol>0){m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{})}else m.pause();return}
   if(typeof endOn==='function'&&(endOn()||orbPre())&&bgmOn&&bgmVol>0){bossBgmStop();if(!ORB_FADE){bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll()}const m=finMusic();if(!ORB_FADE)m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}
   if(FIN_OUT){if(!secretView&&!raidBgmWant()&&bgmOn&&bgmVol>0)return;clearInterval(FIN_OUT);FIN_OUT=0}
   if(finBgm&&!finBgm.paused){if(!secretView&&!raidBgmWant()&&!bossBgmWant()&&bgmOn&&bgmVol>0){finToMain();return}finBgm.pause()}
