@@ -1517,9 +1517,10 @@ body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
 #credFx .credroll{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:center;gap:56px;padding:0 max(16px,env(safe-area-inset-left,0px));will-change:transform}
 #credFx .credhead{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}#credFx .credhead b{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,7vw,44px);letter-spacing:.12em;color:#ffd65f;text-shadow:0 3px 0 #000}#credFx .credhead span:last-child{font-size:15px;color:#c9d1e2;letter-spacing:.2em}
 #credFx .lbl{color:#e0b860;letter-spacing:.2em}
-#credFx .credgrid{display:grid;grid-template-columns:repeat(3,minmax(0,150px));gap:34px 22px;justify-content:center;width:100%}
-@media (max-width:520px){#credFx .credgrid{grid-template-columns:repeat(2,minmax(0,150px))}}
-#credFx .credp{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}#credFx .credp canvas{width:96px;height:96px;image-rendering:pixelated}#credFx .credp b{font-size:14px;font-weight:700;color:#eef2fa;text-align:center;overflow-wrap:anywhere}
+#credFx .credgrid{display:flex;flex-direction:column;align-items:center;gap:44px;width:100%}
+#credFx .credp{display:grid;grid-template-columns:96px minmax(0,190px);align-items:center;gap:26px;width:min(340px,100%)}#credFx .credp.r{grid-template-columns:minmax(0,190px) 96px}#credFx .credp.r .credphoto{order:2}#credFx .credp.r .credname{text-align:right}
+#credFx .credphoto{padding:5px 5px 14px;background:#f1ede4;box-shadow:0 4px 0 #000,0 0 0 1px #000}#credFx .credphoto canvas{display:block;width:84px;height:auto;image-rendering:pixelated}
+#credFx .credname{display:flex;flex-direction:column;gap:6px;min-width:0}#credFx .credname span{font-size:11px;letter-spacing:.2em;color:#e0b860}#credFx .credname b{font-size:18px;font-weight:700;color:#eef2fa;overflow-wrap:anywhere;text-shadow:0 2px 0 #000}
 #credFx .credbot{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:40px}#credFx .credbotimg canvas{width:120px;height:auto;image-rendering:pixelated}#credFx .credbot b{font-size:22px;color:#ffe08a;text-shadow:0 2px 0 #000}
 #credFx .credx{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));font:inherit;font-size:12px;padding:6px 12px;background:rgba(255,255,255,.08);color:#c9d1e2;border:1px solid rgba(255,255,255,.2);cursor:pointer}
 @media (prefers-reduced-motion:reduce){#credFx .credroll{transition:none!important}}
@@ -11054,11 +11055,15 @@ Object.assign(A,JA);Object.keys(JA).forEach(k=>SAFE_ACT.add(k));
 let credArm=false;
 function credCrew(){const all=Object.entries(PLAYERS||{}).filter(([id,p])=>p&&p.nick&&p.nick!=='새 선원'&&!p.deleted&&!(DELP||{})[id]).map(([id,p])=>id===uid&&P?P:p);
   if(P&&P.nick&&P.nick!=='새 선원'&&!all.includes(P))all.push(P);return all.sort((a,b)=>(+b.seen||0)-(+a.seen||0)).slice(0,30)}
-function credAva(p){const c=document.createElement('canvas');c.width=40;c.height=40;try{gridOnS(c.getContext('2d'),avatarGrid(p),0,0,1,lookPal(p))}catch(e){}return c}
+// an ID photo: head and shoulders on a pale backdrop, like a crew badge
+function credAva(p){const c=document.createElement('canvas'),W=26,H=32;c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#9fb6cc';x.fillRect(0,0,W,H);x.fillStyle='#b4c8db';x.fillRect(0,0,W,Math.round(H*.45));
+  try{const g=avatarGrid(p);let top=0;while(top<20&&![...g[top]].some(q=>q!=='.'))top++;let l=40,r=0;for(let j=top;j<Math.min(40,top+14);j++)[...g[j]].forEach((q,k)=>{if(q!=='.'){l=Math.min(l,k);r=Math.max(r,k)}});
+    const cx=Math.round((l+r)/2),ox=cx-Math.floor(W/2),oy=top-3;gridOnS(x,g.slice(Math.max(0,oy),oy+H).map(row=>row.slice(Math.max(0,ox),ox+W)),Math.max(0,-ox),Math.max(0,-oy),1,lookPal(p))}catch(e){}return c}
 function playCredits(){const old=document.getElementById('credFx');if(old)old.remove();
   const M=document.createElement('div');M.id='credFx';M.setAttribute('role','dialog');M.setAttribute('aria-label','엔딩 크레딧');
   M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credx">닫기</button>`;
-  const gr=M.querySelector('.credgrid');credCrew().forEach(p=>{const d=document.createElement('div');d.className='credp';d.appendChild(credAva(p));const n=document.createElement('b');n.textContent=p.nick;d.appendChild(n);gr.appendChild(d)});
+  const gr=M.querySelector('.credgrid');credCrew().forEach((p,i)=>{const d=document.createElement('div');d.className='credp'+(i%2?' r':'');const f=document.createElement('div');f.className='credphoto';f.appendChild(credAva(p));d.appendChild(f);
+    const t=document.createElement('div');t.className='credname';t.innerHTML=`<span>CREW · ${String(i+1).padStart(2,'0')}</span>`;const n=document.createElement('b');n.textContent=p.nick;t.appendChild(n);d.appendChild(t);gr.appendChild(d)});
   try{const bc=xevBot();if(bc){const c=document.createElement('canvas');c.width=bc.width;c.height=bc.height;c.getContext('2d').drawImage(bc,0,0);M.querySelector('.credbotimg').appendChild(c)}}catch(e){}
   document.body.appendChild(M);const close=()=>{M.classList.add('out');setTimeout(()=>M.remove(),900)};M.querySelector('.credx').onclick=close;
   // roll from below the screen until 녹슨 7호 sits in the middle, then stay there
