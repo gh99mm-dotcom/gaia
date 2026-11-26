@@ -1501,6 +1501,7 @@ body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
 @keyframes rfRise{from{transform:translateY(0);opacity:0}15%{opacity:1}to{transform:translateY(-105vh);opacity:0}}
 @keyframes rfShake{25%{transform:translate(-4px,2px)}50%{transform:translate(3px,-3px)}75%{transform:translate(-2px,-2px)}}
 @media (prefers-reduced-motion:reduce){.ritefx *{animation-duration:.01s!important;animation-iteration-count:1!important}}
+.endrage{position:fixed;inset:0;z-index:47;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(200,10,30,.38));animation:endrg 1.6s ease-in-out infinite}@keyframes endrg{50%{opacity:.55}}
 .endflash{position:fixed;inset:0;z-index:48;pointer-events:none;background:rgba(232,72,72,.35);animation:endfl .7s steps(4) forwards}
 @keyframes endfl{to{opacity:0}}.endhud .endch b{font-size:17px}
 .endch{display:flex;flex-direction:column;gap:3px}.endch b{font-family:var(--f-display);font-weight:400;font-size:20px;color:#e8b4b0}
@@ -5665,7 +5666,7 @@ function endDraw(){if(!endOn()){['endBg','endFg'].forEach(i=>{const c=document.g
   // eyes opening on top of the page itself; one shuts for good each time the boss loses a ninth of its HP
   const fg=endCv('endFg',44),y=fg.getContext('2d');y.clearRect(0,0,fg.width,fg.height);
   END_EYES.forEach((s,i)=>{const [X,Y]=endSpotXY(s),lk=endMx<0?[Math.sin(t*.6+i)*.7,Math.cos(t*.4+i)*.5]:[Math.max(-1,Math.min(1,(endMx-X)/260)),Math.max(-1,Math.min(1,(endMy-Y)/200))];
-    const open=frac>(i+1)/(END_EYES.length+1)?((Math.sin(t*.9+i*2.1)>.97)?.2:1):0;endEye(y,X/EPX,Y/EPX,3.2*s[3],open,lk,hurt,t)})}
+    const rage=endPh()>=3,open=rage?1:frac>(i+1)/(END_EYES.length+1)?((Math.sin(t*.9+i*2.1)>.97)?.2:1):0;endEye(y,X/EPX,Y/EPX,3.2*s[3],open,lk,hurt||rage&&Math.floor(t*2+i)%3===0,t)})}
 setInterval(()=>{if(endOn()||document.getElementById('endBg')||document.getElementById('endHud'))endRender()},125);
 addEventListener('pointermove',e=>{endMx=e.clientX;endMy=e.clientY},{passive:true});
 /* 통신 장치 repaired: the signal reaches something. For every crew member, once, the sky splits and the great eye 「오르비스」 looks down
@@ -5773,18 +5774,21 @@ function endPaint(){const c=$('#endHud');if(!c||!endOn())return;
   const e=END,left=endShow();$('#endBarI').style.width=(left/e.max*100)+'%';$('#endBarT').textContent='체력 ???';
   const now=Date.now(),sk=Math.max(0,END_SKCD-(now-endSkAt)),ab=$('#endAtkB'),sb=$('#endSkB');const ac2=Math.max(0,END_CD-(now-endAt));if(ab){ab.disabled=ac2>0;ab.textContent=ac2>0?`⚔ 공격 ${Math.ceil(ac2/1000)}초`:'⚔ 공격'}if(sb){sb.disabled=sk>0;sb.textContent=sk>0?`✦ ${endSkill()[0]} ${Math.ceil(sk/1000)}초`:`✦ ${endSkill()[0]}`}
   {const ub=$('#endUltB'),u=endUlt(),uc=Math.max(0,END_ULTCD-(now-endUltAt));if(ub&&u){ub.disabled=uc>0||isFaint();ub.textContent=uc>0?`★ ${u[0]} ${Math.ceil(uc/1000)}초`:`★ ${u[0]}`}}
-  const ai=endAoeIn(),w=$('#endWarn');if(w&&endFirst()){const left=Math.max(0,(+END.until||0)-sNow()),mm=Math.floor(left/60000),ss=String(Math.floor(left/1000)%60).padStart(2,'0');w.className='endwarn'+(ai<=END_WARN||left<15000?' on':'');w.textContent=(ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초 · `:'')+`오르비스가 모든 눈을 뜨기까지 ${mm}:${ss}`}else if(w){w.className='endwarn'+(ai<=END_WARN?' on':'');w.textContent=ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초`:`다음 시선까지 ${Math.ceil(ai/1000)}초 · 선원 모두가 피해를 입습니다`}
+  const ai=endAoeIn(),w=$('#endWarn');if(w&&endFirst()){const left=Math.max(0,(+END.until||0)-sNow()),mm=Math.floor(left/60000),ss=String(Math.floor(left/1000)%60).padStart(2,'0');w.className='endwarn'+(ai<=END_WARN||left<15000?' on':'');w.textContent=(ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초 · `:'')+`오르비스가 모든 눈을 뜨기까지 ${mm}:${ss}`}else if(w){w.className='endwarn'+(ai<=END_WARN?' on':'');w.textContent=ai<=END_WARN?`⚠ 시선이 베이스캠프를 향합니다! ${Math.ceil(ai/1000)}초`:`다음 시선까지 ${Math.ceil(ai/1000)}초 · 선원 모두가 피해를 입습니다`;
+   const fi=endFocusIn();if(fi>0&&fi<=END_WARN){w.className='endwarn on';w.textContent=`⚠ 오르비스의 눈이 당신을 노려봅니다! ${Math.ceil(fi/1000)}초 · `+w.textContent}}
   const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)).slice(0,5),me=((e.dmg||{})[uid]||{}).d||0;
   $('#endMeta').innerHTML=`<span>내 피해 <b>${Math.round(me+endPend).toLocaleString()}</b></span><span>참여 ${Object.keys(e.dmg||{}).length}명</span>${top.map(([u,v],i)=>`<span class="${u===uid?'me':''}">${i+1}. ${esc(v.n||'선원')} ${Math.round(v.d||0).toLocaleString()}</span>`).join('')}`}
 setInterval(()=>{if(endOn())endPaint()},250);
 /* every 20 s the boss turns its gaze on the whole station: everyone online takes a hit at the same moment
    (timed from the raid's start, so no extra writes); a red warning counts down the last 3 s, agility/회피 can dodge it */
-const END_AOE=20000,END_WARN=3000;
-const endAoeIn=()=>END&&END.startAt?END_AOE-((sNow()-END.startAt)%END_AOE):END_AOE;
+const END_AOE=20000,END_AOE2=12000,END_WARN=3000;
+const endAoeP=()=>endPh()>=2?END_AOE2:END_AOE,endAoeIn=()=>{const p=endAoeP();return END&&END.startAt?p-((sNow()-END.startAt)%p):p};
+// the gaze's tick key (the faster gaze below 30% counts its ticks under its own name, so switching never fires an extra gaze)
+const endGzKey=(o=0)=>{const p=endAoeP(),n=Math.floor((sNow()-END.startAt)/p)+o;return END.gen+':'+(p===END_AOE?'':'f')+n};
 let endFlashT=0;
-setInterval(()=>{if(!endOn()||!P||!P.joined)return;const n=Math.floor((sNow()-END.startAt)/END_AOE),k=END.gen+':'+n;
+setInterval(()=>{if(!endOn()||!P||!P.joined)return;const n=Math.floor((sNow()-END.startAt)/END_AOE),k=endGzKey();
   // no gaze in the first 20 s after 오르비스 appears, and none the moment I first see this 오르비스 (a mark from an earlier one doesn't count)
-  if(n<1||!P.endHitK||String(P.endHitK).split(':')[0]!==String(END.gen)){P.endHitK=k;return}if(P.endHitK===k)return;P.endHitK=k;
+  if(n<1||!P.endHitK||String(P.endHitK).split(':')[0]!==String(END.gen)||String(P.endHitK).includes(':f')!==k.includes(':f')){P.endHitK=k;return}if(P.endHitK===k)return;P.endHitK=k;
   // no gaze while the 90-second rite plays out (everyone is down, then the blessings come one by one)
   if(!endFirst()){const dt=sNow()-END.startAt;if(dt>=RITE_AT-1500&&dt<RITE_AT+RITE[RITE.length-1].at+1500)return}
   if(isFaint())return;
@@ -5805,7 +5809,7 @@ const RITE_AT=90e3,RITE=[
 const riteStep=()=>{if(!endOn()||endFirst()||!END.startAt)return -1;const dt=sNow()-END.startAt-RITE_AT;if(dt<0)return -1;let k=-1;RITE.forEach((r,i)=>{if(dt>=r.at)k=i});return k};
 // what I have from the rite in this raid: 1 woken + regen, 2 +200% defence and no fainting, 3 +200% attack
 const riteHas=n=>!!(P&&P.endRite&&END&&P.endRite.g===END.gen&&P.endRite.k>=n&&endOn());
-function riteBanner(r){const old=document.getElementById('riteFx');if(old)old.remove();const i=RITE.indexOf(r),th=[['#ff4a5a','◉'],['#7dffb0','✚'],['#7fc8ff','◈'],['#ffb35a','⚙']][i]||['#ffd27a','✦'];
+function riteBanner(r,th0){const old=document.getElementById('riteFx');if(old)old.remove();let i=RITE.indexOf(r),th=th0||[['#ff4a5a','◉',1],['#7dffb0','✚'],['#7fc8ff','◈'],['#ffb35a','⚙']][i]||['#ffd27a','✦'];if(th0)i=th[2]?0:9;
   const el=document.createElement('div');el.id='riteFx';el.className='ritefx'+(i===0?' dark':'');el.style.setProperty('--c',th[0]);el.setAttribute('role','status');
   let ps='';if(i>0)for(let k=0;k<26;k++)ps+=`<i class="rfp" style="left:${(k*37)%100}%;animation-duration:${2.6+(k%5)*.5}s;animation-delay:${(k*.17)%2}s"></i>`;
   el.innerHTML=`<div class="rfbg"></div><div class="rfpil"></div>${ps}<div class="rfring"></div><div class="rfsym">${th[1]}</div><div class="rftxt"><b>${esc(r.t)}</b><span>${esc(r.s)}</span></div>`;
@@ -5822,12 +5826,43 @@ setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;
   P.endRite={g,k};if(cur<1&&k>=1){const h=document.getElementById('endHud');if(h)h.remove();try{endRender()}catch(e){}}renderPilot();renderAll()},500);
 // 의무원들의 기원: +20 HP every second while this raid lasts (kept on my screen; it is saved with my next save as usual)
 setInterval(()=>{if(!P||!riteHas(1)||isFaint())return;const mh=maxHp();if(P.hp>=mh)return;P.hp=Math.min(mh,P.hp+20);renderPilot();try{endPaint()}catch(e){}},1000);
+/* 최종 레이드 후반 패턴 (after the rite): what 오르비스 does as its HP falls. Like the gaze, each screen works it out
+   from the raid's start on the server clock and the shared HP, so no extra reads or writes.
+   ≤50% 집중 시선: every 30 s about a quarter of the crew are stared down (heavy hit; 수호의 방패 blocks it)
+   ≤30% 시선 가속: the gaze sweeps every 12 s instead of 20 s
+   ≤10% 모든 눈 개방: every eye opens, the sky turns red and a small gaze rains down every 3 s */
+const END_PH=[{at:.5,t:'오르비스의 눈이 선원들을 노려봅니다.',s:'30초마다 몇몇 선원에게 집중 시선이 꽂힙니다. 항해사의 수호의 방패로 막을 수 있습니다.',th:['#ff8a3a','◎']},
+ {at:.3,t:'오르비스의 눈이 분노로 붉어집니다.',s:'시선이 더 빠르게 베이스캠프를 훑습니다. (20초 → 12초)',th:['#ff3a5a','◉']},
+ {at:.1,t:'오르비스가 모든 눈을 개방합니다.',s:'하늘이 붉게 물듭니다. 3초마다 시선이 쏟아집니다.',th:['#ff2020','✺',1]}];
+const END_FOCUS=30000;
+function endPh(){if(!endOn()||endFirst()||!END.startAt||!END.max)return 0;if(sNow()-END.startAt<RITE_AT+RITE[RITE.length-1].at+1500)return 0;
+  const f=endHpS()/END.max;let k=0;END_PH.forEach((q,i)=>{if(f<=q.at)k=i+1});return k}
+const endHash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+const endFocusMe=m=>endHash(uid+':'+END.gen+':'+m)%100<25;
+// ms until the next 집중 시선 lands on me (0 = not me / not in that phase)
+function endFocusIn(){if(endPh()<1||!P||!P.joined)return 0;const dt=sNow()-END.startAt,m=Math.floor(dt/END_FOCUS)+1;return endFocusMe(m)?m*END_FOCUS-dt:0}
+let endFocusK='',endRainK='',endRainKn=0;
+setInterval(()=>{const ph=endPh(),rg=document.getElementById('endRage');
+  if(ph>=3&&!rg){const d=document.createElement('div');d.id='endRage';d.className='endrage';document.body.appendChild(d)}else if(ph<3&&rg)rg.remove();
+  if(!ph||!P||!P.joined)return;const g=END.gen;
+  // phase banner once per raid per phase
+  const seen=P.endPh&&P.endPh.g===g?P.endPh.k:0;if(ph>seen){const q=END_PH[ph-1];riteBanner(q,q.th);log(`${q.t} ${q.s}`,'bad');try{sfxStatic()}catch(e){}P.endPh={g,k:ph}}
+  const dt=sNow()-END.startAt,gaze=(mul,what)=>{const raw=(20+END_LV*6.5)*endAtkK()*mul*(.85+Math.random()*.3),hit=defCut(raw,def());heal(-hit,0);return hit};
+  // 집중 시선
+  {const m=Math.floor(dt/END_FOCUS),k=g+':'+m;if(endFocusK!==k){const first=!endFocusK;endFocusK=k;
+    if(!first&&endFocusMe(m)&&!isFaint()){const sh=END.shield;
+      if(sh&&sh.u!==uid&&Date.now()-(+sh.at||0)<END_AOE){toast(`${sh.n} 님이 수호의 방패로 집중 시선을 대신 막았습니다!`);log(`${sh.n} 님이 수호의 방패로 오르비스의 집중 시선을 막았다.`,'good')}
+      else if(Math.random()*100<Math.min(40,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')))){toast('집중 시선을 피했다!');log('오르비스의 집중 시선을 피했다.','good')}
+      else{endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);try{sfxStatic()}catch(e){}
+        const hit=gaze(2.5);toast(`오르비스의 집중 시선! 체력 -${hit}`);log(`오르비스의 눈이 나를 꿰뚫어 보았다. 체력 -${hit}`,'bad');commit()}}}}
+  // 모든 눈 개방: a small gaze every 3 s (kept on my screen; saved with my next save as usual)
+  if(ph>=3&&!isFaint()){const n=Math.floor(dt/3000);if(endRainK!==g){endRainK=g;endRainKn=n}else if(n>endRainKn){endRainKn=n;
+    const hit=gaze(.12);if(P.hp<=0)checkFaint();renderPilot();try{endPaint()}catch(e){}if(isFaint())commit()}}},500);
 const EA={
  async endult(){if(!endOn()||endFirst()||!riteHas(1)||isFaint()||Date.now()-endUltAt<END_ULTCD)return;const j=P.job,u=endUlt();if(!u)return;
-  if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);echSay(`★ ${u[0]}!`)}return}
-  const tick=Math.floor((sNow()-END.startAt)/END_AOE)+1;
-  if(j==='nav'){try{await endRef().update({shield:{k:END.gen+':'+tick,u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}! 다음 시선은 내가 막는다!`);return}
-  if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:sNow()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);echSay(`★ ${u[0]}!`)}},
+  if(j==='mech'){if(endHit(10)){endUltAt=Date.now();sfxFanfare(true);toast(`★ ${u[0]}!`)}return}
+  if(j==='nav'){try{await endRef().update({shield:{k:endGzKey(1),u:uid,n:P.nick,at:Date.now()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);toast(`★ ${u[0]}! 다음 시선을 대신 막습니다.`);return}
+  if(j==='medic'){try{await endRef().update({heal:{id:uid+':'+Date.now(),u:uid,n:P.nick,at:sNow()}})}catch(e){toast('비기를 쓰지 못했습니다.');return}endUltAt=Date.now();sfxFanfare(false);toast(`★ ${u[0]}!`)}},
  endatk(){if(Date.now()-endAt<END_CD)return;if(endHit(1))endAt=Date.now()},
  endsk(){if(Date.now()-endSkAt<END_SKCD)return;const j=P.job,ok=j==='mech'?endHit(4):j==='nav'?endHit(1.4,3):j==='medic'?endHit(2.5):endHit(2);if(ok)endSkAt=Date.now()},
  orbisgo(d){if(!isAdmin||mode!=='online')return;if(d.x!=='1'){orbGoArm=!!d.k;renderAdminAll();return}orbGoArm=false;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{orbisGo:sNow()})).then(()=>toast('오르비스 첫 등장을 시작했습니다.')).catch(()=>toast('시작하지 못했습니다.'))},
