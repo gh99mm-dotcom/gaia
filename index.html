@@ -3567,7 +3567,7 @@ function renderAdminAll(){const box=$('#adminBox');if(!box)return;const keep={},
   const scK=el=>{const sec=el.closest('[data-adm]');return(sec?sec.dataset.adm:'tools')+':'+[...(sec||box).querySelectorAll('.'+[...el.classList].join('.'))].indexOf(el)+':'+el.className},sc={};
   box.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{if(el.scrollTop)sc[scK(el)]=el.scrollTop});
   const outer=[];for(let e=box;e;e=e.parentElement)if(e.scrollTop)outer.push([e,e.scrollTop]);const wy=window.scrollY;
-  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+xevAdminHTML()+affAdminHTML()+rbAdminHTML()+padResetHTML()+seasonAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+raidFreeHTML()+fbAdminHTML());admTabsApply();
+  renderAdmin();$('#adminBox').insertAdjacentHTML('beforeend',storyAdminHTML()+xevAdminHTML()+affAdminHTML()+rbAdminHTML()+padResetHTML()+seasonAdminHTML()+bossAdminHTML()+endAdminHTML()+spresAdminHTML()+invHTML()+crewAdminHTML()+raidFreeHTML()+asigOffHTML()+fbAdminHTML());admTabsApply();
   Object.entries(keep).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&v!==''&&el.value!==v&&(el.tagName!=='SELECT'||[...el.options].some(o=>o.value===v)))el.value=v});
   if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
   const nb=$('#adminBox');if(nb){nb.querySelectorAll('.fblist,[data-keepscroll]').forEach(el=>{const v=sc[scK(el)];if(v)el.scrollTop=v});outer.forEach(([e,v])=>{const t=e===box?nb:e;if(t.isConnected)t.scrollTop=v});if(window.scrollY!==wy)window.scrollTo(0,wy)}}
@@ -4446,6 +4446,12 @@ const raidLocked=()=>!!(MYRAID&&MYRAID.state==='run'&&!(MYRAID.left||{})[uid]);
 // while I'm out on an expedition my profile HP follows my expedition HP (never below 1 here, so the main game doesn't faint me mid-run)
 function raidHpSync(){const r=MYRAID,me=r&&r.m&&r.m[uid];if(!raidLocked()||r.phase==='end'||!me)return;const v=Math.max(1,Math.min(maxHp(),Math.round(me.hp)));if(v!==P.hp){P.hp=v;renderPilot()}}
 const raidRef=id=>db.doc('parties/'+id);
+// 운영자 · who has switched their 구식 신호기 off (P.asig.off on their own record), and since when — seen only in the 운영자 화면
+function asigOffHTML(){if(mode!=='online')return'';const pad=n=>String(n).padStart(2,'0'),fmt=t=>{const x=new Date(+t+9*3600e3);return`${x.getUTCMonth()+1}/${x.getUTCDate()} ${pad(x.getUTCHours())}:${pad(x.getUTCMinutes())}`};
+  const L=Object.entries(PLAYERS).filter(([,p])=>p&&p.nick&&!p.deleted&&p.asig&&p.asig.off).sort((a,b)=>(+a[1].asig.t||0)-(+b[1].asig.t||0));
+  return`<div class="info-sec" data-adm="crew"><span class="lbl">Signal · 구식 신호기를 끈 선원 · ${L.length}명</span><span class="hint">운영자에게만 보입니다. 선원 목록은 몇 분마다 새로 받아 오므로 조금 늦게 반영될 수 있습니다.</span>
+   ${L.length?`<div class="row" style="gap:4px 12px;flex-wrap:wrap;margin-top:6px">${L.map(([u,p])=>`<button type="button" class="namebtn" data-act="profopen" data-k="${esc(u)}" style="color:${colorOf(u)}">${esc(p.nick)}</button><span class="hint">${p.asig.t?fmt(p.asig.t)+'부터':''}</span>`).join('')}</div>`:'<p class="hint" style="margin-top:6px">지금 신호기를 끈 선원이 없습니다.</p>'}</div>`}
+
 // 운영자 · a crew member stuck in an expedition (a run that will not end or pay out): mark them out of every run they are still in, so they are back at camp
 function raidFreeHTML(){if(mode!=='online')return'';const L=Object.entries(PLAYERS).filter(([,p])=>p&&p.nick).sort((a,b)=>String(a[1].nick).localeCompare(String(b[1].nick)));
   return`<div class="info-sec" data-adm="crew"><span class="lbl">Expedition · 원정에서 빠져나오지 못한 선원 꺼내기</span><span class="hint">원정이 끝나지 않거나 베이스캠프로 돌아가지 못하는 선원을 그 원정에서 빼냅니다. 그 원정의 보상은 받지 못하니, 필요하면 운영자 지급으로 따로 챙겨 주십시오.</span>
