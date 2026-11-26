@@ -5616,7 +5616,7 @@ function endSub(){liveSub();endRef().onSnapshot(sn=>{const was=END;END=sn.exists
   if(END&&END.on&&!END.done&&endHpS()<=0)endFinish();
   // 의무원's 생명의 파동 reaches everyone in the fight once
   if(END&&END.heal&&END.heal.id!==endHealSeen&&sNow()-(+END.heal.at||0)<15e3&&P&&P.joined){endHealSeen=END.heal.id;const by=END.heal.u===uid?'':END.heal.n;
-    if(isFaint())wake(by||P.nick,true);P.hp=Math.min(maxHp(),Math.max(P.hp,0)+Math.round(maxHp()*.5));toast(`${by?by+' 님의 ':''}생명의 파동! 체력이 회복됐습니다.`);try{sfxCoin()}catch(e){}commit()}
+    if(isFaint())wake(by||P.nick,true);P.hp=Math.min(maxHp(),Math.max(P.hp,0)+Math.round(maxHp()*.5));toast(`${by?by+' 님의 ':''}생명의 파동! 체력이 회복됐습니다.`);commit()}
   else if(END&&END.heal&&!endHealSeen)endHealSeen=END.heal.id;
   if(END&&END.done)endReward();endRender();endPaint();if(!!(was&&was.on&&!was.done)!==endOn())syncBgm()},()=>{})}
 /* ── drawing: low-res canvases scaled up so every dot is a crisp pixel ── */
@@ -5695,7 +5695,7 @@ const ORB_LEAVE=['「오르비스」의 모든 눈이 한꺼번에 베이스캠�
 function orbCurtain(op){const k=document.createElement('div');k.className='orbcur';k.style.cssText=`position:fixed;inset:0;background:#000;z-index:215;opacity:${op};transition:opacity .6s linear;pointer-events:none`;document.body.appendChild(k);return k}
 function orbBlackOut(swap){const k=orbCurtain(0);requestAnimationFrame(()=>requestAnimationFrame(()=>{k.style.opacity='1'}));setTimeout(()=>{try{swap()}catch(e){}setTimeout(()=>{k.style.transition='opacity .9s linear';k.style.opacity='0';setTimeout(()=>k.remove(),950)},250)},650)}
 function orbisPlay(LINES,done,leave){if(leave){const k=orbCurtain(1);setTimeout(()=>{k.style.transition='opacity .6s linear';k.style.opacity='0';setTimeout(()=>k.remove(),650)},900)}const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
-  const t0=performance.now(),STEP=leave===2?3.2:leave?2.4:3,TOTAL=LINES.length*STEP+.6;let li=-1;try{sfxStatic()}catch(e){}
+  const t0=performance.now(),STEP=leave===2?3.2:leave?2.4:3,TOTAL=LINES.length*STEP+.6;let li=-1;
   const draw=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000,W=Math.ceil(innerWidth/EPX),H=Math.ceil(innerHeight/EPX);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
     const x=cv.getContext('2d');x.fillStyle='#05030a';x.fillRect(0,0,W,H);
     const cx=W/2,cy=H*.38,r=Math.min(W*.09,H*.16);
@@ -5706,7 +5706,7 @@ function orbisPlay(LINES,done,leave){if(leave){const k=orbCurtain(1);setTimeout(
       if(t>STEP*.8){const n=10,er=Math.max(1.8,r*.2);for(let i=0;i<n;i++){const a=i/n*Math.PI*2+t*.05,ex=cx+Math.cos(a)*r*3.1,ey=cy+Math.sin(a)*r*1.55,o=Math.max(0,Math.min(1,(t-STEP*2-1.8-i*.16)/.5));
         endEye(x,ex,ey,er,o,[Math.cos(a+Math.PI)*.4,.2],false,t)}}}
     if(open>0||(!leave&&t>STEP*.8))endEye(x,cx,cy-(1-sc)*H*.3,r*sc,open,[Math.sin(t*.8)*.3,.3],leave===true&&t<STEP*2&&Math.floor(t*6)%2===0,t);
-    const k=Math.min(LINES.length-1,Math.floor(t/STEP));if(k!==li){li=k;tx.textContent=LINES[k];if(leave===true&&k===1){M.classList.add('red');try{sfxStatic()}catch(e){}}}
+    const k=Math.min(LINES.length-1,Math.floor(t/STEP));if(k!==li){li=k;tx.textContent=LINES[k];if(leave===true&&k===1){M.classList.add('red');}}
     if(t<TOTAL)requestAnimationFrame(draw);else orbBlackOut(()=>{M.remove();done&&done()})};
   requestAnimationFrame(draw)}
 // the fight is over: everyone still standing is struck down, and 오르비스 leaves the sky
@@ -5745,7 +5745,7 @@ function endRender(){endDraw();let h=$('#endHud');const live=endOn()&&P&&P.joine
 const END_SHOT=[1,2,3].map(n=>{const a=new Audio(`shoot${n}.mp3`);a.preload='auto';return a});
 function endShot(){if(!soundOn||!sfxVol)return;const a=END_SHOT[Math.floor(Math.random()*END_SHOT.length)].cloneNode();a.volume=Math.min(1,sfxVol/100*.8);const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{})}
 function endHit(mul,times){if(!endOn()||isFaint()||endShow()<=0)return false;let tot=0;const hs=[],cs=[];
-  for(let k=0;k<(times||1);k++){const c=Math.random()*100<critPct();let d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(c?critMul():1)*mul));d=Math.min(d,endShow()-(endFirst()?1:0));if(d<=0)break;endPend+=d;tot+=d;hs.push(d);cs.push(c?1:0);setTimeout(()=>{endFloat(d,true,c);endShot()},k*160)}
+  for(let k=0;k<(times||1);k++){const c=Math.random()*100<critPct();let d=Math.max(1,Math.round(atk()*(.9+Math.random()*.2)*(c?critMul():1)*mul));d=Math.min(d,endShow()-(endFirst()?1:0));if(d<=0)break;endPend+=d;tot+=d;hs.push(d);cs.push(c?1:0);setTimeout(()=>{endFloat(d,true,c)},k*160)}
   const L=liveCh();if(hs.length&&L&&END)L.send('endhit',{g:END.gen,u:uid,n:P.nick,ds:hs,cs});
   // with a live channel the record is written every 10 s; the moment the boss would fall it is written at once
   if(endShow()<=(endFirst()?1:0)||!L){clearTimeout(endFlushT);endFlushT=setTimeout(()=>{endFlushT=0;endFlush()},L?0:600)}else if(!endFlushT)endFlushT=setTimeout(()=>{endFlushT=0;endFlush()},END_FLUSH_LIVE);
@@ -5757,7 +5757,7 @@ async function endFlush(){if(endBusy||endPend<=0)return;const d=endPend;endPend=
 function endFinish(){if(!END||END.done||endFirst())return;const g=END.gen;bossTx(endRef(),cur=>{if(!cur||cur.done||cur.gen!==g||(+cur.hp||0)>0)return null;cur.done=true;cur.doneAt=Date.now();cur.on=false;return cur})
   .then(nx=>{if(nx)sys(`[공지] 최종 레이드 승리! ${END_NAME}이(가) 쓰러졌습니다. 선원 모두의 힘으로 가이아를 지켜냈습니다.`,true,'beacon')}).catch(()=>{})}
 function endReward(){const e=END;if(!e||!e.done||P.endGen===e.gen)return;if(e.left&&P.endGone!==e.gen&&(!!((e.dmg||{})[uid])||!!(P.endRite&&P.endRite.g===e.gen)))return;/* left after 20 minutes: the victory comes after the leaving scene */const me=(e.dmg||{})[uid];P.endGen=e.gen;
-  if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「테라의 마지막 수호자」를 얻었다.','rare');sfxFanfare(true)}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
+  if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「테라의 마지막 수호자」를 얻었다.','rare')}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
 function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)),me=(e.dmg||{})[uid];
   let M=$('#endWin');if(!M){M=document.createElement('div');M.id='endWin';M.className='modal';document.body.appendChild(M)}M.hidden=false;
   M.innerHTML=`<div class="px infobox endwin" role="dialog" aria-label="최종 레이드 승리"><span class="lbl">Final Raid · 가이아 수호전</span><h2>오르비스가 물러났습니다!</h2>
@@ -5797,7 +5797,7 @@ setInterval(()=>{if(!endOn()||!P||!P.joined)return;const n=Math.floor((sNow()-EN
   endFlashT=performance.now();const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700);
   const dodge=Math.random()*100<Math.min(40,Math.max(0,AS('agi')*.5+BUFF('dodge')+WA('dodge')));
   if(dodge){toast(`${END_NAME}의 시선을 피했다!`);log(`${END_NAME}의 시선을 피했다.`,'good');return}
-  const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=defCut(raw,def());heal(-hit,0);sfxStatic&&sfxStatic();
+  const raw=(20+END_LV*6.5)*endAtkK()*(.85+Math.random()*.3),hit=defCut(raw,def());heal(-hit,0);
   toast(`${END_NAME}의 시선! 선원 모두가 체력 -${hit}`);log(`${END_NAME}의 시선이 베이스캠프를 훑었다. 체력 -${hit}`,'bad');checkFaint();commit()},400);
 /* 최종 레이드 90초: 오르비스가 모든 눈을 떠 베이스캠프 전원이 쓰러지고, 이어서 세 직업의 기원이 차례로 모두에게 닿는다.
    Every screen runs the same timeline from the raid's start on the server clock, so nobody has to write anything for it,
@@ -5819,9 +5819,9 @@ function riteBanner(r,th0){const old=document.getElementById('riteFx');if(old)ol
 let riteHalfBusy=false;
 setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;const g=END.gen,cur=P.endRite&&P.endRite.g===g?P.endRite.k:-1;if(cur>=k)return;
   for(let i=cur+1;i<=k;i++){const r=RITE[i],late=sNow()-END.startAt-RITE_AT-r.at>8e3;
-    if(i===0){if(!late){P.hp=0;P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};try{sfxStatic()}catch(e){}const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700)}}
-    if(i===1){if(isFaint()||P.hp<=0){P.faint=0;P.faintAt=0;P.hp=Math.max(P.hp,Math.round(maxHp()*.3))}try{sfxFanfare(false)}catch(e){}}
-    if(i===2||i===3){try{sfxFanfare(i===3)}catch(e){}}
+    if(i===0){if(!late){P.hp=0;P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700)}}
+    if(i===1){if(isFaint()||P.hp<=0){P.faint=0;P.faintAt=0;P.hp=Math.max(P.hp,Math.round(maxHp()*.3))}}
+    if(i===2||i===3){}
     if(i===3&&!riteHalfBusy){riteHalfBusy=true;bossTx(endRef(),c=>{if(!c||c.gen!==g||c.done||c.halved)return null;c.hp=Math.min(+c.hp||0,Math.round((+c.max||0)/2));c.halved=1;return c}).catch(()=>{}).finally(()=>{riteHalfBusy=false})}
     if(!late)riteBanner(r);log(`${r.t} ${r.s}`,i?'good':'bad')}
   P.endRite={g,k};if(cur<1&&k>=1){const h=document.getElementById('endHud');if(h)h.remove();try{endRender()}catch(e){}}renderPilot();renderAll()},500);
