@@ -1477,7 +1477,30 @@ body:has(#endHud) .toast{bottom:290px!important;z-index:48}
 @keyframes echIn{from{opacity:0;transform:translateY(6px) scale(.9)}}@keyframes echOut{to{opacity:0;transform:translateY(-8px)}}
 body:has(#endHud){padding-bottom:200px}
 .endwarn{font-size:12px;color:var(--mute)}.endwarn.on{color:#ff6a6a;font-weight:700;animation:wafblink .5s steps(1) infinite}
-.riteban{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);z-index:260;max-width:min(560px,92vw);padding:18px 24px;background:rgba(6,8,14,.92);border:2px solid var(--gold);box-shadow:0 0 30px rgba(191,174,128,.35);text-align:center;display:flex;flex-direction:column;gap:8px;pointer-events:none;animation:riteIn .5s ease-out}.riteban b{font-family:var(--f-display);font-size:22px;color:var(--gold);font-weight:400}.riteban span{font-size:13px;line-height:1.7;color:#dfe5ee}.riteban.out{opacity:0;transition:opacity .8s}@keyframes riteIn{from{opacity:0;transform:translate(-50%,-40%)}}
+.ritefx{position:fixed;inset:0;z-index:255;pointer-events:none;overflow:hidden;--c:#ffd27a;animation:rfIn .6s ease-out both}
+.ritefx.out{animation:rfOut 1s ease-in forwards}
+.ritefx .rfbg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,color-mix(in srgb,var(--c) 28%,transparent),rgba(3,4,10,.82) 62%,rgba(0,0,0,.94))}
+.ritefx .rfpil{position:absolute;left:50%;top:0;bottom:0;width:180px;margin-left:-90px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c) 40%,transparent) 35%,#fff8 50%,color-mix(in srgb,var(--c) 40%,transparent) 65%,transparent);filter:blur(2px);transform-origin:top;animation:rfPil 1.2s cubic-bezier(.2,.8,.2,1) both,rfPulse 2.4s ease-in-out 1.2s infinite}
+.ritefx .rfring{position:absolute;left:50%;top:40%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:3px solid var(--c);box-shadow:0 0 28px var(--c),inset 0 0 22px var(--c);animation:rfRing 1s cubic-bezier(.2,.9,.3,1.3) .2s both,rfSpin 9s linear infinite}
+.ritefx .rfring::before,.ritefx .rfring::after{content:"";position:absolute;inset:14px;border-radius:50%;border:2px dashed color-mix(in srgb,var(--c) 70%,transparent)}
+.ritefx .rfring::after{inset:-18px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-style:dotted}
+.ritefx .rfsym{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:64px;line-height:1;color:#fff;text-shadow:0 0 18px var(--c),0 0 40px var(--c);animation:rfSym .9s ease-out .45s both}
+.ritefx .rftxt{position:absolute;left:50%;top:calc(40% + 110px);transform:translateX(-50%);width:min(620px,92vw);text-align:center;display:flex;flex-direction:column;gap:10px}
+.ritefx .rftxt b{font-family:var(--f-display);font-weight:400;font-size:clamp(20px,4.6vw,30px);color:#fff;letter-spacing:.08em;text-shadow:0 0 12px var(--c),0 2px 0 #000;animation:rfTitle 1.1s ease-out .6s both}
+.ritefx .rftxt span{font-size:clamp(12.5px,3.2vw,14.5px);line-height:1.8;color:#e8edf6;text-shadow:0 1px 2px #000;animation:rfSub .9s ease-out 1.3s both}
+.ritefx .rfp{position:absolute;bottom:-10px;width:4px;height:4px;background:var(--c);box-shadow:0 0 8px var(--c);animation:rfRise linear infinite}
+.ritefx.dark .rfbg{background:radial-gradient(ellipse at 50% 42%,rgba(255,40,60,.32),rgba(20,0,4,.9) 60%,#000)}
+.ritefx.dark .rfpil{display:none}
+body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
+@keyframes rfIn{from{opacity:0}}@keyframes rfOut{to{opacity:0}}
+@keyframes rfPil{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}@keyframes rfPulse{50%{opacity:.55}}
+@keyframes rfRing{from{transform:scale(.2);opacity:0}}@keyframes rfSpin{to{rotate:360deg}}
+@keyframes rfSym{from{opacity:0;transform:translate(-50%,-50%) scale(2.2);filter:blur(6px)}}
+@keyframes rfTitle{from{opacity:0;letter-spacing:.6em;filter:blur(4px)}}
+@keyframes rfSub{from{opacity:0;transform:translateY(8px)}}
+@keyframes rfRise{from{transform:translateY(0);opacity:0}15%{opacity:1}to{transform:translateY(-105vh);opacity:0}}
+@keyframes rfShake{25%{transform:translate(-4px,2px)}50%{transform:translate(3px,-3px)}75%{transform:translate(-2px,-2px)}}
+@media (prefers-reduced-motion:reduce){.ritefx *{animation-duration:.01s!important;animation-iteration-count:1!important}}
 .endflash{position:fixed;inset:0;z-index:48;pointer-events:none;background:rgba(232,72,72,.35);animation:endfl .7s steps(4) forwards}
 @keyframes endfl{to{opacity:0}}.endhud .endch b{font-size:17px}
 .endch{display:flex;flex-direction:column;gap:3px}.endch b{font-family:var(--f-display);font-weight:400;font-size:20px;color:#e8b4b0}
@@ -5782,7 +5805,12 @@ const RITE_AT=90e3,RITE=[
 const riteStep=()=>{if(!endOn()||endFirst()||!END.startAt)return -1;const dt=sNow()-END.startAt-RITE_AT;if(dt<0)return -1;let k=-1;RITE.forEach((r,i)=>{if(dt>=r.at)k=i});return k};
 // what I have from the rite in this raid: 1 woken + regen, 2 +200% defence and no fainting, 3 +200% attack
 const riteHas=n=>!!(P&&P.endRite&&END&&P.endRite.g===END.gen&&P.endRite.k>=n&&endOn());
-function riteBanner(r){let el=document.getElementById('riteBan');if(el)el.remove();el=document.createElement('div');el.id='riteBan';el.className='riteban';el.innerHTML=`<b>${esc(r.t)}</b><span>${esc(r.s)}</span>`;document.body.appendChild(el);setTimeout(()=>{if(el.isConnected)el.classList.add('out')},5200);setTimeout(()=>el.remove(),6000)}
+function riteBanner(r){const old=document.getElementById('riteFx');if(old)old.remove();const i=RITE.indexOf(r),th=[['#ff4a5a','◉'],['#7dffb0','✚'],['#7fc8ff','◈'],['#ffb35a','⚙']][i]||['#ffd27a','✦'];
+  const el=document.createElement('div');el.id='riteFx';el.className='ritefx'+(i===0?' dark':'');el.style.setProperty('--c',th[0]);el.setAttribute('role','status');
+  let ps='';if(i>0)for(let k=0;k<26;k++)ps+=`<i class="rfp" style="left:${(k*37)%100}%;animation-duration:${2.6+(k%5)*.5}s;animation-delay:${(k*.17)%2}s"></i>`;
+  el.innerHTML=`<div class="rfbg"></div><div class="rfpil"></div>${ps}<div class="rfring"></div><div class="rfsym">${th[1]}</div><div class="rftxt"><b>${esc(r.t)}</b><span>${esc(r.s)}</span></div>`;
+  document.body.appendChild(el);if(i===0){document.body.classList.add('rfshake');setTimeout(()=>document.body.classList.remove('rfshake'),1100)}
+  setTimeout(()=>{if(el.isConnected)el.classList.add('out')},5000);setTimeout(()=>el.remove(),6000)}
 let riteHalfBusy=false;
 setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;const g=END.gen,cur=P.endRite&&P.endRite.g===g?P.endRite.k:-1;if(cur>=k)return;
   for(let i=cur+1;i<=k;i++){const r=RITE[i],late=sNow()-END.startAt-RITE_AT-r.at>8e3;
