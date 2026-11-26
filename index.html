@@ -5576,7 +5576,7 @@ const endRef=()=>db.doc('boss/ending');
 let endWing=[],endWingK='',END=null,endPend=0,endUnseen=0,endFlushT=0,endAt=0,endSkAt=0,endPrevHp=null,endSeenDone=0,endBusy=false,endHitT=0,endMx=-1,endMy=-1;
 // 오르비스 is a Lv.100 invader made 1.5× tougher: HP from the invaders' own formula (with their toughest kind), and its gaze hits like their blow
 const END_LV=100,END_K=1.5,endHpMax=()=>50000000/* about 20 minutes for 25 crew with attack 1,500 playing at a normal pace, counting the rite (+200% attack, HP halved at 108 s) */,endAtkK=()=>Math.max(...BOSS_KINDS.map(q=>q.atk))*END_K;
-const END_CD=10000,END_SKCD=30000,END_NAME='하늘을 뒤덮은 눈 「오르비스」';
+const END_LIMIT=20*60e3/* the final raid: 오르비스 leaves after 20 minutes */,END_CD=10000,END_SKCD=30000,END_NAME='하늘을 뒤덮은 눈 「오르비스」';
 // the boss's eyes over the page: [anchor, x, y] — anchors are page parts, or 'L'/'R'/'T' for the empty space around the layout
 const END_EYES=[['L',.45,.09,1.1],['L',.6,.24,.9],['header .logo',.32,.42,.8],['T',.47,.35,1.3],['#ticker',.36,.05,.7],['#netChip',.4,1.4,.9],['R',.5,.36,1.1],['L',.35,.6,.8],['R',.45,.75,.8]];
 // the first encounter (mode 'first', after the 통신 장치 repair) only lasts until END.until; the final raid runs until it falls
@@ -5590,7 +5590,7 @@ const endFirst=()=>!!END&&END.mode==='first';
 var ORB_GO=0,orbGoArm=false;
 const commOpenAt=()=>{try{const c=SHIP.find(x=>x.id==='comm'),f=c&&shipFin(c);return c&&f&&shipDone(c)?shipOpenAt(f):0}catch(e){return 0}};
 const endStale=()=>!!END&&END.mode==='first'&&(!ORB_GO||(+END.gen||0)<ORB_GO);
-const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&!endStale()&&(!endFirst()||sNow()<(+END.until||0));
+const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&!endStale()&&(endFirst()?sNow()<(+END.until||0):!(END.startAt&&sNow()>=+END.startAt+END_LIMIT));
 const endHpS=()=>END?Math.max(0,+END.hp||0):0;
 /* live hits from the others, not yet in the raid record: shown at once (numbers and HP bar), taken off when the record catches up */
 let liveO={},liveAt={},liveSubbed=false;
@@ -5694,7 +5694,7 @@ const ORB_LEAVE=['「오르비스」의 모든 눈이 한꺼번에 베이스캠�
 function orbCurtain(op){const k=document.createElement('div');k.className='orbcur';k.style.cssText=`position:fixed;inset:0;background:#000;z-index:215;opacity:${op};transition:opacity .6s linear;pointer-events:none`;document.body.appendChild(k);return k}
 function orbBlackOut(swap){const k=orbCurtain(0);requestAnimationFrame(()=>requestAnimationFrame(()=>{k.style.opacity='1'}));setTimeout(()=>{try{swap()}catch(e){}setTimeout(()=>{k.style.transition='opacity .9s linear';k.style.opacity='0';setTimeout(()=>k.remove(),950)},250)},650)}
 function orbisPlay(LINES,done,leave){if(leave){const k=orbCurtain(1);setTimeout(()=>{k.style.transition='opacity .6s linear';k.style.opacity='0';setTimeout(()=>k.remove(),650)},900)}const M=document.createElement('div');M.id='orbisFx';M.setAttribute('role','alertdialog');M.setAttribute('aria-label','오르비스');const cv=document.createElement('canvas'),tx=document.createElement('div');tx.className='orbtx';M.append(cv,tx);document.body.appendChild(M);
-  const t0=performance.now(),STEP=leave?2.4:3,TOTAL=LINES.length*STEP+.6;let li=-1;try{sfxStatic()}catch(e){}
+  const t0=performance.now(),STEP=leave===2?3.2:leave?2.4:3,TOTAL=LINES.length*STEP+.6;let li=-1;try{sfxStatic()}catch(e){}
   const draw=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000,W=Math.ceil(innerWidth/EPX),H=Math.ceil(innerHeight/EPX);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
     const x=cv.getContext('2d');x.fillStyle='#05030a';x.fillRect(0,0,W,H);
     const cx=W/2,cy=H*.38,r=Math.min(W*.09,H*.16);
@@ -5704,8 +5704,8 @@ function orbisPlay(LINES,done,leave){if(leave){const k=orbCurtain(1);setTimeout(
       open=Math.max(0,Math.min(1,(t-STEP*2)/1.8));if(t>1){const crack=Math.min(1,(t-1)/1.6);for(let i=-W*.4*crack;i<=W*.4*crack;i++){const y=cy+Math.round(Math.sin(i*.31)*1.5);x.fillStyle=Math.abs(i)%7<2?'#ffd0e0':'#c88aff';x.fillRect(cx+i,y,1,1)}}
       if(t>STEP*.8){const n=10,er=Math.max(1.8,r*.2);for(let i=0;i<n;i++){const a=i/n*Math.PI*2+t*.05,ex=cx+Math.cos(a)*r*3.1,ey=cy+Math.sin(a)*r*1.55,o=Math.max(0,Math.min(1,(t-STEP*2-1.8-i*.16)/.5));
         endEye(x,ex,ey,er,o,[Math.cos(a+Math.PI)*.4,.2],false,t)}}}
-    if(open>0||(!leave&&t>STEP*.8))endEye(x,cx,cy-(1-sc)*H*.3,r*sc,open,[Math.sin(t*.8)*.3,.3],leave&&t<STEP*2&&Math.floor(t*6)%2===0,t);
-    const k=Math.min(LINES.length-1,Math.floor(t/STEP));if(k!==li){li=k;tx.textContent=LINES[k];if(leave&&k===1){M.classList.add('red');try{sfxStatic()}catch(e){}}}
+    if(open>0||(!leave&&t>STEP*.8))endEye(x,cx,cy-(1-sc)*H*.3,r*sc,open,[Math.sin(t*.8)*.3,.3],leave===true&&t<STEP*2&&Math.floor(t*6)%2===0,t);
+    const k=Math.min(LINES.length-1,Math.floor(t/STEP));if(k!==li){li=k;tx.textContent=LINES[k];if(leave===true&&k===1){M.classList.add('red');try{sfxStatic()}catch(e){}}}
     if(t<TOTAL)requestAnimationFrame(draw);else orbBlackOut(()=>{M.remove();done&&done()})};
   requestAnimationFrame(draw)}
 // the fight is over: everyone still standing is struck down, and 오르비스 leaves the sky
@@ -5764,7 +5764,7 @@ function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).s
    ${me&&me.d>0?`<div class="endttl"><span class="lbl">엔딩 칭호</span><b>테라의 마지막 수호자</b><span class="hint">내 정보 › 칭호에서 달 수 있습니다.</span></div>`:'<p class="hint">이번 전투에서 피해를 주지 못해 칭호를 받지 못했습니다.</p>'}
    <ol class="endrank">${top.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><b>${esc(v.n||'선원')}</b><span>${Math.round(v.d||0).toLocaleString()}</span></li>`).join('')}</ol>
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
-function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">${endFirst()?'First Contact · 오르비스 첫 등장':'Final Raid · 최종 레이드'}</span><b>${esc(END_NAME)} <small>Lv.???</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다. 제한 시간은 없습니다.</span></div>
+function endCardHTML(){if(!endOn())return'';return`<div class="card endcard" id="endCard"><div class="endch"><span class="lbl">${endFirst()?'First Contact · 오르비스 첫 등장':'Final Raid · 최종 레이드'}</span><b>${esc(END_NAME)} <small>Lv.???</small></b><span class="hint">하늘을 뒤덮은 거대한 눈이 베이스캠프를 내려다봅니다. 체력이 줄 때마다 눈이 하나씩 감깁니다.</span></div>
    <div class="endbar"><i id="endBarI"></i><span id="endBarT"></span></div>
    <div class="endrow"><div class="endbtns"><button class="btn endatk" type="button" data-act="endatk" id="endAtkB">⚔ 공격</button><button class="btn alt endsk" type="button" data-act="endsk" id="endSkB" title="${endSkill()[1]}">✦ ${endSkill()[0]}</button>${endUlt()&&!endFirst()&&riteHas(1)?`<button class="btn gold endult" type="button" data-act="endult" id="endUltB" title="${endUlt()[1]}">★ ${endUlt()[0]}</button>`:''}</div><span class="hint">스킬 · ${endSkill()[1]}${endUlt()&&!endFirst()&&riteHas(1)?` · 비기 · ${endUlt()[1]}`:''}</span>${isAdmin?'<button class="qchip" type="button" data-act="endreset" title="운영자 전용">운영자 · 레이드 초기화</button>':''}</div>
    <div class="endme" id="endMe"></div><div class="endwarn" id="endWarn"></div><div class="endmeta" id="endMeta"></div>
@@ -5826,6 +5826,20 @@ setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;
   P.endRite={g,k};if(cur<1&&k>=1){const h=document.getElementById('endHud');if(h)h.remove();try{endRender()}catch(e){}}renderPilot();renderAll()},500);
 // 의무원들의 기원: +20 HP every second while this raid lasts (kept on my screen; it is saved with my next save as usual)
 setInterval(()=>{if(!P||!riteHas(1)||isFaint())return;const mh=maxHp();if(P.hp>=mh)return;P.hp=Math.min(mh,P.hp+20);renderPilot();try{endPaint()}catch(e){}},1000);
+/* 최종 레이드 20분: 쓰러뜨리지 못하면 오르비스는 우리를 가만히 내려다보다 그대로 떠난다 (no attack, no fainting).
+   The limit is read off the raid's start on the server clock like everything else; one screen marks the raid as left. */
+const ORB_GONE=['「오르비스」의 모든 눈이 베이스캠프를 가만히 내려다본다.','공격도, 시선의 섬광도 없다. 그저 우리를 바라볼 뿐이다.','한참을 그렇게 바라보던 거대한 눈은, 그대로 하늘 너머로 사라졌다.'];
+const endGoneNow=()=>!!END&&!endFirst()&&!END.done&&!endStale()&&(END.left||(END.on&&END.startAt&&sNow()>=+END.startAt+END_LIMIT));
+let endGoneBusy=false;
+setInterval(()=>{if(mode!=='online'||!P||!P.joined||endGoneBusy||!endGoneNow())return;const g=END.gen;
+  if(END.on&&!END.left)setTimeout(()=>{if(!END||END.gen!==g||!END.on||END.left)return;
+    bossTx(endRef(),cur=>cur&&cur.mode!=='first'&&cur.gen===g&&cur.on&&!cur.done&&!cur.left&&sNow()>=(+cur.startAt||0)+END_LIMIT?Object.assign(cur,{on:false,left:true,leftAt:Date.now()}):null)
+     .then(nx=>{if(nx)sys(`[공지] ${END_NAME}은(는) 베이스캠프를 가만히 내려다보다, 그대로 하늘 너머로 사라졌습니다.`,true,'static')}).catch(()=>{})},Math.random()*4000);
+  // the scene once per raid, for the crew who fought it (or were there when it left)
+  if(P.endGone===g||$('#orbisFx')||$('#story'))return;const was=!!((END.dmg||{})[uid])||!!(P.endRite&&P.endRite.g===g);
+  if(!was||sNow()-((+END.startAt||0)+END_LIMIT)>6*3600e3){P.endGone=g;return}
+  endGoneBusy=true;['riteFx','endRage'].forEach(i=>{const e=document.getElementById(i);if(e)e.remove()});
+  orbisPlay(ORB_GONE,()=>{endGoneBusy=false;P.endGone=g;log('「오르비스」는 우리를 가만히 내려다보다, 그대로 하늘 너머로 사라졌다.','');save();try{endRender()}catch(e){}syncBgm()},2)},1000);
 /* 최종 레이드 후반 패턴 (after the rite): what 오르비스 does as its HP falls. Like the gaze, each screen works it out
    from the raid's start on the server clock and the shared HP, so no extra reads or writes.
    ≤50% 집중 시선: every 30 s about a quarter of the crew are stared down (heavy hit; 수호의 방패 blocks it)
@@ -5881,7 +5895,7 @@ function endAdminHTML0(){const e=END;
   return`<div class="info-sec" data-adm="boss"><span class="lbl">Orbis · 오르비스 첫 등장 (수동)</span><span class="hint">오르비스 첫 등장은 이 버튼을 눌러야만 시작됩니다. 누르는 순간 접속 중인 모든 선원에게 통신 장치 스토리 → 오르비스 등장 → 첫 전투(1분 30초)가 시작되고, 나중에 들어온 선원은 전투 없이 장면만 봅니다. 그 전에 생긴 오르비스 기록은 모두 무시됩니다.</span>
    <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><b>${ORB_GO?`시작됨 · ${new Date(ORB_GO).toLocaleString()}`:'아직 시작 안 함'}</b>${orbGoArm?`<button class="btn sm alt" data-act="orbisgo" data-x="1">정말 시작</button><button class="btn sm ghost" data-act="orbisgo" data-k="">취소</button>`:`<button class="btn sm gold" data-act="orbisgo" data-k="1">오르비스 첫 등장 시작</button>`}${ORB_GO?'<button class="btn sm ghost" data-act="orbisoff">시작 취소 (되돌리기)</button>':''}</div></div>
   <div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
-   <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 제한 시간은 없고, 쓰러뜨리면 피해를 준 선원에게 숨겨진 엔딩 칭호가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
+   <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 20분 안에 쓰러뜨리지 못하면 오르비스는 그대로 떠나고, 쓰러뜨리면 피해를 준 선원에게 숨겨진 엔딩 칭호가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.mode==='first'?(e.on&&sNow()<(+e.until||0)?'첫 등장 전투 진행 중':'첫 등장 끝남 (오르비스 퇴장) · 최종 레이드를 시작할 수 있습니다'):e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="hint">Lv.${END_LV} · 체력 ${endHpMax().toLocaleString()} · 시선 피해 약 ${Math.round((20+END_LV*6.5)*endAtkK()).toLocaleString()} (침략자 Lv.${END_LV}의 1.5배)</span>
     <button class="btn sm" data-act="endstart" ${e&&e.on&&!e.done?'disabled':''}>최종 레이드 시작</button><button class="btn sm ghost" data-act="endreset" ${e?'':'disabled'}>초기화</button></div></div>`}
