@@ -11173,7 +11173,7 @@ function credAva(p){const c=document.createElement('canvas'),W=26,H=32;c.width=W
     const cx=Math.round((l+r)/2),ox=cx-Math.floor(W/2),oy=top-3;gridOnS(x,g.slice(Math.max(0,oy),oy+H).map(row=>row.slice(Math.max(0,ox),ox+W)),Math.max(0,-ox),Math.max(0,-oy),1,lookPal(p))}catch(e){}return c}
 function playCredits(after){const old=document.getElementById('credFx');if(old)old.remove();
   const M=document.createElement('div');M.id='credFx';M.setAttribute('role','dialog');M.setAttribute('aria-label','엔딩 크레딧');
-  M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credx">닫기</button><button type="button" class="credok" hidden>확인 ▶</button>`;
+  M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credok" hidden>확인 ▶</button>`;
   const gr=M.querySelector('.credgrid'),crew=credCrew(),avs=crew.map(credFullAva),scs=[];let si=0;
   const scene=()=>{if(si>=CRED_SCENES.length||!avs.length)return;const [kind,cap]=CRED_SCENES[si],off=si*3;si++;const d=document.createElement('figure');d.className='credscene';const c=document.createElement('canvas');c.width=CS_W;c.height=CS_H;d.appendChild(c);const fc=document.createElement('figcaption');fc.textContent=cap;d.appendChild(fc);gr.appendChild(d);
     const av=avs.map((_,k)=>avs[(k+off)%avs.length]);scs.push([c,kind,av]);credSceneDraw(c,kind,av,0)};
@@ -11182,10 +11182,10 @@ function playCredits(after){const old=document.getElementById('credFx');if(old)o
     const t=document.createElement('div');t.className='credname';t.innerHTML=`<span>CREW · ${String(i+1).padStart(2,'0')}</span>`;const n=document.createElement('b');n.textContent=p.nick;t.appendChild(n);d.appendChild(t);gr.appendChild(d)});while(si<Math.min(CRED_SCENES.length,Math.max(1,Math.floor(crew.length/every))))scene();
   try{const bc=xevBot();if(bc){const c=document.createElement('canvas');c.width=bc.width;c.height=bc.height;c.getContext('2d').drawImage(bc,0,0);M.querySelector('.credbotimg').appendChild(c)}}catch(e){}
   document.body.appendChild(M);credMusicOn();const t0=performance.now(),anim=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000;scs.forEach(([c,kind,av])=>{const r=c.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)credSceneDraw(c,kind,av,t)});requestAnimationFrame(anim)};requestAnimationFrame(anim);
-  let shut=false;const close=()=>{if(shut)return;shut=true;credMusicOff();M.classList.add('out');setTimeout(()=>{M.remove();if(after)after()},900)};M.querySelector('.credx').onclick=close;const okB=M.querySelector('.credok');okB.onclick=close;
+  let shut=false;const close=()=>{if(shut)return;shut=true;credMusicOff();M.classList.add('out');setTimeout(()=>{M.remove();if(after)after()},900)};const okB=M.querySelector('.credok');okB.onclick=close;
   // roll from below the screen until 녹슨 7호 sits in the middle, then stay there
   requestAnimationFrame(()=>{const R=M.querySelector('.credroll'),H=innerHeight,end=-(R.offsetHeight-H/2-M.querySelector('.credbot').offsetHeight/2),dist=H-end,sec=Math.max(25,dist/45);
-    R.style.transform=`translateY(${H}px)`;R.getBoundingClientRect();R.style.transition=`transform ${sec}s linear`;R.style.transform=`translateY(${end}px)`;if(after)setTimeout(()=>{okB.hidden=false},sec*1000+600)})}
+    R.style.transform=`translateY(${H}px)`;R.getBoundingClientRect();R.style.transition=`transform ${sec}s linear`;R.style.transform=`translateY(${end}px)`;setTimeout(()=>{okB.hidden=false},sec*1000+600)})}
 function credCheck(c){if(!c||!c.id||!P||!P.joined||mode!=='online')return;if(P.credSeen===c.id)return;P.credSeen=c.id;save();if(sNow()-(+c.at||0)>15*60e3)return;
   const go=()=>{if($('#orbisFx')||$('#story')){setTimeout(go,1500);return}const w=$('#endWin');if(w)w.hidden=true;playCredits()};go()}
 Object.assign(EA,{
