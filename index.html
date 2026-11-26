@@ -3966,7 +3966,8 @@ async function connect(){
   db.collection('chat').orderBy('at','desc').limit(50).onSnapshot(sn=>{CHAT=sn.docs.map(d=>Object.assign({id:d.id},d.data())).reverse();
     // every notice sent from the admin side (adm:true) that arrives after the first snapshot rings the station chime (by doc id, so device clocks don't matter)
     // invader notices carry their own sound: the beacon coming back on after a win, crackling static after a loss
-    const adm=CHAT.filter(m=>m.adm||m.snd==='beacon'||m.snd==='static'||m.snd==='mem');if(chimeSeen){const nw=adm.filter(m=>!chimeSeen.has(m.id));if(nw.length){sfxNotice(nw.some(m=>m.snd==='siren')?sfxSiren:nw.some(m=>m.snd==='static')?sfxStatic:nw.some(m=>m.snd==='beacon')?sfxBeacon:sfxChime);toast(String(nw[nw.length-1].text||'').slice(0,60))}}chimeSeen=new Set([...(chimeSeen||[]),...adm.map(m=>m.id)]);renderChat()},()=>{});
+    // an invader that comes by reservation is announced by whichever crew member's screen summoned it (not the 운영자), so its siren counts too
+    const adm=CHAT.filter(m=>m.adm||m.snd==='siren'||m.snd==='beacon'||m.snd==='static'||m.snd==='mem');if(chimeSeen){const nw=adm.filter(m=>!chimeSeen.has(m.id));if(nw.length){sfxNotice(nw.some(m=>m.snd==='siren')?sfxSiren:nw.some(m=>m.snd==='static')?sfxStatic:nw.some(m=>m.snd==='beacon')?sfxBeacon:sfxChime);toast(String(nw[nw.length-1].text||'').slice(0,60))}}chimeSeen=new Set([...(chimeSeen||[]),...adm.map(m=>m.id)]);renderChat()},()=>{});
   socSubscribe();raidSubscribe();bossSubscribe();
   if(room){room.onPeers(ch=>{PEERS=ch.peers;renderCrew();renderNet();if(tab==='farm')renderPanel()});setPresence()}
 }
