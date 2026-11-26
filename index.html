@@ -10444,7 +10444,8 @@ let ttlQ=[];
 function ttlCheck(){if(!P||P._fresh||(mode==='online'&&P.nick==='새 선원'))return;const got=TITLES.filter(t=>{try{return !!t[3]()}catch(e){return false}}).map(t=>t[0]);
   if(!Array.isArray(P.ttlHave)){P.ttlHave=got;return}const nw=got.filter(id=>!P.ttlHave.includes(id));if(!nw.length)return;
   P.ttlHave=[...P.ttlHave,...nw];nw.forEach(id=>{const t=TITLES.find(x=>x[0]===id);if(t){log(`새 칭호 「${t[1]}」${jo(t[1],'을','를')} 얻었다!`,'rare');ttlQ.push(id)}});setTimeout(ttlPopShow,0)}
-function ttlPopShow(){let el=$('#ttlPop');if(el||!ttlQ.length)return;const id=ttlQ[0],t=TITLES.find(x=>x[0]===id);if(!t){ttlQ.shift();return ttlPopShow()}
+let ttlPopWait=0;
+function ttlPopShow(){let el=$('#ttlPop');if(el||!ttlQ.length)return;if($('#story')||$('#opCrawl')||$('#orbisFx')){clearTimeout(ttlPopWait);ttlPopWait=setTimeout(ttlPopShow,1500);return}/* never over a story */const id=ttlQ[0],t=TITLES.find(x=>x[0]===id);if(!t){ttlQ.shift();return ttlPopShow()}
   const fx=ttlFxTxt(id),br=(P.ttlBrag||{})[id],on=(P.title||'rookie')===id;el=document.createElement('div');el.id='ttlPop';el.className='ttlpop px';el.setAttribute('role','dialog');el.setAttribute('aria-label','새 칭호');
   el.innerHTML=`<span class="lbl">New Title · 새 칭호 획득!</span><b class="ttlpopn">${ttlHTML(id,t[1])}</b>${t[2]?`<span class="hint">${esc(t[2])}</span>`:''}${fx?`<span class="hint">효과 · ${fx}</span>`:''}
    <div class="row" style="gap:6px;justify-content:center;flex-wrap:wrap">${mode==='online'?`<button class="btn sm gold" data-act="ttlpopbrag" data-k="${id}" ${br?'disabled':''}>${br?'PAD에 자랑함':'PAD에 자랑하기'}</button>`:''}<button class="btn sm" data-act="ttlpopwear" data-k="${id}" ${on?'disabled':''}>${on?'달고 있음':'칭호 달기'}</button><button class="btn sm ghost" data-act="ttlpopclose">닫기</button></div>${ttlQ.length>1?`<span class="hint">새 칭호가 ${ttlQ.length-1}개 더 있습니다</span>`:''}`;
