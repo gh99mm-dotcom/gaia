@@ -5575,7 +5575,7 @@ let bossPick=0;
 const endRef=()=>db.doc('boss/ending');
 let endWing=[],endWingK='',END=null,endPend=0,endUnseen=0,endFlushT=0,endAt=0,endSkAt=0,endPrevHp=null,endSeenDone=0,endBusy=false,endHitT=0,endMx=-1,endMy=-1;
 // 오르비스 is a Lv.100 invader made 1.5× tougher: HP from the invaders' own formula (with their toughest kind), and its gaze hits like their blow
-const END_LV=100,END_K=1.5,endHpMax=()=>48000000/* about 20 minutes for 25 crew with attack 1,500 playing at a normal pace, counting the rite (+200% attack, HP halved at 108 s) */,endAtkK=()=>Math.max(...BOSS_KINDS.map(q=>q.atk))*END_K;
+const END_LV=100,END_K=1.5,endHpMax=()=>50000000/* about 20 minutes for 25 crew with attack 1,500 playing at a normal pace, counting the rite (+200% attack, HP halved at 108 s) */,endAtkK=()=>Math.max(...BOSS_KINDS.map(q=>q.atk))*END_K;
 const END_CD=10000,END_SKCD=30000,END_NAME='하늘을 뒤덮은 눈 「오르비스」';
 // the boss's eyes over the page: [anchor, x, y] — anchors are page parts, or 'L'/'R'/'T' for the empty space around the layout
 const END_EYES=[['L',.45,.09,1.1],['L',.6,.24,.9],['header .logo',.32,.42,.8],['T',.47,.35,1.3],['#ticker',.36,.05,.7],['#netChip',.4,1.4,.9],['R',.5,.36,1.1],['L',.35,.6,.8],['R',.45,.75,.8]];
