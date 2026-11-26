@@ -9204,9 +9204,14 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
   function xTear(t,cx,cy,rw){for(let x=-rw;x<=rw;x++){const k=1-Math.abs(x)/Math.max(1,rw),yy=cy+Math.round(Math.sin(x*.35+t*3)*2*k);g.globalAlpha=.3*k;R(cx+x,yy-3,1,7,'#c88aff');g.globalAlpha=1;R(cx+x,yy,1,1,Math.abs(x)%5<2?'#ffd0e0':'#c88aff')}}
   function xSky(t){R(0,0,W,H,'#0c0820');for(let i=0;i<40;i++){const x=(i*53)%W,y=(i*29)%(H-30);if(((t*2+i)|0)%6)R(x,y,1,1,'#c8d0ff')}}
   function xGone(t){xSky(t);xTear(t,120,34,70);R(0,92,W,28,'#07060c');R(0,92,W,1,'#1a1630');const k=Math.min(1,t/4);g.globalAlpha=.25*(1-k);R(150,4,90,46,'#3a1030');g.globalAlpha=1}
-  function xShip(x,y,s,fl,t){g.save();g.translate(Math.round(x),Math.round(y));
-    if(fl>0){const fh=Math.round((10+Math.sin(t*30)*3)*fl*s);g.globalAlpha=.45;R(-4*s,8*s,8*s,fh+3,'#5fd8ff');g.globalAlpha=1;R(-2*s,8*s,4*s,fh,'#aef0ff');R(-1*s,8*s,2*s,Math.round(fh*.6),'#ffffff')}
-    R(-5*s,-6*s,10*s,14*s,'#8a96a8');R(-5*s,-6*s,2*s,14*s,'#b4c0d0');R(-3*s,-12*s,6*s,6*s,'#9aa6b8');R(-1*s,-15*s,2*s,3*s,'#c8d2e0');R(-2*s,-4*s,4*s,3*s,'#5fd8ff');R(-8*s,3*s,3*s,5*s,'#6a7488');R(5*s,3*s,3*s,5*s,'#6a7488');g.restore()}
+  // our ship, the same pixel 가이아 as the 우주선 tab (40×40, nose up), with a blue flame from its tail
+  let XSHIP=null;const xShipImg=()=>{if(XSHIP)return XSHIP;const c=document.createElement('canvas');c.width=c.height=40;const q=c.getContext('2d'),M=[];
+    for(let j=0;j<40;j++)for(let i=0;i<40;i++){const col=shipColorAt(i+.5,j+.5,SHIP_ALL);if(col)M[j*40+i]=col}
+    for(let j=0;j<40;j++)for(let i=0;i<40;i++){let col=M[j*40+i];if(!col&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const ii=i+a,jj=j+b;return ii>=0&&jj>=0&&ii<40&&jj<40&&M[jj*40+ii]}))col='#12141a';if(col){q.fillStyle=col;q.fillRect(i,j,1,1)}}
+    return XSHIP=c};
+  function xShip(x,y,s,fl,t){const sz=Math.round(20*s);g.save();g.translate(Math.round(x),Math.round(y));
+    if(fl>0){const fh=Math.round((9+Math.sin(t*30)*3)*fl*s),fw=Math.max(2,Math.round(3*s));g.globalAlpha=.45;R(-fw-2,sz*.42,fw*2+4,fh+3,'#5fd8ff');g.globalAlpha=1;R(-fw,sz*.42,fw*2,fh,'#aef0ff');R(-1,sz*.42,2,Math.round(fh*.6),'#ffffff')}
+    try{g.drawImage(xShipImg(),-sz/2,-sz/2,sz,sz)}catch(e){}g.restore()}
   function xWave(t){xSky(t);xTear(t,120,24,46);R(0,90,W,30,'#100c1c');R(0,90,W,1,'#2a2440');for(let x=0;x<W;x+=7)if((x*13)%5===0)R(x,93+(x%5),1,1,'#2a2440');
     xShip(170,60,2,.25,t);R(150,84,22,2,'#5a6478');
     g.save();const sw=Math.sin(t*3)*.12;g.translate(66,110);g.rotate(sw);g.translate(-66,-110);wBot(42,110,48,t);g.restore()}
@@ -11160,8 +11165,11 @@ setInterval(()=>{if(mode!=='online'||!P||!P.joined||P.nick==='새 선원')return
   playStory('final',()=>{syncBgm();try{endRender();endPaint()}catch(e){}if(!endOn()&&END&&sNow()<(+END.startAt||0))toast('하늘이 일그러진다… 곧 「오르비스」가 눈을 뜹니다.')})},1000);
 /* 엔딩: right after the raid (fallen or gone) everyone who is there sees the 'ending' story, then the intro-style crawl, then the ending credits, then the results */
 const END_CRAWL=[['쿵!','big'],null,['이 우주가 태어날 때 커다란 폭발이 있었다고 합니다.'],['아무 것도 존재하지 않던 공간에서 모든 것들이 만들어지기까지.'],['그 최초의 울림이 얼마나 컸을지, 감히 누구도 짐작할 수 없겠지만,'],['지금 이 순간 우리는 또다시 거대한 흔들림을 겪고 있습니다.'],null,['익숙한 것이 반복되고 있습니다.'],['나의 낯선 얼굴을 마주볼 수 있었다가,'],['일그러진 은하단이 번쩍이며 발 밑을 스쳐 지나갑니다.'],['압착된 성간을 지나며 보아서는 안 될 것을 본 듯도 합니다.'],['그것이, 그러니까 그것이······.']];
-function endEnding(after){if($('#story')||$('#opCrawl')){setTimeout(()=>endEnding(after),1500);return}const w=$('#endWin');if(w)w.hidden=true;
-  playStory('ending',()=>storyCrawl(()=>{try{syncBgm()}catch(e){}playCredits(()=>{after&&after()})},END_CRAWL,''))}
+// a black backdrop under the whole ending, so the game never shows between the story, the crawl and the credits
+function endBlack(on){let k=document.getElementById('endBlack');if(on){if(!k){k=document.createElement('div');k.id='endBlack';k.style.cssText='position:fixed;inset:0;background:#000;z-index:199;transition:opacity .9s linear';document.body.appendChild(k)}return}
+  if(k){k.style.opacity='0';setTimeout(()=>k.remove(),950)}}
+function endEnding(after){endBlack(true);if($('#story')||$('#opCrawl')){setTimeout(()=>endEnding(after),1500);return}const w=$('#endWin');if(w)w.hidden=true;
+  playStory('ending',()=>storyCrawl(()=>{try{syncBgm()}catch(e){}playCredits(()=>{endBlack(false);after&&after()})},END_CRAWL,''))}
 Object.assign(A,EA);SAFE_ACT.add('endreset');   // the admin can always call the raid off, even knocked out
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},600e3);
