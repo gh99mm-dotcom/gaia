@@ -1510,9 +1510,10 @@ body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
 .endrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .endbtns{display:flex;gap:8px;flex-wrap:wrap}.endbtns .endult{background:#e0b860;color:#1a1200}.endbtns .btn{min-width:110px;justify-content:center;font-size:15px;padding:10px 14px}
 .endmeta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute)}.endmeta b{color:var(--gold)}.endmeta .me{color:var(--cyan)}
-.endwin{max-width:420px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center}.endwin h2{margin:0;font-size:24px;color:#ffd65f}
-.endttl{display:flex;flex-direction:column;gap:3px;padding:10px 18px;border:2px solid #e0b860;background:rgba(224,184,96,.1)}.endttl b{font-size:18px;color:#ffe08a}
-.endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:3px 8px;background:var(--deep)}.endrank li.me{color:var(--cyan)}.endrank em{font-style:normal;color:var(--mute)}
+/* the victory card keeps its own dark look in every theme so the gold reads clearly */
+#endWin .endwin{max-width:440px;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center;background:#0d0f1c;color:#eef2fa;border-color:#e0b860;box-shadow:0 0 0 2px #000,0 0 40px rgba(224,184,96,.25)}#endWin .endwin h2{margin:0;font-size:24px;color:#ffd65f;text-shadow:0 2px 0 #000}#endWin .endwin .lbl{color:#e0b860}#endWin .endwin .hint{color:#c9d1e2;font-size:13px}
+.endttl{display:flex;flex-direction:column;gap:4px;padding:12px 20px;border:2px solid #e0b860;background:#1c1808}.endttl b{font-size:19px;color:#ffe08a;text-shadow:0 2px 0 #000}#endWin .endttl .hint{font-size:12px}
+.endrank{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px}.endrank li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;text-align:left;padding:5px 10px;background:#181b2c;color:#e8ecf6}.endrank li.me{color:#7fe0ff;background:#16263a}.endrank em{font-style:normal;color:#9aa3b8}
 @media (max-width:600px){.endbtns{width:100%}.endbtns .btn{flex:1}}
 .tablock{opacity:.5;filter:grayscale(.7)}
 .strow{display:flex;align-items:stretch;border:1px solid var(--line);margin-top:6px}.strow-t{flex:1;text-align:left;background:transparent;border:0;color:inherit;font:inherit;padding:7px 10px;cursor:pointer}.strow-t:hover{background:rgba(127,208,208,.06)}
@@ -5759,8 +5760,8 @@ function endReward(){const e=END;if(!e||!e.done||P.endGen===e.gen)return;if(e.le
   if(me&&me.d>0){stat('ending');log('최종 레이드 승리! 엔딩 칭호 「테라의 마지막 수호자」를 얻었다.','rare');sfxFanfare(true)}save();if(endSeenDone!==e.gen){endSeenDone=e.gen;endWin()}}
 function endWin(){const e=END;if(!e)return;const top=Object.entries(e.dmg||{}).sort((a,b)=>(b[1].d||0)-(a[1].d||0)),me=(e.dmg||{})[uid];
   let M=$('#endWin');if(!M){M=document.createElement('div');M.id='endWin';M.className='modal';document.body.appendChild(M)}M.hidden=false;
-  M.innerHTML=`<div class="px infobox endwin" role="dialog" aria-label="최종 레이드 승리"><span class="lbl">Final Raid · 가이아 수호전</span><h2>가이아를 지켜냈습니다</h2>
-   <p class="hint">${top.length}명의 선원이 함께 싸워 ${esc(END_NAME)}을(를) 쓰러뜨렸습니다.</p>
+  M.innerHTML=`<div class="px infobox endwin" role="dialog" aria-label="최종 레이드 승리"><span class="lbl">Final Raid · 가이아 수호전</span><h2>오르비스가 물러났습니다!</h2>
+   <p class="hint">${top.length}명의 선원이 함께 싸워 「오르비스」을(를) 쓰러뜨렸습니다.</p>
    ${me&&me.d>0?`<div class="endttl"><span class="lbl">엔딩 칭호</span><b>테라의 마지막 수호자</b><span class="hint">내 정보 › 칭호에서 달 수 있습니다.</span></div>`:'<p class="hint">이번 전투에서 피해를 주지 못해 칭호를 받지 못했습니다.</p>'}
    <ol class="endrank">${top.slice(0,10).map(([u,v],i)=>`<li class="${u===uid?'me':''}"><em>${i+1}</em><b>${esc(v.n||'선원')}</b><span>${Math.round(v.d||0).toLocaleString()}</span></li>`).join('')}</ol>
    <button class="btn" type="button" onclick="this.closest('.modal').hidden=true">확인</button></div>`}
