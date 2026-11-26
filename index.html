@@ -5606,7 +5606,7 @@ const endFirst=()=>!!END&&END.mode==='first';
 var ORB_GO=0,orbGoArm=false;
 const commOpenAt=()=>{try{const c=SHIP.find(x=>x.id==='comm'),f=c&&shipFin(c);return c&&f&&shipDone(c)?shipOpenAt(f):0}catch(e){return 0}};
 const endStale=()=>!!END&&END.mode==='first'&&(!ORB_GO||(+END.gen||0)<ORB_GO);
-const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&!endStale()&&(endFirst()?sNow()<(+END.until||0):!(END.startAt&&sNow()>=+END.startAt+END_LIMIT));
+const endOn=()=>mode==='online'&&!!END&&END.on&&!END.done&&!endStale()&&(endFirst()?sNow()<(+END.until||0):!(END.startAt&&(sNow()<+END.startAt||sNow()>=+END.startAt+END_LIMIT)));
 const endHpS=()=>END?Math.max(0,+END.hp||0):0;
 /* live hits from the others, not yet in the raid record: shown at once (numbers and HP bar), taken off when the record catches up */
 let liveO={},liveAt={},liveSubbed=false;
@@ -5899,7 +5899,7 @@ const EA={
  orbisgo(d){if(!isAdmin||mode!=='online')return;if(d.x!=='1'){orbGoArm=!!d.k;renderAdminAll();return}orbGoArm=false;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{orbisGo:sNow()})).then(()=>toast('오르비스 첫 등장을 시작했습니다.')).catch(()=>toast('시작하지 못했습니다.'))},
  orbisoff(){if(!isAdmin||mode!=='online')return;bossTx(staffRef(),cur=>Object.assign({ids:[]},cur,{orbisGo:0})).then(()=>{toast('오르비스 시작을 되돌렸습니다.');return endRef().delete()}).catch(()=>{})},
  async endstart(){if(!isAdmin||mode!=='online')return;const hp=endHpMax();
-  const e={on:true,done:false,gen:sNow(),startAt:sNow(),by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0};
+  const e={on:true,done:false,gen:sNow(),startAt:sNow()+END_LEAD,by:P.nick,lv:END_LV,max:hp,hp,dmg:{},hits:0};
   try{await endRef().set(e);sys(`[공지] 최종 레이드 시작! ${END_NAME}이(가) 하늘을 뒤덮었습니다. 우주선 탭에서 모두 함께 맞서십시오!`,true,'static');toast('최종 레이드를 시작했습니다.')}catch(err){toast('시작하지 못했습니다.')}},
  async rankreset(){if(!isAdmin||mode!=='online')return;try{await bossTx(shipTRef(),cur=>cur?Object.assign({},cur,{v:1,u:{}}):{v:1,p:{},u:{},at:Date.now()});toast('기여도 랭킹을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
  async memreset(){if(!isAdmin||mode!=='online')return;try{await memRef().delete();toast('기억모듈 발견 기록을 초기화했습니다.')}catch(e){toast('초기화하지 못했습니다.')}},
@@ -5913,7 +5913,7 @@ function endAdminHTML0(){const e=END;
    <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><b>${ORB_GO?`시작됨 · ${new Date(ORB_GO).toLocaleString()}`:'아직 시작 안 함'}</b>${orbGoArm?`<button class="btn sm alt" data-act="orbisgo" data-x="1">정말 시작</button><button class="btn sm ghost" data-act="orbisgo" data-k="">취소</button>`:`<button class="btn sm gold" data-act="orbisgo" data-k="1">오르비스 첫 등장 시작</button>`}${ORB_GO?'<button class="btn sm ghost" data-act="orbisoff">시작 취소 (되돌리기)</button>':''}</div></div>
   <div class="info-sec" data-adm="boss"><span class="lbl">Final Raid · 최종 레이드 (엔딩)</span>
    <span class="hint">${esc(END_NAME)}이(가) 모든 선원의 화면을 뒤덮습니다. 20분이 지나면 오르비스가 그대로 떠나며 승리로 처리되고, 쓰러뜨리거나 떠나면 피해를 준 선원에게 숨겨진 엔딩 칭호가 주어집니다. 시험 중이라 초기화하고 여러 번 할 수 있습니다.</span>
-   <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.mode==='first'?(e.on&&sNow()<(+e.until||0)?'첫 등장 전투 진행 중':'첫 등장 끝남 (오르비스 퇴장) · 최종 레이드를 시작할 수 있습니다'):e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
+   <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${!e?'대기 중':e.mode==='first'?(e.on&&sNow()<(+e.until||0)?'첫 등장 전투 진행 중':'첫 등장 끝남 (오르비스 퇴장) · 최종 레이드를 시작할 수 있습니다'):e.done?`승리 (${new Date(e.doneAt||0).toLocaleString()})`:sNow()<(+e.startAt||0)?`시작 전 이야기 재생 중 · ${Math.ceil(((+e.startAt||0)-sNow())/1000)}초 뒤 전투 시작`:`진행 중 · 체력 ${Math.round(+e.hp||0).toLocaleString()} / ${(+e.max||0).toLocaleString()} · 참여 ${Object.keys(e.dmg||{}).length}명`}</b></div>
    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="hint">Lv.${END_LV} · 체력 ${endHpMax().toLocaleString()} · 시선 피해 약 ${Math.round((20+END_LV*6.5)*endAtkK()).toLocaleString()} (침략자 Lv.${END_LV}의 1.5배)</span>
     <button class="btn sm" data-act="endstart" ${e&&e.on&&!e.done?'disabled':''}>최종 레이드 시작</button><button class="btn sm ghost" data-act="endreset" ${e?'':'disabled'}>초기화</button></div></div>`}
 
@@ -8698,6 +8698,14 @@ const STORIES={opening:{n:'오프닝 · 녹슨 7호',scenes:[
   {art:'black',noart:1,lines:[{t:'동력로를 고치도록 하자.',btn:'▶'}]}]},
   // played once for everyone when 동력로 is repaired, then 의뢰판 opens
   // 통신 장치 repaired: the lead-in to 오르비스's first visit (it plays right before the great eye opens)
+  // 최종 레이드 직전: plays by itself for everyone at once (no next, no skip), and the raid opens as it ends
+  final:{n:'워프 기계 가동 · 다시, 눈을 뜨다',auto:1,scenes:[
+  {art:'f_wake',lines:[{t:'기계의 표면을 따라 빛이 번져나간다.',wait:1.4},{t:'오랫동안 멈춰 있던 장치가 천천히 숨을 되찾듯, 낮고 둔탁한 진동이 공간을 채운다.'}]},
+  {art:'f_tense',lines:[{t:'돌아갈 수 있는 길이 마련되었으나 우리는 긴장을 늦출 수 없었다.'},{t:'기계를 작동시켰을 시의 위험에 대해 알고 있기 때문이다.'},{t:'이 워프 기계가 계산하는 시공간의 좌표가 정확할지 또한 알 수 없었다.'}]},
+  {art:'f_dome',lines:[{t:'그럼에도, 집으로 돌아갈 가능성을 위하여… 우리의 할일은 정해져 있었다.'},{t:'벙커의 위쪽 돔을 열고, 기계를 작동시킨다.'}]},
+  {art:'f_fire',cut:1,lines:[{v:'……우선 준비해. 곧 그것이 올 거야.',who:'녹슨 7호',wait:2.4}]},
+  {art:'f_sky',cut:1,lines:[{t:'벙커 외부의 하늘이 일그러지기 시작한다.',wait:1.6},{t:'쏘아올린 에너지가 시공간에 틈을 만든다.'},{t:'그리고 그런 흐름을 느낀 듯, 곁으로 또다른 거대한 존재의 기척이 다가온다.',bgm:'orbis'}]},
+  {art:'f_radar',lines:[{t:'……',wait:2.6},{t:'다시 한번, 그것은 눈을 뜰 준비를 한다.',art:'f_eye',wait:2.2}]}]},
   comm:{n:'통신 장치 · 첫 신호',auto:1,scenes:[
   {art:'l_wreck',lines:[{t:'우주선을 수리하는 과정은 생각보다 순조롭다.'},{t:'웬 어중이 떠중이들만 모아 프로젝트를 꾸린 건 아니었던 모양인지….'}]},
   {art:'l_cabin',lines:[{t:'통신 장치를 연결해보기 전 우리는 함선에 모였다.'},{t:'함께 들 축배는 없지만, 모두가 조마조마하게 지켜본다.'}]},
@@ -9151,6 +9159,25 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
   function wMem(t){wRing(t);g.globalAlpha=Math.min(.8,t/1.4);memHall(t+2,.55,Math.min(1,Math.max(0,(t-1.6)/2.2)));g.globalAlpha=1;crt(t,'MEMORY  06')}
   function wBotNear(t){wRing(t*.6);g.globalAlpha=.55;R(0,0,W,H,'#03060c');g.globalAlpha=1;wBot(78,H-6,84,t)}
   function wHall(t){wRing(t*.5);g.globalAlpha=.5;R(0,0,W,H,'#020408');g.globalAlpha=1;wBot(24,110,22,t*.4);const e=Math.min(1,t/6);g.globalAlpha=e*.35;R(0,0,W,H,'#000');g.globalAlpha=1}
+  // ── 최종 레이드 직전 · 워프 기계 가동: light runs over the ring, the dome opens, the beam goes up, the sky tears, the radar wakes ──
+  const fJit=(t,k)=>k?[Math.round((Math.random()-.5)*k*2),Math.round((Math.random()-.5)*k)]:[0,0];
+  function fWake(t){const [dx,dy]=fJit(t,Math.floor(t*10)%3===0?.6:0);g.save();g.translate(dx,dy);wRing(t,{pct:.99});g.restore();
+    const y=Math.round(((t*22)%140)-10);g.globalAlpha=.22;R(0,y,W,3,'#9fe8ff');g.globalAlpha=.12;R(0,y-4,W,10,'#5fd8ff');g.globalAlpha=1}
+  function fTense(t){wRing(t*.5,{pct:.99});g.globalAlpha=.5;R(0,0,W,H,'#03060c');g.globalAlpha=1;wBot(24,110,22,t*.4)}
+  function fSky(t,top){R(0,0,W,top,'#0c0820');for(let i=0;i<26;i++){const x=(i*53)%W,y=(i*17)%Math.max(1,top);if(((t*2+i)|0)%5)R(x,y,1,1,'#c8d0ff')}}
+  function fDome(t){wRing(t,{pct:.99});const o=Math.round(Math.min(1,t/3.2)*(W/2));fSky(t,14);R(0,0,W/2-o,14,'#1a202a');R(W/2+o,0,W/2-o,14,'#1a202a');R(W/2-o-1,0,1,14,'#3a4656');R(W/2+o,0,1,14,'#3a4656')}
+  function fBeam(t,x0,y0,k){const w=Math.round(6+Math.sin(t*9)*2+k*3);g.globalAlpha=.35;R(x0-w-4,0,w*2+8,y0,'#5fd8ff');g.globalAlpha=.7;R(x0-w,0,w*2,y0,'#aef0ff');g.globalAlpha=1;R(x0-2,0,4,y0,'#ffffff');
+    for(let i=0;i<10;i++){const yy=y0-((t*90+i*23)%y0);R(x0-w+((i*7)%(w*2)),yy|0,1,3,'#ffffff')}}
+  function fFire(t){const [dx,dy]=fJit(t,t<1.4?2:.7);g.save();g.translate(dx,dy);wRing(t*2.2,{pct:1});fSky(t,14);fBeam(t,120,52,Math.min(1,t/1.2));g.restore()}
+  function fRift(t){const [dx,dy]=fJit(t,t<1.6?2.2:.5);g.save();g.translate(dx,dy);R(-4,-4,W+8,H+8,'#0c0820');
+    for(let y=0;y<H;y+=3){const d=Math.max(0,1-Math.abs(y-34)/40),off=Math.round(Math.sin(y*.3+t*4)*d*6);for(let x=0;x<W;x+=9){if(((x+y*3+(t*3|0))%17)===0)R(x+off,y,1,1,'#c8d0ff')}}
+    const rw=Math.round(Math.min(1,t/2.4)*70);for(let x=-rw;x<=rw;x++){const yy=34+Math.round(Math.sin(x*.35+t*6)*2*(1-Math.abs(x)/Math.max(1,rw)));R(120+x,yy,1,1,Math.abs(x)%5<2?'#ffd0e0':'#c88aff');g.globalAlpha=.25;R(120+x,yy-2,1,5,'#c88aff');g.globalAlpha=1}
+    R(0,92,W,28,'#07060c');R(96,86,48,8,'#1a202a');fBeam(t,120,92,1);
+    const k=Math.min(1,Math.max(0,(t-2.6)/3));if(k>0){g.globalAlpha=k*.55;R(150,6,90,48,'#05030a');g.globalAlpha=1}g.restore()}
+  function fRadar(t){R(0,0,W,H,'#020806');const cx=120,cy=60,r=50;for(let k=1;k<=3;k++){const rr=r*k/3;for(let a=0;a<64;a++){const q=a/64*Math.PI*2;R(cx+Math.cos(q)*rr,cy+Math.sin(q)*rr,1,1,'#145a32')}}
+    R(cx-r,cy,r*2,1,'#0e3a22');R(cx,cy-r,1,r*2,'#0e3a22');const sw=t*2.2;for(let i=0;i<r;i++){for(let j=0;j<6;j++){const q=sw-j*.06;g.globalAlpha=1-j/6;R(cx+Math.cos(q)*i,cy+Math.sin(q)*i,1,1,'#3dff8a')}}g.globalAlpha=1;
+    const bx=cx+30,by=cy-22,bs=Math.min(1,t/2.2)*14,on=(Math.floor(t*3)%2)||t<2.2;const dot=(rr,c,al)=>{g.globalAlpha=al;for(let j=-rr;j<=rr;j++){const w=Math.round(Math.sqrt(Math.max(0,rr*rr-j*j)));R(bx-w,by+j,w*2+1,1,c)}g.globalAlpha=1};if(bs>0){dot(Math.round(bs),'#ff4a5a',on?.3:.15);dot(Math.round(bs*.6),'#ff6a6a',on?.9:.5);const pr=Math.round(bs+((t*10)%10));for(let a2=0;a2<48;a2++){const q=a2/48*Math.PI*2;g.globalAlpha=.6*(1-((t*10)%10)/10);R(bx+Math.cos(q)*pr,by+Math.sin(q)*pr,1,1,'#ff8a8a')}g.globalAlpha=1}}
+  function fEye(t){R(0,0,W,H,'#05030a');for(let i=0;i<30;i++){const x=(i*61)%W,y=(i*29)%H;if(((t*2+i)|0)%6)R(x,y,1,1,'#8a80b0')}const k=Math.min(1,t/3),gl=.25+.35*k*(.5+.5*Math.sin(t*5));g.globalAlpha=gl;R(120-46,57,92,3,'#c84a8a');g.globalAlpha=gl*.5;R(120-54,55,108,7,'#7a2a6a');g.globalAlpha=1;const sh=t>2?Math.round(Math.sin(t*30)*.6):0;try{endEye(g,120,58+sh,24,0,[0,0],false,t)}catch(e){}}
   const ART={sky:t=>{sky(t);wall(t)},
     robot:t=>{sky(t);const k=Math.min(1,t/2.2),e=1-Math.pow(1-k,3),sc=2+e*1.7,bw=Math.round(16*sc),rx=Math.round(W/2-bw/2+(1-e)*50),ry=Math.round(H*.5-bw*.4+(1-e)*10+Math.sin(t*6)*1);smoke(t,1-k*.5);if(BOT)g.drawImage(BOT,rx,ry,bw,bw);smoke(t+1.7,.5*(1-k*.7));wall(t)},
     // ── the opening's own pictures, drawn fresh: a dusk-purple desert seen from afar, a small crashed ship, a small 녹슨 7호 ──
@@ -9352,7 +9379,8 @@ function playStory(sid,done,opt){const S=STORIES[sid],AUTO=!!(S&&S.auto)&&!(opt&
     r_ship2:t=>{hullRain(t*.7,.8)},
     r_drops:t=>{hullDrops(t)},
     w_rec1:t=>wRecs(t,1),w_rec2:t=>wRecs(t,2),w_rec3:t=>wRecs(t,3),w_rec4:t=>wRecs(t,4),w_rec5:t=>wRecs(t,5),w_rec6:t=>wRecs(t,6),
-    w_ring:t=>wRing(t),w_plan:t=>wPlan(t),w_circle:t=>wCircle(t),w_mem:t=>wMem(t),w_bot:t=>wBotNear(t),w_hall:t=>wHall(t)};
+    w_ring:t=>wRing(t),w_plan:t=>wPlan(t),w_circle:t=>wCircle(t),w_mem:t=>wMem(t),w_bot:t=>wBotNear(t),w_hall:t=>wHall(t),
+    f_wake:t=>fWake(t),f_tense:t=>fTense(t),f_dome:t=>fDome(t),f_fire:t=>fFire(t),f_sky:t=>fRift(t),f_radar:t=>fRadar(t),f_eye:t=>fEye(t)};
   function drawBg(t){if(bg.width!==innerWidth)bg.width=innerWidth;if(bg.height!==innerHeight)bg.height=innerHeight;const w=bg.width,h=bg.height;bx.fillStyle='#000';bx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const s=ST[i],tw=(Math.sin(t*1.5+s.p)+1)/2;bx.globalAlpha=.25+tw*.6;bx.fillStyle=s.b>.75?'#e6efff':'#5f7fc0';bx.fillRect((s.x*w)|0,(s.y*h)|0,s.b>.9?2:1,s.b>.9?2:1)}bx.globalAlpha=1}
   let si=0,li=0,t0=performance.now(),shown=0,full=false,raf=0,over=false,lastBeep=0,fading=false;const q=x=>op.querySelector(x);
   function setLine(){const L=S.scenes[si].lines[li],w=q('.stv-who');if(L.bgm==='orbis'&&window.__orbEvt)orbisBgmIn();op.classList.toggle('noart',!!S.scenes[si].noart);w.hidden=!L.v;w.textContent=L.who||'';q('.stv-txt').className='stv-txt'+(L.v?' say':'')+(L.sys?' sys':'');shown=L.pre||0;q('.stv-txt').textContent=(L.v?'':L.t||'').slice(0,shown);full=false;q('.stv-next').classList.remove('on');const last=si===S.scenes.length-1&&li===S.scenes[si].lines.length-1;q('.stv-next').textContent=L.btn==='▶'?'▶':'▶ '+(L.btn||(last?'확인한다.':'다음'))}
@@ -11081,6 +11109,16 @@ Object.assign(EA,{
  creditsme(){playCredits()}});
 function credAdminHTML(){return`<div class="info-sec" data-adm="boss"><span class="lbl">Ending · 엔딩 크레딧</span><span class="hint">누르는 순간 접속 중인 모든 선원의 화면에 엔딩 크레딧이 흐릅니다. 최근 접속한 등록 선원 30명이 캐릭터와 함께 나오고, 마지막에 「감사한 로봇 - 녹슨 7호」가 나옵니다. 15분 안에 접속한 선원도 한 번 보게 됩니다.</span>
    <div class="row" style="gap:6px;flex-wrap:wrap">${credArm?'<button class="btn sm alt" data-act="creditsgo" data-x="1">정말 띄우기</button><button class="btn sm ghost" data-act="creditsno">취소</button>':'<button class="btn sm gold" data-act="creditsgo">모두에게 엔딩 크레딧 띄우기</button>'}<button class="btn sm ghost" data-act="creditsme">나만 미리보기</button></div></div>`}
+/* 최종 레이드 직전 이야기: the operator's start puts the raid's clock 68 s ahead (END_LEAD), and everyone online watches the
+   'final' story together (it turns its own pages, no skipping), so 오르비스 opens its eyes for all of them as it ends.
+   Someone who comes in during that minute sees it from the top; anyone later goes straight to the fight. */
+const END_LEAD=68e3;let endWasOn=false;
+setInterval(()=>{if(mode!=='online'||!P||!P.joined||P.nick==='새 선원')return;
+  const o=endOn();if(o!==endWasOn){endWasOn=o;try{endRender();endPaint()}catch(e){}syncBgm()}
+  if(!END||endFirst()||!END.on||END.done||endStale()||P.finSt===END.gen)return;
+  if(sNow()>(+END.startAt||0)+30e3){P.finSt=END.gen;return}
+  if($('#story')||$('#orbisFx')||!$('#joinModal').hidden)return;P.finSt=END.gen;save();
+  playStory('final',()=>{syncBgm();try{endRender();endPaint()}catch(e){}if(!endOn()&&END&&sNow()<(+END.startAt||0))toast('하늘이 일그러진다… 곧 「오르비스」가 눈을 뜹니다.')})},1000);
 Object.assign(A,EA);SAFE_ACT.add('endreset');   // the admin can always call the raid off, even knocked out
 function showJoin(){const isDish=id=>ITEMS[id]&&ITEMS[id].dish;J={look:lookOf(P),likes:(P.likes||[]).filter(isDish).slice(0,J_MAX),hates:(P.hates||[]).filter(isDish).slice(0,J_MAX),as:Object.fromEntries(ABIL.map(([k])=>[k,J_START])),step:1,mode:'like',cat:'dish',job:JOBS[OLDJOB[P.job]||P.job]?(OLDJOB[P.job]||P.job):''};renderJoin();window.scrollTo(0,0);$('#joinModal').hidden=false;if(window.__fbNick&&!$('#callsign').value)$('#callsign').value=window.__fbNick;setTimeout(()=>$('#callsign').focus(),50)}
 setInterval(()=>{if(mode==='online'&&document.visibilityState==='visible'&&P&&P.nick&&!P._fresh)save()},600e3);
