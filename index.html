@@ -4932,7 +4932,7 @@ function raidRunListHTML(){const list=RAIDS_RUN.filter(x=>egOpen()||!(x.rush||x.
       <div class="pcfoot"><b>${(x.ids||[]).length}명</b><span class="hint">출발한 파티에는 합류할 수 없습니다</span></div></div></div>`}).join('')}</div>`:'<p class="hint">지금 원정 중인 파티가 없습니다.</p>'}</div>`}
 function raidSubscribe(){tabSub(()=>tab==='raid'&&!MYRAID,()=>db.collection('parties').where('state','==','lobby').onSnapshot(sn=>{const sig=x=>JSON.stringify(x.map(v=>Object.assign({},v,{hb:0})));const was=sig(RAIDS_ALL);RAIDS_ALL=sn.docs.map(d=>Object.assign({id:d.id},d.data()));partySweep(RAIDS_ALL);partyStaffSweep();const moved=raidRefilter();if(tab==='raid'&&(moved||sig(RAIDS_ALL)!==was))renderPanel()},()=>{}));
   tabSub(()=>tab==='raid'&&!MYRAID,()=>runIdxRef().onSnapshot(sn=>{const d=runIdxTidy(sn.exists?sn.data():{});RAIDS_RUN=Object.entries(d).map(([id,v])=>Object.assign({id},v));if(tab==='raid'&&!MYRAID)renderPanel()},()=>{}));
-  tabSub(()=>!MYRAID&&!!uid,()=>db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{partyTidyMine(sn.docs.map(d=>Object.assign({id:d.id},d.data())));const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!RAID_DISMISS.has(v.id)&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
+  tabSub(()=>!MYRAID&&!!uid&&!lockOn('raid'),()=>db.collection('parties').where('ids','array-contains',uid).onSnapshot(sn=>{partyTidyMine(sn.docs.map(d=>Object.assign({id:d.id},d.data())));const mine=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(v=>v.state!=='done'&&!RAID_DISMISS.has(v.id)&&!(P.raidDone||[]).includes(v.id)&&!(v.claimed||{})[uid]&&raidNow()-(v.at||0)<6*3600e3).sort((a,b)=>b.at-a.at)[0];
     if(mine&&(!MYRAID||MYRAID.id!==mine.id))raidWatch(mine.id)},()=>{}));
   clearInterval(raidTimer);raidTimer=setInterval(raidTick,400)}
 /* ---- lobby actions ---- */
@@ -5285,7 +5285,7 @@ function bossPenalty(){const b=BOSS;if(!b)return;const src=b.failed?bossSum(b):b
    during a fight, crew on other screens check it every minute instead of receiving every single hit */
 const BOSS_POLL=60e3;let bossUn=null,bossPollT=0;
 function bossOn(sn){BOSS=sn.exists?sn.data():null;try{bossPhNote()}catch(e){}bossFinalize();bossClaim();bossPenalty();bossQuake();bossExpire();if(tab==='adv')bossPaint();bossSubSync()}
-function bossSubSync(){const w=mode==='online'&&!!db&&(tab==='adv'||!bossAlive(BOSS));if(w&&!bossUn)bossUn=bossRef().onSnapshot(bossOn,()=>{});else if(!w&&bossUn){try{bossUn()}catch(e){}bossUn=null}}
+function bossSubSync(){const w=mode==='online'&&!!db&&(tab==='adv'||!bossAlive(BOSS))&&!lockOn('adv');if(w&&!bossUn)bossUn=bossRef().onSnapshot(bossOn,()=>{});else if(!w&&bossUn){try{bossUn()}catch(e){}bossUn=null}}
 /* 침략자 예약: the operator books invaders ahead (boss/bossres list of {id,at,k,lv}). Whoever is online when one is due claims it
    in a transaction and summons it, so it appears on time even with no operator around; a booking more than 30 min overdue is dropped */
 const bossResRef=()=>db.doc('boss/bossres');let BRES=[],bresBusy=false;
