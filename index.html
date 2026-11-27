@@ -1492,6 +1492,7 @@ body:has(#endHud){padding-bottom:200px}
 .ritefx.dark .rfbg{background:radial-gradient(ellipse at 50% 42%,rgba(255,40,60,.32),rgba(20,0,4,.9) 60%,#000)}
 .ritefx.dark .rfpil{display:none}
 body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
+#riteFx .rftxt b.rftype{animation:none}#riteFx .rftxt b.rftype::after{content:'▌';margin-left:2px;animation:rfCur .5s steps(1) infinite}@keyframes rfCur{50%{opacity:0}}
 @keyframes rfIn{from{opacity:0}}@keyframes rfOut{to{opacity:0}}
 @keyframes rfPil{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}@keyframes rfPulse{50%{opacity:.55}}
 @keyframes rfRing{from{transform:scale(.2);opacity:0}}@keyframes rfSpin{to{rotate:360deg}}
@@ -5834,10 +5835,11 @@ function riteBanner(r,th0){const old=document.getElementById('riteFx');if(old)ol
   let ps='';if(i>0)for(let k=0;k<26;k++)ps+=`<i class="rfp" style="left:${(k*37)%100}%;animation-duration:${2.6+(k%5)*.5}s;animation-delay:${(k*.17)%2}s"></i>`;
   el.innerHTML=`<div class="rfbg"></div><div class="rfpil"></div>${ps}<div class="rfring"></div><div class="rfsym">${th[1]}</div><div class="rftxt"><b>${esc(r.t)}</b><span>${esc(r.s)}</span></div>`;
   document.body.appendChild(el);if(i===0){document.body.classList.add('rfshake');setTimeout(()=>document.body.classList.remove('rfshake'),1100)}
+  if(r.type){const b=el.querySelector('.rftxt b'),full=r.t;b.textContent='';b.classList.add('rftype');let k=0;const tick=()=>{if(!el.isConnected)return;k++;b.textContent=full.slice(0,k);if(k<full.length)setTimeout(tick,full[k-1]===' '?70:170);else setTimeout(()=>b.classList.remove('rftype'),900)};setTimeout(tick,650)}
   setTimeout(()=>{if(el.isConnected)el.classList.add('out')},5000);setTimeout(()=>el.remove(),6000)}
 let riteHalfBusy=false;
 // between the eyes opening and the first blessing (6–12 s into the rite), one line of resolve on every screen
-const RITE_X={t:'우리는 쓰러질 수 없다.',s:''};let riteXg=null;
+const RITE_X={t:'우리는 쓰러질 수 없다.',s:'',type:1};let riteXg=null;
 setInterval(()=>{if(!P||!P.joined||!END||riteStep()<0||END.gen===riteXg)return;const dt=sNow()-END.startAt-RITE_AT;if(dt>=6e3&&dt<9e3){riteXg=END.gen;riteBanner(RITE_X,['#ffe08a','✦']);log(RITE_X.t,'')}else if(dt>=9e3)riteXg=END.gen},300);
 setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;const g=END.gen,cur=P.endRite&&P.endRite.g===g?P.endRite.k:-1;if(cur>=k)return;
   for(let i=cur+1;i<=k;i++){const r=RITE[i],late=sNow()-END.startAt-RITE_AT-r.at>8e3;
@@ -9596,7 +9598,7 @@ document.addEventListener('click',e=>{const inT=e.target.closest('#ticker');if(i
 /* ───────── actions ───────── */
 const FAINT_MS=10*60e3;
 const isFaint=()=>P.faint&&Date.now()<P.faint;
-function checkFaint(){if(isFaint())return;if(P.hp<=0&&typeof riteHas==='function'&&riteHas(2)){P.hp=1}if(P.hp<=0||P.en<=0){const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했습니다! 선원 목록에서 구조할 수 있습니다.`)}}
+function checkFaint(){if(isFaint())return;if(P.hp<=0&&typeof riteHas==='function'&&riteHas(2)&&!(P.grit&&END&&P.grit.g===END.gen&&P.grit.u)){P.hp=1;P.grit={g:END.gen,u:1};toast('굳건한 의지로 버텨 냈다! 다시 쓰러지면 기절합니다.');log('굳건한 의지로 체력 1을 남기고 버텨 냈다. (기절했다 깨어나면 다시 생긴다)','good')}if(P.hp<=0||P.en<=0){if(P.grit)P.grit.u=0;const why=P.hp<=0?'체력':'에너지';P.hp=Math.max(0,P.hp);P.en=Math.max(0,P.en);P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};log(`${why}이 바닥나 기절했다. 누군가 구조해 주지 않으면 10분 동안 움직일 수 없다.`,'bad');sys(`${P.nick} 님이 기절했습니다! 선원 목록에서 구조할 수 있습니다.`)}}
 // rescue cooldown: once someone is rescued they can't be rescued again for 30 minutes
 const RESCUE_CD=30*60e3,rescueCd=(p,id)=>Math.max(0,Math.max(+(p&&p.rescuedAt)||0,+(id&&RESCUED[id]&&RESCUED[id].at)||0)+RESCUE_CD-Date.now());
 // someone else is down until their faint runs out, unless a rescue for this very faint is already on record
