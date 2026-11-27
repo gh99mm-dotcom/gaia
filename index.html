@@ -1492,6 +1492,7 @@ body:has(#endHud){padding-bottom:200px}
 .ritefx.dark .rfbg{background:radial-gradient(ellipse at 50% 42%,rgba(255,40,60,.32),rgba(20,0,4,.9) 60%,#000)}
 .ritefx.dark .rfpil{display:none}
 body.rfshake #stage,body.rfshake .grid{animation:rfShake .5s linear 2}
+#riteBlack{position:fixed;inset:0;z-index:254;background:#000;opacity:0;transition:opacity .9s linear;display:flex;align-items:center;justify-content:center;pointer-events:none}#riteBlack b{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,5.4vw,36px);color:#f2f4fa;letter-spacing:.1em;text-shadow:0 0 14px rgba(255,224,138,.35)}#riteBlack b.rftype::after{content:'▌';margin-left:3px;animation:rfCur .5s steps(1) infinite}
 #riteFx .rftxt b.rftype{animation:none}#riteFx .rftxt b.rftype::after{content:'▌';margin-left:2px;animation:rfCur .5s steps(1) infinite}@keyframes rfCur{50%{opacity:0}}
 @keyframes rfIn{from{opacity:0}}@keyframes rfOut{to{opacity:0}}
 @keyframes rfPil{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}@keyframes rfPulse{50%{opacity:.55}}
@@ -5848,7 +5849,12 @@ function riteBanner(r,th0){const old=document.getElementById('riteFx');if(old)ol
 let riteHalfBusy=false;
 // between the eyes opening and the first blessing (6–12 s into the rite), one line of resolve on every screen
 const RITE_X={t:'우리는 쓰러질 수 없다.',s:'',type:1};let riteXg=null;
-setInterval(()=>{if(!P||!P.joined||!END||riteStep()<0)return;const key=END.gen+':'+END.startAt;if(key===riteXg)return;const dt=sNow()-END.startAt-RITE_AT;if(dt>=6e3&&dt<11e3){riteXg=key;riteBanner(RITE_X,['#ffe08a','✦']);log(RITE_X.t,'')}else if(dt>=11e3)riteXg=key},300);
+// fainted: the screen goes black and, on that black, the line is typed out; it lifts as the first blessing arrives (12 s)
+function riteBlack(on){let k=document.getElementById('riteBlack');if(!on){if(k&&!k.dataset.out){k.dataset.out=1;k.style.opacity='0';setTimeout(()=>k.remove(),900)}return}
+  if(k)return;k=document.createElement('div');k.id='riteBlack';k.innerHTML='<b></b>';document.body.appendChild(k);void k.offsetWidth;k.style.opacity='1';
+  const b=k.querySelector('b'),full=RITE_X.t;b.classList.add('rftype');let i=0;const tick=()=>{if(!k.isConnected||k.dataset.out)return;i++;b.textContent=full.slice(0,i);if(i<full.length)setTimeout(tick,full[i-1]===' '?90:200)};setTimeout(tick,1300)}
+setInterval(()=>{const k=document.getElementById('riteBlack');if(!P||!P.joined||!END||riteStep()<0){if(k)riteBlack(false);return}const key=END.gen+':'+END.startAt,dt=sNow()-END.startAt-RITE_AT;
+  if(dt>=RITE[1].at-200){if(k)riteBlack(false);riteXg=key;return}if(key===riteXg)return;if(dt>=4.5e3&&dt<RITE[1].at-2e3){riteXg=key;riteBlack(true);log(RITE_X.t,'')}},250);
 setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;const g=END.gen,cur=P.endRite&&P.endRite.g===g?P.endRite.k:-1;if(cur>=k)return;
   for(let i=cur+1;i<=k;i++){const r=RITE[i],late=sNow()-END.startAt-RITE_AT-r.at>8e3;
     if(i===0){if(!late){P.hp=0;P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700)}}
