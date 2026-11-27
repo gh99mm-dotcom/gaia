@@ -5852,10 +5852,10 @@ const RITE_X={t:'우리는 여기서 쓰러질 수 없다.',s:'',type:1};let rit
 // fainted: the screen goes black and, on that black, the line is typed out; it lifts as the first blessing arrives (12 s)
 function riteBlack(on){let k=document.getElementById('riteBlack');if(!on){if(k&&!k.dataset.out){k.dataset.out=1;k.style.opacity='0';setTimeout(()=>k.remove(),900)}return}
   if(k)return;k=document.createElement('div');k.id='riteBlack';setTimeout(()=>{try{syncBgm()}catch(e){}},0);k.innerHTML='<b></b>';document.body.appendChild(k);void k.offsetWidth;k.style.opacity='1';
-  const b=k.querySelector('b'),full=RITE_X.t;let i=0;const tick=()=>{if(!k.isConnected||k.dataset.out)return;i++;b.textContent=full.slice(0,i);if(full[i-1]!==' ')try{sfxType()}catch(e){}if(i<full.length)setTimeout(tick,full[i-1]===' '?110:220);else setTimeout(()=>b.classList.remove('rftype'),1200)};
+  const b=k.querySelector('b'),full=RITE_X.t;let i=0;const tick=()=>{if(!k.isConnected||k.dataset.out)return;i++;b.textContent=full.slice(0,i);if(full[i-1]!==' ')try{sfxType()}catch(e){}if(i<full.length)setTimeout(tick,full[i-1]===' '?160:310);else setTimeout(()=>b.classList.remove('rftype'),1200)};
   setTimeout(()=>{const f=document.getElementById('riteFx');if(f)f.remove();if(!k.isConnected||k.dataset.out)return;b.classList.add('rftype');setTimeout(tick,500)},1100)}
 setInterval(()=>{const k=document.getElementById('riteBlack');if(!P||!P.joined||!END||riteStep()<0){if(k)riteBlack(false);return}const key=END.gen+':'+END.startAt,dt=sNow()-END.startAt-RITE_AT;
-  if(dt>=RITE[1].at-200){if(k)riteBlack(false);riteXg=key;return}if(key===riteXg)return;if(dt>=4.5e3&&dt<RITE[1].at-2e3){riteXg=key;riteBlack(true);log(RITE_X.t,'')}},250);
+  if(dt>=RITE[1].at-200){if(k)riteBlack(false);riteXg=key;return}if(key===riteXg)return;if(dt>=4e3&&dt<RITE[1].at-2e3){riteXg=key;riteBlack(true);log(RITE_X.t,'')}},250);
 setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;const g=END.gen,cur=P.endRite&&P.endRite.g===g?P.endRite.k:-1;if(cur>=k)return;
   for(let i=cur+1;i<=k;i++){const r=RITE[i],late=sNow()-END.startAt-RITE_AT-r.at>8e3;
     if(i===0){if(!late){P.hp=0;P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700)}}
