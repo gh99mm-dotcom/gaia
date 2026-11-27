@@ -11196,7 +11196,7 @@ let credArm=false;
 // crew left out of the credits at the operator's request (by name)
 const CRED_SKIP=['tessa lowell'];const credSkip=p=>CRED_SKIP.includes(String(p&&p.nick||'').trim().toLowerCase());
 function credCrew(){const all=Object.entries(PLAYERS||{}).filter(([id,p])=>p&&p.nick&&p.nick!=='새 선원'&&!p.deleted&&!(DELP||{})[id]&&!credSkip(p)).map(([id,p])=>id===uid&&P?P:p);
-  if(P&&P.nick&&P.nick!=='새 선원'&&!all.includes(P)&&!credSkip(P))all.push(P);return all.sort((a,b)=>(+b.seen||0)-(+a.seen||0)).slice(0,30)}
+  if(P&&P.nick&&P.nick!=='새 선원'&&!all.includes(P)&&!credSkip(P))all.push(P);return all.sort((a,b)=>(+b.seen||0)-(+a.seen||0))}
 // an ID photo: head and shoulders on a pale backdrop, like a crew badge
 function credAva(p){const c=document.createElement('canvas'),W=26,H=32;c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#9fb6cc';x.fillRect(0,0,W,H);x.fillStyle='#b4c8db';x.fillRect(0,0,W,Math.round(H*.45));
   try{const g=avatarGrid(p);let top=0;while(top<20&&![...g[top]].some(q=>q!=='.'))top++;let l=40,r=0;for(let j=top;j<Math.min(40,top+14);j++)[...g[j]].forEach((q,k)=>{if(q!=='.'){l=Math.min(l,k);r=Math.max(r,k)}});
@@ -11223,7 +11223,7 @@ Object.assign(EA,{
   try{await bossTx(db.doc('org/bunker'),d=>Object.assign({},d||{},{credits:{id:uid+':'+Date.now(),at:sNow()}}));toast('엔딩 크레딧을 모두에게 띄웠습니다.')}catch(e){toast('띄우지 못했습니다.')}renderAdminAll()},
  creditsno(){credArm=false;renderAdminAll()},
  creditsme(){playCredits()}});
-function credAdminHTML(){return`<div class="info-sec" data-adm="boss"><span class="lbl">Ending · 엔딩 크레딧</span><span class="hint">누르는 순간 접속 중인 모든 선원의 화면에 엔딩 크레딧이 흐릅니다. 최근 접속한 등록 선원 30명이 캐릭터와 함께 나오고, 마지막에 「감사한 로봇 - 녹슨 7호」가 나옵니다. 15분 안에 접속한 선원도 한 번 보게 됩니다.</span>
+function credAdminHTML(){return`<div class="info-sec" data-adm="boss"><span class="lbl">Ending · 엔딩 크레딧</span><span class="hint">누르는 순간 접속 중인 모든 선원의 화면에 엔딩 크레딧이 흐릅니다. 등록된 선원 모두가 캐릭터와 함께 나오고, 마지막에 「감사한 로봇 - 녹슨 7호」가 나옵니다. 15분 안에 접속한 선원도 한 번 보게 됩니다.</span>
    <div class="row" style="gap:6px;flex-wrap:wrap">${credArm?'<button class="btn sm alt" data-act="creditsgo" data-x="1">정말 띄우기</button><button class="btn sm ghost" data-act="creditsno">취소</button>':'<button class="btn sm gold" data-act="creditsgo">모두에게 엔딩 크레딧 띄우기</button>'}<button class="btn sm ghost" data-act="creditsme">나만 미리보기</button></div></div>`}
 /* 최종 레이드 직전 이야기: the operator's start puts the raid's clock 68 s ahead (END_LEAD), and everyone online watches the
    'final' story together (it turns its own pages, no skipping), so 오르비스 opens its eyes for all of them as it ends.
