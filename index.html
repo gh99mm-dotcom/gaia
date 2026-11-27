@@ -9947,7 +9947,7 @@ const A={
   if(d.k==='comm'){if($('#story')||$('#orbisFx'))return;playStory('comm',sk=>{if(sk)return;const bk=document.createElement('div');bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{orbisPlay(ORB_INTRO,()=>orbisPlay(ORB_LEAVE,null,true));setTimeout(()=>bk.remove(),900)},450)},{manual:1});return}
   // the raid stories replay at your own pace; the ending goes on to its crawl and the credits, as it did
   // the ending replays as one: the pre-raid story (워프 기계 가동) → the ending story → its crawl → the credits (건너뛰기 moves on to the next part)
-  if(d.k==='ending'){if($('#story')||$('#opCrawl')||$('#credFx'))return;endBlack(true);playStory('final',()=>setTimeout(()=>playStory('ending',()=>storyCrawl(()=>playCredits(()=>endBlack(false)),END_CRAWL,''),{manual:1}),400),{manual:1});return}
+  if(d.k==='ending'){if($('#story')||$('#opCrawl')||$('#credFx'))return;endBlack(true);playStory('final',()=>setTimeout(()=>playStory('ending',()=>storyCrawl(()=>playCredits(()=>endBlack(false),{skip:1}),END_CRAWL,''),{manual:1}),400),{manual:1});return}
   playStory(d.k)},
  admstory(d){if(!isAdmin||mode!=='online'||!STORY_LIST.some(x=>x[0]===d.k))return;const on=!STORY_ON[d.k],nm=STORY_LIST.find(x=>x[0]===d.k)[1];bossTx(staffRef(),cur=>{const c=Object.assign({ids:[]},cur);c.stories=Object.assign({},c.stories,{[d.k]:on});return c}).then(()=>{toast(on?`「${nm}」을(를) 공개했습니다.`:`「${nm}」을(를) 다시 숨겼습니다.`);if(on)sys(`[공지] 새 이야기 「${nm}」이(가) 공개되었습니다. 내 정보 › 이야기에서 볼 수 있습니다.`,true)}).catch(()=>toast('바꾸지 못했습니다.'))},
  padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
@@ -11236,9 +11236,9 @@ function credCrew(){const all=Object.entries(PLAYERS||{}).filter(([id,p])=>p&&p.
 function credAva(p){const c=document.createElement('canvas'),W=26,H=32;c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#9fb6cc';x.fillRect(0,0,W,H);x.fillStyle='#b4c8db';x.fillRect(0,0,W,Math.round(H*.45));
   try{const g=avatarGrid(p);let top=0;while(top<20&&![...g[top]].some(q=>q!=='.'))top++;let l=40,r=0;for(let j=top;j<Math.min(40,top+14);j++)[...g[j]].forEach((q,k)=>{if(q!=='.'){l=Math.min(l,k);r=Math.max(r,k)}});
     const cx=Math.round((l+r)/2),ox=cx-Math.floor(W/2),oy=top-3;gridOnS(x,g.slice(Math.max(0,oy),oy+H).map(row=>row.slice(Math.max(0,ox),ox+W)),Math.max(0,-ox),Math.max(0,-oy),1,lookPal(p))}catch(e){}return c}
-function playCredits(after){const old=document.getElementById('credFx');if(old)old.remove();
+function playCredits(after,opt){const old=document.getElementById('credFx');if(old)old.remove();
   const M=document.createElement('div');M.id='credFx';M.setAttribute('role','dialog');M.setAttribute('aria-label','엔딩 크레딧');
-  M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credok" hidden>확인 ▶</button>`;
+  M.innerHTML=`<div class="credstars"></div><div class="credroll"><div class="credhead"><span class="lbl">Ending Credits</span><b>GAIA PROJECT</b><span>함께한 선원들</span></div><div class="credgrid"></div><div class="credbot"><div class="credbotimg"></div><b>감사한 로봇 - 녹슨 7호</b></div></div><button type="button" class="credok" hidden>확인 ▶</button>${opt&&opt.skip?'<button type="button" class="credx">건너뛰기 ▶▶</button>':''}`;
   const gr=M.querySelector('.credgrid'),crew=credCrew(),avs=crew.map(credFullAva),scs=[];let si=0;
   const scene=g=>{if(si>=CRED_SCENES.length||!avs.length)return;const [kind,cap]=CRED_SCENES[si];si++;const d=document.createElement('figure');d.className='credscene';const c=document.createElement('canvas');c.width=CS_W;c.height=CS_H;d.appendChild(c);const fc=document.createElement('figcaption');fc.textContent=cap;d.appendChild(fc);gr.appendChild(d);
     const av=g.slice();for(let k=0;av.length<5&&k<avs.length*2;k++){const a=avs[k%avs.length];if(!av.includes(a)||avs.length<5)av.push(a)}scs.push([c,kind,av]);credSceneDraw(c,kind,av,0)};
@@ -11247,7 +11247,7 @@ function playCredits(after){const old=document.getElementById('credFx');if(old)o
     if((i+1)%5===0||i===crew.length-1)scene(avs.slice(i-(i%5),i+1))});
   try{const bc=xevBot();if(bc){const c=document.createElement('canvas');c.width=bc.width;c.height=bc.height;c.getContext('2d').drawImage(bc,0,0);M.querySelector('.credbotimg').appendChild(c)}}catch(e){}
   document.body.appendChild(M);credMusicOn();const t0=performance.now(),anim=()=>{if(!M.isConnected)return;const t=(performance.now()-t0)/1000;scs.forEach(([c,kind,av])=>{const r=c.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)credSceneDraw(c,kind,av,t)});requestAnimationFrame(anim)};requestAnimationFrame(anim);
-  let shut=false;const close=()=>{if(shut)return;shut=true;credMusicOff();M.classList.add('out');setTimeout(()=>{M.remove();if(after)after()},900)};const okB=M.querySelector('.credok');okB.onclick=close;
+  let shut=false;const close=()=>{if(shut)return;shut=true;credMusicOff();M.classList.add('out');setTimeout(()=>{M.remove();if(after)after()},900)};const okB=M.querySelector('.credok');okB.onclick=close;{const sx=M.querySelector('.credx');if(sx)sx.onclick=close}
   // roll from below the screen until 녹슨 7호 sits in the middle, then stay there
   requestAnimationFrame(()=>{const R=M.querySelector('.credroll'),H=innerHeight,end=-(R.offsetHeight-H/2-M.querySelector('.credbot').offsetHeight/2),dist=H-end,sec=Math.max(25,dist/45);
     R.style.transform=`translateY(${H}px)`;R.getBoundingClientRect();R.style.transition=`transform ${sec}s linear`;R.style.transform=`translateY(${end}px)`;setTimeout(()=>{okB.hidden=false},sec*1000+600)})}
