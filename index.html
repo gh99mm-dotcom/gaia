@@ -5851,7 +5851,7 @@ let riteHalfBusy=false;
 const RITE_X={t:'우리는 쓰러질 수 없다.',s:'',type:1};let riteXg=null;
 // fainted: the screen goes black and, on that black, the line is typed out; it lifts as the first blessing arrives (12 s)
 function riteBlack(on){let k=document.getElementById('riteBlack');if(!on){if(k&&!k.dataset.out){k.dataset.out=1;k.style.opacity='0';setTimeout(()=>k.remove(),900)}return}
-  if(k)return;k=document.createElement('div');k.id='riteBlack';k.innerHTML='<b></b>';document.body.appendChild(k);void k.offsetWidth;k.style.opacity='1';
+  if(k)return;k=document.createElement('div');k.id='riteBlack';setTimeout(()=>{try{syncBgm()}catch(e){}},0);k.innerHTML='<b></b>';document.body.appendChild(k);void k.offsetWidth;k.style.opacity='1';
   const b=k.querySelector('b'),full=RITE_X.t;let i=0;const tick=()=>{if(!k.isConnected||k.dataset.out)return;i++;b.textContent=full.slice(0,i);if(i<full.length)setTimeout(tick,full[i-1]===' '?110:220);else setTimeout(()=>b.classList.remove('rftype'),1200)};
   setTimeout(()=>{const f=document.getElementById('riteFx');if(f)f.remove();if(!k.isConnected||k.dataset.out)return;b.classList.add('rftype');setTimeout(tick,500)},1100)}
 setInterval(()=>{const k=document.getElementById('riteBlack');if(!P||!P.joined||!END||riteStep()<0){if(k)riteBlack(false);return}const key=END.gen+':'+END.startAt,dt=sNow()-END.startAt-RITE_AT;
@@ -5863,7 +5863,7 @@ setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;
     if(i===3&&!late)setTimeout(()=>{const f=document.getElementById('riteFx');if(f)f.classList.add('out');setTimeout(endBigHit,700)},3600);
     if(i===3&&!riteHalfBusy){riteHalfBusy=true;setTimeout(()=>{if(!END||END.gen!==g||END.halved||END.done){riteHalfBusy=false;return}bossTx(endRef(),c=>{if(!c||c.gen!==g||c.done||c.halved)return null;c.hp=Math.min(+c.hp||0,Math.round((+c.max||0)/2));c.halved=1;return c}).catch(()=>{}).finally(()=>{riteHalfBusy=false})},Math.random()*3000)}
     if(!late)riteBanner(r);log(`${r.t} ${r.s}`,i?'good':'bad')}
-  P.endRite={g,k};if(cur<1&&k>=1){const h=document.getElementById('endHud');if(h)h.remove();try{endRender()}catch(e){}}renderPilot();renderAll()},500);
+  P.endRite={g,k};if(cur<1&&k>=1)setTimeout(()=>{try{syncBgm()}catch(e){}},0);if(cur<1&&k>=1){const h=document.getElementById('endHud');if(h)h.remove();try{endRender()}catch(e){}}renderPilot();renderAll()},500);
 // 의무원들의 기원: +20 HP every second while this raid lasts (kept on my screen; it is saved with my next save as usual)
 setInterval(()=>{if(!P||!riteHas(1)||isFaint())return;const mh=maxHp();if(P.hp>=mh)return;P.hp=Math.min(mh,P.hp+20);renderPilot();try{endPaint()}catch(e){}},1000);
 /* 최종 레이드 20분: 쓰러뜨리지 못하면 오르비스는 우리를 가만히 내려다보다 그대로 떠난다 (no attack, no fainting).
@@ -11287,12 +11287,17 @@ function orbisBgmIn(){if(ORB_PRE)return;ORB_PRE=Date.now();if(!(bgmOn&&bgmVol>0)
 const orbPre=()=>!!ORB_PRE&&(!END||endStale()||(endFirst()&&(+(P&&P.orbis)||0)<2))&&Date.now()-ORB_PRE<180e3;
 // when 오르비스 leaves (or its fight ends) its theme plays on a moment, then fades out while the usual music fades back in
 let FIN_OUT=0;
+const FIN_SRC={orbis:'',final:'final.mp3'};let FIN_HUSHT=0;
+const finHush=()=>{const k=document.getElementById('riteBlack');return!!k&&!k.dataset.out};
+function finFadeOut(){const m=finBgm;if(!m||m.paused||FIN_HUSHT)return;const v0=m.volume;let i=0;FIN_HUSHT=setInterval(()=>{i++;m.volume=Math.max(0,v0*(1-i/20));if(i>=20){clearInterval(FIN_HUSHT);FIN_HUSHT=0;m.pause();m.volume=bgmVol/100}},75)}
 function finToMain(){if(FIN_OUT)return;const f=finBgm,t0=Date.now()+1500;let m=null;FIN_OUT=setInterval(()=>{const now=Date.now();if(now<t0)return;
     if(!m){m=bgmMain();m.volume=0;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{})}const k=Math.min(1,(now-t0)/3000),w=bgmVol/100;f.volume=w*(1-k);m.volume=w*k;
     if(k>=1){clearInterval(FIN_OUT);FIN_OUT=0;f.pause();f.volume=w;syncBgm()}},60)}
 function syncBgm(){if(!bgmFade&&!FIN_OUT){bgm.volume=bgmVol/100;bgm2.volume=bgmVol/100}
   if(typeof credOn!=='undefined'&&credOn){try{bossBgmStop();bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll();if(finBgm)finBgm.pause()}catch(e){}const m=credMusic();if(bgmOn&&bgmVol>0){m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{})}else m.pause();return}
-  if(typeof endOn==='function'&&(endOn()||orbPre())&&bgmOn&&bgmVol>0){bossBgmStop();if(!ORB_FADE){bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll()}const m=finMusic();if(!ORB_FADE)m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}
+  if(typeof endOn==='function'&&(endOn()||orbPre())&&bgmOn&&bgmVol>0){bossBgmStop();if(!ORB_FADE){bgmPauseAll();if(barBgm)barBgm.pause();raidPauseAll()}const m=finMusic();
+    // the rite: 오르비스's theme fades away into the blackout, and from the first blessing on the battle theme (Battle RPG Theme) takes over
+    if(finHush()){finFadeOut();return}{const want=typeof riteHas==='function'&&riteHas(1)?'final':'orbis';if(!FIN_SRC.orbis)FIN_SRC.orbis=m.src;if((m.dataset.k||'orbis')!==want){m.dataset.k=want;m.src=FIN_SRC[want];m.currentTime=0}}clearInterval(FIN_HUSHT);FIN_HUSHT=0;if(!ORB_FADE)m.volume=bgmVol/100;const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});return}
   if(FIN_OUT){if(!secretView&&!raidBgmWant()&&bgmOn&&bgmVol>0)return;clearInterval(FIN_OUT);FIN_OUT=0}
   if(finBgm&&!finBgm.paused){if(!secretView&&!raidBgmWant()&&!bossBgmWant()&&bgmOn&&bgmVol>0){finToMain();return}finBgm.pause()}
   const bar=secretView&&bgmOn&&bgmVol>0,boss=!bar&&bossBgmWant();if(boss)bossBgmStart();else bossBgmStop();
