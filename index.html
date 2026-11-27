@@ -7236,10 +7236,11 @@ var storyTxt='';
 function storyScript(k){const out=[];const add=(t,c)=>out.push(`<p class="${c||''}">${esc(t)}</p>`);
   if(k==='opening'){OP_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')});add('[조우]','ttl')}
   const S=STORIES[k];if(S)S.scenes.forEach(sc=>{out.push('<p class="gap"></p>');sc.lines.forEach(L=>{if(L.v)out.push(`<p class="say"><b>${esc(L.who||'')}</b> “${esc(L.v)}”</p>`);else add(L.t)})});
+  if(k==='ending'&&typeof END_CRAWL!=='undefined'){out.push('<p class="gap"></p>');END_CRAWL.forEach(it=>{if(!it)out.push('<p class="gap"></p>');else add(it[0],it[1]==='big'?'big':'')})}
   return out.join('')}
-var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호'],['engine','주 엔진 · 6호의 기억'],['nav','항법 장치 · 3호의 기억'],['hull','선체 외벽 · 1호의 기억'],['warp','장치 수리 · 선택의 순간']];
+var STORY_ON={};const STORY_LIST=[['opening','오프닝 · 조우 → 녹슨 7호'],['life','생명 유지 장치 · 다시 켜진 불빛'],['power','동력로 · 마담의 의뢰판'],['comm','통신 장치 · 첫 신호'],['engine','주 엔진 · 6호의 기억'],['nav','항법 장치 · 3호의 기억'],['hull','선체 외벽 · 1호의 기억'],['warp','장치 수리 · 선택의 순간'],['final','워프 기계 가동 · 다시, 눈을 뜨다'],['ending','엔딩 · 그렇게 다시, 한번 더']];
 // 통신 장치 · 첫 신호 opens for each crew member right after they first meet 오르비스 in the real (operator-started) visit
-const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k]||(k==='comm'&&!!ORB_GO&&(+(P&&P.orbis)||0)>=1&&(+(P&&P.orbisAt)||0)>=ORB_GO);
+const storyOpen=k=>mode!=='online'||isStaff()||!!STORY_ON[k]||(k==='final'&&!!(P&&P.finSt))||(k==='ending'&&!!(P&&P.endGen))||(k==='comm'&&!!ORB_GO&&(+(P&&P.orbis)||0)>=1&&(+(P&&P.orbisAt)||0)>=ORB_GO);
 // once 생명 유지 장치 is repaired every crew member sees its story one time (the next time they are in the game), then the 마이룸 popup
 function lifeStoryCheck(){if(!P||mode!=='online'||!db||P._fresh||P.nick==='새 선원'||preLock())return;const jm=$('#joinModal');if(jm&&!jm.hidden)return;
   if(!STORY_ON.life)return;// held back (운영진 included) until 이야기 공개 releases it
@@ -9943,6 +9944,9 @@ const A={
  storyplay(d){if(preLock()||!storyOpen(d.k)){toast('아직 공개되지 않은 이야기입니다.');return}
   // 통신 장치 replays the whole visit except the fight: story → the eye opens → it looks down, everyone falls, it leaves (nothing happens to the game)
   if(d.k==='comm'){if($('#story')||$('#orbisFx'))return;playStory('comm',sk=>{if(sk)return;const bk=document.createElement('div');bk.style.cssText='position:fixed;inset:0;background:#000;z-index:209';document.body.appendChild(bk);setTimeout(()=>{orbisPlay(ORB_INTRO,()=>orbisPlay(ORB_LEAVE,null,true));setTimeout(()=>bk.remove(),900)},450)},{manual:1});return}
+  // the raid stories replay at your own pace; the ending goes on to its crawl and the credits, as it did
+  if(d.k==='final'){playStory('final',null,{manual:1});return}
+  if(d.k==='ending'){if($('#story')||$('#opCrawl')||$('#credFx'))return;endBlack(true);playStory('ending',sk=>{if(sk){endBlack(false);return}storyCrawl(()=>playCredits(()=>endBlack(false)),END_CRAWL,'')},{manual:1});return}
   playStory(d.k)},
  admstory(d){if(!isAdmin||mode!=='online'||!STORY_LIST.some(x=>x[0]===d.k))return;const on=!STORY_ON[d.k],nm=STORY_LIST.find(x=>x[0]===d.k)[1];bossTx(staffRef(),cur=>{const c=Object.assign({ids:[]},cur);c.stories=Object.assign({},c.stories,{[d.k]:on});return c}).then(()=>{toast(on?`「${nm}」을(를) 공개했습니다.`:`「${nm}」을(를) 다시 숨겼습니다.`);if(on)sys(`[공지] 새 이야기 「${nm}」이(가) 공개되었습니다. 내 정보 › 이야기에서 볼 수 있습니다.`,true)}).catch(()=>toast('바꾸지 못했습니다.'))},
  padpfpdel(){const old=P.padPfp;if(!old)return;P.padPfp=null;if(ASSETS)ASSETS.delete(old).catch(()=>{});save();toast('PAD 사진을 캐릭터로 되돌렸습니다.');padAvNow()},
