@@ -5848,7 +5848,7 @@ function riteBanner(r,th0){const old=document.getElementById('riteFx');if(old)ol
 let riteHalfBusy=false;
 // between the eyes opening and the first blessing (6–12 s into the rite), one line of resolve on every screen
 const RITE_X={t:'우리는 쓰러질 수 없다.',s:'',type:1};let riteXg=null;
-setInterval(()=>{if(!P||!P.joined||!END||riteStep()<0||END.gen===riteXg)return;const dt=sNow()-END.startAt-RITE_AT;if(dt>=6e3&&dt<9e3){riteXg=END.gen;riteBanner(RITE_X,['#ffe08a','✦']);log(RITE_X.t,'')}else if(dt>=9e3)riteXg=END.gen},300);
+setInterval(()=>{if(!P||!P.joined||!END||riteStep()<0)return;const key=END.gen+':'+END.startAt;if(key===riteXg)return;const dt=sNow()-END.startAt-RITE_AT;if(dt>=6e3&&dt<11e3){riteXg=key;riteBanner(RITE_X,['#ffe08a','✦']);log(RITE_X.t,'')}else if(dt>=11e3)riteXg=key},300);
 setInterval(()=>{if(!P||!P.joined||!END)return;const k=riteStep();if(k<0)return;const g=END.gen,cur=P.endRite&&P.endRite.g===g?P.endRite.k:-1;if(cur>=k)return;
   for(let i=cur+1;i<=k;i++){const r=RITE[i],late=sNow()-END.startAt-RITE_AT-r.at>8e3;
     if(i===0){if(!late){P.hp=0;P.faintAt=Date.now();P.faint=P.faintAt+FAINT_MS;fish={ph:'idle'};const fl=document.createElement('div');fl.className='endflash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),700)}}
