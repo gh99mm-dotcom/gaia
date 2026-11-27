@@ -11193,8 +11193,10 @@ function credSceneDraw(cv,kind,av,t){const x=cv.getContext('2d'),R=(a,b,w,h,c)=>
 /* 엔딩 크레딧: the operator rolls it for everyone (org/bunker.credits = {id, at}; that doc is already watched, so no extra reads).
    Thirty registered crew, most recently seen first, each with their own character, then 녹슨 7호 last. */
 let credArm=false;
-function credCrew(){const all=Object.entries(PLAYERS||{}).filter(([id,p])=>p&&p.nick&&p.nick!=='새 선원'&&!p.deleted&&!(DELP||{})[id]).map(([id,p])=>id===uid&&P?P:p);
-  if(P&&P.nick&&P.nick!=='새 선원'&&!all.includes(P))all.push(P);return all.sort((a,b)=>(+b.seen||0)-(+a.seen||0)).slice(0,30)}
+// crew left out of the credits at the operator's request (by name)
+const CRED_SKIP=['tessa lowell'];const credSkip=p=>CRED_SKIP.includes(String(p&&p.nick||'').trim().toLowerCase());
+function credCrew(){const all=Object.entries(PLAYERS||{}).filter(([id,p])=>p&&p.nick&&p.nick!=='새 선원'&&!p.deleted&&!(DELP||{})[id]&&!credSkip(p)).map(([id,p])=>id===uid&&P?P:p);
+  if(P&&P.nick&&P.nick!=='새 선원'&&!all.includes(P)&&!credSkip(P))all.push(P);return all.sort((a,b)=>(+b.seen||0)-(+a.seen||0)).slice(0,30)}
 // an ID photo: head and shoulders on a pale backdrop, like a crew badge
 function credAva(p){const c=document.createElement('canvas'),W=26,H=32;c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#9fb6cc';x.fillRect(0,0,W,H);x.fillStyle='#b4c8db';x.fillRect(0,0,W,Math.round(H*.45));
   try{const g=avatarGrid(p);let top=0;while(top<20&&![...g[top]].some(q=>q!=='.'))top++;let l=40,r=0;for(let j=top;j<Math.min(40,top+14);j++)[...g[j]].forEach((q,k)=>{if(q!=='.'){l=Math.min(l,k);r=Math.max(r,k)}});
